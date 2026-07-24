@@ -369,6 +369,50 @@ function readSupplierNmMap(filePath, skus) {
   return { nmMap, diagnostics };
 }
 
+function readSubstitutionNmMap(filePath, skus) {
+  const diagnostics = {
+    path: filePath || '',
+    rows: 0,
+    mappedNmIds: 0,
+    unmatchedArticles: 0,
+    errors: []
+  };
+  const nmMap = new Map();
+  if (!filePath || !fs.existsSync(filePath)) return { nmMap, diagnostics };
+  try {
+    const payload = readJson(filePath, {});
+    const articles = Array.isArray(payload?.articles)
+      ? payload.articles
+      : (Array.isArray(payload) ? payload.flatMap((item) => Array.isArray(item?.articles) ? item.articles : []) : []);
+    const { byArticle, byArticleKey } = buildSkuLookups(skus);
+    const unmatchedArticles = new Set();
+    diagnostics.rows = articles.length;
+    articles.forEach((row) => {
+      const nmId = String(Math.trunc(numberOrZero(row?.productId || row?.nmId)));
+      if (!nmId || nmId === '0') return;
+      const articleToken = normalizeKey(row?.articleKey || row?.article || row?.sellerArticle);
+      const sku = byArticleKey.get(articleToken) || byArticle.get(articleToken) || null;
+      if (!sku) {
+        if (articleToken) unmatchedArticles.add(articleToken);
+        return;
+      }
+      nmMap.set(nmId, {
+        nmId,
+        sellerArticle: normalizeText(row?.sellerArticle || sku.article),
+        articleKey: sku.articleKey || row?.articleKey || row?.sellerArticle,
+        article: sku.article || row?.article || row?.sellerArticle,
+        name: sku.name || row?.name || row?.title || row?.sellerArticle,
+        owner: sku.owner?.name || sku.ownersByPlatform?.wb || row?.owner || ''
+      });
+    });
+    diagnostics.mappedNmIds = nmMap.size;
+    diagnostics.unmatchedArticles = unmatchedArticles.size;
+  } catch (error) {
+    diagnostics.errors.push(error.message);
+  }
+  return { nmMap, diagnostics };
+}
+
 function platformLatestDate(platformTrends) {
   const candidates = [platformTrends?.latestMarketplaceDate];
   for (const platform of platformTrends?.platforms || []) {
@@ -1260,11 +1304,18 @@ function buildAdsSummaryFallback(options, diagnostics, reason, externalRows = []
 async function buildPayload(options) {
   const skus = readJson(path.join(options.baseDataDir, 'skus.json'), []);
   const { nmMap, diagnostics: supplierDiagnostics } = readSupplierNmMap(options.supplierGoodsPath, skus);
+  const substitutionPath = path.join(options.baseDataDir, 'wb_substitution_traffic.json');
+  const { nmMap: substitutionNmMap, diagnostics: substitutionDiagnostics } = readSubstitutionNmMap(substitutionPath, skus);
+  substitutionNmMap.forEach((value, key) => {
+    if (!nmMap.has(key)) nmMap.set(key, value);
+  });
   const diagnostics = {
     generatedAt: new Date().toISOString(),
     docsUrl: WB_PROMOTION_DOCS_URL,
     sourceWindow: { from: options.from, to: options.to },
     supplierGoods: supplierDiagnostics,
+    substitutionTraffic: substitutionDiagnostics,
+    mappedNmIds: nmMap.size,
     channelOverrides: deepClone(options.channelOverridesDiagnostics || {}),
     warnings: []
   };

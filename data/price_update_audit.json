@@ -1,0 +1,157 @@
+{
+  "schema": "portal-price-update-audit-v1",
+  "generatedAt": "2026-07-24T21:01:52.040Z",
+  "status": "ok",
+  "publishAllowed": true,
+  "expectedDate": "2026-07-24",
+  "thresholds": {
+    "maxSourceLagDays": 3,
+    "maxPlatformGapDays": 3,
+    "minLatestCoverageRatio": 0.55
+  },
+  "blockingReasons": [],
+  "warnings": [
+    "Источник цен ym не дал строк; сохранён последний корректный срез.",
+    "Цены ym: площадка отстаёт от общего ценового среза на 3 дн."
+  ],
+  "previous": {
+    "latestFactDate": "2026-07-23",
+    "byPlatform": {
+      "ozon": {
+        "rowCount": 168,
+        "pricedRowCount": 168,
+        "clientPricedRowCount": 168,
+        "latestFactDate": "2026-07-23",
+        "latestClientFactDate": "2026-07-23",
+        "latestFactSkuCount": 95,
+        "baselineMedianSkuCount": 41,
+        "latestCoverageRatio": 2.3171
+      },
+      "wb": {
+        "rowCount": 156,
+        "pricedRowCount": 156,
+        "clientPricedRowCount": 123,
+        "latestFactDate": "2026-07-23",
+        "latestClientFactDate": "2026-07-23",
+        "latestFactSkuCount": 98,
+        "baselineMedianSkuCount": 42,
+        "latestCoverageRatio": 2.3333
+      },
+      "ym": {
+        "rowCount": 47,
+        "pricedRowCount": 47,
+        "clientPricedRowCount": 47,
+        "latestFactDate": "2026-07-20",
+        "latestClientFactDate": "2026-07-20",
+        "latestFactSkuCount": 21,
+        "baselineMedianSkuCount": 24,
+        "latestCoverageRatio": 0.875
+      }
+    }
+  },
+  "sourceCandidate": {
+    "latestFactDate": "2026-07-23",
+    "byPlatform": {
+      "wb": {
+        "rowCount": 98,
+        "pricedRowCount": 98,
+        "clientPricedRowCount": 54,
+        "latestFactDate": "2026-07-23",
+        "latestClientFactDate": "2026-07-23",
+        "latestFactSkuCount": 98,
+        "baselineMedianSkuCount": 0,
+        "latestCoverageRatio": null
+      },
+      "ozon": {
+        "rowCount": 95,
+        "pricedRowCount": 95,
+        "clientPricedRowCount": 95,
+        "latestFactDate": "2026-07-23",
+        "latestClientFactDate": "2026-07-23",
+        "latestFactSkuCount": 95,
+        "baselineMedianSkuCount": 0,
+        "latestCoverageRatio": null
+      }
+    }
+  },
+  "activatedCandidate": {
+    "latestFactDate": "2026-07-23",
+    "byPlatform": {
+      "ozon": {
+        "rowCount": 168,
+        "pricedRowCount": 168,
+        "clientPricedRowCount": 168,
+        "latestFactDate": "2026-07-23",
+        "latestClientFactDate": "2026-07-23",
+        "latestFactSkuCount": 95,
+        "baselineMedianSkuCount": 41,
+        "latestCoverageRatio": 2.3171
+      },
+      "wb": {
+        "rowCount": 156,
+        "pricedRowCount": 156,
+        "clientPricedRowCount": 123,
+        "latestFactDate": "2026-07-23",
+        "latestClientFactDate": "2026-07-23",
+        "latestFactSkuCount": 98,
+        "baselineMedianSkuCount": 42,
+        "latestCoverageRatio": 2.3333
+      },
+      "ym": {
+        "rowCount": 47,
+        "pricedRowCount": 47,
+        "clientPricedRowCount": 47,
+        "latestFactDate": "2026-07-20",
+        "latestClientFactDate": "2026-07-20",
+        "latestFactSkuCount": 21,
+        "baselineMedianSkuCount": 24,
+        "latestCoverageRatio": 0.875
+      }
+    }
+  },
+  "derivedPrices": {
+    "latestFactDate": "2026-07-23",
+    "byPlatform": {
+      "wb": {
+        "rowCount": 200,
+        "pricedRowCount": 168,
+        "clientPricedRowCount": 138,
+        "latestFactDate": "2026-07-23",
+        "latestClientFactDate": "2026-07-23",
+        "latestFactSkuCount": 98,
+        "baselineMedianSkuCount": 42,
+        "latestCoverageRatio": 2.3333
+      },
+      "ozon": {
+        "rowCount": 211,
+        "pricedRowCount": 199,
+        "clientPricedRowCount": 207,
+        "latestFactDate": "2026-07-23",
+        "latestClientFactDate": "2026-07-23",
+        "latestFactSkuCount": 95,
+        "baselineMedianSkuCount": 41,
+        "latestCoverageRatio": 2.3171
+      },
+      "ym": {
+        "rowCount": 146,
+        "pricedRowCount": 47,
+        "clientPricedRowCount": 47,
+        "latestFactDate": "2026-07-20",
+        "latestClientFactDate": "2026-07-20",
+        "latestFactSkuCount": 21,
+        "baselineMedianSkuCount": 24,
+        "latestCoverageRatio": 0.875
+      }
+    }
+  },
+  "repricer": {
+    "previousRowCount": 216,
+    "candidateRowCount": 218
+  },
+  "generationId": "prices-540cd1db900338665698",
+  "source": {
+    "kind": "local",
+    "mtime": "2026-07-23T21:55:56.585Z",
+    "file": "Текущие_цены_по_площадкам_для_Дениса_23.07.2026.xlsx"
+  }
+}

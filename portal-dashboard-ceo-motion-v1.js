@@ -57,6 +57,7 @@
   let renderAfterLoadScheduled = false;
   let missingSourceRetries = 0;
   const MAX_MISSING_SOURCE_RETRIES = 3;
+  const SOURCE_LOAD_TIMEOUT_MS = 4000;
 
   function appState() {
     return window.__alteaAppState || window.state || window.__ALTEA_STATE__ || {};
@@ -298,19 +299,25 @@
           brandSummary: statePayload.brandSummary || cachedPayload.brandSummary
         };
       }
+      if (cachedPayload && !hasUsablePayload(name, statePayload) && hasUsablePayload(name, cachedPayload)) {
+        return cachedPayload;
+      }
       return statePayload;
     }
     return cachedPayload;
   }
 
-  function hasUsableSource(name) {
-    const payload = source(name);
+  function hasUsablePayload(name, payload) {
     if (!payload || !Object.keys(payload || {}).length) return false;
     if (name === 'dashboard') return Boolean(payload?.companyPlan?.activeMonth?.channels || payload?.cards?.length);
     if (name === 'platformTrends') return hasPlatformSeries(payload);
     if (name === 'iuDrr') return Array.isArray(payload?.daily) && payload.daily.length > 0;
     if (name === 'adsSummary') return Array.isArray(payload?.platforms) && payload.platforms.length > 0;
     return true;
+  }
+
+  function hasUsableSource(name) {
+    return hasUsablePayload(name, source(name));
   }
 
   function requiredSourceState() {
@@ -323,15 +330,33 @@
   }
 
   function loadSourcePayload(path) {
-    const loadStatic = () => fetch(`${path}?v=${VERSION}`, { cache: 'no-store' })
-      .then((response) => response.ok ? response.json() : null);
+    const loadStatic = () => Promise.resolve()
+      .then(() => fetch(`${path}?v=${VERSION}`, { cache: 'no-store' }))
+      .then((response) => response.ok ? response.json() : null)
+      .catch(() => null);
     const snapshotLoader = typeof window.__alteaLoadPortalSnapshot === 'function'
       ? window.__alteaLoadPortalSnapshot
       : null;
     if (!snapshotLoader) return loadStatic();
-    return Promise.resolve(snapshotLoader(path, { force: true }))
-      .then((payload) => payload || loadStatic())
-      .catch(() => loadStatic());
+    const snapshotPromise = Promise.resolve()
+      .then(() => snapshotLoader(path, { force: true }))
+      .catch(() => null);
+    const staticPromise = loadStatic();
+    return new Promise((resolve) => {
+      let settled = false;
+      const finish = (payload) => {
+        if (settled || !payload || !Object.keys(payload || {}).length) return;
+        settled = true;
+        resolve(payload);
+      };
+      snapshotPromise.then(finish);
+      staticPromise.then(finish);
+      window.setTimeout(() => {
+        if (settled) return;
+        settled = true;
+        resolve(null);
+      }, SOURCE_LOAD_TIMEOUT_MS);
+    });
   }
 
   function loadSources(options = {}) {
@@ -342,17 +367,19 @@
       sourcesLoaded = true;
       return Promise.resolve(true);
     }
-    loadingPromise = Promise.all(entries.map(([name, path]) => {
+    const request = Promise.allSettled(entries.map(([name, path]) => {
       return loadSourcePayload(path)
         .then((payload) => {
           if (payload) sourceCache[name] = payload;
-        })
-        .catch(() => {});
+        });
     })).then(() => {
       sourcesLoaded = true;
       return true;
+    }).finally(() => {
+      if (loadingPromise === request) loadingPromise = null;
     });
-    return loadingPromise;
+    loadingPromise = request;
+    return request;
   }
 
   function ensureStyle() {
@@ -2522,7 +2549,7 @@
       ? dateContext.months
       : [monthKey(model.asOf || model.range?.end)].filter(Boolean);
     return `
-      <section class="ceo-motion-v1" data-dashboard-ceo-motion-version="${VERSION}" style="--platform:${platform.color};--metric:${METRICS[model.metric]?.tone || platform.color}">
+      <section class="ceo-motion-v1 altea-premium-route" data-dashboard-ceo-motion-version="${VERSION}" style="--platform:${platform.color};--metric:${METRICS[model.metric]?.tone || platform.color}">
         <div class="ceo-motion-bg"></div>
         <header class="ceo-top">
           <div>
@@ -3296,7 +3323,7 @@
     root.dataset.dashboardCeoMotion = VERSION;
     window.__ALTEA_DASHBOARD_CEO_MOTION_ACTIVE__ = true;
     root.innerHTML = `
-      <section class="ceo-motion-v1">
+      <section class="ceo-motion-v1 altea-premium-route">
         <div class="ceo-empty">Собираем CEO dashboard: факты, план, площадки и рекламный контур.</div>
       </section>
     `;
@@ -3307,7 +3334,7 @@
     if (forceMissing && sourcesLoaded && missingSourceRetries >= MAX_MISSING_SOURCE_RETRIES) return;
     if (forceMissing) missingSourceRetries += 1;
     renderAfterLoadScheduled = true;
-    loadSources({ forceMissing }).then(() => {
+    loadSources({ forceMissing }).catch(() => {}).finally(() => {
       renderAfterLoadScheduled = false;
       if (dashboardRouteActive()) renderDashboardCeoMotion();
     });
@@ -3321,26 +3348,19 @@
     if (oldModal) oldModal.remove();
     ensureStyle();
     const { hasPlatformRows, hasDashboardPlan, hasIuDrrRows } = requiredSourceState();
-    const missingCoreSource = !hasPlatformRows || !hasDashboardPlan || !hasIuDrrRows;
-    if (missingCoreSource && (!sourcesLoaded || missingSourceRetries < MAX_MISSING_SOURCE_RETRIES)) {
+    const missingCoreSource = !hasPlatformRows || !hasDashboardPlan;
+    if (missingCoreSource && !sourcesLoaded) {
       renderLoading(root);
       scheduleRenderAfterSources(true);
       return;
     }
     if (!missingCoreSource) missingSourceRetries = 0;
-    if (!sourcesLoaded) scheduleRenderAfterSources();
-    const model = buildModel();
-    const waitingForAdsSource = model.metric === 'ads'
-      && isCoreAdsPlatform(model.platform)
-      && model.adsSource !== 'ads_summary'
-      && model.total.ads <= 0
-      && !(Array.isArray(model.adRows) && model.adRows.length)
-      && missingSourceRetries < MAX_MISSING_SOURCE_RETRIES;
-    if (waitingForAdsSource) {
-      renderLoading(root);
+    if (!sourcesLoaded) {
+      scheduleRenderAfterSources();
+    } else if ((missingCoreSource || !hasIuDrrRows) && missingSourceRetries < MAX_MISSING_SOURCE_RETRIES) {
       scheduleRenderAfterSources(true);
-      return;
     }
+    const model = buildModel();
     root.dataset.dashboardCeoMotion = VERSION;
     root.dataset.premiumRoute = 'dashboard';
     root.innerHTML = renderShell(model);

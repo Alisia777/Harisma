@@ -130,13 +130,61 @@ The daily close job order is:
 2. Run `scripts/portal-daily-close-preflight.js`.
 3. Refresh WB/Ozon/Yandex API facts, then finalized Goldapple/Letu/Megamarket daily facts.
 4. Refresh ads, Yandex Market stock, and warehouse stock.
-5. Build canonical non-IU layers and phase 3 publish-gate reconciliation reports.
-6. Run D-1 and numeric gates.
-7. Package active generation.
-8. Publish to Supabase and verify readback hashes.
-9. Upload artifacts.
+5. Build the price generation in staging, reject date/coverage regressions, and
+   activate `smart_price_overlay.json`, `prices.json`, `repricer.json`, and
+   `price_update_audit.json` as one generation.
+6. Build the remaining canonical non-IU layers and phase 3 publish-gate reconciliation reports.
+7. Run `portal-unified-daily-intake.js`. It checks every real `view-*` tab
+   against `portal-truth-manifest.json`, verifies source ownership, presence,
+   freshness and inclusion in the atomic inventory, then writes one
+   `portal_daily_intake.json` receipt.
+8. Rebuild `portal_sync_health.json` from that receipt.
+9. Run D-1 and numeric gates.
+10. Package active generation.
+11. Publish to Supabase and verify readback hashes.
+12. Upload artifacts.
 
-If preflight fails, steps 3-8 are skipped and no data is published.
+If preflight fails, steps 3-11 are skipped and no data is published.
+
+### Unified daily intake
+
+`scripts/portal-truth-manifest.json` is the only editable registry for portal
+view dependencies. Every visible tab must be registered with one update mode:
+
+- `daily-batch` — all required sources must pass the daily cutoff;
+- `hybrid` — combines the atomic daily snapshot with operational user data;
+- `operational` — user-managed data that must be included in the atomic
+  generation but is not falsely required to have a D-1 marketplace date.
+
+The intake fails closed when a new tab is not registered, a source has no
+repair/update owner, a required file is missing or stale, or a view source is
+not listed in `runtime_snapshot_inventory.json`. The receipt is itself part of
+the active generation, so the portal's Data Health tab shows the same decision
+that allowed or blocked publication.
+
+### Price generation gate
+
+Price files are never promoted one by one. The sync first builds all three data
+layers in a temporary generation and writes `price_update_audit.json`. Promotion
+is allowed only when:
+
+- no marketplace or priced SKU disappears from the last accepted generation;
+- the seller/marketplace price pool is counted from `currentFillPrice`,
+  `currentPrice`, or list-price fields; a client price alone does not make the
+  marketplace price complete;
+- SKU keys keep meaningful `_` and `-` characters, including a trailing
+  underscore, so distinct registry articles are not merged into one row;
+- the latest fact date does not move backwards;
+- the last daily slice is at least 55% of the seven-day median SKU coverage;
+- WB, Ozon and Yandex Market differ from the common price date by no more than
+  three days; a gap above one day remains visible as an audit warning;
+- the common price date is no more than three days behind the daily close
+  cutoff;
+- derived `prices.json` reaches the same fact date as the overlay;
+- `overlay`, `prices` and `repricer` carry the same `priceGeneration.id`.
+
+If any check fails, the active price files remain unchanged and the rejected
+audit stays in `.portal-truth-output/price-sync/price_update_audit.json`.
 
 ## Preflight Artifact
 
@@ -192,9 +240,13 @@ Use these commands before changing daily close workflow behavior:
 ```powershell
 node scripts/portal-daily-close-preflight.selftest.js
 node scripts/portal-daily-close-workflow.selftest.js
+node scripts/portal-unified-daily-intake.selftest.js
+node scripts/portal-unified-daily-intake.js --contract-only --no-write
 node scripts/portal-daily-layer-guard.selftest.js
 node scripts/portal-api-max-sync.selftest.js
 node scripts/portal-dashboard-money-kpi-realdata.selftest.js
+node scripts/price-update-transaction.selftest.js
+node scripts/portal-price-source-freshness.selftest.js
 python scripts/d1_close_gate.selftest.py
 python scripts/sync_portal_generation_to_supabase.selftest.py
 node scripts/portal-daily-layer-guard.js --input-dir .portal-truth-output --base-data-dir data --output-dir .portal-truth-output
@@ -228,8 +280,12 @@ Do not weaken these rules for a green run:
 
 - Do not add `--no-fail` to production daily close gates.
 - Do not publish if any required source is missing.
+- Do not publish if `portal_daily_intake.json` is missing, blocked, or does not
+  cover every visible portal tab.
 - Do not publish if WB/Ozon/Yandex are not on the same cutoff.
 - Do not publish if Supabase readback hashes are missing or mismatched.
+- Do not publish if price artifacts have different `priceGeneration.id` values
+  or `price_update_audit.json` is not `publishAllowed=true`.
 - Do not edit generated JSON manually as the permanent fix.
 - Do not change protected finance files, formulas, or UI as part of non-IU daily close.
 

@@ -46,6 +46,10 @@ function sanitizeDiscountPct(...values) {
   return Math.min(1, Math.max(0, parsed));
 }
 
+function flagEnabled(value) {
+  return value === true || value === 'true' || value === 1 || value === '1';
+}
+
 function marginPctFromPrice(price, cost) {
   const actualPrice = firstPositive(price);
   const actualCost = firstPositive(cost);
@@ -217,9 +221,13 @@ function buildLegacyRow(row = {}, platform = '', supportRow = null, ownerOverrid
   const latestFactDate = asIsoDate(row?.valueDate || row?.historyFreshnessDate || latestSeriesDate(row) || '');
   const exportCurrentPrice = platform === 'ozon' ? supportCurrentExportPrice(supportRow) : null;
   const currentPrice = firstPositive(exportCurrentPrice, row?.currentFillPrice, row?.currentPrice, lastPrice.value);
-  const currentClientPrice = firstPositive(exportCurrentPrice, row?.currentClientPrice, lastClientPrice.value);
+  const currentClientPrice = flagEnabled(row?.clearCurrentClientPrice)
+    ? null
+    : firstPositive(exportCurrentPrice, row?.currentClientPrice, lastClientPrice.value);
   const currentTurnoverDays = firstNumber(row?.currentTurnoverDays, row?.turnoverCurrentDays, lastTurnover.value);
-  const currentSppPct = sanitizeDiscountPct(row?.currentSppPct, lastSpp.value);
+  const currentSppPct = flagEnabled(row?.clearCurrentSppPct)
+    ? null
+    : sanitizeDiscountPct(row?.currentSppPct, lastSpp.value);
   const currentPriceDate = asIsoDate(row?.currentPriceDate || row?.currentFillPriceDate || '') || lastPrice.date || latestFactDate;
   const basePrice = firstPositive(row?.basePrice, lastPrice.value, currentPrice);
   const minPrice = firstPositive(row?.minPrice, row?.workingZoneFrom, row?.hardMinPrice);
@@ -262,8 +270,10 @@ function buildLegacyRow(row = {}, platform = '', supportRow = null, ownerOverrid
     currentTurnoverDays,
     currentPrice,
     currentClientPrice,
+    clearCurrentClientPrice: flagEnabled(row?.clearCurrentClientPrice),
     currentPriceSource: exportCurrentPrice ? 'price_workbench_support_current_export' : (row?.currentPriceSource || row?.currentSellerPriceSource || ''),
     currentSppPct,
+    clearCurrentSppPct: flagEnabled(row?.clearCurrentSppPct),
     currentPriceDate,
     historyFreshnessDate: latestFactDate,
     minPrice,

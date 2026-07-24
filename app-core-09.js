@@ -19,14 +19,30 @@ function orderProcurementNeedForDays(row, days) {
   const direct = orderProcurementReadMetric(row, days, {
     7: 'targetNeed7',
     14: 'targetNeed14',
-    28: 'targetNeed28'
+    28: 'targetNeed28',
+    30: 'targetNeed30'
   });
   if (direct !== null && direct >= 0) return direct;
 
-  const orders = orderProcurementOrdersForDays(row, days);
+  return orderProcurementRawNeedForDays(row, days);
+}
+
+function orderProcurementRawNeedForDays(row, days) {
+  const directKey = {
+    7: 'rawNeed7',
+    14: 'rawNeed14',
+    28: 'rawNeed28',
+    30: 'rawNeed30'
+  }[days] || null;
+  if (directKey && row?.[directKey] !== null && row?.[directKey] !== undefined && row?.[directKey] !== '') {
+    return Math.max(0, Math.ceil(orderProcurementNumber(row[directKey])));
+  }
+
+  const demand = Math.max(0, orderProcurementNumber(row?.avgDaily)) * days
+    + Math.max(0, orderProcurementNumber(row?.safetyStock));
   const stock = orderProcurementNumber(row?.inStock);
   const inFlight = orderProcurementNumber(row?.inTransit) + orderProcurementNumber(row?.inRequest);
-  return Math.max(0, Math.ceil(orders - stock - inFlight));
+  return Math.max(0, Math.ceil(demand - stock - inFlight));
 }
 
 function orderProcurementSafeTurnover(row) {
@@ -367,8 +383,9 @@ function buildOrderProcurementModel() {
     };
 
     const clusterOrders = orderProcurementOrdersForDays(row, days);
-    const rawClusterNeed = orderProcurementNeedForDays(row, days);
-    const clusterNeed = orderBlockedByLifecycle ? 0 : rawClusterNeed;
+    const targetClusterNeed = orderProcurementNeedForDays(row, days);
+    const rawClusterNeed = orderProcurementRawNeedForDays(row, days);
+    const clusterNeed = orderBlockedByLifecycle ? 0 : targetClusterNeed;
     const clusterInTransit = orderProcurementNumber(row?.inTransit);
     const clusterInRequest = orderProcurementNumber(row?.inRequest);
     const cluster = {

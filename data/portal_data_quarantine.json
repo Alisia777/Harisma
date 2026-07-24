@@ -1,13 +1,13 @@
 {
-  "rows": [],
-  "reason": "Rows that need review before the data contour can be trusted.",
   "schema": "portal-data-quarantine-v1",
+  "generatedAt": "2026-07-24T21:12:32.549Z",
+  "reason": "Rows that need review before the data contour can be trusted.",
   "summary": {
     "rows": 0,
-    "overage": 0,
     "revenue": 0,
+    "overage": 0,
     "apiSumAboveAggregateCount": 0,
     "apiUnmappedHighRevenueCount": 0
   },
-  "generatedAt": "2026-07-23T07:16:04.182Z"
+  "rows": []
 }

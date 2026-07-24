@@ -33,6 +33,7 @@ const SKU_PLAN_FACT_UNALLOCATED_STATUS = 'Агрегат без SKU';
 const SKU_PLAN_FACT_FILTER_VERSION = '20260623-status-top-filters-v1';
 globalThis.__ALTEA_SKU_WORKSPACE_SOURCE_ONLY__ = true;
 const SKU_WORKSPACE_SOURCE_ONLY = globalThis.__ALTEA_SKU_WORKSPACE_SOURCE_ONLY__ !== false;
+const SKU_PLAN_FACT_INCLUDE_DERIVED_ROWS = globalThis.__ALTEA_SKU_PLAN_FACT_INCLUDE_DERIVED_ROWS__ !== false;
 let skuPlanFactSearchTimer = 0;
 let skuPlanFactExcelDownloadLockUntil = 0;
 let skuPlanFactTruthWarmupPromise = null;
@@ -162,6 +163,7 @@ function skuPlanFactEmptyModel(filters = {}) {
     periodEnd: '',
     periodDays: 0,
     maxAvailableDate: '',
+    actualFactDate: '',
     dateMin: '',
     dateMax: '',
     elapsedDays: 0,
@@ -429,7 +431,7 @@ function skuPlanFactOwnerOptionHasMetricSignal(row = {}, platform = 'all') {
   )) return true;
   if (!SKU_PLAN_FACT_PLATFORMS.includes(platform)) return false;
   return Boolean(
-    (metric.hasSource || metric.companyPlanZeroApplied)
+    (metric.hasSource || metric.companyPlanZeroApplied || metric.companyPlanNoPlanApplied)
     && skuPlanFactPlatformOwner(row, platform)
     && (
       numberOrZero(row.factRevenue) > 0
@@ -769,6 +771,24 @@ function skuPlanFactSkuLookupTokens(sku = {}, platform = '') {
     seen.add(token);
     tokens.push(token);
   });
+  if (platform === 'wb') {
+    const substitutionIndex = skuPlanFactWbSubstitutionIndex();
+    [...tokens].forEach((token) => {
+      (substitutionIndex.get(token) || []).forEach((row) => {
+        [row?.productId, row?.sellerArticle, row?.articleKey, row?.article].forEach((value) => {
+          const aliasToken = skuPlanFactToken(value);
+          if (!aliasToken || seen.has(aliasToken)) return;
+          seen.add(aliasToken);
+          tokens.push(aliasToken);
+        });
+        const nmToken = skuPlanFactToken(row?.productId ? `wb-nm-${row.productId}` : '');
+        if (nmToken && !seen.has(nmToken)) {
+          seen.add(nmToken);
+          tokens.push(nmToken);
+        }
+      });
+    });
+  }
   return tokens;
 }
 
@@ -1008,9 +1028,13 @@ function skuPlanFactDailyHasSalesSignal(item = {}) {
   ].some((value) => Math.abs(numberOrZero(value)) > 0);
 }
 
-function skuPlanFactLatestActualDate(indexes, monthKey = '') {
+function skuPlanFactLatestActualDate(indexes, monthKey = '', selectedPlatform = 'all') {
   let maxDate = '';
-  SKU_PLAN_FACT_PLATFORMS.forEach((platform) => {
+  const normalizedPlatform = String(selectedPlatform || 'all').trim().toLowerCase();
+  const platforms = SKU_PLAN_FACT_PLATFORMS.includes(normalizedPlatform)
+    ? [normalizedPlatform]
+    : SKU_PLAN_FACT_PLATFORMS;
+  platforms.forEach((platform) => {
     [indexes.overlay?.[platform], indexes.smart?.[platform], indexes.support?.[platform], indexes.prices?.[platform], indexes.extra?.[platform]].forEach((map) => {
       skuPlanFactRowsFromIndexMap(map).forEach((row) => {
         (row.daily || row.monthly || []).forEach((item) => {
@@ -1021,13 +1045,9 @@ function skuPlanFactLatestActualDate(indexes, monthKey = '') {
       });
     });
   });
-  (state.adsSummary?.itemSeries || []).forEach((item) => {
-    const date = String(item?.date || '').slice(0, 10);
-    if (!skuPlanFactDailyHasSalesSignal(item)) return;
-    if ((!monthKey || date.slice(0, 7) === monthKey) && date > maxDate) maxDate = date;
-  });
-  (state.platformTrends?.platforms || []).forEach((platform) => {
-    (platform?.series || []).forEach((item) => {
+  platforms.forEach((platform) => {
+    const trend = skuPlanFactPlatformTrend(platform);
+    (trend?.series || []).forEach((item) => {
       const date = String(item?.date || item?.label || '').slice(0, 10);
       if (!skuPlanFactDailyHasSalesSignal(item)) return;
       if ((!monthKey || date.slice(0, 7) === monthKey) && date > maxDate) maxDate = date;
@@ -1298,7 +1318,8 @@ function skuPlanFactReconcilePlatformFacts(rows = [], monthKey = '', maxFactDate
       acc.revenue += numberOrZero(metric?.factRevenue);
       return acc;
     }, { units: 0, revenue: 0 });
-    if (!(aggregate.revenue >= SKU_PLAN_FACT_RECONCILE_MIN_REVENUE && raw.revenue > aggregate.revenue * SKU_PLAN_FACT_RECONCILE_OVERAGE_THRESHOLD)) {
+    const revenueOverage = raw.revenue - aggregate.revenue;
+    if (!(aggregate.revenue >= SKU_PLAN_FACT_RECONCILE_MIN_REVENUE && revenueOverage > SKU_PLAN_FACT_RECONCILE_MIN_REVENUE)) {
       return;
     }
     const ratio = aggregate.revenue / raw.revenue;
@@ -1309,7 +1330,9 @@ function skuPlanFactReconcilePlatformFacts(rows = [], monthKey = '', maxFactDate
       aggregateRevenue: aggregate.revenue,
       rawUnits: raw.units,
       aggregateUnits: aggregate.units,
-      ratio
+      ratio,
+      revenueOverage,
+      materialOverage: raw.revenue > aggregate.revenue * SKU_PLAN_FACT_RECONCILE_OVERAGE_THRESHOLD
     };
     rows.forEach((row) => {
       const metric = row.platforms?.[platform] || row[platform] || null;
@@ -1399,7 +1422,7 @@ function skuPlanFactAppendUnallocatedAggregateRows(rows = [], monthKey = '', max
       return acc;
     }, { units: 0, revenue: 0 });
     const revenueDelta = aggregate.revenue - raw.revenue;
-    if (!(aggregate.revenue >= SKU_PLAN_FACT_RECONCILE_MIN_REVENUE && revenueDelta > SKU_PLAN_FACT_RECONCILE_MIN_REVENUE && raw.revenue < aggregate.revenue * 0.98)) {
+    if (!(aggregate.revenue >= SKU_PLAN_FACT_RECONCILE_MIN_REVENUE && revenueDelta > SKU_PLAN_FACT_RECONCILE_MIN_REVENUE)) {
       return;
     }
     const unitsDelta = Math.max(0, aggregate.units - raw.units);
@@ -1692,7 +1715,7 @@ function skuPlanFactPayrollFactControl(monthKey = '', periodStart = '', periodEn
   const endDate = skuPlanFactDateKey(periodEnd);
   const startDate = skuPlanFactDateKey(periodStart);
   if (startDate !== monthStart || !activeDate || endDate !== activeDate) return null;
-  const fact = numberOrZero(activeMonth.factRevenueToDate);
+  const fact = skuPlanFactPayrollRawFactRevenue(monthKey, 'all', periodStart, periodEnd);
   return fact > 0 ? fact : null;
 }
 
@@ -1887,6 +1910,36 @@ function skuPlanFactApplyScopedPayrollValues(model = {}, scopedTotals = {}, opti
 function skuPlanFactApplyPayrollKpiToModel(model = {}) {
   const payroll = skuPlanFactPayrollKpiForModel(model);
   if (!payroll) return model;
+  const rowScopeTotals = { ...(model.totals || {}) };
+  const preserveRowScopeTotals = () => {
+    model.totals = {
+      ...(model.totals || {}),
+      ...rowScopeTotals,
+      truthSource: 'filtered_rows',
+      payrollReference: model.payrollKpi ? {
+        purpose: model.payrollKpi.purpose || '',
+        monthKey: model.payrollKpi.monthKey || '',
+        selectedPlatform: model.payrollKpi.selectedPlatform || 'all',
+        salaryIncluded: model.payrollKpi.salaryIncluded !== false,
+        planRevenue: numberOrZero(model.payrollKpi.planRevenue),
+        planToDateRevenue: numberOrZero(model.payrollKpi.planToDateRevenue),
+        factRevenue: numberOrZero(model.payrollKpi.factRevenue),
+        completionToDate: model.payrollKpi.completionToDate ?? null,
+        gapToDate: numberOrZero(model.payrollKpi.gapToDate),
+        periodStart: model.payrollKpi.periodStart || '',
+        periodEnd: model.payrollKpi.periodEnd || ''
+      } : null
+    };
+    delete model.totals.payrollOriginal;
+    delete model.totals.payrollSourceTotals;
+    delete model.totals.apiFactRevenue;
+    delete model.totals.apiMarginRub;
+    delete model.totals.apiMarginPct;
+    delete model.totals.apiCompletionToDate;
+    delete model.totals.kpiFactRevenue;
+    delete model.totals.kpiFactDelta;
+    return model;
+  };
   const selectedPlatform = String(payroll.selectedPlatform || model.filters?.platform || 'all').toLowerCase();
   const skipPayrollAlignment = selectedPlatform !== 'all' && !SKU_PLAN_FACT_PAYROLL_ALIGNMENT_PLATFORMS.has(selectedPlatform);
   model.payrollKpi = {
@@ -1945,7 +1998,7 @@ function skuPlanFactApplyPayrollKpiToModel(model = {}) {
       salaryIncluded: false,
       truthSource: 'sku_scope'
     });
-    return model;
+    return preserveRowScopeTotals();
   }
   const ownerScoped = Boolean(model.filters?.owner && model.filters.owner !== 'all');
   if (ownerScoped) {
@@ -1996,7 +2049,7 @@ function skuPlanFactApplyPayrollKpiToModel(model = {}) {
       ownerScoped: true,
       truthSource: 'sku_scope'
     });
-    return model;
+    return preserveRowScopeTotals();
   }
   const rawFactRevenue = numberOrZero(model.totals.factRevenue);
   const rawMarginRub = numberOrZero(model.totals.marginRub);
@@ -2082,7 +2135,7 @@ function skuPlanFactApplyPayrollKpiToModel(model = {}) {
     marginWeight: payrollMetricTotals.marginWeight,
     factRevenue: payrollMetricTotals.factRevenue
   };
-  return model;
+  return preserveRowScopeTotals();
 }
 
 function skuPlanFactAdItemIsExternal(item = {}) {
@@ -2409,7 +2462,11 @@ function skuPlanFactApplyCompanyPlanZeroChannels(rows = [], monthKey = '') {
       metric.completionToDate = null;
       metric.completionMonth = null;
       metric.gapToDate = numberOrZero(metric.factRevenue);
-      metric.planMarginRub = 0;
+      metric.planMarginRub = null;
+      metric.planAvailability = 'not_set';
+      metric.planMissing = true;
+      metric.companyPlanNoPlanApplied = true;
+      metric.companyPlanNoPlanReason = channel.reason || channel.planStatus || 'manual decision required';
       metric.companyPlanZeroApplied = true;
       metric.companyPlanZeroSource = 'company_plan';
     });
@@ -2491,17 +2548,43 @@ function skuPlanFactApplyPlannedAdSpend(rows = [], monthKey = '', periodStart = 
 }
 
 function skuPlanFactApplyAggregateAdSpend(rows = [], monthKey = '', platform = '', elapsedDays = 0, periodStart = '', periodEnd = '') {
-  if (platform !== 'ozon') return;
+  if (!['wb', 'ozon'].includes(platform)) {
+    return {
+      platform,
+      sourceSpend: 0,
+      directSpend: 0,
+      allocatedSpend: 0,
+      coveragePct: null,
+      allocationApplied: false
+    };
+  }
   const sourceTotals = skuPlanFactAdSourceTotals(monthKey, periodEnd, periodStart, platform);
   const sourceSpend = numberOrZero(sourceTotals.spend);
-  if (!(sourceSpend > 0)) return;
+  const allMetrics = (rows || [])
+    .map((row) => row.platforms?.[platform] || row[platform] || null)
+    .filter(Boolean);
   const metrics = (rows || [])
     .map((row) => ({ row, metric: row.platforms?.[platform] || row[platform] || null }))
     .filter(({ row, metric }) => metric && skuPlanFactKpiEligible(row) && skuPlanFactPlatformHasActivity(metric))
     .map(({ metric }) => metric);
-  if (!metrics.length) return;
-  const rowSpend = metrics.reduce((sum, metric) => sum + numberOrZero(metric.adSpend), 0);
-  if (rowSpend > sourceSpend * 0.05) return;
+  const directSpend = allMetrics.reduce((sum, metric) => sum + numberOrZero(metric.adSpend), 0);
+  allMetrics.forEach((metric) => {
+    metric.adDirectSpend = numberOrZero(metric.adSpend);
+    metric.adAllocatedSpend = 0;
+  });
+  const baseResult = {
+    platform,
+    sourceSpend,
+    directSpend,
+    allocatedSpend: 0,
+    coveragePct: sourceSpend > 0 ? Math.min(1, directSpend / sourceSpend) : null,
+    allocationApplied: false,
+    sourceRows: numberOrZero(sourceTotals.rows)
+  };
+  if (!(sourceSpend > 0) || !metrics.length) return baseResult;
+  const residualSpend = Math.max(0, sourceSpend - directSpend);
+  const tolerance = Math.max(1, sourceSpend * 0.000001);
+  if (residualSpend <= tolerance) return baseResult;
   const weights = metrics.map((metric) => (
     numberOrZero(metric.factRevenue)
     || numberOrZero(metric.planToDateRevenue)
@@ -2511,15 +2594,23 @@ function skuPlanFactApplyAggregateAdSpend(rows = [], monthKey = '', platform = '
     || 0
   ));
   const weightSum = weights.reduce((sum, value) => sum + value, 0);
-  if (!(weightSum > 0)) return;
+  if (!(weightSum > 0)) return baseResult;
   metrics.forEach((metric, index) => {
-    const allocated = sourceSpend * weights[index] / weightSum;
-    metric.adSpend = allocated;
+    const allocated = residualSpend * weights[index] / weightSum;
+    metric.adAllocatedSpend = allocated;
+    metric.adSpend = numberOrZero(metric.adDirectSpend) + allocated;
     metric.aggregateAdSpendAllocated = true;
-    metric.aggregateAdSpendSource = 'ozon_seller_finance_api';
+    metric.aggregateAdSpendSource = platform === 'ozon'
+      ? 'ozon_seller_finance_api'
+      : 'wb_promotion_api_unmapped_residual';
     metric.drr = numberOrZero(metric.factRevenue) > 0 ? metric.adSpend / numberOrZero(metric.factRevenue) : null;
     skuPlanFactFinalizePlatformMetric(metric, monthKey, elapsedDays, periodStart, periodEnd);
   });
+  return {
+    ...baseResult,
+    allocatedSpend: residualSpend,
+    allocationApplied: true
+  };
 }
 
 function skuPlanFactPlatformPriceProxy(metric = {}) {
@@ -3000,7 +3091,7 @@ function skuPlanFactMarkDuplicateRiskRows(rows = []) {
   rows.forEach((row) => {
     row.duplicateRisk = SKU_PLAN_FACT_PLATFORMS.some((platform) => {
       const metric = row.platforms?.[platform] || row[platform] || null;
-      return Boolean(metric?.reconciledFact);
+      return Boolean(metric?.reconciledFact && metric?.reconciliation?.materialOverage);
     });
     if (row.duplicateRisk) {
       row.matrixProblemState = 'duplicate_risk';
@@ -3064,14 +3155,18 @@ function skuPlanFactSortRows(rows, sort, sortDir) {
 
 function skuPlanFactRowMatchesFilters(row = {}, filters = {}, options = {}) {
   const checkPlatform = options.platform !== false;
+  const platformMetric = filters.platform && filters.platform !== 'all'
+    ? (row.platforms?.[filters.platform] || row[filters.platform] || {})
+    : row;
   if (filters.owner !== 'all' && row.owner !== filters.owner) return false;
   if ((filters.status === 'actual' || filters.status === 'active') && !skuPlanFactKpiEligible(row)) return false;
   if (filters.status === 'output' && !skuPlanFactIsOutput(row)) return false;
   if (filters.status === 'question' && !skuPlanFactIsQuestion(row)) return false;
-  if (filters.status === 'with_plan' && row.planRevenue <= 0) return false;
-  if (filters.status === 'under_plan' && !(row.planToDateRevenue > 0 && row.factRevenue < row.planToDateRevenue)) return false;
-  if (filters.status === 'no_fact' && !(row.planRevenue > 0 && row.factRevenue <= 0)) return false;
-  if (filters.status === 'unmapped' && !row.syntheticUnmapped) return false;
+  if (filters.status === 'with_plan' && numberOrZero(platformMetric.planRevenue) <= 0) return false;
+  if (filters.status === 'under_plan' && !(numberOrZero(platformMetric.planToDateRevenue) > 0 && numberOrZero(platformMetric.factRevenue) < numberOrZero(platformMetric.planToDateRevenue))) return false;
+  if (filters.status === 'no_fact' && !(numberOrZero(platformMetric.planRevenue) > 0 && numberOrZero(platformMetric.factRevenue) <= 0)) return false;
+  if (filters.status === 'unmapped' && (!row.syntheticUnmapped || row.syntheticUnallocated)) return false;
+  if (filters.status === 'unallocated' && !row.syntheticUnallocated) return false;
   if (filters.status === 'matrix_problem' && (row.matrixProblemState === 'ok' || !row.matrixProblemState)) return false;
   if (filters.status === 'missing_owner' && row.matrixProblemState !== 'missing_owner' && row.owner !== 'Без owner') return false;
   if (filters.status === 'duplicate_risk' && !row.duplicateRisk) return false;
@@ -3083,6 +3178,38 @@ function skuPlanFactRowMatchesFilters(row = {}, filters = {}, options = {}) {
     .join(' ')
     .toLowerCase()
     .includes(search);
+}
+
+function skuPlanFactExpectedFactDate(now = new Date()) {
+  const date = now instanceof Date && !Number.isNaN(now.getTime()) ? new Date(now.getTime()) : new Date();
+  date.setHours(12, 0, 0, 0);
+  date.setDate(date.getDate() - 1);
+  return date.toISOString().slice(0, 10);
+}
+
+function skuPlanFactRuntimeFreshness(actualFactDate = '') {
+  const dataDate = skuPlanFactDateKey(actualFactDate);
+  const expectedDate = skuPlanFactExpectedFactDate();
+  const dataSerial = skuPlanFactDateSerial(dataDate);
+  const expectedSerial = skuPlanFactDateSerial(expectedDate);
+  const lagDays = dataSerial === null || expectedSerial === null ? null : Math.max(0, expectedSerial - dataSerial);
+  const status = !dataDate ? 'unknown' : lagDays > 0 ? 'stale' : 'ok';
+  return {
+    status,
+    dataDate,
+    expectedDate,
+    lagDays,
+    generatedAt: state.syncHealth?.generatedAt
+      || state.portalDataQuality?.generatedAt
+      || state.platformTrends?.generatedAt
+      || state.dashboard?.generatedAt
+      || '',
+    message: !dataDate
+      ? 'Дата последнего факта не определена.'
+      : status === 'stale'
+        ? `Факт до ${dataDate}; ожидается минимум ${expectedDate}.`
+        : `Факт актуален до ${dataDate}.`
+  };
 }
 
 function skuPlanFactBuildModel(filterOverrides = null, options = {}) {
@@ -3100,12 +3227,13 @@ function skuPlanFactBuildModel(filterOverrides = null, options = {}) {
   const monthKey = skuPlanFactSelectedMonth(months, filters);
   const dateBounds = skuPlanFactDateBounds(indexes, months, monthKey);
   const maxAvailableDate = skuPlanFactMaxFactDate(indexes, monthKey);
+  const actualFactDate = skuPlanFactLatestActualDate(indexes, monthKey, filters.platform);
   const selectedPeriod = skuPlanFactSelectedPeriod(indexes, monthKey, maxAvailableDate, filters);
   const periodStart = selectedPeriod.start;
   const selectedDate = selectedPeriod.end;
   const elapsedDays = selectedPeriod.days;
   const adIndex = skuPlanFactAdIndex(monthKey, selectedDate, periodStart);
-  const includeDerivedSkuRows = !SKU_WORKSPACE_SOURCE_ONLY;
+  const includeDerivedSkuRows = SKU_PLAN_FACT_INCLUDE_DERIVED_ROWS;
   const modelSkus = [
     ...(state.skus || []),
     ...(includeDerivedSkuRows ? skuPlanFactUnmappedSkus(indexes, monthKey, selectedDate, periodStart) : [])
@@ -3125,8 +3253,16 @@ function skuPlanFactBuildModel(filterOverrides = null, options = {}) {
   skuPlanFactApplyCorporateRevenuePlan(rows, monthKey, periodStart, selectedDate);
   skuPlanFactApplyCompanyPlanZeroChannels(rows, monthKey);
   skuPlanFactApplyPlannedAdSpend(rows, monthKey, periodStart, selectedDate);
+  const adAttribution = {};
   SKU_PLAN_FACT_PLATFORMS.forEach((platform) => {
-    skuPlanFactApplyAggregateAdSpend(rows, monthKey, platform, elapsedDays, periodStart, selectedDate);
+    adAttribution[platform] = skuPlanFactApplyAggregateAdSpend(
+      rows,
+      monthKey,
+      platform,
+      elapsedDays,
+      periodStart,
+      selectedDate
+    );
   });
   skuPlanFactRedistributePayrollPlansToOwners(rows, selectedOwnerPlatform);
   const iuDrrControl = { applied: false, platforms: {}, source: 'company_plan_scope' };
@@ -3147,7 +3283,7 @@ function skuPlanFactBuildModel(filterOverrides = null, options = {}) {
   const platformBaseRows = rows.filter((row) => skuPlanFactRowMatchesFilters(row, filters, { platform: false }));
   const filteredRows = platformBaseRows.filter((row) => skuPlanFactRowMatchesFilters(row, filters));
   const sortedRows = skuPlanFactSortRows(filteredRows, filters.sort, filters.sortDir);
-  const unmappedRows = rows.filter((row) => row.syntheticUnmapped);
+  const unmappedRows = rows.filter((row) => row.syntheticUnmapped && !row.syntheticUnallocated);
   const unmappedRevenue = unmappedRows.reduce((sum, row) => sum + numberOrZero(row.factRevenue), 0);
   const quality = includeDerivedSkuRows
     ? skuPlanFactBuildDataQuality(rows, reconciliation, monthKey, selectedDate)
@@ -3164,49 +3300,97 @@ function skuPlanFactBuildModel(filterOverrides = null, options = {}) {
       monthKey,
       maxDate: selectedDate
     };
+  const sourceQualitySummary = state.portalDataQuality?.summary || {};
+  const sourceQualityDate = String(sourceQualitySummary.maxDate || state.portalSyncHealth?.data?.maxDate || '').slice(0, 10);
+  const sourceQualityMatchesPeriod = Boolean(
+    sourceQualityDate
+    && sourceQualityDate.slice(0, 7) === monthKey
+    && sourceQualityDate === selectedDate
+  );
+  quality.status = state.portalDataQuality?.status || '';
+  quality.sourceIssueCount = sourceQualityMatchesPeriod ? numberOrZero(sourceQualitySummary.issueCount) : quality.issueCount;
+  quality.sourceCriticalCount = sourceQualityMatchesPeriod ? numberOrZero(sourceQualitySummary.criticalCount) : quality.dangerCount;
+  quality.sourceWarningCount = sourceQualityMatchesPeriod ? numberOrZero(sourceQualitySummary.warningCount) : quality.warningCount;
+  quality.sourceUnmappedCount = sourceQualityMatchesPeriod
+    ? numberOrZero(sourceQualitySummary.apiUnmappedUniqueSku)
+    : quality.unmappedCount;
+  quality.sourceUnmappedRevenue = sourceQualityMatchesPeriod
+    ? numberOrZero(sourceQualitySummary.apiUnmappedRevenue)
+    : unmappedRevenue;
+  quality.actionableUnmappedCount = sourceQualityMatchesPeriod
+    ? numberOrZero(sourceQualitySummary.apiUnmappedActionUniqueSku || sourceQualitySummary.apiUnmappedActionRows)
+    : quality.unmappedCount;
+  quality.actionableUnmappedRevenue = sourceQualityMatchesPeriod
+    ? numberOrZero(sourceQualitySummary.apiUnmappedActionRevenue)
+    : unmappedRevenue;
+  quality.reconciliation = reconciliation;
+  quality.adAttribution = adAttribution;
+  quality.missingPlanPlatformRows = rows.reduce((count, row) => (
+    count + SKU_PLAN_FACT_PLATFORMS.filter((platform) => {
+      const metric = row.platforms?.[platform] || row[platform] || {};
+      return skuPlanFactKpiEligible(row)
+        && skuPlanFactPlatformHasActivity(metric)
+        && Boolean(metric.planMissing || metric.planAvailability === 'not_set');
+    }).length
+  ), 0);
+  quality.missingPlanPlatforms = SKU_PLAN_FACT_PLATFORMS.filter((platform) => (
+    rows.some((row) => {
+      const metric = row.platforms?.[platform] || row[platform] || {};
+      return skuPlanFactKpiEligible(row)
+        && skuPlanFactPlatformHasActivity(metric)
+        && Boolean(metric.planMissing || metric.planAvailability === 'not_set');
+    })
+  ));
   const totals = sortedRows.reduce((acc, row) => {
-    acc.planRevenue += row.planRevenue;
-    acc.planToDateRevenue += row.planToDateRevenue;
-    acc.factRevenue += row.factRevenue;
-    acc.planUnits += row.planUnits;
-    acc.factUnits += row.factUnits;
-    acc.adSpend += row.adSpend;
-    acc.substitutionViews += numberOrZero(row.substitutionViews);
-    acc.substitutionCarts += numberOrZero(row.substitutionCarts);
-    acc.substitutionOrders += numberOrZero(row.substitutionOrders);
-    acc.substitutionFavorites += numberOrZero(row.substitutionFavorites);
-    acc.substitutionCount += numberOrZero(row.substitutionCount);
-    acc.substitutionCampaignCount += numberOrZero(row.substitutionCampaignCount);
-    if (row.planAdSpend !== null && row.planAdSpend !== undefined) {
-      acc.planAdSpend += numberOrZero(row.planAdSpend);
+    const metric = skuPlanFactDisplayMetric(row, {
+      filters,
+      elapsedDays,
+      periodDays: elapsedDays,
+      monthKey,
+      periodStart
+    });
+    acc.planRevenue += metric.planRevenue;
+    acc.planToDateRevenue += metric.planToDateRevenue;
+    acc.factRevenue += metric.factRevenue;
+    acc.planUnits += metric.planUnits;
+    acc.factUnits += metric.factUnits;
+    acc.adSpend += metric.adSpend;
+    acc.substitutionViews += numberOrZero(metric.substitutionViews);
+    acc.substitutionCarts += numberOrZero(metric.substitutionCarts);
+    acc.substitutionOrders += numberOrZero(metric.substitutionOrders);
+    acc.substitutionFavorites += numberOrZero(metric.substitutionFavorites);
+    acc.substitutionCount += numberOrZero(metric.substitutionCount);
+    acc.substitutionCampaignCount += numberOrZero(metric.substitutionCampaignCount);
+    if (metric.planAdSpend !== null && metric.planAdSpend !== undefined) {
+      acc.planAdSpend += numberOrZero(metric.planAdSpend);
       acc.hasPlanAdSpend = true;
     }
-    if (row.planMonthAdSpend !== null && row.planMonthAdSpend !== undefined) {
-      acc.planMonthAdSpend += numberOrZero(row.planMonthAdSpend);
+    if (metric.planMonthAdSpend !== null && metric.planMonthAdSpend !== undefined) {
+      acc.planMonthAdSpend += numberOrZero(metric.planMonthAdSpend);
       acc.hasPlanMonthAdSpend = true;
     }
-    if (row.planPeriodAdSpend !== null && row.planPeriodAdSpend !== undefined) {
-      acc.planPeriodAdSpend += numberOrZero(row.planPeriodAdSpend);
+    if (metric.planPeriodAdSpend !== null && metric.planPeriodAdSpend !== undefined) {
+      acc.planPeriodAdSpend += numberOrZero(metric.planPeriodAdSpend);
       acc.hasPlanPeriodAdSpend = true;
     }
-    if (row.adForecastSpend !== null && row.adForecastSpend !== undefined) {
-      acc.adForecastSpend += numberOrZero(row.adForecastSpend);
+    if (metric.adForecastSpend !== null && metric.adForecastSpend !== undefined) {
+      acc.adForecastSpend += numberOrZero(metric.adForecastSpend);
       acc.hasAdForecastSpend = true;
     }
-    const marginPct = skuPlanFactNormalizeRatio(row.marginPct);
-    const marginWeight = numberOrZero(row.factRevenue) || numberOrZero(row.planToDateRevenue) || numberOrZero(row.planRevenue);
+    const marginPct = skuPlanFactNormalizeRatio(metric.marginPct);
+    const marginWeight = numberOrZero(metric.factRevenue) || numberOrZero(metric.planToDateRevenue) || numberOrZero(metric.planRevenue);
     if (marginPct !== null && marginWeight > 0) {
       acc.marginValue += marginPct * marginWeight;
       acc.marginWeight += marginWeight;
     }
-    const planMarginPct = skuPlanFactNormalizeRatio(row.planMarginPct);
-    const planMarginWeight = numberOrZero(row.planToDateRevenue) || numberOrZero(row.planRevenue);
+    const planMarginPct = skuPlanFactNormalizeRatio(metric.planMarginPct);
+    const planMarginWeight = numberOrZero(metric.planToDateRevenue) || numberOrZero(metric.planRevenue);
     if (planMarginPct !== null && planMarginWeight > 0) {
       acc.planMarginValue += planMarginPct * planMarginWeight;
       acc.planMarginWeight += planMarginWeight;
     }
-    if (row.planToDateRevenue > 0 && row.factRevenue < row.planToDateRevenue) acc.underPlan += 1;
-    if (row.planRevenue > 0 && row.factRevenue <= 0) acc.noFact += 1;
+    if (metric.planToDateRevenue > 0 && metric.factRevenue < metric.planToDateRevenue) acc.underPlan += 1;
+    if (metric.planRevenue > 0 && metric.factRevenue <= 0) acc.noFact += 1;
     return acc;
   }, { planRevenue: 0, planToDateRevenue: 0, factRevenue: 0, planUnits: 0, factUnits: 0, adSpend: 0, substitutionViews: 0, substitutionCarts: 0, substitutionOrders: 0, substitutionFavorites: 0, substitutionCount: 0, substitutionCampaignCount: 0, planAdSpend: 0, planMonthAdSpend: 0, planPeriodAdSpend: 0, adForecastSpend: 0, hasPlanAdSpend: false, hasPlanMonthAdSpend: false, hasPlanPeriodAdSpend: false, hasAdForecastSpend: false, marginValue: 0, marginWeight: 0, planMarginValue: 0, planMarginWeight: 0, underPlan: 0, noFact: 0 });
   totals.completionToDate = totals.planToDateRevenue > 0 ? totals.factRevenue / totals.planToDateRevenue : null;
@@ -3243,6 +3427,7 @@ function skuPlanFactBuildModel(filterOverrides = null, options = {}) {
     periodEnd: selectedDate,
     periodDays: elapsedDays,
     maxAvailableDate,
+    actualFactDate,
     dateMin: dateBounds.min,
     dateMax: dateBounds.max,
     elapsedDays,
@@ -3256,9 +3441,11 @@ function skuPlanFactBuildModel(filterOverrides = null, options = {}) {
     unmappedCount: unmappedRows.length,
     unmappedRevenue,
     quality,
+    adAttribution,
     iuDrrControl,
     planAdTotalsByPlatform,
     planDrrByPlatform,
+    freshness: skuPlanFactRuntimeFreshness(actualFactDate),
     totals,
     planDrrWb: planDrrByPlatform.wb,
     planDrrOzon: planDrrByPlatform.ozon
@@ -3341,10 +3528,30 @@ function skuPlanFactBuildDataQuality(rows = [], reconciliation = [], monthKey = 
     });
   });
 
+  const negativeFacts = [];
+  rows.filter((row) => !row.syntheticUnallocated).forEach((row) => {
+    SKU_PLAN_FACT_PLATFORMS.forEach((platform) => {
+      const metric = row.platforms?.[platform] || row[platform] || {};
+      const factRevenue = numberOrZero(metric.factRevenue);
+      if (factRevenue >= 0) return;
+      negativeFacts.push({ row, platform, metric, factRevenue });
+      addIssue({
+        severity: 'warn',
+        type: 'Отрицательный факт',
+        platform: skuPlanFactPlatformLabel(platform),
+        articleKey: row.articleKey,
+        name: row.name,
+        revenue: Math.abs(factRevenue),
+        units: Math.abs(numberOrZero(metric.factUnits)),
+        action: `Проверить возвраты/корректировки источника; текущий факт ${Math.round(factRevenue)} ₽`
+      });
+    });
+  });
+
   (reconciliation || []).forEach((item) => {
     addIssue({
-      severity: 'warn',
-      type: 'SKU выше агрегата',
+      severity: item.materialOverage ? 'warn' : 'info',
+      type: item.materialOverage ? 'SKU выше агрегата' : 'Техническая сверка агрегата',
       platform: item.label || '',
       articleKey: '',
       name: 'Сверка суммы SKU с итогом площадки',
@@ -3381,6 +3588,8 @@ function skuPlanFactBuildDataQuality(rows = [], reconciliation = [], monthKey = 
     warnCount: sorted.filter((item) => item.severity === 'warn').length,
     unmappedCount: rows.filter((row) => row.syntheticUnmapped && !row.syntheticUnallocated).length,
     unallocatedCount: rows.filter((row) => row.syntheticUnallocated).length,
+    negativeFactCount: negativeFacts.length,
+    negativeFactRevenue: negativeFacts.reduce((sum, item) => sum + Math.abs(item.factRevenue), 0),
     noOwnerCount: noOwnerRows.length,
     unresolvedRevenue: sorted.reduce((sum, item) => sum + numberOrZero(item.revenue), 0)
   };
@@ -6596,6 +6805,9 @@ function skuPlanFactDisplayMetric(row = {}, model = {}) {
       marginIsPlanFallback: Boolean(metric.marginIsPlanFallback),
       marginSource: metric.marginSource || '',
       planMarginSource: metric.planMarginSource || '',
+      planAvailability: metric.planAvailability || (numberOrZero(metric.planRevenue) > 0 ? 'set' : ''),
+      planMissing: Boolean(metric.planMissing || metric.planAvailability === 'not_set'),
+      planMissingReason: metric.companyPlanNoPlanReason || '',
       scoreHistory: metric.scoreHistory || [],
       completionDelta: metric.completionDelta ?? null,
       stock: metric.stock ?? null,
@@ -6648,6 +6860,12 @@ function skuPlanFactDisplayMetric(row = {}, model = {}) {
     marginIsPlanFallback: false,
     marginSource: '',
     planMarginSource: '',
+    planAvailability: row.planRevenue > 0 ? 'set' : '',
+    planMissing: Object.values(row.platforms || {}).some((metric) => Boolean(metric?.planMissing || metric?.planAvailability === 'not_set')),
+    planMissingReason: Object.values(row.platforms || {})
+      .map((metric) => metric?.companyPlanNoPlanReason || '')
+      .filter(Boolean)
+      .join('; '),
     scoreHistory: row.scoreHistory || [],
     completionDelta: row.completionDelta ?? null,
     stock: null,
@@ -7338,7 +7556,7 @@ async function downloadSkuPlanFactQualityExcel(model) {
 const OOS_CONTROL_STATUS_META = {
   oos: { label: 'OOS', tone: 'danger', priority: 'critical' },
   critical: { label: 'Критично', tone: 'danger', priority: 'critical' },
-  risk: { label: 'OOS скоро <5 д', tone: 'warn', priority: 'high' },
+  risk: { label: 'OOS скоро <10 д', tone: 'warn', priority: 'high' },
   watch: { label: 'Наблюдать', tone: 'info', priority: 'medium' }
 };
 
@@ -7355,11 +7573,425 @@ const OOS_CONTROL_PLATFORM_META = {
   samokat: { label: 'Самокат', shortLabel: 'Самокат', color: '#10b981' },
   magnit: { label: 'Магнит Маркет', shortLabel: 'Магнит', color: '#e85b55' }
 };
+const OOS_PROCUREMENT_HORIZONS = [7, 14, 28, 30];
+const OOS_PROCUREMENT_SAFETY_DAYS = [0, 3, 7, 14];
+const OOS_PROCUREMENT_STALE_COST_DAYS = 30;
+
+function oosControlActiveTab() {
+  const tab = String(state.oosControlTab || 'risk').trim();
+  return tab === 'procurement' ? 'procurement' : 'risk';
+}
+
+function oosProcurementUi() {
+  state.oosProcurementUi = state.oosProcurementUi && typeof state.oosProcurementUi === 'object'
+    ? state.oosProcurementUi
+    : {};
+  const horizon = Number(state.oosProcurementUi.horizon);
+  state.oosProcurementUi.horizon = OOS_PROCUREMENT_HORIZONS.includes(horizon) ? horizon : 14;
+  const safetyDays = Number(state.oosProcurementUi.safetyDays);
+  state.oosProcurementUi.safetyDays = OOS_PROCUREMENT_SAFETY_DAYS.includes(safetyDays) ? safetyDays : 0;
+  state.oosProcurementUi.search = String(state.oosProcurementUi.search || '').trim();
+  state.oosProcurementUi.sort = ['budget', 'need', 'risk', 'sku'].includes(state.oosProcurementUi.sort)
+    ? state.oosProcurementUi.sort
+    : 'budget';
+  return state.oosProcurementUi;
+}
+
+function oosProcurementArticleKey(value = '') {
+  return String(value || '')
+    .trim()
+    .toLowerCase()
+    .replace(/\s+/g, '_')
+    .replace(/[^\p{L}\p{N}_-]+/gu, '_')
+    .replace(/_+/g, '_')
+    .replace(/^_+|_+$/g, '');
+}
+
+function oosProcurementPlatformKey(value = '') {
+  const normalized = oosControlNormalizePlatform(value);
+  return normalized === 'ya' ? 'ym' : normalized;
+}
+
+function oosProcurementRowsFromBucket(bucket = {}) {
+  const source = bucket?.rows || bucket?.items || bucket?.byArticle || bucket?.articles || [];
+  if (Array.isArray(source)) return source;
+  return source && typeof source === 'object' ? Object.values(source) : [];
+}
+
+function oosProcurementSkuLookup() {
+  const lookup = new Map();
+  (Array.isArray(state.skus) ? state.skus : []).forEach((sku) => {
+    [sku?.articleKey, sku?.article, sku?.sku]
+      .map(oosProcurementArticleKey)
+      .filter(Boolean)
+      .forEach((key) => {
+        if (!lookup.has(key)) lookup.set(key, sku);
+      });
+  });
+  return lookup;
+}
+
+function oosProcurementPriceLookup(platform = '') {
+  const platformKey = oosProcurementPlatformKey(platform);
+  const bucket = state.prices?.platforms?.[platformKey] || {};
+  const lookup = new Map();
+  oosProcurementRowsFromBucket(bucket).forEach((row) => {
+    [row?.articleKey, row?.article, row?.sku, row?.offerId, row?.marketArticleId]
+      .map(oosProcurementArticleKey)
+      .filter(Boolean)
+      .forEach((key) => {
+        if (!lookup.has(key)) lookup.set(key, row);
+      });
+  });
+  return lookup;
+}
+
+function oosProcurementPositiveNumber(...values) {
+  for (const value of values) {
+    if (value === null || value === undefined || value === '') continue;
+    const parsed = Number(value);
+    if (Number.isFinite(parsed) && parsed > 0) return parsed;
+  }
+  return null;
+}
+
+function oosProcurementNeedFacts(row = {}, horizon = 14, safetyDays = 0) {
+  const days = OOS_PROCUREMENT_HORIZONS.includes(Number(horizon)) ? Number(horizon) : 14;
+  const bufferDays = OOS_PROCUREMENT_SAFETY_DAYS.includes(Number(safetyDays)) ? Number(safetyDays) : 0;
+  const direct = row?.[`targetNeed${days}`];
+  let baseNeed = null;
+  if (direct !== null && direct !== undefined && direct !== '') {
+    const parsed = Number(direct);
+    if (Number.isFinite(parsed)) baseNeed = Math.max(0, Math.ceil(parsed));
+  }
+  const avgDaily = Math.max(0, numberOrZero(row.avgDaily));
+  const sourceSafetyStock = Math.max(0, numberOrZero(row.safetyStock));
+  const available = Math.max(0, numberOrZero(row.inStock))
+    + Math.max(0, numberOrZero(row.inTransit))
+    + Math.max(0, numberOrZero(row.inRequest));
+  if (baseNeed === null) {
+    baseNeed = Math.max(0, Math.ceil(avgDaily * days + sourceSafetyStock - available));
+  }
+  const effectiveDays = days + bufferDays;
+  const scenarioNeed = bufferDays > 0
+    ? Math.max(0, Math.ceil(avgDaily * effectiveDays + sourceSafetyStock - available))
+    : baseNeed;
+  const needUnits = Math.max(baseNeed, scenarioNeed);
+  return {
+    baseNeedUnits: baseNeed,
+    needUnits,
+    safetyUnits: Math.max(0, needUnits - baseNeed),
+    horizonDays: days,
+    safetyDays: bufferDays,
+    effectiveDays,
+    avgDaily,
+    sourceSafetyStock,
+    available
+  };
+}
+
+function oosProcurementNeed(row = {}, horizon = 14, safetyDays = 0) {
+  return oosProcurementNeedFacts(row, horizon, safetyDays).needUnits;
+}
+
+function oosProcurementDateKey(...values) {
+  for (const value of values) {
+    const text = String(value || '').trim();
+    if (!text) continue;
+    const stamp = Date.parse(text);
+    if (Number.isFinite(stamp)) return new Date(stamp).toISOString().slice(0, 10);
+  }
+  return '';
+}
+
+function oosProcurementAgeDays(value = '', referenceDate = '') {
+  const dateKey = oosProcurementDateKey(value);
+  const referenceKey = oosProcurementDateKey(referenceDate) || todayIso();
+  if (!dateKey || !referenceKey) return null;
+  const age = Math.floor((Date.parse(`${referenceKey}T00:00:00Z`) - Date.parse(`${dateKey}T00:00:00Z`)) / 86400000);
+  return Number.isFinite(age) ? Math.max(0, age) : null;
+}
+
+function oosProcurementPriceFacts(row = {}, skuLookup = new Map(), priceLookups = new Map()) {
+  const articleKey = oosProcurementArticleKey(row.articleKey || row.article);
+  const platform = oosProcurementPlatformKey(row.platform);
+  const sku = skuLookup.get(articleKey) || {};
+  const side = sku?.[platform] && typeof sku[platform] === 'object' ? sku[platform] : {};
+  const priceRow = priceLookups.get(platform)?.get(articleKey) || {};
+  const sidePurchasePrice = oosProcurementPositiveNumber(side.costPrice, side.cost, side.costRub);
+  const skuPurchasePrice = oosProcurementPositiveNumber(sku.costPrice, sku.cost, sku.costRub);
+  const priceContourPurchasePrice = oosProcurementPositiveNumber(priceRow.costPrice, priceRow.cost, priceRow.costRub);
+  const purchasePrice = sidePurchasePrice || skuPurchasePrice || priceContourPurchasePrice;
+  const purchasePriceSource = purchasePrice
+    ? (sidePurchasePrice ? 'реестр SKU' : (skuPurchasePrice ? 'карточка SKU' : 'контур цен'))
+    : 'цена не найдена';
+  const purchasePriceUpdatedAt = sidePurchasePrice
+    ? oosProcurementDateKey(
+      side.costImportedAt,
+      side.matrixImportedAt,
+      side.marginImportedAt,
+      sku.costImportedAt,
+      sku.matrixImportedAt
+    )
+    : skuPurchasePrice
+      ? oosProcurementDateKey(sku.costImportedAt, sku.matrixImportedAt)
+      : priceContourPurchasePrice
+        ? oosProcurementDateKey(priceRow.costImportedAt, priceRow.updatedAt, priceRow.updated_at, state.prices?.generatedAt)
+        : '';
+  const purchasePriceAgeDays = oosProcurementAgeDays(
+    purchasePriceUpdatedAt,
+    oosControlPayload().summary?.dataDate || todayIso()
+  );
+  const currentSalePrice = oosProcurementPositiveNumber(
+    priceRow.currentPrice,
+    side.currentPrice,
+    row.averagePrice
+  );
+  const forecastSalePrice = oosProcurementPositiveNumber(
+    row.averagePrice,
+    priceRow.currentClientPrice,
+    priceRow.currentPrice,
+    side.currentPrice
+  );
+  return {
+    purchasePrice,
+    currentSalePrice,
+    forecastSalePrice,
+    purchasePriceSource,
+    purchasePriceUpdatedAt,
+    purchasePriceAgeDays,
+    purchasePriceStale: purchasePriceAgeDays !== null && purchasePriceAgeDays > OOS_PROCUREMENT_STALE_COST_DAYS,
+    salePriceSource: forecastSalePrice
+      ? (oosProcurementPositiveNumber(row.averagePrice) ? 'средняя цена факта' : 'текущая цена')
+      : 'цена не найдена'
+  };
+}
+
+function oosProcurementBuildLine(row = {}, horizon = 14, safetyDays = 0, skuLookup = new Map(), priceLookups = new Map()) {
+  const need = oosProcurementNeedFacts(row, horizon, safetyDays);
+  const needUnits = need.needUnits;
+  const prices = oosProcurementPriceFacts(row, skuLookup, priceLookups);
+  const procurementBudget = prices.purchasePrice === null ? null : needUnits * prices.purchasePrice;
+  const protectedTurnover = prices.forecastSalePrice === null ? null : needUnits * prices.forecastSalePrice;
+  const grossProfit = procurementBudget === null || protectedTurnover === null
+    ? null
+    : protectedTurnover - procurementBudget;
+  const grossMarginPct = prices.purchasePrice === null || prices.forecastSalePrice === null || prices.forecastSalePrice <= 0
+    ? null
+    : Math.max(-999, Math.min(999, (prices.forecastSalePrice - prices.purchasePrice) / prices.forecastSalePrice * 100));
+  return {
+    row,
+    article: row.article || row.articleKey || '',
+    articleKey: row.articleKey || row.article || '',
+    name: row.name || row.article || row.articleKey || '',
+    owner: row.owner || 'Без owner',
+    platform: oosControlNormalizePlatform(row.platform),
+    platformLabel: row.platformLabel || oosControlPlatformMeta(row.platform).shortLabel,
+    status: row.status || 'watch',
+    statusLabel: row.statusLabel || row.status || 'Риск',
+    turnoverDays: oosControlFiniteOrNull(row.turnoverDays),
+    ...need,
+    procurementBudget,
+    protectedTurnover,
+    grossProfit,
+    grossMarginPct,
+    ...prices
+  };
+}
+
+function oosProcurementSummarize(lines = []) {
+  const summary = {
+    lineCount: 0,
+    skuCount: 0,
+    needUnits: 0,
+    knownBudget: 0,
+    protectedTurnover: 0,
+    grossProfit: 0,
+    missingCostRows: 0,
+    missingCostUnits: 0,
+    missingSaleRows: 0,
+    missingSaleUnits: 0,
+    safetyUnits: 0,
+    staleCostRows: 0,
+    staleCostUnits: 0,
+    unknownCostDateRows: 0,
+    unknownCostDateUnits: 0,
+    oldestCostDate: '',
+    newestCostDate: '',
+    topBudgetSku: '',
+    topBudgetSkuName: '',
+    topBudgetSkuAmount: 0,
+    topBudgetSharePct: 0
+  };
+  const skus = new Set();
+  const budgetBySku = new Map();
+  lines.forEach((line) => {
+    if (!(line.needUnits > 0)) return;
+    summary.lineCount += 1;
+    summary.needUnits += line.needUnits;
+    summary.safetyUnits += numberOrZero(line.safetyUnits);
+    skus.add(oosProcurementArticleKey(line.articleKey));
+    if (line.procurementBudget === null) {
+      summary.missingCostRows += 1;
+      summary.missingCostUnits += line.needUnits;
+    } else {
+      summary.knownBudget += line.procurementBudget;
+      const skuKey = oosProcurementArticleKey(line.articleKey);
+      const skuBudget = budgetBySku.get(skuKey) || {
+        article: line.article || line.articleKey,
+        name: line.name || line.article || line.articleKey,
+        amount: 0
+      };
+      skuBudget.amount += line.procurementBudget;
+      budgetBySku.set(skuKey, skuBudget);
+      if (line.purchasePriceStale) {
+        summary.staleCostRows += 1;
+        summary.staleCostUnits += line.needUnits;
+      } else if (line.purchasePriceAgeDays === null) {
+        summary.unknownCostDateRows += 1;
+        summary.unknownCostDateUnits += line.needUnits;
+      }
+      const costDate = String(line.purchasePriceUpdatedAt || '');
+      if (costDate && (!summary.oldestCostDate || costDate < summary.oldestCostDate)) summary.oldestCostDate = costDate;
+      if (costDate && (!summary.newestCostDate || costDate > summary.newestCostDate)) summary.newestCostDate = costDate;
+    }
+    if (line.protectedTurnover === null) {
+      summary.missingSaleRows += 1;
+      summary.missingSaleUnits += line.needUnits;
+    } else {
+      summary.protectedTurnover += line.protectedTurnover;
+    }
+    if (line.grossProfit !== null) summary.grossProfit += line.grossProfit;
+  });
+  summary.skuCount = skus.size;
+  summary.budgetCoveragePct = summary.needUnits > 0
+    ? (summary.needUnits - summary.missingCostUnits) / summary.needUnits * 100
+    : 100;
+  summary.turnoverCoveragePct = summary.needUnits > 0
+    ? (summary.needUnits - summary.missingSaleUnits) / summary.needUnits * 100
+    : 100;
+  const topBudget = [...budgetBySku.values()].sort((left, right) => right.amount - left.amount)[0] || null;
+  if (topBudget) {
+    summary.topBudgetSku = topBudget.article;
+    summary.topBudgetSkuName = topBudget.name;
+    summary.topBudgetSkuAmount = topBudget.amount;
+    summary.topBudgetSharePct = summary.knownBudget > 0 ? topBudget.amount / summary.knownBudget * 100 : 0;
+  }
+  return summary;
+}
+
+function oosProcurementBuildModel() {
+  const ui = oosProcurementUi();
+  const filters = oosControlFilters();
+  const selectedPlatform = oosControlNormalizePlatform(filters.platform);
+  const search = String(ui.search || '').trim().toLowerCase();
+  const sourceRows = oosControlRows().filter((row) => {
+    if (selectedPlatform !== 'all' && oosControlNormalizePlatform(row.platform) !== selectedPlatform) return false;
+    if (!search) return true;
+    const haystack = [
+      row.article,
+      row.articleKey,
+      row.name,
+      row.owner,
+      row.platformLabel,
+      row.platform,
+      row.statusLabel
+    ].filter(Boolean).join(' ').toLowerCase();
+    return haystack.includes(search);
+  });
+  const skuLookup = oosProcurementSkuLookup();
+  const priceLookups = new Map(
+    [...new Set(sourceRows.map((row) => oosProcurementPlatformKey(row.platform)).filter(Boolean))]
+      .map((platform) => [platform, oosProcurementPriceLookup(platform)])
+  );
+  const scenarios = OOS_PROCUREMENT_HORIZONS.map((horizon) => {
+    const lines = sourceRows.map((row) => oosProcurementBuildLine(row, horizon, ui.safetyDays, skuLookup, priceLookups));
+    return { horizon, lines, summary: oosProcurementSummarize(lines) };
+  });
+  const selectedScenario = scenarios.find((scenario) => scenario.horizon === ui.horizon) || scenarios[1];
+  const lineSort = (left, right) => {
+    if (ui.sort === 'need') return right.needUnits - left.needUnits || String(left.article).localeCompare(String(right.article), 'ru');
+    if (ui.sort === 'risk') return numberOrZero(left.turnoverDays ?? 999) - numberOrZero(right.turnoverDays ?? 999) || right.needUnits - left.needUnits;
+    if (ui.sort === 'sku') return String(left.article).localeCompare(String(right.article), 'ru');
+    return numberOrZero(right.procurementBudget) - numberOrZero(left.procurementBudget) || right.needUnits - left.needUnits;
+  };
+  const lines = selectedScenario.lines.filter((line) => line.needUnits > 0).sort(lineSort);
+  const platformSummaries = ['wb', 'ozon', 'ya']
+    .map((platform) => {
+      const platformLines = selectedScenario.lines.filter((line) => line.platform === platform);
+      return {
+        platform,
+        label: oosControlPlatformMeta(platform).shortLabel,
+        color: oosControlPlatformMeta(platform).color,
+        summary: oosProcurementSummarize(platformLines)
+      };
+    })
+    .filter((item) => item.summary.needUnits > 0);
+  return {
+    ui,
+    filters,
+    selectedPlatform,
+    sourceRows,
+    scenarios,
+    selectedScenario,
+    lines,
+    summary: selectedScenario.summary,
+    platformSummaries,
+    formulaPassport: {
+      dataDate: oosControlPayload().summary?.dataDate || '',
+      generatedAt: oosControlPayload().generatedAt || '',
+      horizonDays: ui.horizon,
+      safetyDays: ui.safetyDays,
+      effectiveDays: ui.horizon + ui.safetyDays,
+      availableFormula: 'остаток + транзит + заявка',
+      needFormula: 'max(готовая потребность программы, продажи/день × эффективный горизонт + страховой запас − доступно)'
+    }
+  };
+}
+
+function oosControlExpectedFactDate(now = new Date()) {
+  const date = now instanceof Date && !Number.isNaN(now.getTime()) ? new Date(now.getTime()) : new Date();
+  date.setHours(12, 0, 0, 0);
+  date.setDate(date.getDate() - 1);
+  return date.toISOString().slice(0, 10);
+}
+
+function oosControlRuntimeFreshness(payload = {}) {
+  const source = payload.dataFreshness && typeof payload.dataFreshness === 'object'
+    ? payload.dataFreshness
+    : {};
+  const dataDateCandidate = String(source.dataDate || payload.summary?.dataDate || '').slice(0, 10);
+  const dataDate = /^\d{4}-\d{2}-\d{2}$/.test(dataDateCandidate) ? dataDateCandidate : '';
+  const expectedFactDate = oosControlExpectedFactDate();
+  const status = !dataDate ? 'unknown' : dataDate < expectedFactDate ? 'stale' : 'ok';
+  return {
+    ...source,
+    status,
+    dataDate,
+    expectedFactDate,
+    message: !dataDate
+      ? 'Портал не смог определить дату факта.'
+      : status === 'stale'
+        ? `Данные отстают: факт до ${dataDate}, ожидается минимум ${expectedFactDate}.`
+        : `Данные свежие: факт до ${dataDate}.`
+  };
+}
 
 function oosControlPayload() {
-  return state.oosControl && typeof state.oosControl === 'object'
+  const payload = state.oosControl && typeof state.oosControl === 'object'
     ? state.oosControl
     : { schema: 'portal-oos-control-v2', generatedAt: '', summary: {}, rows: [], history: { days: [] } };
+  const dataFreshness = oosControlRuntimeFreshness(payload);
+  return {
+    ...payload,
+    dataFreshness,
+    summary: {
+      ...(payload.summary || {}),
+      dataStatus: dataFreshness.status,
+      dataDate: dataFreshness.dataDate,
+      expectedFactDate: dataFreshness.expectedFactDate
+    }
+  };
 }
 
 function oosControlNormalizePlatform(value = 'all') {
@@ -7598,7 +8230,8 @@ function oosControlFilteredRows(options = {}) {
     if (!rowOptions.ignoreCluster && requestedCluster !== 'all' && !rowPlaces.includes(requestedCluster)) return false;
     if (filters.status === 'has_task' && !task) return false;
     if (filters.status === 'no_task' && task) return false;
-    if (!['active', 'all', 'has_task', 'no_task'].includes(filters.status) && row.status !== filters.status) return false;
+    if (filters.status === 'critical' && row.severity !== 'critical') return false;
+    if (!['active', 'all', 'has_task', 'no_task', 'critical'].includes(filters.status) && row.status !== filters.status) return false;
     if (search) {
       const haystack = [
         row.article,
@@ -7639,7 +8272,7 @@ function oosControlFreshnessNotice(payload) {
     payload.generatedAt ? `сборка ${fmt.date(payload.generatedAt)}` : ''
   ].filter(Boolean).join(' · ');
   return `
-    <div class="notice ${tone}">
+    <div class="notice ${tone} oos-freshness-notice">
       <strong>${escapeHtml(text)}</strong>
       <div class="muted small" style="margin-top:4px">${escapeHtml(details || 'Дата факта не определена')}</div>
     </div>
@@ -7680,7 +8313,7 @@ function renderOosControlFilters(rows, filters) {
             <option value="active" ${filters.status === 'active' ? 'selected' : ''}>Все активные</option>
             <option value="oos" ${filters.status === 'oos' ? 'selected' : ''}>Только OOS</option>
             <option value="critical" ${filters.status === 'critical' ? 'selected' : ''}>Критично</option>
-            <option value="risk" ${filters.status === 'risk' ? 'selected' : ''}>OOS скоро &lt;5 д</option>
+            <option value="risk" ${filters.status === 'risk' ? 'selected' : ''}>OOS скоро</option>
             <option value="watch" ${filters.status === 'watch' ? 'selected' : ''}>Наблюдать</option>
             <option value="has_task" ${filters.status === 'has_task' ? 'selected' : ''}>С задачей</option>
             <option value="no_task" ${filters.status === 'no_task' ? 'selected' : ''}>Без задачи</option>
@@ -8036,7 +8669,10 @@ async function oosControlSaveTask(issueKey, rootId) {
 }
 
 function oosControlRiskAmount(row = {}) {
-  return numberOrZero(row.revenueAtRiskDay || 0) + numberOrZero(row.lostRevenueDay || 0);
+  return Math.max(
+    numberOrZero(row.revenueAtRiskDay || 0),
+    numberOrZero(row.lostRevenueDay || 0)
+  );
 }
 
 function oosControlPlaceCount(row = {}) {
@@ -8150,7 +8786,7 @@ function oosControlTopPlaces(rows = [], limit = 8) {
     });
   });
   return places
-    .map((place) => ({ ...place, riskAmount: place.revenueAtRiskDay + place.lostRevenueDay }))
+    .map((place) => ({ ...place, riskAmount: Math.max(place.revenueAtRiskDay, place.lostRevenueDay) }))
     .sort((left, right) => right.riskAmount - left.riskAmount)
     .slice(0, limit);
 }
@@ -8418,8 +9054,8 @@ function renderOosControlCommand(signals = [], filters = oosControlFilters()) {
       </div>
       <div>
         <span>Критические сигналы</span>
-        <strong>${fmt.int(summary.signalCount)}</strong>
-        <small>${fmt.int(summary.skuCount)} SKU · ${fmt.int(summary.platformCount)} площадок</small>
+        <strong>${fmt.int(summary.critical)}</strong>
+        <small>${fmt.int(summary.signalCount)} всего · ${fmt.int(summary.skuCount)} SKU · ${fmt.int(summary.platformCount)} площадок</small>
       </div>
       <div>
         <span>Ближайший OOS</span>
@@ -8466,7 +9102,7 @@ function renderOosControlSignalFocus(signal) {
         <div>
           <span>Кластер</span>
           <h3>${escapeHtml(signal.clusterName)}</h3>
-          <small>здесь закончится раньше поставки</small>
+          <small>${signal.inboundConfirmed ? 'здесь закончится раньше поставки' : `поставка не подтверждена · сценарий ${OOS_CONTROL_RISK_HORIZON_DAYS} дней`}</small>
         </div>
       </div>
       <div class="oos-sentence">
@@ -8481,9 +9117,9 @@ function renderOosControlSignalFocus(signal) {
       </div>
     </div>
     <div class="oos-focus-loss" style="--pc:${escapeHtml(signal.platformColor)}">
-      <span>Потеря оборота</span>
+      <span>${signal.inboundConfirmed ? 'Прогноз потери оборота' : 'Сценарий потери оборота'}</span>
       <strong>${fmt.money(signal.projectedLostTurnover)}</strong>
-      <small>${fmt.money(signal.avgDailyTurnover)} в день × ${escapeHtml(gapText)} OOS</small>
+      <small>${fmt.money(signal.avgDailyTurnover)} в день × ${escapeHtml(gapText)} ${signal.inboundConfirmed ? 'OOS' : 'без поставки'}</small>
       <div class="oos-next-action">${escapeHtml(signal.nextAction)}</div>
     </div>
   `;
@@ -8575,7 +9211,10 @@ function oosControlPlaceLocalizationStats(rows = [], payload = {}) {
     const item = clusterMap.get(clusterName);
     item.activeSkuSet.add(articleKey);
     item.rowCount += 1;
-    item.riskAmount += numberOrZero(place.revenueAtRiskDay ?? row.revenueAtRiskDay) + numberOrZero(place.lostRevenueDay ?? row.lostRevenueDay);
+    item.riskAmount += Math.max(
+      numberOrZero(place.revenueAtRiskDay ?? row.revenueAtRiskDay),
+      numberOrZero(place.lostRevenueDay ?? row.lostRevenueDay)
+    );
     const days = oosControlFiniteOrNull(place.turnoverDays ?? row.turnoverDays);
     if (days !== null) item.minTurnoverDays = item.minTurnoverDays === null ? days : Math.min(item.minTurnoverDays, days);
   };
@@ -8818,9 +9457,334 @@ function renderOosControlFormulaNote() {
     <section class="oos-formula">
       <span>Расчет</span>
       <code>потеря оборота = max(0, дата поставки − дата OOS) × средний дневной оборот SKU в кластере</code>
-      <small>Данные считаются строго на уровне SKU × площадка × кластер. Общий остаток по сети не скрывает локальный OOS.</small>
+      <small>Данные считаются на уровне SKU × площадка × кластер. Если дата поставки не подтверждена, экран показывает сценарий без пополнения на ${OOS_CONTROL_RISK_HORIZON_DAYS} дней, а не обещанную потерю.</small>
     </section>
   `;
+}
+
+function renderOosControlTabs(activeTab = oosControlActiveTab(), procurementModel = null) {
+  const procurementSummary = procurementModel?.summary || {};
+  return `
+    <div class="oos-view-tabs" role="tablist" aria-label="Режим OOS контроля">
+      <button type="button" role="tab" aria-selected="${activeTab === 'risk' ? 'true' : 'false'}" class="${activeTab === 'risk' ? 'is-active' : ''}" data-oos-tab="risk">
+        Риски OOS
+      </button>
+      <button type="button" role="tab" aria-selected="${activeTab === 'procurement' ? 'true' : 'false'}" class="${activeTab === 'procurement' ? 'is-active' : ''}" data-oos-tab="procurement">
+        Цены и бюджет закупки
+        ${procurementModel ? `<span>${fmt.int(procurementSummary.needUnits || 0)} шт · ${fmt.money(procurementSummary.knownBudget || 0)}</span>` : ''}
+      </button>
+    </div>
+  `;
+}
+
+function oosProcurementScenarioLabel(horizon = 14) {
+  if (Number(horizon) === 7) return 'Срочно';
+  if (Number(horizon) === 14) return 'Базовый';
+  if (Number(horizon) === 28) return 'Расширенный';
+  return 'Целевой запас';
+}
+
+function oosProcurementDaysLabel(value = 0) {
+  const days = Math.max(0, Math.round(numberOrZero(value)));
+  const mod10 = days % 10;
+  const mod100 = days % 100;
+  const word = mod10 === 1 && mod100 !== 11
+    ? 'день'
+    : (mod10 >= 2 && mod10 <= 4 && (mod100 < 12 || mod100 > 14) ? 'дня' : 'дней');
+  return `${fmt.int(days)} ${word}`;
+}
+
+function renderOosProcurementScenario(scenario = {}, activeHorizon = 14, safetyDays = 0) {
+  const summary = scenario.summary || {};
+  const active = Number(scenario.horizon) === Number(activeHorizon);
+  const effectiveDays = Number(scenario.horizon) + Number(safetyDays || 0);
+  return `
+    <button type="button" class="oos-procurement-scenario ${active ? 'is-active' : ''}" data-oos-procurement-horizon="${escapeHtml(scenario.horizon)}" aria-pressed="${active ? 'true' : 'false'}">
+      <span>${escapeHtml(oosProcurementScenarioLabel(scenario.horizon))} · ${escapeHtml(oosProcurementDaysLabel(scenario.horizon))}${safetyDays ? ` + запас ${escapeHtml(oosProcurementDaysLabel(safetyDays))}` : ''}</span>
+      <strong>${fmt.money(summary.knownBudget || 0)}</strong>
+      <small>${fmt.int(summary.needUnits || 0)} шт · покрытие ${escapeHtml(oosProcurementDaysLabel(effectiveDays))}</small>
+    </button>
+  `;
+}
+
+function renderOosProcurementPlatformSummary(item = {}) {
+  const summary = item.summary || {};
+  return `
+    <div class="oos-procurement-platform" style="--pc:${escapeHtml(item.color || '#d8c6a4')}">
+      <span><i></i>${escapeHtml(item.label || item.platform || '')}</span>
+      <strong>${fmt.money(summary.knownBudget || 0)}</strong>
+      <small>${fmt.int(summary.needUnits || 0)} шт · ${fmt.int(summary.skuCount || 0)} SKU</small>
+    </div>
+  `;
+}
+
+function renderOosProcurementLine(line = {}) {
+  const daysText = line.turnoverDays === null ? '—' : `${fmt.num(line.turnoverDays, 1)} д`;
+  const currentPriceText = line.currentSalePrice === null ? 'не рассчитано' : fmt.money(line.currentSalePrice);
+  const purchasePriceText = line.purchasePrice === null ? 'не рассчитано' : fmt.money(line.purchasePrice);
+  const budgetText = line.procurementBudget === null ? 'не рассчитано' : fmt.money(line.procurementBudget);
+  const turnoverText = line.protectedTurnover === null ? 'не рассчитано' : fmt.money(line.protectedTurnover);
+  const marginText = line.grossMarginPct === null ? '—' : `${fmt.num(line.grossMarginPct, 1)}%`;
+  const costFreshnessText = line.purchasePriceUpdatedAt
+    ? `цена от ${escapeHtml(line.purchasePriceUpdatedAt)}${line.purchasePriceAgeDays !== null ? ` · ${fmt.int(line.purchasePriceAgeDays)} дн.` : ''}`
+    : 'дата цены не указана';
+  const safetyText = line.safetyUnits > 0 ? `включая ${fmt.int(line.safetyUnits)} шт страхового запаса` : 'по программе потребности';
+  const articleLabel = line.article || line.articleKey;
+  const skuLink = typeof linkToSku === 'function'
+    ? linkToSku(line.articleKey || articleLabel, articleLabel)
+    : escapeHtml(articleLabel);
+  return `
+    <tr>
+      <td>
+        <strong>${skuLink}</strong>
+        <small>${escapeHtml(line.name || '')}</small>
+        <em>${escapeHtml(line.owner || 'Без owner')}</em>
+      </td>
+      <td>
+        <span class="oos-procurement-platform-label" style="--pc:${escapeHtml(oosControlPlatformMeta(line.platform).color)}"><i></i>${escapeHtml(line.platformLabel || line.platform)}</span>
+        ${badge(line.statusLabel || line.status, oosControlStatusTone(line.status))}
+      </td>
+      <td class="num"><strong>${escapeHtml(daysText)}</strong></td>
+      <td class="num">
+        <strong>${fmt.int(line.needUnits)}</strong>
+        <small>${escapeHtml(safetyText)}</small>
+      </td>
+      <td class="num ${line.purchasePrice === null ? 'is-missing' : ''}">
+        <strong>${escapeHtml(purchasePriceText)}</strong>
+        <small>${escapeHtml(line.purchasePriceSource || '')}</small>
+        <em class="${line.purchasePriceStale ? 'is-stale' : ''}">${costFreshnessText}</em>
+      </td>
+      <td class="num ${line.procurementBudget === null ? 'is-missing' : ''}"><strong>${escapeHtml(budgetText)}</strong></td>
+      <td class="num ${line.currentSalePrice === null ? 'is-missing' : ''}">
+        <strong>${escapeHtml(currentPriceText)}</strong>
+        <small>${escapeHtml(line.salePriceSource || '')}</small>
+      </td>
+      <td class="num ${line.protectedTurnover === null ? 'is-missing' : ''}">
+        <strong>${escapeHtml(turnoverText)}</strong>
+        <small>маржа до комиссий ${escapeHtml(marginText)}</small>
+      </td>
+    </tr>
+  `;
+}
+
+function renderOosProcurementForecast(model = oosProcurementBuildModel()) {
+  const summary = model.summary || {};
+  const selectedPlatformMeta = oosControlPlatformMeta(model.selectedPlatform);
+  const dataQualityTone = summary.missingCostRows
+    ? 'danger'
+    : (summary.staleCostRows || summary.unknownCostDateRows || summary.missingSaleRows ? 'warn' : 'ok');
+  const dataQualityText = summary.missingCostRows
+    ? `${fmt.int(summary.missingCostRows)} строк без закупочной цены — общий бюджет неполный`
+    : summary.staleCostRows
+      ? `${fmt.int(summary.staleCostRows)} строк используют себестоимость старше ${fmt.int(OOS_PROCUREMENT_STALE_COST_DAYS)} дней`
+      : summary.unknownCostDateRows
+        ? `У ${fmt.int(summary.unknownCostDateRows)} строк не определена дата закупочной цены`
+    : summary.missingSaleRows
+      ? `Бюджет рассчитан полностью; у ${fmt.int(summary.missingSaleRows)} строк не рассчитан защищаемый оборот`
+      : 'Закупочные и продажные цены найдены для всей рекомендации';
+  const concentrationTone = summary.topBudgetSharePct >= 70 ? 'danger' : (summary.topBudgetSharePct >= 50 ? 'warn' : 'ok');
+  const costPeriodText = summary.oldestCostDate
+    ? `${summary.oldestCostDate}${summary.newestCostDate && summary.newestCostDate !== summary.oldestCostDate ? ` — ${summary.newestCostDate}` : ''}`
+    : 'даты не указаны';
+  const platformButtons = ['all', 'wb', 'ozon', 'ya'].map((platform) => {
+    const meta = oosControlPlatformMeta(platform);
+    const active = model.selectedPlatform === platform;
+    return `
+      <button type="button" class="${active ? 'is-active' : ''}" data-oos-procurement-platform="${escapeHtml(platform)}" aria-pressed="${active ? 'true' : 'false'}" style="--pc:${escapeHtml(meta.color)}">
+        ${escapeHtml(meta.shortLabel)}
+      </button>
+    `;
+  }).join('');
+  return `
+    <section class="card oos-procurement-board" data-oos-procurement>
+      <div class="section-subhead">
+        <div>
+          <h2>Прогноз закупки для предотвращения OOS</h2>
+          <p class="small muted">Горизонт используется как ожидаемый срок до пополнения. При запасе 0 количество совпадает с программой заказа; страховые дни добавляют буфер спроса сверх остатка, транзита и созданных заявок. Бюджет считается по закупочной себестоимости.</p>
+        </div>
+        <div class="badge-stack">
+          ${badge(`${oosProcurementDaysLabel(model.ui.horizon)}${model.ui.safetyDays ? ` + запас ${oosProcurementDaysLabel(model.ui.safetyDays)}` : ' · без запаса'}`, 'info')}
+          ${badge(selectedPlatformMeta.shortLabel, model.selectedPlatform === 'all' ? '' : 'info')}
+          ${badge(`цены ${fmt.num(summary.budgetCoveragePct || 0, 1)}%`, dataQualityTone)}
+        </div>
+      </div>
+
+      <div class="oos-procurement-toolbar">
+        <label>
+          <span>Поиск</span>
+          <input type="search" data-oos-procurement-search value="${escapeHtml(model.ui.search)}" placeholder="SKU, товар, owner">
+        </label>
+        <div>
+          <span>Площадка</span>
+          <div class="oos-procurement-platform-switch">${platformButtons}</div>
+        </div>
+        <label>
+          <span>Сортировка</span>
+          <select data-oos-procurement-sort>
+            <option value="budget" ${model.ui.sort === 'budget' ? 'selected' : ''}>Бюджет: больше сверху</option>
+            <option value="need" ${model.ui.sort === 'need' ? 'selected' : ''}>Количество: больше сверху</option>
+            <option value="risk" ${model.ui.sort === 'risk' ? 'selected' : ''}>Сначала ближайший OOS</option>
+            <option value="sku" ${model.ui.sort === 'sku' ? 'selected' : ''}>SKU: А–Я</option>
+          </select>
+        </label>
+        <label>
+          <span>Страховой запас</span>
+          <select data-oos-procurement-safety-days>
+            ${OOS_PROCUREMENT_SAFETY_DAYS.map((days) => `<option value="${days}" ${model.ui.safetyDays === days ? 'selected' : ''}>${days ? `+${oosProcurementDaysLabel(days)} спроса` : '0 · как в программе'}</option>`).join('')}
+          </select>
+        </label>
+        <button type="button" class="btn" data-oos-procurement-export>Выгрузить прогноз</button>
+      </div>
+
+      <div class="oos-procurement-scenarios">
+        ${model.scenarios.map((scenario) => renderOosProcurementScenario(scenario, model.ui.horizon, model.ui.safetyDays)).join('')}
+      </div>
+
+      <div class="oos-procurement-kpis">
+        <div>
+          <span>Необходимо закупить</span>
+          <strong>${fmt.int(summary.needUnits || 0)} шт</strong>
+          <small>${fmt.int(summary.skuCount || 0)} SKU · страховой запас ${fmt.int(summary.safetyUnits || 0)} шт</small>
+        </div>
+        <div class="accent">
+          <span>Бюджет закупки</span>
+          <strong>${fmt.money(summary.knownBudget || 0)}</strong>
+          <small>${summary.missingCostUnits ? `${fmt.int(summary.missingCostUnits)} шт без цены` : `себестоимость за период ${escapeHtml(costPeriodText)}`}</small>
+        </div>
+        <div>
+          <span>Защищаемый оборот</span>
+          <strong>${fmt.money(summary.protectedTurnover || 0)}</strong>
+          <small>по средней цене факта; покрытие ${fmt.num(summary.turnoverCoveragePct || 0, 1)}%</small>
+        </div>
+        <div>
+          <span>Товарная маржа</span>
+          <strong>${fmt.money(summary.grossProfit || 0)}</strong>
+          <small>до комиссии, логистики, рекламы и налогов</small>
+        </div>
+      </div>
+
+      <div class="notice ${dataQualityTone} oos-procurement-quality">
+        <strong>${escapeHtml(dataQualityText)}</strong>
+        <div class="muted small" style="margin-top:4px">Нулевая или отсутствующая цена не подменяется нулём: такая строка помечается «не рассчитано».</div>
+      </div>
+
+      ${summary.topBudgetSku ? `
+        <div class="notice ${concentrationTone} oos-procurement-concentration">
+          <strong>Концентрация бюджета: ${fmt.num(summary.topBudgetSharePct, 1)}% на ${escapeHtml(summary.topBudgetSku)}</strong>
+          <div class="muted small" style="margin-top:4px">${fmt.money(summary.topBudgetSkuAmount)} · проверьте лимит поставщика, MOQ и кратность коробки до подтверждения заказа.</div>
+        </div>
+      ` : ''}
+
+      <div class="oos-procurement-passport">
+        <div><span>Факт</span><strong>${escapeHtml(model.formulaPassport.dataDate || 'дата не определена')}</strong></div>
+        <div><span>Срок до пополнения</span><strong>${escapeHtml(oosProcurementDaysLabel(model.ui.horizon))}</strong></div>
+        <div><span>Страховой запас</span><strong>${escapeHtml(oosProcurementDaysLabel(model.ui.safetyDays))}</strong></div>
+        <div><span>Итоговое покрытие</span><strong>${escapeHtml(oosProcurementDaysLabel(model.formulaPassport.effectiveDays))}</strong></div>
+      </div>
+
+      <div class="oos-procurement-platforms">
+        ${model.platformSummaries.map(renderOosProcurementPlatformSummary).join('') || '<div class="empty">По выбранному сценарию закупка не требуется</div>'}
+      </div>
+
+      <div class="table-wrap oos-procurement-table">
+        <table>
+          <thead>
+            <tr>
+              <th>SKU / owner</th>
+              <th>Площадка / сигнал</th>
+              <th>Покрытие</th>
+              <th>К закупке</th>
+              <th>Закупочная цена</th>
+              <th>Бюджет</th>
+              <th>Текущая цена</th>
+              <th>Оборот после поставки</th>
+            </tr>
+          </thead>
+          <tbody>
+            ${model.lines.map(renderOosProcurementLine).join('') || '<tr><td colspan="8"><div class="empty">По выбранному горизонту и фильтрам закупка не требуется</div></td></tr>'}
+          </tbody>
+        </table>
+      </div>
+    </section>
+    <section class="oos-formula oos-procurement-formula">
+      <span>Прогноз</span>
+      <code>к закупке = max(потребность программы, продажи/день × (горизонт + страховые дни) + страховой запас − остаток − транзит − заявка)</code>
+      <small>При страховом запасе 0 результат один в один совпадает с программой потребности. Бюджет = к закупке × закупочная цена. Это сценарий, а не подтверждённый заказ поставщику: MOQ, коробки, НДС и входящая логистика пока не добавляются.</small>
+    </section>
+  `;
+}
+
+function oosProcurementExportColumns() {
+  return [
+    ['horizon_days', 'Горизонт, дней'],
+    ['safety_days', 'Страховой запас, дней'],
+    ['effective_days', 'Итоговое покрытие, дней'],
+    ['data_date', 'Дата факта'],
+    ['article', 'Артикул'],
+    ['article_key', 'SKU'],
+    ['name', 'Название'],
+    ['platform', 'Площадка'],
+    ['owner', 'Owner'],
+    ['status', 'OOS сигнал'],
+    ['turnover_days', 'Покрытие, дней'],
+    ['base_need_units', 'Потребность программы, шт'],
+    ['safety_units', 'Добавлено страховым запасом, шт'],
+    ['need_units', 'К закупке, шт'],
+    ['purchase_price', 'Закупочная цена'],
+    ['procurement_budget', 'Бюджет закупки'],
+    ['current_sale_price', 'Текущая цена'],
+    ['forecast_sale_price', 'Средняя цена для прогноза'],
+    ['protected_turnover', 'Защищаемый оборот'],
+    ['gross_margin_pct', 'Товарная маржа до комиссий, %'],
+    ['purchase_price_source', 'Источник закупочной цены'],
+    ['purchase_price_updated_at', 'Дата закупочной цены'],
+    ['purchase_price_age_days', 'Возраст закупочной цены, дней'],
+    ['sale_price_source', 'Источник цены продажи']
+  ];
+}
+
+function oosProcurementExportRows(model = oosProcurementBuildModel()) {
+  const dataDate = oosControlPayload().summary?.dataDate || '';
+  return model.lines.map((line) => ({
+    horizon_days: model.ui.horizon,
+    safety_days: model.ui.safetyDays,
+    effective_days: model.ui.horizon + model.ui.safetyDays,
+    data_date: dataDate,
+    article: line.article,
+    article_key: line.articleKey,
+    name: line.name,
+    platform: line.platformLabel,
+    owner: line.owner,
+    status: line.statusLabel,
+    turnover_days: line.turnoverDays ?? '',
+    base_need_units: line.baseNeedUnits,
+    safety_units: line.safetyUnits,
+    need_units: line.needUnits,
+    purchase_price: line.purchasePrice ?? '',
+    procurement_budget: line.procurementBudget === null ? '' : Math.round(line.procurementBudget),
+    current_sale_price: line.currentSalePrice ?? '',
+    forecast_sale_price: line.forecastSalePrice ?? '',
+    protected_turnover: line.protectedTurnover === null ? '' : Math.round(line.protectedTurnover),
+    gross_margin_pct: line.grossMarginPct === null ? '' : Number(line.grossMarginPct.toFixed(2)),
+    purchase_price_source: line.purchasePriceSource,
+    purchase_price_updated_at: line.purchasePriceUpdatedAt || '',
+    purchase_price_age_days: line.purchasePriceAgeDays ?? '',
+    sale_price_source: line.salePriceSource
+  }));
+}
+
+function downloadOosProcurementForecast(model = oosProcurementBuildModel()) {
+  const rows = oosProcurementExportRows(model);
+  if (!rows.length) {
+    window.alert('По выбранному горизонту и фильтрам закупка не требуется.');
+    return;
+  }
+  const filename = `oos-procurement-forecast-${model.ui.horizon}d-safety-${model.ui.safetyDays}d-${todayIso()}.xls`;
+  if (typeof downloadLaunchesHtmlTable === 'function') {
+    downloadLaunchesHtmlTable(oosProcurementExportColumns(), rows, filename);
+    return;
+  }
+  skuPlanFactDownloadJson(filename.replace(/\.xls$/i, '.json'), rows);
 }
 
 function renderOosControlFiltersV4(rows, filters) {
@@ -8941,7 +9905,7 @@ function renderOosControlHero(payload = {}, rows = [], allRows = rows) {
         <div class="oos-hero-metric warn">
           <span>Скоро OOS</span>
           <strong>${fmt.int(summary.oosSoonCount || summary.riskCount || 0)}</strong>
-          <small>покрытие меньше 5 дней</small>
+          <small>покрытие меньше 10 дней</small>
         </div>
         <div class="oos-hero-metric info">
           <span>Выручка под риском</span>
@@ -9307,7 +10271,13 @@ function oosControlSkuRiskGroups(rows = []) {
       platforms: [...item.platforms],
       owners: [...item.owners],
       clusters: item.clusters
-        .map((cluster) => ({ ...cluster, riskAmount: numberOrZero(cluster.revenueAtRiskDay || 0) + numberOrZero(cluster.lostRevenueDay || 0) }))
+        .map((cluster) => ({
+          ...cluster,
+          riskAmount: Math.max(
+            numberOrZero(cluster.revenueAtRiskDay || 0),
+            numberOrZero(cluster.lostRevenueDay || 0)
+          )
+        }))
         .sort((left, right) => right.riskAmount - left.riskAmount || numberOrZero(left.turnoverDays || 999) - numberOrZero(right.turnoverDays || 999))
     }))
     .sort((left, right) => right.riskAmount - left.riskAmount || numberOrZero(left.minDays || 999) - numberOrZero(right.minDays || 999));
@@ -9360,7 +10330,7 @@ function renderOosSkuRiskShelf(rows = []) {
           const runwayPercent = oosControlBarPercent(item.minDays || 0, 28, item.minDays ? 6 : 0);
           const daysText = item.minDays ? `закончится через ${fmt.num(item.minDays, 1)} д` : 'срок не рассчитан';
           const platformText = item.platforms.slice(0, 3).join(' · ');
-          const statusText = item.oosCount ? 'OOS' : item.riskCount ? 'риск <5 д' : 'контроль до 28 д';
+          const statusText = item.oosCount ? 'OOS' : item.riskCount ? 'риск <10 д' : 'контроль до 28 д';
           const visibleClusters = item.clusters.slice(0, 10);
           return `
             <details class="oos-sku-card ${tone}" ${index === 0 ? 'open' : ''}>
@@ -9460,11 +10430,11 @@ function renderOosStatusStrip(payload = {}, rows = [], allRows = rows) {
     <section class="oos-simple-strip">
       <div class="oos-simple-strip__item danger">
         <span>В OOS</span>
-        <strong>${fmt.int((summary.oosCount || 0) + (summary.criticalCount || 0))}</strong>
+        <strong>${fmt.int(summary.oosCount || summary.criticalCount || 0)}</strong>
         <small>нулевой или критичный остаток</small>
       </div>
       <div class="oos-simple-strip__item warn">
-        <span>Риск &lt;5 д</span>
+        <span>Риск &lt;10 д</span>
         <strong>${fmt.int(summary.riskCount || 0)}</strong>
         <small>закончится скоро</small>
       </div>
@@ -9827,6 +10797,53 @@ function renderOosControlActionCard(row = {}) {
 }
 
 function bindOosControl(root, rootId) {
+  root.querySelectorAll('[data-oos-tab]').forEach((button) => {
+    button.addEventListener('click', () => {
+      state.oosControlTab = button.dataset.oosTab === 'procurement' ? 'procurement' : 'risk';
+      renderOosControl(rootId);
+    });
+  });
+  root.querySelectorAll('[data-oos-procurement-horizon]').forEach((button) => {
+    button.addEventListener('click', () => {
+      const horizon = Number(button.dataset.oosProcurementHorizon);
+      if (!OOS_PROCUREMENT_HORIZONS.includes(horizon)) return;
+      oosProcurementUi().horizon = horizon;
+      renderOosControl(rootId);
+    });
+  });
+  root.querySelectorAll('[data-oos-procurement-platform]').forEach((button) => {
+    button.addEventListener('click', () => {
+      state.oosControlFilters = state.oosControlFilters || {};
+      state.oosControlFilters.platform = oosControlNormalizePlatform(button.dataset.oosProcurementPlatform || 'all');
+      renderOosControl(rootId);
+    });
+  });
+  root.querySelector('[data-oos-procurement-sort]')?.addEventListener('change', (event) => {
+    oosProcurementUi().sort = event.currentTarget.value;
+    renderOosControl(rootId);
+  });
+  root.querySelector('[data-oos-procurement-safety-days]')?.addEventListener('change', (event) => {
+    const safetyDays = Number(event.currentTarget.value);
+    oosProcurementUi().safetyDays = OOS_PROCUREMENT_SAFETY_DAYS.includes(safetyDays) ? safetyDays : 0;
+    renderOosControl(rootId);
+  });
+  root.querySelector('[data-oos-procurement-search]')?.addEventListener('input', (event) => {
+    const control = event.currentTarget;
+    const caret = Number.isFinite(control.selectionStart) ? control.selectionStart : control.value.length;
+    oosProcurementUi().search = control.value;
+    if (state.oosProcurementSearchTimer) window.clearTimeout(state.oosProcurementSearchTimer);
+    state.oosProcurementSearchTimer = window.setTimeout(() => {
+      state.oosProcurementSearchTimer = 0;
+      renderOosControl(rootId);
+      const nextControl = document.querySelector(`#${CSS.escape(rootId)} [data-oos-procurement-search]`);
+      if (!nextControl) return;
+      nextControl.focus();
+      try { nextControl.setSelectionRange(caret, caret); } catch {}
+    }, 180);
+  });
+  root.querySelector('[data-oos-procurement-export]')?.addEventListener('click', () => {
+    downloadOosProcurementForecast(oosProcurementBuildModel());
+  });
   root.querySelectorAll('[data-oos-platform-chip]').forEach((button) => {
     button.addEventListener('click', () => {
       state.oosControlFilters = state.oosControlFilters || {};
@@ -9985,6 +11002,8 @@ function renderOosControl(rootId = 'view-oos-control') {
   const summary = oosControlSummarizeRows(filteredRows, payload.summary || {});
   const signals = oosControlVisibleSignals(filteredRows, payload);
   const selectedSignal = signals.find((signal) => signal.key === state.oosControlSelectedSignal) || signals[0] || null;
+  const activeTab = oosControlActiveTab();
+  const procurementModel = oosProcurementBuildModel();
   state.oosControlSelectedSignal = selectedSignal?.key || '';
   root.dataset.oosPlatform = filters.platform === 'wb' || filters.platform === 'ozon'
     ? filters.platform
@@ -9995,21 +11014,28 @@ function renderOosControl(rootId = 'view-oos-control') {
     <div class="page-head">
       <div>
         <h1>OOS контроль</h1>
-        <p>Какая позиция в каком кластере закончится раньше поставки и сколько оборота будет потеряно.</p>
+        <p>Какая позиция и в каком кластере уйдет в OOS, если поставка не успеет, и какой оборот окажется под риском.</p>
       </div>
       <div class="actions">
         ${badge(`факт до ${escapeHtml(summary.dataDate || payload.dataFreshness?.dataDate || '—')}`, summary.dataStatus === 'ok' ? 'ok' : 'warn')}
-        ${badge(`${fmt.int(signals.length)} SKU × кластер`, signals.length ? 'warn' : 'ok')}
-        <button class="quick-chip" type="button" data-oos-export>Выгрузить риски</button>
+        ${activeTab === 'procurement'
+          ? badge(`${fmt.int(procurementModel.summary.needUnits || 0)} шт к закупке`, procurementModel.summary.needUnits ? 'warn' : 'ok')
+          : badge(`${fmt.int(signals.length)} SKU × кластер`, signals.length ? 'warn' : 'ok')}
+        ${activeTab === 'procurement'
+          ? '<button class="quick-chip" type="button" data-oos-procurement-export>Выгрузить прогноз</button>'
+          : '<button class="quick-chip" type="button" data-oos-export>Выгрузить риски</button>'}
         <button class="quick-chip" type="button" data-oos-reload>Обновить экран</button>
       </div>
     </div>
-    ${renderOosControlCommand(signals, filters)}
-    <section class="card oos-focus" data-oos-focus>${renderOosControlSignalFocus(selectedSignal)}</section>
-    ${renderOosControlLocalizationTrend(payload, localizationRows, signals, filters)}
-    ${renderOosControlSignalList(signals, selectedSignal?.key || '', localizationRows, filters)}
-    ${renderOosControlFormulaNote()}
-    <details class="oos-advanced-panel">
+    ${oosControlFreshnessNotice(payload)}
+    ${renderOosControlTabs(activeTab, procurementModel)}
+    ${activeTab === 'procurement' ? renderOosProcurementForecast(procurementModel) : `
+      ${renderOosControlCommand(signals, filters)}
+      <section class="card oos-focus" data-oos-focus>${renderOosControlSignalFocus(selectedSignal)}</section>
+      ${renderOosControlLocalizationTrend(payload, localizationRows, signals, filters)}
+      ${renderOosControlSignalList(signals, selectedSignal?.key || '', localizationRows, filters)}
+      ${renderOosControlFormulaNote()}
+      <details class="oos-advanced-panel">
       <summary>
         <span>Фильтры, комментарии и служебная таблица</span>
         ${badge(`${fmt.int(filteredRows.length)} агрегированных строк`)}
@@ -10046,7 +11072,8 @@ function renderOosControl(rootId = 'view-oos-control') {
         </table>
       </div>
       </div>
-    </details>
+      </details>
+    `}
   `;
   bindOosControl(root, rootId);
 }
@@ -11250,6 +12277,8 @@ function renderSkuPlanFact(rootId = 'view-sku-plan-fact', options = {}) {
   const matrixGeneratedAt = state.skuMatrix?.generatedAt || state.skuMatrix?.updatedAt || '';
   const activePlatform = filters.platform !== 'all' ? filters.platform : '';
   const shellStyle = activePlatform ? skuPlanFactCardStyle(activePlatform, totals.completionToDate) : '';
+  const freshness = model.freshness || skuPlanFactRuntimeFreshness(model.maxAvailableDate || model.maxFactDate || '');
+  const actionableUnmappedCount = numberOrZero(model.quality?.actionableUnmappedCount || model.unmappedCount);
 
   root.innerHTML = `
     <div class="sku-plan-fact-shell ${activePlatform ? 'is-platform-drill' : ''}" data-sku-plan-active-platform="${escapeHtml(activePlatform || 'all')}" style="${shellStyle}">
@@ -11260,7 +12289,8 @@ function renderSkuPlanFact(rootId = 'view-sku-plan-fact', options = {}) {
       </div>
       <div class="badge-stack">
         ${badge(`${fmt.int(model.rows.length)} SKU`, 'info')}
-        ${badge(`${fmt.int(model.unmappedCount || 0)} API без пары`, model.unmappedCount ? 'warn' : 'ok')}
+        ${badge(`${fmt.int(actionableUnmappedCount)} API требуют разбора`, actionableUnmappedCount ? 'warn' : 'ok')}
+        ${badge(`факт до ${freshness.dataDate || '—'}`, freshness.status === 'ok' ? 'ok' : 'warn')}
         ${badge(`маржа ${fmt.pct(totals.marginPct)}`, skuPlanFactMarginTone(totals.marginPct))}
         ${matrixSummary.duplicateRiskCount ? badge(`${fmt.int(matrixSummary.duplicateRiskCount)} риск дубля`, 'danger') : ''}
         ${badge(`матрица ${matrixGeneratedAt ? fmt.date(matrixGeneratedAt) : '—'}`, matrixGeneratedAt ? 'ok' : 'warn')}
@@ -11289,6 +12319,7 @@ function renderSkuPlanFact(rootId = 'view-sku-plan-fact', options = {}) {
           <option value="under_plan" ${filters.status === 'under_plan' ? 'selected' : ''}>Ниже плана</option>
           <option value="no_fact" ${filters.status === 'no_fact' ? 'selected' : ''}>План есть, факта нет</option>
           <option value="unmapped" ${filters.status === 'unmapped' ? 'selected' : ''}>API без пары в реестре</option>
+          <option value="unallocated" ${filters.status === 'unallocated' ? 'selected' : ''}>Агрегат без SKU</option>
           <option value="matrix_problem" ${filters.status === 'matrix_problem' ? 'selected' : ''}>Проблемы матрицы</option>
           <option value="missing_owner" ${filters.status === 'missing_owner' ? 'selected' : ''}>Матрица: без owner</option>
           <option value="duplicate_risk" ${filters.status === 'duplicate_risk' ? 'selected' : ''}>Риск дубля выручки</option>
@@ -11787,6 +12818,8 @@ function renderSkuPlanFactV1(rootId = 'view-sku-plan-fact', options = {}) {
   const rowsHtml = visibleRows.length ? visibleRows.map((row) => skuPlanFactV1RowHtml(row, model)).join('') : '<tr><td colspan="19"><div class="empty">По текущим фильтрам нет SKU.</div></td></tr>';
   const matrixSummary = typeof skuMatrixSummary === 'function' ? skuMatrixSummary() : {};
   const matrixGeneratedAt = state.skuMatrix?.generatedAt || state.skuMatrix?.updatedAt || '';
+  const freshness = model.freshness || skuPlanFactRuntimeFreshness(model.maxAvailableDate || model.maxFactDate || '');
+  const actionableUnmappedCount = numberOrZero(model.quality?.actionableUnmappedCount || model.unmappedCount);
 
   root.innerHTML = `
     <div class="sku-plan-fact-v1" data-plan-fact-design="v1" data-sku-plan-active-platform="${escapeHtml(filters.platform || 'all')}">
@@ -11798,7 +12831,8 @@ function renderSkuPlanFactV1(rootId = 'view-sku-plan-fact', options = {}) {
         </div>
         <div class="pf-v1-head__actions">
           ${badge(`${fmt.int(visibleRows.length)} из ${fmt.int(model.rows.length)} SKU`, 'info')}
-          ${badge(`${fmt.int(model.unmappedCount || 0)} API без пары`, model.unmappedCount ? 'warn' : 'ok')}
+          ${badge(`${fmt.int(actionableUnmappedCount)} API требуют разбора`, actionableUnmappedCount ? 'warn' : 'ok')}
+          ${badge(`факт до ${freshness.dataDate || '—'}`, freshness.status === 'ok' ? 'ok' : 'warn')}
           ${matrixSummary.duplicateRiskCount ? badge(`${fmt.int(matrixSummary.duplicateRiskCount)} риск дубля`, 'danger') : ''}
           ${badge(`матрица ${matrixGeneratedAt ? fmt.date(matrixGeneratedAt) : '—'}`, matrixGeneratedAt ? 'ok' : 'warn')}
           <button class="quick-chip" type="button" data-sku-plan-fact-refresh>Обновить</button>
@@ -11827,6 +12861,7 @@ function renderSkuPlanFactV1(rootId = 'view-sku-plan-fact', options = {}) {
             <option value="under_plan" ${filters.status === 'under_plan' ? 'selected' : ''}>Ниже плана</option>
             <option value="no_fact" ${filters.status === 'no_fact' ? 'selected' : ''}>План есть, факта нет</option>
             <option value="unmapped" ${filters.status === 'unmapped' ? 'selected' : ''}>API без пары</option>
+            <option value="unallocated" ${filters.status === 'unallocated' ? 'selected' : ''}>Агрегат без SKU</option>
             <option value="matrix_problem" ${filters.status === 'matrix_problem' ? 'selected' : ''}>Проблемы матрицы</option>
             <option value="missing_owner" ${filters.status === 'missing_owner' ? 'selected' : ''}>Без owner</option>
             <option value="duplicate_risk" ${filters.status === 'duplicate_risk' ? 'selected' : ''}>Риск дубля</option>

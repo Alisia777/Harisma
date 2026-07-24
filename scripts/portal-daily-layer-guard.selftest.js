@@ -139,6 +139,15 @@ function buildFixture(dir) {
     skuTokenConflicts: []
   });
   write(dir, 'sku_aliases.json', { generatedAt, aliases: [{ target_sku: 'A', platform: 'wb', api_sku: 'A-WB-ALIAS' }] });
+  write(dir, 'portal_daily_intake.json', {
+    schema: 'portal-unified-daily-intake-v1',
+    generatedAt,
+    expectedDate: date,
+    runDate: '2026-06-20',
+    status: 'ok',
+    publish: { allowed: true, blockingReasons: [], warnings: [] },
+    summary: { registeredViews: 19, blockedViews: 0, warningViews: 0 }
+  });
   writePhase3Reports(dir);
 }
 

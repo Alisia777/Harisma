@@ -4,7 +4,7 @@
   if (window.__ALTEA_ROUTE_LAYER_LOCK_20260623__) return;
   window.__ALTEA_ROUTE_LAYER_LOCK_20260623__ = true;
 
-  const VERSION = '20260701-route-layer-motion-rescue-v1';
+  const VERSION = '20260724-oos-procurement-forecast-v1';
   let cascadeTimers = [];
   let running = false;
   const TRANSIENT_SELECTOR = '.promo-modal-backdrop,.modal,.toast,.portal-loader,.route-loader,.pf-v4-drawer-back,.plb-v2-drawer-back,.launch-v1-editor-backdrop,[data-pf-v4-drawer-back],[data-plb-v2-drawer-back],[data-launch-v1-editor-backdrop]';
@@ -67,7 +67,8 @@
     },
     'oos-control': {
       rootId: 'view-oos-control',
-      selector: '[data-oos-focus],.oos-focus,.oos-localization-card,.oos-localization-clusters,.oos-cluster-pill,.oos-risk-queue,.oos-signal-tools,.oos-v4-filters,.oos-signal,.oos-formula',
+      selector: '[data-oos-focus],[data-oos-procurement],.oos-view-tabs,.oos-focus,.oos-procurement-board,.oos-localization-card,.oos-localization-clusters,.oos-cluster-pill,.oos-risk-queue,.oos-signal-tools,.oos-v4-filters,.oos-signal,.oos-formula',
+      keepSelector: '.page-head,.oos-freshness-notice,.oos-view-tabs,.oos-command,[data-oos-focus],[data-oos-procurement],.oos-focus,.oos-procurement-board,.oos-localization-card,.oos-localization-clusters,.oos-cluster-pill,.oos-risk-queue,.oos-signal-tools,.oos-v4-filters,.oos-signal,.oos-formula',
       legacySelector: '.oos-control-legacy,.oos-simple-board,.oos-old-table,[data-gtd-v2="oos"]',
       render() {
         if (typeof window.renderOosControl === 'function') window.renderOosControl('view-oos-control');

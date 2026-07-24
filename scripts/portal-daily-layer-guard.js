@@ -1163,6 +1163,56 @@ function inspectSyncIssues(options, manifest, checks) {
   return addCheck(checks, check);
 }
 
+function inspectUnifiedDailyIntake(options, checks) {
+  const check = {
+    id: 'contract:unified-daily-intake',
+    scope: 'pipeline',
+    source: 'portal_daily_intake',
+    warnings: [],
+    blockingReasons: []
+  };
+  const candidates = [
+    path.join(options.inputDir, 'portal_daily_intake.json'),
+    path.join(options.baseDataDir, 'portal_daily_intake.json'),
+    path.join(options.outputDir, 'portal_daily_intake.json')
+  ];
+  const receiptPath = candidates.find((candidate) => fs.existsSync(candidate));
+  if (!receiptPath) {
+    check.blockingReasons.push('portal_daily_intake.json is missing; run portal-unified-daily-intake before the publish gate');
+    return addCheck(checks, check);
+  }
+  try {
+    const payload = readJson(receiptPath);
+    check.file = path.relative(process.cwd(), receiptPath).replace(/\\/g, '/');
+    check.statusFromReceipt = payload?.status || '';
+    check.expectedDate = dateKey(payload?.expectedDate);
+    check.runDate = dateKey(payload?.runDate);
+    check.registeredViews = numberOrZero(payload?.summary?.registeredViews);
+    check.blockedViews = numberOrZero(payload?.summary?.blockedViews);
+    if (payload?.schema !== 'portal-unified-daily-intake-v1') {
+      check.blockingReasons.push(`unsupported unified intake schema: ${payload?.schema || 'missing'}`);
+    }
+    if (payload?.publish?.allowed !== true) {
+      const reasons = Array.isArray(payload?.publish?.blockingReasons) ? payload.publish.blockingReasons : [];
+      check.blockingReasons.push(
+        reasons.length
+          ? `unified daily intake is blocked: ${reasons.join(' | ')}`
+          : 'unified daily intake is not publishable'
+      );
+    }
+    if (options.expectedDate && check.expectedDate !== options.expectedDate) {
+      check.blockingReasons.push(`unified intake cutoff ${check.expectedDate || 'unknown'} does not match ${options.expectedDate}`);
+    }
+    if (options.expectedRunDate && check.runDate !== options.expectedRunDate) {
+      check.blockingReasons.push(`unified intake run date ${check.runDate || 'unknown'} does not match ${options.expectedRunDate}`);
+    }
+    (payload?.publish?.warnings || []).forEach((warning) => check.warnings.push(`unified intake: ${warning}`));
+  } catch (error) {
+    check.blockingReasons.push(`cannot read portal_daily_intake.json: ${error.message}`);
+  }
+  return addCheck(checks, check);
+}
+
 function resolvePhase3ReportPath(options, fileName) {
   const candidates = [
     path.join(options.inputDir, fileName),
@@ -1327,6 +1377,7 @@ function run(options) {
   inspectExecutiveTruthCode(loaded, manifest.policy, contractChecks, passports);
   inspectCrossDates(loaded, expectedDate, contractChecks);
   inspectSyncIssues(options, manifest, contractChecks);
+  inspectUnifiedDailyIntake(options, contractChecks);
   inspectPhase3Reports(options, contractChecks, passports);
 
   const views = viewStatuses(manifest, sourceChecks, contractChecks);
@@ -1356,7 +1407,7 @@ function run(options) {
       allowed,
       blockingReasons,
       warningReasons,
-      rule: 'Publish only when every required source and every cross-layer invariant is trusted. IU is explicitly outside this guard.'
+      rule: 'Publish only when every required source, registered view intake and cross-layer invariant is trusted. Protected IU formulas are not modified by this guard.'
     },
     summary: {
       sources: sourceChecks.length,

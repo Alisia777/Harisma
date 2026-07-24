@@ -6,7 +6,7 @@
 
   const ROOT_ID = 'view-sku-plan-fact';
   const STORE_KEY = 'altea.planFact.generalToDetail.v4';
-  const VERSION = '20260624-planfact-gtd-v4-filterlayer2';
+  const VERSION = '20260724-planfact-correctness-v2';
   const MODES = [
     ['general', 'Общее'],
     ['lfl', 'Like-for-like'],
@@ -415,6 +415,8 @@
       planDrr,
       factUnits: metricValue(metric, row, ['factUnits', 'units', 'orders']) || 0,
       planUnits: metricValue(metric, row, ['planToDateUnits', 'planUnits']) || 0,
+      planMissing: Boolean(metric.planMissing || metric.planAvailability === 'not_set'),
+      planMissingReason: String(metric.planMissingReason || ''),
       status: planToDateRevenue <= 0 ? 'no_plan' : completionToDate === null ? 'watch' : completionToDate < 0.9 ? 'under_plan' : completionToDate < 1 ? 'watch' : completionToDate > 1.2 ? 'over_plan' : 'ok'
     };
   }
@@ -538,7 +540,8 @@
     if (status === 'with_plan' && !(view.planRevenue > 0 || view.planToDateRevenue > 0)) return false;
     if (status === 'under_plan' && !(view.planToDateRevenue > 0 && view.factRevenue < view.planToDateRevenue)) return false;
     if (status === 'no_fact' && !((view.planRevenue > 0 || view.planToDateRevenue > 0) && view.factRevenue <= 0)) return false;
-    if (status === 'unmapped' && !row.syntheticUnmapped) return false;
+    if (status === 'unmapped' && (!row.syntheticUnmapped || row.syntheticUnallocated)) return false;
+    if (status === 'unallocated' && !row.syntheticUnallocated) return false;
     if (status === 'matrix_problem' && (row.matrixProblemState === 'ok' || !row.matrixProblemState)) return false;
     if (status === 'missing_owner' && row.matrixProblemState !== 'missing_owner' && !/без owner|no owner/.test(textKey(owner))) return false;
     if (status === 'duplicate_risk' && !row.duplicateRisk) return false;
@@ -641,10 +644,12 @@
     const row = view.row || {};
     const metric = view.metric || {};
     const platform = view.platform || 'all';
+    if (Array.isArray(metric.factDaily) && metric.factDaily.length) return metric.factDaily;
     if (Array.isArray(metric.daily) && metric.daily.length) return metric.daily;
     if (Array.isArray(row.daily) && row.daily.length) return row.daily;
     if (Array.isArray(row.monthly) && row.monthly.length) return row.monthly;
     const platformMetric = row.platforms?.[platform] || row[platform];
+    if (Array.isArray(platformMetric?.factDaily) && platformMetric.factDaily.length) return platformMetric.factDaily;
     if (Array.isArray(platformMetric?.daily) && platformMetric.daily.length) return platformMetric.daily;
     return [];
   }
@@ -1722,6 +1727,7 @@
       ['under_plan', 'Ниже плана'],
       ['no_fact', 'План есть, факта нет'],
       ['unmapped', 'API без пары'],
+      ['unallocated', 'Агрегат без SKU'],
       ['matrix_problem', 'Проблемы матрицы'],
       ['missing_owner', 'Без owner'],
       ['duplicate_risk', 'Риск дубля']
@@ -1779,6 +1785,62 @@
           <em>${escapeHtml(fmtInt(visibleRows(model).length))} из ${escapeHtml(fmtInt(allRows(model).length))} SKU</em>
         </div>
       </div>
+    `;
+  }
+
+  function renderIntegrityStrip(model) {
+    const freshness = model?.freshness || {};
+    const quality = model?.quality || {};
+    const payroll = model?.payrollKpi || null;
+    const selectedPlatform = normalizedPlatform(model?.filters?.platform || 'all');
+    const adAttributionItems = Object.values(model?.adAttribution || quality.adAttribution || {})
+      .filter((item) => item && numberOrZero(item.sourceSpend) > 0)
+      .filter((item) => selectedPlatform === 'all' || item.platform === selectedPlatform);
+    const adSourceSpend = adAttributionItems.reduce((sum, item) => sum + numberOrZero(item.sourceSpend), 0);
+    const adDirectSpend = adAttributionItems.reduce((sum, item) => sum + numberOrZero(item.directSpend), 0);
+    const adAllocatedSpend = adAttributionItems.reduce((sum, item) => sum + numberOrZero(item.allocatedSpend), 0);
+    const adCoveragePct = adSourceSpend > 0 ? Math.min(1, adDirectSpend / adSourceSpend) : null;
+    const visibleCount = visibleRows(model).length;
+    const actionableCount = numberOrZero(quality.actionableUnmappedCount || model?.unmappedCount);
+    const actionableRevenue = numberOrZero(quality.actionableUnmappedRevenue || model?.unmappedRevenue);
+    const sourceCount = numberOrZero(quality.sourceUnmappedCount || actionableCount);
+    const sourceRevenue = numberOrZero(quality.sourceUnmappedRevenue || actionableRevenue);
+    const unallocatedCount = numberOrZero(quality.unallocatedCount);
+    const negativeFactCount = numberOrZero(quality.negativeFactCount);
+    const missingPlanPlatformRows = numberOrZero(quality.missingPlanPlatformRows);
+    const freshnessTone = freshness.status === 'ok' ? 'ok' : freshness.status === 'stale' ? 'warn' : 'unknown';
+    const freshnessText = freshness.dataDate
+      ? `Факт до ${freshness.dataDate}${numberOrZero(freshness.lagDays) > 0 ? ` · лаг ${fmtInt(freshness.lagDays)} дн.` : ''}`
+      : 'Дата факта не определена';
+    const qualityTone = actionableCount || unallocatedCount || negativeFactCount || (quality.reconciliation || []).length ? 'warn' : 'ok';
+    return `
+      <section class="pf-v4-integrity" aria-label="Контроль корректности план-факта">
+        <div class="${freshnessTone}" data-pf-v4-freshness="${escapeHtml(freshness.status || 'unknown')}">
+          <span>Актуальность</span>
+          <strong>${escapeHtml(freshnessText)}</strong>
+          <em>${escapeHtml(freshness.generatedAt ? `сборка ${String(freshness.generatedAt).slice(0, 19).replace('T', ' ')}` : freshness.message || '')}</em>
+        </div>
+        <div class="ok" data-pf-v4-row-scope>
+          <span>Контур экрана</span>
+          <strong>KPI = видимые строки</strong>
+          <em>${escapeHtml(fmtInt(visibleCount))} SKU · фильтры применяются к сводке и таблице одновременно</em>
+        </div>
+        <div class="${qualityTone}" data-pf-v4-quality>
+          <span>Качество данных</span>
+          <strong>${escapeHtml(fmtInt(actionableCount))} API без пары · ${escapeHtml(fmtMoney(actionableRevenue))}</strong>
+          <em>обнаружено источниками: ${escapeHtml(fmtInt(sourceCount))} SKU · ${escapeHtml(fmtMoney(sourceRevenue))}${unallocatedCount ? ` · агрегат без SKU: ${escapeHtml(fmtInt(unallocatedCount))}` : ''}${negativeFactCount ? ` · отрицательный факт: ${escapeHtml(fmtInt(negativeFactCount))}` : ''}${missingPlanPlatformRows ? ` · план не задан: ${escapeHtml(fmtInt(missingPlanPlatformRows))} строк площадок` : ''}</em>
+        </div>
+        <div class="${adAllocatedSpend > 1 ? 'warn' : 'ok'}" data-pf-v4-ad-attribution>
+          <span>Атрибуция рекламы</span>
+          <strong>${adCoveragePct === null ? 'Источник без расходов' : `${escapeHtml(fmtPct(adCoveragePct))} напрямую по SKU`}</strong>
+          <em>${adSourceSpend > 0 ? `${escapeHtml(fmtMoney(adDirectSpend))} напрямую · ${escapeHtml(fmtMoney(adAllocatedSpend))} распределено · итог ${escapeHtml(fmtMoney(adSourceSpend))}` : 'за выбранный период расходов WB/Ozon нет'}</em>
+        </div>
+        <div class="${payroll?.salaryIncluded === false ? 'warn' : 'info'}" data-pf-v4-payroll-scope>
+          <span>Зарплатный KPI отдельно</span>
+          <strong>${payroll ? `${escapeHtml(fmtMoney(payroll.factRevenue))} / ${escapeHtml(fmtMoney(payroll.planToDateRevenue))}` : 'Контрольный план не задан'}</strong>
+          <em>${payroll ? 'только WB + Ozon + Я.Маркет; не подменяет сумму таблицы' : 'основной экран считается по строкам текущего среза'}</em>
+        </div>
+      </section>
     `;
   }
 
@@ -1872,15 +1934,8 @@
     }
     updatePlanFactUi({ selectedDate: '' });
     updateNativeFilterControls(next);
-    const changedKeys = Object.keys(patch || {});
-    const needsBaseRender = changedKeys.some((key) => ['dateFrom', 'dateTo', 'month', 'date', 'dateMode'].includes(key));
     lastShellSignature = '';
-    if (needsBaseRender) {
-      renderBase();
-      return;
-    }
-    enhance();
-    queueEnhance(80);
+    renderBase();
   }
 
   function renderShell(model) {
@@ -1899,6 +1954,7 @@
           <div class="pf-v4-tabs" role="tablist">${tabs}</div>
         </div>
         ${renderFilterPanel(model)}
+        ${renderIntegrityStrip(model)}
         <div class="pf-v4-body">${renderBody(model)}</div>
       </section>
     `;
@@ -1927,7 +1983,12 @@
       planToDateRevenue: Math.round(numberOrZero(totals.planToDateRevenue)),
       planRevenue: Math.round(numberOrZero(totals.planRevenue)),
       adSpend: Math.round(numberOrZero(totals.adSpend)),
-      margin: Math.round(numberOrZero(totals.marginPct) * 10000)
+      margin: Math.round(numberOrZero(totals.marginPct) * 10000),
+      freshness: model?.freshness?.status || '',
+      freshnessDate: model?.freshness?.dataDate || '',
+      unmapped: numberOrZero(model?.quality?.actionableUnmappedCount || model?.unmappedCount),
+      unallocated: numberOrZero(model?.quality?.unallocatedCount),
+      reconciliation: Array.isArray(model?.quality?.reconciliation) ? model.quality.reconciliation.length : 0
     });
   }
 
@@ -1956,6 +2017,14 @@
       #${ROOT_ID} .pf-v4-filter-actions button{height:34px;border:1px solid rgba(219,199,163,.22);border-radius:999px;background:rgba(7,6,5,.72);color:#eadcbd;padding:0 12px;font-size:11px;font-weight:850;white-space:nowrap}
       #${ROOT_ID} .pf-v4-filter-actions button:first-child{background:rgba(255,255,255,.035);color:var(--pf-v4-muted)}
       #${ROOT_ID} .pf-v4-filter-actions em{color:var(--pf-v4-faint);font-size:10px;font-style:normal;white-space:nowrap}
+      #${ROOT_ID} .pf-v4-integrity{display:grid;grid-template-columns:repeat(5,minmax(0,1fr));gap:8px;margin:0 0 12px}
+      #${ROOT_ID} .pf-v4-integrity>div{min-height:82px;display:grid;align-content:start;gap:6px;padding:11px 12px;border:1px solid rgba(219,199,163,.15);border-radius:12px;background:rgba(7,6,5,.46)}
+      #${ROOT_ID} .pf-v4-integrity>div.ok{border-color:rgba(118,212,155,.28);background:linear-gradient(180deg,rgba(118,212,155,.09),rgba(7,6,5,.4))}
+      #${ROOT_ID} .pf-v4-integrity>div.warn{border-color:rgba(224,183,96,.38);background:linear-gradient(180deg,rgba(224,183,96,.12),rgba(7,6,5,.42))}
+      #${ROOT_ID} .pf-v4-integrity>div.info{border-color:rgba(118,169,234,.3);background:linear-gradient(180deg,rgba(118,169,234,.09),rgba(7,6,5,.42))}
+      #${ROOT_ID} .pf-v4-integrity span{color:var(--pf-v4-faint);font-size:9px;font-weight:900;text-transform:uppercase;letter-spacing:.11em}
+      #${ROOT_ID} .pf-v4-integrity strong{font-size:14px;line-height:1.18}
+      #${ROOT_ID} .pf-v4-integrity em{color:var(--pf-v4-muted);font-size:10px;font-style:normal;line-height:1.35}
       #${ROOT_ID} .pf-v4-kpis,#${ROOT_ID} .pf-v4-platform-grid,#${ROOT_ID} .pf-v4-owner-grid,#${ROOT_ID} .pf-v4-lfl-tiles{display:grid;grid-template-columns:repeat(5,minmax(0,1fr));gap:8px}
       #${ROOT_ID} .pf-v4-owner-grid{grid-template-columns:repeat(3,minmax(0,1fr))}
       #${ROOT_ID} .pf-v4-kpi{--pf-v4-color:#dbc7a3;position:relative;min-height:104px;display:grid;align-content:start;gap:8px;padding:13px 14px;border:1px solid var(--pf-v4-line);border-radius:12px;background:linear-gradient(180deg,rgba(255,255,255,.04),rgba(255,255,255,.012));color:inherit;text-align:left;overflow:hidden;box-shadow:inset 0 1px rgba(255,255,255,.03)}
@@ -2076,8 +2145,8 @@
       @keyframes pfV4In{from{opacity:0;transform:translateY(8px)}to{opacity:1;transform:none}}
       @keyframes pfV4Bar{from{width:0}}
       @keyframes pfV4Column{from{transform:scaleY(.04);opacity:.18}}
-      @media(max-width:1350px){#${ROOT_ID} .pf-v4-filter-panel{grid-template-columns:repeat(4,minmax(0,1fr))}#${ROOT_ID} .pf-v4-filter-search{grid-column:span 2}#${ROOT_ID} .pf-v4-filter-actions{justify-content:flex-start}#${ROOT_ID} .pf-v4-kpis,#${ROOT_ID} .pf-v4-platform-grid,#${ROOT_ID} .pf-v4-owner-grid,#${ROOT_ID} .pf-v4-lfl-tiles{grid-template-columns:repeat(2,minmax(0,1fr))}#${ROOT_ID} .pf-v4-split,#${ROOT_ID} .pf-v4-chart-grid{grid-template-columns:1fr}#${ROOT_ID} .pf-v4-insights{grid-template-columns:repeat(2,minmax(0,1fr))}}
-      @media(max-width:760px){#${ROOT_ID} .pf-v4-head{display:grid}#${ROOT_ID} .pf-v4-tabs{overflow:auto}#${ROOT_ID} .pf-v4-filter-panel{grid-template-columns:1fr}#${ROOT_ID} .pf-v4-filter-search{grid-column:auto}#${ROOT_ID} .pf-v4-filter-actions{display:grid;grid-template-columns:1fr 1fr}#${ROOT_ID} .pf-v4-filter-actions em{grid-column:1/-1}#${ROOT_ID} .pf-v4-kpis,#${ROOT_ID} .pf-v4-platform-grid,#${ROOT_ID} .pf-v4-owner-grid,#${ROOT_ID} .pf-v4-lfl-tiles,#${ROOT_ID} .pf-v4-drawer-grid,#${ROOT_ID} .pf-v4-funnel,#${ROOT_ID} .pf-v4-insights,#${ROOT_ID} .pf-v4-margin-layout{grid-template-columns:1fr}#${ROOT_ID} .pf-v4-team-table button{grid-template-columns:1fr}#${ROOT_ID} .pf-v4-team-table b,#${ROOT_ID} .pf-v4-team-table em,#${ROOT_ID} .pf-v4-team-table small{text-align:left}#${ROOT_ID} .pf-v4-svg-chart{min-width:620px}}
+      @media(max-width:1350px){#${ROOT_ID} .pf-v4-filter-panel{grid-template-columns:repeat(4,minmax(0,1fr))}#${ROOT_ID} .pf-v4-filter-search{grid-column:span 2}#${ROOT_ID} .pf-v4-filter-actions{justify-content:flex-start}#${ROOT_ID} .pf-v4-integrity{grid-template-columns:repeat(2,minmax(0,1fr))}#${ROOT_ID} .pf-v4-kpis,#${ROOT_ID} .pf-v4-platform-grid,#${ROOT_ID} .pf-v4-owner-grid,#${ROOT_ID} .pf-v4-lfl-tiles{grid-template-columns:repeat(2,minmax(0,1fr))}#${ROOT_ID} .pf-v4-split,#${ROOT_ID} .pf-v4-chart-grid{grid-template-columns:1fr}#${ROOT_ID} .pf-v4-insights{grid-template-columns:repeat(2,minmax(0,1fr))}}
+      @media(max-width:760px){#${ROOT_ID} .pf-v4-head{display:grid}#${ROOT_ID} .pf-v4-tabs{overflow:auto}#${ROOT_ID} .pf-v4-filter-panel{grid-template-columns:1fr}#${ROOT_ID} .pf-v4-filter-search{grid-column:auto}#${ROOT_ID} .pf-v4-filter-actions{display:grid;grid-template-columns:1fr 1fr}#${ROOT_ID} .pf-v4-filter-actions em{grid-column:1/-1}#${ROOT_ID} .pf-v4-integrity,#${ROOT_ID} .pf-v4-kpis,#${ROOT_ID} .pf-v4-platform-grid,#${ROOT_ID} .pf-v4-owner-grid,#${ROOT_ID} .pf-v4-lfl-tiles,#${ROOT_ID} .pf-v4-drawer-grid,#${ROOT_ID} .pf-v4-funnel,#${ROOT_ID} .pf-v4-insights,#${ROOT_ID} .pf-v4-margin-layout{grid-template-columns:1fr}#${ROOT_ID} .pf-v4-team-table button{grid-template-columns:1fr}#${ROOT_ID} .pf-v4-team-table b,#${ROOT_ID} .pf-v4-team-table em,#${ROOT_ID} .pf-v4-team-table small{text-align:left}#${ROOT_ID} .pf-v4-svg-chart{min-width:620px}}
       @media(prefers-reduced-motion:reduce){#${ROOT_ID} .pf-v4 *{animation:none!important;transition:none!important}}
     `;
     document.head.appendChild(style);

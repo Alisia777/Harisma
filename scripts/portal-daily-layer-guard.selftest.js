@@ -189,6 +189,33 @@ try {
   );
 
   buildFixture(dir);
+  for (const [file, artifact] of [['prices.json', 'prices'], ['repricer.json', 'repricer']]) {
+    write(dir, file, {
+      generatedAt: '2026-06-06T06:17:17.001Z',
+      asOfDate: date,
+      priceGeneration: {
+        id: 'prices-selftest',
+        builtAt: generatedAt,
+        asOfDate: date,
+        artifact
+      },
+      rows: [{ id: 1 }]
+    });
+  }
+  const currentPriceGeneration = run(options(dir));
+  assert.strictEqual(
+    currentPriceGeneration.report.publish.allowed,
+    true,
+    currentPriceGeneration.report.publish.blockingReasons.join('\n')
+  );
+  for (const source of ['price_master', 'repricer']) {
+    assert.strictEqual(
+      currentPriceGeneration.report.checks.find((check) => check.id === `source:${source}`).generatedAt,
+      generatedAt
+    );
+  }
+
+  buildFixture(dir);
   write(dir, 'product_leaderboard.json', {
     generatedAt: '2026-05-01T08:00:00+03:00',
     asOfDate: '2026-05-01',

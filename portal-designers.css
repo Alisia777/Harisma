@@ -89,11 +89,9 @@ body[data-portal-theme="redalert"] .design-ws-bootstrap p { color: #aaa39a; }
 
 body[data-portal-theme="dark"] .design-ws,
 body[data-theme="dark"] .design-ws,
-body[data-portal-theme="gray"] .design-ws,
 body[data-portal-theme="hellforge"] .design-ws,
 body[data-portal-theme="terminal"] .design-ws,
-body[data-portal-theme="redalert"] .design-ws,
-.altea-premium-app .design-ws {
+body[data-portal-theme="redalert"] .design-ws {
   --design-bg: #11100f;
   --design-panel: rgba(28, 26, 24, .94);
   --design-panel-strong: #201e1c;
@@ -857,32 +855,38 @@ textarea.design-ws-field { min-height: 96px; resize: vertical; line-height: 1.5;
 
 /* Creative Studio V2 — a denser production workspace with editorial clarity. */
 .design-ws {
-  --design-bg: #f2f0ec;
-  --design-panel: rgba(255, 255, 255, .86);
-  --design-panel-strong: #fff;
-  --design-ink: #171719;
-  --design-muted: #747078;
-  --design-line: rgba(30, 27, 34, .11);
-  --design-line-strong: rgba(30, 27, 34, .2);
-  --design-soft: rgba(28, 24, 35, .055);
+  --design-bg: #f5f1ea;
+  --design-panel: rgba(255, 253, 249, .88);
+  --design-panel-strong: #fffdf9;
+  --design-ink: #24201d;
+  --design-muted: #746b64;
+  --design-line: rgba(77, 65, 54, .14);
+  --design-line-strong: rgba(77, 65, 54, .24);
+  --design-soft: rgba(118, 87, 255, .055);
   --design-accent: #7657ff;
   --design-accent-rgb: 118, 87, 255;
   --design-mint: #279d73;
   --design-amber: #be781d;
   --design-red: #d14f52;
   --design-blue: #347fd1;
+  --design-glow-a: rgba(118, 87, 255, .13);
+  --design-glow-b: rgba(224, 104, 155, .09);
+  --design-sheen-top: rgba(255, 255, 255, .82);
+  --design-sheen-bottom: rgba(255, 255, 255, .18);
+  --design-grid-color: rgba(118, 87, 255, .055);
+  --design-workspace-shadow: 0 36px 110px rgba(65, 50, 38, .13), inset 0 1px rgba(255, 255, 255, .82);
   position: relative;
   isolation: isolate;
   min-height: calc(100vh - 128px);
   border-radius: 24px;
   font-family: Inter, Manrope, "SF Pro Display", "Segoe UI", Arial, sans-serif;
   background:
-    radial-gradient(circle at 8% -8%, rgba(118, 87, 255, .16), transparent 26%),
-    radial-gradient(circle at 92% 3%, rgba(255, 126, 175, .12), transparent 28%),
-    linear-gradient(180deg, rgba(255, 255, 255, .74), rgba(255, 255, 255, .14) 320px),
+    radial-gradient(circle at 8% -8%, var(--design-glow-a), transparent 26%),
+    radial-gradient(circle at 92% 3%, var(--design-glow-b), transparent 28%),
+    linear-gradient(180deg, var(--design-sheen-top), var(--design-sheen-bottom) 320px),
     var(--design-bg);
-  border-color: rgba(30, 27, 34, .1);
-  box-shadow: 0 36px 110px rgba(36, 28, 48, .13), inset 0 1px rgba(255, 255, 255, .72);
+  border-color: var(--design-line);
+  box-shadow: var(--design-workspace-shadow);
 }
 
 .design-ws::before {
@@ -893,8 +897,8 @@ textarea.design-ws-field { min-height: 96px; resize: vertical; line-height: 1.5;
   height: 290px;
   opacity: .55;
   background-image:
-    linear-gradient(rgba(118, 87, 255, .06) 1px, transparent 1px),
-    linear-gradient(90deg, rgba(118, 87, 255, .06) 1px, transparent 1px);
+    linear-gradient(var(--design-grid-color) 1px, transparent 1px),
+    linear-gradient(90deg, var(--design-grid-color) 1px, transparent 1px);
   background-size: 32px 32px;
   mask-image: linear-gradient(to bottom, #000, transparent);
   pointer-events: none;
@@ -902,11 +906,11 @@ textarea.design-ws-field { min-height: 96px; resize: vertical; line-height: 1.5;
 
 body[data-portal-theme="dark"] .design-ws,
 body[data-theme="dark"] .design-ws,
-body[data-portal-theme="gray"] .design-ws,
 body[data-portal-theme="hellforge"] .design-ws,
 body[data-portal-theme="terminal"] .design-ws,
 body[data-portal-theme="redalert"] .design-ws,
-.altea-premium-app .design-ws {
+body[data-portal-theme-legacy="dark"] .design-ws,
+html[data-theme-mode="dark"]:not([data-theme="graphite-frost"]) body .design-ws {
   --design-bg: #0d0d10;
   --design-panel: rgba(24, 23, 28, .84);
   --design-panel-strong: #1b1a1f;
@@ -919,13 +923,42 @@ body[data-portal-theme="redalert"] .design-ws,
   --design-amber: #efaa4d;
   --design-red: #ff776d;
   --design-blue: #62a8ff;
-  background:
-    radial-gradient(circle at 8% -8%, rgba(118, 87, 255, .28), transparent 26%),
-    radial-gradient(circle at 92% 3%, rgba(255, 91, 154, .17), transparent 26%),
-    linear-gradient(180deg, rgba(255, 255, 255, .035), transparent 320px),
-    var(--design-bg);
+  --design-glow-a: rgba(118, 87, 255, .28);
+  --design-glow-b: rgba(255, 91, 154, .17);
+  --design-sheen-top: rgba(255, 255, 255, .035);
+  --design-sheen-bottom: transparent;
+  --design-grid-color: rgba(118, 87, 255, .06);
+  --design-workspace-shadow: 0 38px 120px rgba(0, 0, 0, .48), inset 0 1px rgba(255, 255, 255, .06);
   border-color: rgba(238, 230, 244, .12);
-  box-shadow: 0 38px 120px rgba(0, 0, 0, .48), inset 0 1px rgba(255, 255, 255, .06);
+}
+
+body[data-portal-theme="gray"] .design-ws,
+body[data-theme="gray"] .design-ws,
+body[data-portal-theme="graphite-frost"] .design-ws,
+body[data-theme="graphite-frost"] .design-ws,
+body[data-portal-theme-legacy="gray"] .design-ws,
+html[data-theme="graphite-frost"] body .design-ws {
+  --design-bg: #20252d;
+  --design-panel: rgba(47, 54, 65, .88);
+  --design-panel-strong: #343b46;
+  --design-ink: #f4f6f8;
+  --design-muted: #b3bcc7;
+  --design-line: rgba(216, 224, 234, .16);
+  --design-line-strong: rgba(216, 224, 234, .27);
+  --design-soft: rgba(226, 232, 240, .075);
+  --design-accent: #9a88f5;
+  --design-accent-rgb: 154, 136, 245;
+  --design-mint: #68c69e;
+  --design-amber: #e5a958;
+  --design-red: #ef7378;
+  --design-blue: #72a9e6;
+  --design-glow-a: rgba(125, 107, 213, .22);
+  --design-glow-b: rgba(108, 159, 201, .16);
+  --design-sheen-top: rgba(255, 255, 255, .07);
+  --design-sheen-bottom: rgba(255, 255, 255, .012);
+  --design-grid-color: rgba(207, 216, 228, .055);
+  --design-workspace-shadow: 0 38px 115px rgba(7, 10, 15, .42), inset 0 1px rgba(255, 255, 255, .08);
+  border-color: rgba(216, 224, 234, .17);
 }
 
 .design-ws-head {
@@ -952,6 +985,7 @@ body[data-portal-theme="redalert"] .design-ws,
 .design-ws-head h2 {
   max-width: 760px;
   margin: 12px 0 10px;
+  color: var(--design-ink);
   font-family: Georgia, "Times New Roman", serif;
   font-size: clamp(42px, 5.8vw, 76px);
   font-weight: 500;
@@ -1355,10 +1389,12 @@ body[data-portal-theme="redalert"] .design-ws,
   scroll-snap-align: start;
   min-height: 520px;
   padding: 9px;
+  border-color: color-mix(in srgb, var(--status-color, var(--design-muted)) 26%, var(--design-line));
   border-radius: 16px;
   background:
-    linear-gradient(180deg, rgba(255, 255, 255, .025), transparent 140px),
-    color-mix(in srgb, var(--design-soft) 72%, transparent);
+    linear-gradient(180deg, color-mix(in srgb, var(--status-color, var(--design-muted)) 13%, var(--design-panel)) 0, color-mix(in srgb, var(--status-color, var(--design-muted)) 4%, var(--design-bg)) 150px),
+    color-mix(in srgb, var(--design-panel) 58%, var(--design-bg));
+  box-shadow: inset 0 1px color-mix(in srgb, var(--status-color, var(--design-muted)) 20%, transparent);
 }
 
 .design-ws-column.is-drop-target {
@@ -1369,6 +1405,7 @@ body[data-portal-theme="redalert"] .design-ws,
 .design-ws-column-head {
   min-height: 62px;
   padding: 7px 7px 12px;
+  border-bottom: 1px solid color-mix(in srgb, var(--status-color, var(--design-muted)) 22%, var(--design-line));
 }
 
 .design-ws-column-head > div:first-child { min-width: 0; }
@@ -1405,6 +1442,11 @@ body[data-portal-theme="redalert"] .design-ws,
   min-height: 23px;
   padding: 4px 8px;
   font-size: 10px;
+}
+
+.design-ws-column .design-ws-count {
+  color: color-mix(in srgb, var(--status-color, var(--design-muted)) 72%, var(--design-ink));
+  background: color-mix(in srgb, var(--status-color, var(--design-muted)) 12%, var(--design-panel-strong));
 }
 
 .design-ws-column-list { min-width: 0; gap: 9px; }

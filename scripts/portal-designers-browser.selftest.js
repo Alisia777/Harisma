@@ -110,6 +110,65 @@ async function testLocalEditor(browser, baseUrl) {
   await context.close();
 }
 
+async function testWorkspaceThemePalettes(browser, baseUrl) {
+  const context = await browser.newContext();
+  const page = await context.newPage();
+  await page.goto(`${baseUrl}/blank`, { waitUntil: 'domcontentloaded' });
+  await installRemoteFixture(page, 'editor', {
+    schema: 'altea-design-workspace-v1', version: 1, updatedAt: '2026-07-23T12:00:00Z',
+    projects: Object.keys({
+      inbox: true,
+      brief: true,
+      production: true,
+      review: true,
+      done: true
+    }).map((status, index) => ({
+      id: `palette-${status}`,
+      title: `Палитра ${status}`,
+      status,
+      type: 'card',
+      priority: 'normal',
+      updatedAt: `2026-07-23T12:0${index}:00Z`
+    })),
+    tests: [], pages: [], activity: [], settings: {}
+  });
+  const errors = await loadModule(page, baseUrl);
+  await page.waitForSelector('[data-design-access="editor"]');
+  await page.waitForSelector('[data-design-drop-status="done"]');
+
+  const palettes = await page.evaluate(() => {
+    document.body.classList.add('altea-premium-app');
+    const read = (theme, mode, legacy) => {
+      document.documentElement.dataset.theme = theme;
+      document.documentElement.dataset.themeMode = mode;
+      document.body.dataset.theme = theme;
+      document.body.dataset.portalTheme = theme;
+      document.body.dataset.portalThemeLegacy = legacy;
+      const workspace = document.querySelector('.design-ws');
+      const styles = getComputedStyle(workspace);
+      return {
+        background: styles.getPropertyValue('--design-bg').trim(),
+        panel: styles.getPropertyValue('--design-panel-strong').trim(),
+        ink: styles.getPropertyValue('--design-ink').trim(),
+        columns: Array.from(document.querySelectorAll('.design-ws-column')).map((column) => getComputedStyle(column).backgroundImage)
+      };
+    };
+    return {
+      light: read('porcelain-day', 'light', 'light'),
+      gray: read('graphite-frost', 'dark', 'gray'),
+      dark: read('noir-pearl', 'dark', 'dark')
+    };
+  });
+
+  assert.strictEqual(palettes.light.background, '#f5f1ea', 'Porcelain Day must keep the designers workspace light inside the premium shell');
+  assert.strictEqual(palettes.gray.background, '#20252d', 'Graphite Frost must use the dedicated gray workspace palette');
+  assert.strictEqual(palettes.dark.background, '#0d0d10', 'Dark portal themes must retain the dark designers workspace');
+  assert.strictEqual(new Set([palettes.light.background, palettes.gray.background, palettes.dark.background]).size, 3, 'Light, gray, and dark palettes must remain visually distinct');
+  assert.strictEqual(new Set(palettes.light.columns).size, 5, 'Every board stage must keep its own status-tinted surface');
+  assert.strictEqual(errors.length, 0, errors.join('\n'));
+  await context.close();
+}
+
 async function testViewer(browser, baseUrl) {
   const context = await browser.newContext();
   const page = await context.newPage();
@@ -384,6 +443,7 @@ async function run() {
   });
   try {
     await testLocalEditor(browser, baseUrl);
+    await testWorkspaceThemePalettes(browser, baseUrl);
     await testViewer(browser, baseUrl);
     await testViewerKeepsCacheDuringRemoteFailure(browser, baseUrl);
     await testRemoteEditor(browser, baseUrl);

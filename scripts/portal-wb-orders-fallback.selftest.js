@@ -105,6 +105,18 @@ try {
   assert.strictEqual(explicit.analyticsToken, 'analytics-token');
   assert.strictEqual(explicit.statisticsToken, 'statistics-token');
   assert.strictEqual(explicit.financeToken, 'finance-token');
+
+  delete process.env.ALTEA_WB_FINANCE_TOKEN;
+  delete process.env.ALTEA_WB_ANALYTICS_TOKEN;
+  delete process.env.ALTEA_WB_STATISTICS_TOKEN;
+  process.env.ALTEA_WB_PROMOTION_TOKEN = 'promotion-token';
+  const candidates = resolveOptions({
+    from: '2026-07-23',
+    to: '2026-07-24'
+  });
+  assert.deepStrictEqual(candidates.financeTokenCandidates, ['general-token', 'promotion-token']);
+  assert.deepStrictEqual(candidates.analyticsTokenCandidates, ['general-token', 'promotion-token']);
+  assert.deepStrictEqual(candidates.statisticsTokenCandidates, ['general-token', 'promotion-token']);
 } finally {
   for (const key of tokenEnvKeys) {
     if (previousTokenEnv[key] === undefined) delete process.env[key];

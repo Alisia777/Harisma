@@ -10,6 +10,7 @@ const {
   buildLiveSignals,
   directSnapshotUsable,
   fetchWbStocks,
+  fetchWbStocksWithTokens,
   mergeDirectWithFallback,
   normalizeOzonStocks,
   resolveOptions,
@@ -191,6 +192,36 @@ async function run() {
       assert.strictEqual(wbDirect.rows.find((row) => row.articleKey === 'sku-a').available, 7);
       assert.strictEqual(wbDirect.rows.find((row) => row.articleKey === 'sku-b').oos, true);
       assert.strictEqual(directSnapshotUsable(wbDirect), true);
+    } finally {
+      global.fetch = originalFetch;
+    }
+
+    const attemptedWbTokens = [];
+    try {
+      global.fetch = async (_url, request = {}) => {
+        attemptedWbTokens.push(request.headers.Authorization);
+        if (request.headers.Authorization === 'wrong-scope-token') {
+          return {
+            ok: false,
+            status: 403,
+            text: async () => JSON.stringify({ title: 'token category is not allowed' })
+          };
+        }
+        return {
+          ok: true,
+          status: 200,
+          text: async () => JSON.stringify({ data: { items: [] } })
+        };
+      };
+      const wbFallbackToken = await fetchWbStocksWithTokens([
+        { source: 'primary', token: 'wrong-scope-token' },
+        { source: 'promotion', token: 'analytics-token' }
+      ], skuIndexes([{ articleKey: 'sku-a', nmId: 101 }]), '2026-07-24');
+      assert.deepStrictEqual(attemptedWbTokens, ['wrong-scope-token', 'analytics-token']);
+      assert.strictEqual(wbFallbackToken.tokenSource, 'promotion');
+      assert.strictEqual(wbFallbackToken.requestedRows, 1);
+      assert.strictEqual(wbFallbackToken.rows[0].oos, true);
+      assert.strictEqual(directSnapshotUsable(wbFallbackToken), true);
     } finally {
       global.fetch = originalFetch;
     }

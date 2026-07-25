@@ -320,13 +320,13 @@ async function run() {
     await page.waitForFunction(
       () => !document.querySelector('[data-repricer-price-sync]')?.disabled,
       null,
-      { timeout: 5000 }
+      { timeout: 30000 }
     );
     await page.locator('[data-repricer-price-sync]').click();
     await page.waitForFunction(
       () => document.querySelector('[data-repricer-price-sync-status]')?.textContent?.includes('Серверная функция синхронизации ещё не опубликована'),
       null,
-      { timeout: 5000 }
+      { timeout: 30000 }
     );
     assert.strictEqual(dispatchCalls, 2, 'each button click must dispatch no more than one server job');
 

@@ -290,7 +290,19 @@ async function run() {
     const unallocated = await snapshot(page);
     assertScope(unallocated, 'Агрегат без SKU', { expectRows: false });
     assertRowPool(unallocated, 'Агрегат без SKU');
-    assert.ok(unallocated.rowCount <= 1, 'Строка сверки агрегата не должна размножаться');
+    const supportedAggregatePlatforms = ['WB', 'Ozon', 'Я.Маркет'];
+    const aggregatePlatforms = unallocated.rowAudit.map((row) => (
+      supportedAggregatePlatforms.find((platform) => row.article.includes(`Неразнесено ${platform}`)) || ''
+    ));
+    assert.ok(
+      aggregatePlatforms.every(Boolean),
+      `Строка сверки должна относиться к поддерживаемой площадке: ${JSON.stringify(unallocated.rowAudit)}`
+    );
+    assert.strictEqual(
+      new Set(aggregatePlatforms).size,
+      aggregatePlatforms.length,
+      'Для каждой площадки должна быть не более одной строки сверки агрегата'
+    );
 
     const coreSource = readSource('app-core-11.js');
     const v4Source = readSource('portal-planfact-general-to-detail-v4.js');

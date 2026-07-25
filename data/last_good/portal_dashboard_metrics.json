@@ -1,39 +1,39 @@
 {
   "schema": "portal-dashboard-metrics-v1",
-  "generatedAt": "2026-06-20T09:09:07.740Z",
-  "snapshot_id": "dashboard:6bc79a6c9bf575d4",
+  "generatedAt": "2026-07-25T17:58:24.366Z",
+  "snapshot_id": "dashboard:35f2ef8868fc18f0",
   "metric_registry_version": "2026-06-20.1",
   "indicator_policy_version": "2026-06-20.1",
-  "cutoffDate": "2026-06-18",
-  "monthKey": "2026-06",
+  "cutoffDate": "2026-07-24",
+  "monthKey": "2026-07",
   "source_checksums": {
     "platform_trends.json": {
       "exists": true,
-      "sha256": "7eb1e6d11541dedc66a2b9c89b4b7f29619994821040238440a1e0a6a953fd46"
+      "sha256": "0d9a20920f45dcd01eb4d2e00d04cd68ed11331d6ebb2792d8814e6b257254b2"
     },
     "company_plan.json": {
       "exists": true,
-      "sha256": "bdcfb1f38b310bce65d032e2f27671759a64745ee3e66eee16b9ba94d8dd07ea"
+      "sha256": "1201ce3f930e5fddb2b2d78230d4311f4c5d8efb0f1dff126729d49761325aee"
     },
     "ads_summary.json": {
       "exists": true,
-      "sha256": "d5fd26de0c99b2d06f533ff9ab8be8bec6ae54a64ecb115680b395a0b2c3d922"
+      "sha256": "a4fb9914792dddb80a443621ab1170f34f65667531556b511905eb7e5f4f65dc"
     },
     "portal_metric_registry.json": {
       "exists": true,
-      "sha256": "fd888871b87cb79c9d6ab51724dbc82ecdff1e803a243729d013d345c55552b3"
+      "sha256": "527e2ad85bc234ab99865ec3f8bc3902f02cc1b28c73af46027ebc3337bfc453"
     },
     "portal_indicator_policy.json": {
       "exists": true,
-      "sha256": "822bd4756262a557b453fea05ad4f266daf72ebcdd40c5a2c8e97d995f8fc85d"
+      "sha256": "12b32cda2419dead4429f129e79aa4e2f0a03ab2958bf0038a8cbb1de688bfda"
     }
   },
   "summary": {
-    "metrics": 9,
-    "factRevenue": 223391296.28,
-    "planRevenue": 285818670,
-    "planToDate": 171491202,
-    "completionToDate": 1.30264,
+    "metrics": 14,
+    "factRevenue": 391056056.88,
+    "planRevenue": 322540144,
+    "planToDate": 249708498.58,
+    "completionToDate": 1.56605,
     "unallocatedRevenue": 0
   },
   "metrics": [
@@ -45,15 +45,15 @@
       "scope": {
         "platform": "wb"
       },
-      "period_from": "2026-06-01",
-      "period_to": "2026-06-18",
-      "raw_value": 172358772,
-      "displayed_value": 172358772,
+      "period_from": "2026-07-01",
+      "period_to": "2026-07-24",
+      "raw_value": 327028896,
+      "displayed_value": 327028896,
       "transforms": [
         "sum_daily_marketplace_sales_fact"
       ],
       "source_dates": {
-        "platform_trends": "2026-06-18"
+        "platform_trends": "2026-07-24"
       },
       "data_status": "trusted",
       "reconciliation_status": "ok",
@@ -62,10 +62,10 @@
       "drilldown": [
         {
           "platform": "wb",
-          "revenue": 172358772,
-          "units": 141443,
-          "date_from": "2026-06-01",
-          "date_to": "2026-06-18"
+          "revenue": 327028896,
+          "units": 241604,
+          "date_from": "2026-07-01",
+          "date_to": "2026-07-24"
         }
       ]
     },
@@ -77,15 +77,15 @@
       "scope": {
         "platform": "ozon"
       },
-      "period_from": "2026-06-01",
-      "period_to": "2026-06-18",
-      "raw_value": 44551237.279999994,
-      "displayed_value": 44551237.28,
+      "period_from": "2026-07-01",
+      "period_to": "2026-07-24",
+      "raw_value": 58050759.42,
+      "displayed_value": 58050759.42,
       "transforms": [
         "sum_daily_marketplace_sales_fact"
       ],
       "source_dates": {
-        "platform_trends": "2026-06-18"
+        "platform_trends": "2026-07-24"
       },
       "data_status": "trusted",
       "reconciliation_status": "ok",
@@ -94,10 +94,10 @@
       "drilldown": [
         {
           "platform": "ozon",
-          "revenue": 44551237.279999994,
-          "units": 63216,
-          "date_from": "2026-06-01",
-          "date_to": "2026-06-18"
+          "revenue": 58050759.42,
+          "units": 75329,
+          "date_from": "2026-07-01",
+          "date_to": "2026-07-24"
         }
       ]
     },
@@ -109,15 +109,15 @@
       "scope": {
         "platform": "ya"
       },
-      "period_from": "2026-06-01",
-      "period_to": "2026-06-18",
-      "raw_value": 6481287,
-      "displayed_value": 6481287,
+      "period_from": "2026-07-01",
+      "period_to": "2026-07-24",
+      "raw_value": 3133584,
+      "displayed_value": 3133584,
       "transforms": [
         "sum_daily_marketplace_sales_fact"
       ],
       "source_dates": {
-        "platform_trends": "2026-06-18"
+        "platform_trends": "2026-07-24"
       },
       "data_status": "trusted",
       "reconciliation_status": "ok",
@@ -126,10 +126,170 @@
       "drilldown": [
         {
           "platform": "ya",
-          "revenue": 6481287,
-          "units": 7977,
-          "date_from": "2026-06-01",
-          "date_to": "2026-06-18"
+          "revenue": 3133584,
+          "units": 4580,
+          "date_from": "2026-07-01",
+          "date_to": "2026-07-24"
+        }
+      ]
+    },
+    {
+      "metric_id": "sales.raw_revenue",
+      "label": "Raw revenue goldapple",
+      "unit": "RUB",
+      "plan_id": null,
+      "scope": {
+        "platform": "goldapple"
+      },
+      "period_from": "2026-07-01",
+      "period_to": "2026-07-24",
+      "raw_value": 1598486,
+      "displayed_value": 1598486,
+      "transforms": [
+        "sum_daily_marketplace_sales_fact"
+      ],
+      "source_dates": {
+        "platform_trends": "2026-07-23"
+      },
+      "data_status": "incomplete",
+      "reconciliation_status": "blocked",
+      "business_status": "neutral",
+      "confidence": "low",
+      "drilldown": [
+        {
+          "platform": "goldapple",
+          "revenue": 1598486,
+          "units": 2213,
+          "date_from": "2026-07-01",
+          "date_to": "2026-07-23"
+        }
+      ]
+    },
+    {
+      "metric_id": "sales.raw_revenue",
+      "label": "Raw revenue letu",
+      "unit": "RUB",
+      "plan_id": null,
+      "scope": {
+        "platform": "letu"
+      },
+      "period_from": "2026-07-01",
+      "period_to": "2026-07-24",
+      "raw_value": 1128919,
+      "displayed_value": 1128919,
+      "transforms": [
+        "sum_daily_marketplace_sales_fact"
+      ],
+      "source_dates": {
+        "platform_trends": "2026-07-23"
+      },
+      "data_status": "incomplete",
+      "reconciliation_status": "blocked",
+      "business_status": "neutral",
+      "confidence": "low",
+      "drilldown": [
+        {
+          "platform": "letu",
+          "revenue": 1128919,
+          "units": 2085,
+          "date_from": "2026-07-01",
+          "date_to": "2026-07-23"
+        }
+      ]
+    },
+    {
+      "metric_id": "sales.raw_revenue",
+      "label": "Raw revenue megamarket",
+      "unit": "RUB",
+      "plan_id": null,
+      "scope": {
+        "platform": "megamarket"
+      },
+      "period_from": "2026-07-01",
+      "period_to": "2026-07-24",
+      "raw_value": 100915.53,
+      "displayed_value": 100915.53,
+      "transforms": [
+        "sum_daily_marketplace_sales_fact"
+      ],
+      "source_dates": {
+        "platform_trends": "2026-07-23"
+      },
+      "data_status": "incomplete",
+      "reconciliation_status": "blocked",
+      "business_status": "neutral",
+      "confidence": "low",
+      "drilldown": [
+        {
+          "platform": "megamarket",
+          "revenue": 100915.53,
+          "units": 176,
+          "date_from": "2026-07-01",
+          "date_to": "2026-07-23"
+        }
+      ]
+    },
+    {
+      "metric_id": "sales.raw_revenue",
+      "label": "Raw revenue samokat",
+      "unit": "RUB",
+      "plan_id": null,
+      "scope": {
+        "platform": "samokat"
+      },
+      "period_from": "2026-07-01",
+      "period_to": "2026-07-24",
+      "raw_value": null,
+      "displayed_value": "Нет данных",
+      "transforms": [
+        "sum_daily_marketplace_sales_fact"
+      ],
+      "source_dates": {
+        "platform_trends": ""
+      },
+      "data_status": "incomplete",
+      "reconciliation_status": "blocked",
+      "business_status": "neutral",
+      "confidence": "low",
+      "drilldown": [
+        {
+          "platform": "samokat",
+          "revenue": null,
+          "units": null,
+          "date_from": "",
+          "date_to": ""
+        }
+      ]
+    },
+    {
+      "metric_id": "sales.raw_revenue",
+      "label": "Raw revenue magnit",
+      "unit": "RUB",
+      "plan_id": null,
+      "scope": {
+        "platform": "magnit"
+      },
+      "period_from": "2026-07-01",
+      "period_to": "2026-07-24",
+      "raw_value": 14496.93,
+      "displayed_value": 14496.93,
+      "transforms": [
+        "sum_daily_marketplace_sales_fact"
+      ],
+      "source_dates": {
+        "platform_trends": "2026-07-08"
+      },
+      "data_status": "incomplete",
+      "reconciliation_status": "blocked",
+      "business_status": "neutral",
+      "confidence": "low",
+      "drilldown": [
+        {
+          "platform": "magnit",
+          "revenue": 14496.93,
+          "units": 36,
+          "date_from": "2026-07-01",
+          "date_to": "2026-07-08"
         }
       ]
     },
@@ -141,18 +301,23 @@
       "scope": {
         "platform": "unallocated"
       },
-      "period_from": "2026-06-01",
-      "period_to": "2026-06-18",
+      "period_from": "2026-07-01",
+      "period_to": "2026-07-24",
       "raw_value": 0,
       "displayed_value": 0,
       "transforms": [
         "platform_all_control_minus_included_platforms"
       ],
       "source_dates": {
-        "platform_trends_all": "2026-06-18",
-        "wb": "2026-06-18",
-        "ozon": "2026-06-18",
-        "ya": "2026-06-18"
+        "platform_trends_all": "2026-07-24",
+        "wb": "2026-07-24",
+        "ozon": "2026-07-24",
+        "ya": "2026-07-24",
+        "goldapple": "2026-07-23",
+        "letu": "2026-07-23",
+        "megamarket": "2026-07-23",
+        "samokat": "",
+        "magnit": "2026-07-08"
       },
       "data_status": "trusted",
       "reconciliation_status": "ok",
@@ -160,11 +325,13 @@
       "confidence": "high",
       "drilldown": [
         {
-          "all_revenue": 223391296.27999997,
-          "included_revenue": 223391296.28,
+          "all_revenue": 391056056.88,
+          "core_revenue": 388213239.42,
+          "included_revenue": 391056056.88,
           "unallocated_revenue": 0,
-          "all_units": 212636,
-          "included_units": 212636,
+          "all_units": 326023,
+          "core_units": 321513,
+          "included_units": 326023,
           "unallocated_units": 0
         }
       ]
@@ -177,15 +344,15 @@
       "scope": {
         "platform": "all"
       },
-      "period_from": "2026-06-01",
-      "period_to": "2026-06-30",
-      "raw_value": 285818670,
-      "displayed_value": 285818670,
+      "period_from": "2026-07-01",
+      "period_to": "2026-07-31",
+      "raw_value": 322540144,
+      "displayed_value": 322540144,
       "transforms": [
         "company_plan.months[month].revenue"
       ],
       "source_dates": {
-        "company_plan": "2026-05-29T19:18:00+03:00"
+        "company_plan": "2026-07-08T00:00:00+03:00"
       },
       "data_status": "trusted",
       "reconciliation_status": "ok",
@@ -194,11 +361,16 @@
       "drilldown": [
         {
           "plan_id": "corporate_revenue_monthly",
-          "month": "2026-06",
+          "month": "2026-07",
           "included_platforms": [
             "wb",
             "ozon",
-            "ya"
+            "ya",
+            "goldapple",
+            "letu",
+            "megamarket",
+            "samokat",
+            "magnit"
           ]
         }
       ]
@@ -211,16 +383,16 @@
       "scope": {
         "platform": "all"
       },
-      "period_from": "2026-06-01",
-      "period_to": "2026-06-18",
-      "raw_value": 1.3026399819624566,
-      "displayed_value": 130.26,
+      "period_from": "2026-07-01",
+      "period_to": "2026-07-24",
+      "raw_value": 1.5660502510037946,
+      "displayed_value": 156.61,
       "transforms": [
         "sales.raw_revenue / plan_to_date"
       ],
       "source_dates": {
-        "platform_trends": "2026-06-18",
-        "company_plan": "2026-05-29T19:18:00+03:00"
+        "platform_trends": "2026-07-24",
+        "company_plan": "2026-07-08T00:00:00+03:00"
       },
       "data_status": "trusted",
       "reconciliation_status": "ok",
@@ -228,10 +400,10 @@
       "confidence": "high",
       "drilldown": [
         {
-          "factRevenue": 223391296.28,
-          "planToDate": 171491202,
-          "completionMonth": 0.781584,
-          "completionToDate": 1.30264
+          "factRevenue": 391056056.88,
+          "planToDate": 249708498.58,
+          "completionMonth": 1.212426,
+          "completionToDate": 1.56605
         }
       ]
     },
@@ -243,17 +415,17 @@
       "scope": {
         "platform": "all"
       },
-      "period_from": "2026-06-01",
-      "period_to": "2026-06-30",
-      "raw_value": 372318827.13,
-      "displayed_value": 372318827.13,
+      "period_from": "2026-07-01",
+      "period_to": "2026-07-31",
+      "raw_value": 505114073.47,
+      "displayed_value": 505114073.47,
       "transforms": [
         "forecast_only:not_fact",
         "daily_fact_average * month_days"
       ],
       "source_dates": {
-        "platform_trends": "2026-06-18",
-        "company_plan": "2026-05-29T19:18:00+03:00"
+        "platform_trends": "2026-07-24",
+        "company_plan": "2026-07-08T00:00:00+03:00"
       },
       "data_status": "estimated",
       "reconciliation_status": "ok",
@@ -261,9 +433,9 @@
       "confidence": "medium",
       "drilldown": [
         {
-          "factRevenue": 223391296.28,
-          "elapsedDays": 18,
-          "planDays": 30
+          "factRevenue": 391056056.88,
+          "elapsedDays": 24,
+          "planDays": 31
         }
       ]
     },
@@ -275,15 +447,15 @@
       "scope": {
         "platform": "wb"
       },
-      "period_from": "2026-06-01",
-      "period_to": "2026-06-18",
-      "raw_value": 0.178518,
-      "displayed_value": 17.85,
+      "period_from": "2026-07-01",
+      "period_to": "2026-07-24",
+      "raw_value": 0.219713,
+      "displayed_value": 21.97,
       "transforms": [
         "ad_spend / attributed_revenue"
       ],
       "source_dates": {
-        "ads_summary": "2026-06-18"
+        "ads_summary": "2026-07-24"
       },
       "data_status": "incomplete",
       "reconciliation_status": "warning",
@@ -291,8 +463,8 @@
       "confidence": "medium",
       "drilldown": [
         {
-          "spend": 7647487.039999998,
-          "attributedRevenue": 42838697
+          "spend": 17069166.16,
+          "attributedRevenue": 77688541
         }
       ]
     },
@@ -304,15 +476,15 @@
       "scope": {
         "platform": "ozon"
       },
-      "period_from": "2026-06-01",
-      "period_to": "2026-06-18",
-      "raw_value": 0.415017,
-      "displayed_value": 41.5,
+      "period_from": "2026-07-01",
+      "period_to": "2026-07-24",
+      "raw_value": 0.288274,
+      "displayed_value": 28.83,
       "transforms": [
         "ad_spend / attributed_revenue"
       ],
       "source_dates": {
-        "ads_summary": "2026-06-18"
+        "ads_summary": "2026-07-24"
       },
       "data_status": "incomplete",
       "reconciliation_status": "warning",
@@ -320,8 +492,8 @@
       "confidence": "medium",
       "drilldown": [
         {
-          "spend": 18489535.849999998,
-          "attributedRevenue": 44551237.279999994
+          "spend": 11716040.95,
+          "attributedRevenue": 40642032.52
         }
       ]
     }

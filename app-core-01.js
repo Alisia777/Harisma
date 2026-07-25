@@ -80,7 +80,7 @@
   controlFilters: {
     search: '',
     owner: 'all',
-    status: 'active',
+    status: 'all',
     type: 'all',
     priority: 'all',
     platform: 'all',
@@ -414,10 +414,17 @@ const PORTAL_SNAPSHOT_TABLE = 'portal_data_snapshots';
 const PORTAL_SNAPSHOT_REQUEST_TIMEOUT_MS = 30000;
 const PORTAL_SNAPSHOT_PATH_MAP = {
   'data/dashboard.json': 'dashboard',
+  'data/company_plan.json': 'company_plan',
   'data/skus.json': 'skus',
+  'data/seed_comments.json': 'seed_comments',
+  'data/launches.json': 'launches',
+  'data/meetings.json': 'meetings',
+  'data/documents.json': 'documents',
   'data/platform_trends.json': 'platform_trends',
   'data/logistics.json': 'logistics',
   'data/ads_summary.json': 'ads_summary',
+  'data/iu_plan.json': 'iu_plan',
+  'data/loyalty_system.json': 'loyalty_system',
   'data/control_auto_task_sources.json': 'control_auto_task_sources',
   'data/iu_drr_summary.json': 'iu_drr_summary',
   'data/wb_feedbacks_summary.json': 'wb_feedbacks_summary',
@@ -453,6 +460,7 @@ const PORTAL_SNAPSHOT_PATH_MAP = {
   'data/repricer_price_apply_verification.json': 'repricer_price_apply_verification',
   'data/portal_data_quality.json': 'portal_data_quality',
   'data/portal_data_quarantine.json': 'portal_data_quarantine',
+  'data/portal_daily_intake.json': 'portal_daily_intake',
   'data/sku_aliases.json': 'sku_aliases',
   'data/sku_alias_ignore.json': 'sku_alias_ignore',
   'data/sku_alias_audit.json': 'sku_alias_audit',
@@ -3011,22 +3019,14 @@ const LAZY_DATA_LOADERS = {
       : { schema: 'portal-wb-substitution-traffic-v1', generatedAt: '', asOfDate: '', summary: {}, articles: [], rows: [] };
   },
   oosControl: async () => {
-    const [payload, orderProcurementWb, orderProcurementOzon] = await Promise.all([
-      loadJsonOrFallback(
-        'data/oos_control.json',
-        { schema: 'portal-oos-control-v2', generatedAt: '', summary: {}, rows: [], history: { days: [] } },
-        'OOS контроль'
-      ),
-      loadJsonOrFallback('data/order_procurement_wb.json', { generatedAt: '', rows: [] }, 'OOS кластеры WB'),
-      loadJsonOrFallback('data/order_procurement_ozon.json', { generatedAt: '', rows: [] }, 'OOS кластеры Ozon')
-    ]);
+    const payload = await loadJsonOrFallback(
+      'data/oos_control.json',
+      { schema: 'portal-oos-control-v2', generatedAt: '', summary: {}, rows: [], history: { days: [] } },
+      'OOS контроль'
+    );
     state.oosControl = payload && typeof payload === 'object'
       ? payload
       : { schema: 'portal-oos-control-v2', generatedAt: '', summary: {}, rows: [], history: { days: [] } };
-    state.orderProcurementWb = orderProcurementWb || { generatedAt: '', rows: [] };
-    state.order_procurement_wb = state.orderProcurementWb;
-    state.orderProcurementOzon = orderProcurementOzon || { generatedAt: '', rows: [] };
-    state.order_procurement_ozon = state.orderProcurementOzon;
   },
   skuPlanFact: async () => {
     const [smartPriceWorkbench, smartPriceOverlay, priceWorkbenchSupport, prices, platformTrends, platformPlan, adsPayload, skuAliases, skuAliasIgnore, skuAliasAudit, wbOwnerDistributionAudit, wbSubstitutionTraffic] = await Promise.all([

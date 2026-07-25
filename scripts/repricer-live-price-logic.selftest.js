@@ -20,6 +20,10 @@ function closeEnough(left, right, tolerance = 1e-6) {
   return Math.abs(Number(left) - Number(right)) <= tolerance;
 }
 
+function compactIdentity(value) {
+  return normalizeKey(value).replace(/[_-]+/g, '');
+}
+
 function compactRow(row) {
   return {
     platform: row.platform,
@@ -187,7 +191,10 @@ const missingByPlatform = Object.fromEntries(['wb', 'ozon'].map((platform) => [
 ]));
 for (const [platform, missingKeys] of Object.entries(missingByPlatform)) {
   for (const missingKey of missingKeys) {
-    const row = rows.find((item) => item.platform === platform && normalizeKey(item.article_key) === missingKey);
+    const row = rows.find((item) => (
+      item.platform === platform
+      && compactIdentity(item.article_key) === compactIdentity(missingKey)
+    ));
     assert(row, `${platform}/${missingKey}: protected API gap is absent from canonical diagnostics`);
     if (!row.policy?.margin_guard_required) continue;
     assert.strictEqual(row.recommendation?.status, 'blocked', `${platform}/${missingKey}: protected API gap must not publish`);

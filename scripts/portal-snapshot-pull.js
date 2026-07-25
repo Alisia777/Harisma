@@ -9,6 +9,7 @@ const DEFAULT_SUPABASE_KEY = 'sb_publishable_PztMtkcraVy_A2ymze1Unw_I1rOjrlw';
 const SNAPSHOT_TABLE = 'portal_data_snapshots';
 const DEFAULT_SNAPSHOTS = ['sku_aliases', 'sku_alias_ignore', 'sku_alias_audit'];
 const REQUEST_BATCH_SIZE = 8;
+const PART_BATCH_SIZE = 8;
 
 function parseArgs(argv) {
   const args = {};
@@ -52,6 +53,9 @@ function resolveOptions(args) {
       ? String(args.snapshot).split(',').map((value) => value.trim()).filter(Boolean)
       : (inventoryPath ? snapshotsFromInventory(inventoryPath) : DEFAULT_SNAPSHOTS),
     inventoryPath,
+    requestBatchSize: Math.max(1, Math.min(REQUEST_BATCH_SIZE, Math.trunc(Number(args['batch-size']) || REQUEST_BATCH_SIZE))),
+    partBatchSize: Math.max(1, Math.min(PART_BATCH_SIZE, Math.trunc(Number(args['part-batch-size']) || PART_BATCH_SIZE))),
+    requestTimeoutMs: Math.max(5000, Math.trunc(Number(args['request-timeout-ms']) || 45000)),
     strict: Boolean(args.strict)
   };
 }
@@ -72,26 +76,53 @@ function buildSnapshotUrl(options, keys = []) {
   url.searchParams.set('brand', `eq.${options.brand}`);
   if (keys.length) {
     url.searchParams.set('snapshot_key', keys.length === 1 ? `eq.${keys[0]}` : `in.(${keys.join(',')})`);
+    url.searchParams.set('limit', String(keys.length));
   }
   return url;
 }
 
-async function requestRows(options, keys = []) {
-  const rows = [];
-  for (let index = 0; index < keys.length; index += REQUEST_BATCH_SIZE) {
-    const batch = keys.slice(index, index + REQUEST_BATCH_SIZE);
-    const response = await fetch(buildSnapshotUrl(options, batch), {
-      cache: 'no-store',
-      headers: {
-        apikey: options.supabaseKey,
-        Authorization: `Bearer ${options.supabaseKey}`,
-        Accept: 'application/json'
+function wait(milliseconds) {
+  return new Promise((resolve) => setTimeout(resolve, milliseconds));
+}
+
+async function requestBatch(options, batch) {
+  const maxAttempts = 5;
+  for (let attempt = 1; attempt <= maxAttempts; attempt += 1) {
+    try {
+      const response = await fetch(buildSnapshotUrl(options, batch), {
+        cache: 'no-store',
+        signal: AbortSignal.timeout(options.requestTimeoutMs),
+        headers: {
+          apikey: options.supabaseKey,
+          Authorization: `Bearer ${options.supabaseKey}`,
+          Accept: 'application/json'
+        }
+      });
+      if (response.ok) return response.json();
+      const body = await response.text();
+      const retryable = response.status === 408 || response.status === 429 || response.status >= 500;
+      if (!retryable || attempt === maxAttempts) {
+        throw new Error(`Supabase snapshot pull failed: HTTP ${response.status} ${body}`);
       }
-    });
-    if (!response.ok) {
-      throw new Error(`Supabase snapshot pull failed: HTTP ${response.status} ${await response.text()}`);
+      console.warn(`[snapshot-pull] retry ${attempt}/${maxAttempts} after HTTP ${response.status}: ${batch.join(',')}`);
+    } catch (error) {
+      if (attempt === maxAttempts || /HTTP 4\d\d/.test(String(error?.message || ''))) throw error;
+      console.warn(`[snapshot-pull] retry ${attempt}/${maxAttempts} after ${error?.code || error?.cause?.code || error?.message || error}: ${batch.join(',')}`);
     }
-    rows.push(...await response.json());
+    await wait(Math.min(2000 * attempt, 8000));
+  }
+  return [];
+}
+
+async function requestRows(options, keys = [], batchSize = options.requestBatchSize) {
+  const rows = [];
+  for (let index = 0; index < keys.length; index += batchSize) {
+    const batch = keys.slice(index, index + batchSize);
+    rows.push(...await requestBatch(options, batch));
+    const completed = Math.min(index + batchSize, keys.length);
+    if (completed === keys.length || completed % 10 === 0) {
+      console.log(`[snapshot-pull] fetched ${completed}/${keys.length} keys`);
+    }
   }
   return rows;
 }
@@ -154,7 +185,7 @@ async function pullSnapshots(options) {
     if (!payload || typeof payload !== 'object' || !payload.chunked) return [];
     return snapshotPartKeys(row.snapshot_key, payload.chunk_count || payload.chunkCount);
   });
-  const partRows = chunkKeys.length ? await requestRows(options, chunkKeys) : [];
+  const partRows = chunkKeys.length ? await requestRows(options, chunkKeys, options.partBatchSize) : [];
   const rowsByKey = chooseLatestRows([...baseRows, ...partRows]);
 
   fs.mkdirSync(options.outputDir, { recursive: true });

@@ -39,7 +39,10 @@ function startStaticServer() {
       let body = data;
       if (relative === 'index.html') {
         body = Buffer.from(
-          data.toString('utf8').replace('<head>', '<head><script>window.APP_CONFIG={portalAuthRequired:false};</script>'),
+          data.toString('utf8').replace(
+            '<head>',
+            '<head><script>window.APP_CONFIG={portalAuthRequired:false};window.__ALTEA_AUTH_SESSION__={access_token:"repricer-selftest-token",user:{id:"repricer-selftest-user",email:"repricer-selftest@example.com",user_metadata:{name:"Repricer selftest"}}};window.__ALTEA_PORTAL_ACCESS__={name:"Repricer selftest",email:"repricer-selftest@example.com",role:"admin"};</script>'
+          ),
           'utf8'
         );
       }
@@ -220,7 +223,11 @@ async function main() {
     if (await premiumNav.count() && await premiumNav.isVisible().catch(() => false)) {
       await premiumNav.click();
     } else {
-      await page.locator('.nav-btn[data-view="repricer"]').click({ force: true });
+      await page.evaluate(() => {
+        const target = document.querySelector('[data-premium-nav="repricer"], .nav-btn[data-view="repricer"]');
+        if (!target) throw new Error('Repricer navigation target is missing');
+        target.click();
+      });
     }
     await page.waitForSelector('#view-repricer.active [data-repricer-export="all"]', { timeout: 90000 });
     await page.waitForFunction(

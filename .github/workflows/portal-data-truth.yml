@@ -11,7 +11,11 @@ on:
       - 'index.html'
       - 'package.json'
       - 'supabase/functions/repricer-price-apply/**'
+      - 'daria-prices*.csv'
+      - 'daria-prices*.tsv'
+      - 'exports/daria-prices.summary.json'
       - 'docs/PORTAL_DAILY_CLOSE_RUNBOOK.md'
+      - '.github/workflows/daria-prices.yml'
       - '.github/workflows/portal-data-truth.yml'
       - '.github/workflows/portal-daily-close.yml'
       - '.github/workflows/portal-repricer-prices.yml'
@@ -29,7 +33,11 @@ on:
       - 'index.html'
       - 'package.json'
       - 'supabase/functions/repricer-price-apply/**'
+      - 'daria-prices*.csv'
+      - 'daria-prices*.tsv'
+      - 'exports/daria-prices.summary.json'
       - 'docs/PORTAL_DAILY_CLOSE_RUNBOOK.md'
+      - '.github/workflows/daria-prices.yml'
       - '.github/workflows/portal-data-truth.yml'
       - '.github/workflows/portal-daily-close.yml'
       - '.github/workflows/portal-repricer-prices.yml'
@@ -99,8 +107,14 @@ jobs:
           node scripts/portal-daily-close-preflight.selftest.js
           node scripts/portal-daily-close-preflight-summary.selftest.js
           node scripts/portal-daily-close-workflow.selftest.js
+          node scripts/portal-auto-refresh-workflow.selftest.js
+          node scripts/portal-unified-daily-intake.selftest.js
+          node scripts/portal-unified-daily-intake.js --contract-only --no-write
           node scripts/portal-smart-price-overlay-sync.selftest.js
+          node scripts/portal-yandex-market-price-sync.selftest.js
+          node scripts/portal-order-lifecycle.selftest.js
           node scripts/portal-sync-health-quarantine.selftest.js
+          node scripts/portal-sync-health-price-generation.selftest.js
           node scripts/portal-dashboard-money-kpi-realdata.selftest.js
           node scripts/portal-runtime-snapshot-choice.selftest.js
           node scripts/portal-bootstrap-snapshot-choice.selftest.js
@@ -113,6 +127,12 @@ jobs:
           node scripts/portal-snapshot-refresh-hotfix.selftest.js
           node scripts/portal-dashboard-snapshot-source.selftest.js
           node scripts/portal-analytics-date-freshness.selftest.js
+          node scripts/portal-planfact-correctness.selftest.js
+          node scripts/portal-price-search-range-fallback.selftest.js
+          node scripts/portal-price-source-freshness.selftest.js
+          node scripts/price-update-transaction.selftest.js
+          node scripts/import-price-history-report.selftest.js
+          node scripts/portal-prices-correctness.selftest.js
           node scripts/portal-snapshot-pull.selftest.js
           node scripts/portal-protected-snapshot-refresh-workflow.selftest.js
           node scripts/sanitizer_url_contract.test.js
@@ -137,7 +157,8 @@ jobs:
           ALLOW_GENERATED_IU_DATA=false
           if [[ "${{ github.event_name }}" == "workflow_dispatch" && "${{ inputs.allow_generated_iu_data }}" == "true" ]]; then
             ALLOW_GENERATED_IU_DATA=true
-          elif [[ "${{ github.event_name }}" == "push" && "${{ contains(github.event.head_commit.message, '[portal-full-update]') }}" == "true" ]]; then
+          elif [[ "${{ github.event_name }}" == "pull_request" || "${{ github.event_name }}" == "push" ]] \
+            && git log --format=%B "$BASE_REF..HEAD" | grep -Fq '[portal-full-update]'; then
             ALLOW_GENERATED_IU_DATA=true
           fi
 

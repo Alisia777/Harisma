@@ -31,8 +31,13 @@ assert.match(designers, /function restoreLocalBackup\(key\)/, 'Local backup rest
 assert.match(designers, /restore_portal_design_workspace_revision/, 'Remote revision restoration must use the protected RPC');
 assert.match(designers, /window\.confirm\('Восстановить командную версию/, 'Remote restore must require an explicit confirmation');
 assert.match(designers, /function threeWayMergeData\(base, remote, local\)/, 'Concurrent edits must use a three-way merge');
+assert.match(designers, /conflictFields[\s\S]*remoteFieldChanged[\s\S]*localFieldChanged/, 'Three-way merge must isolate conflicts to fields changed on both sides');
 assert.match(designers, /lastSyncedData: lastSyncedData/, 'The common sync ancestor must survive reloads and offline edits');
-assert.match(designers, /data-design-conflict-remote/, 'Concurrency conflicts must require an explicit user choice');
+assert.match(designers, /data-design-conflict-choice/, 'Concurrency conflicts must require an explicit per-card choice');
+assert.match(designers, /MAX_SYNC_REBASE_ATTEMPTS = 12/, 'Concurrent writers must receive bounded optimistic rebase retries');
+assert.match(designers, /OFFLINE_EDITOR_GRACE_MS/, 'Recently confirmed editors must have a bounded offline editing window');
+assert.match(designers, /membershipCheckFailed \|\| offlineEditMode[\s\S]*изменения сохранены на устройстве/, 'Offline edits must stay local until access is revalidated');
+assert.match(designers, /window\.addEventListener\('online'[\s\S]*syncRemote\(true\)/, 'Reconnect must trigger a guarded three-way synchronization');
 assert.match(designers, /function fetchRemoteAudit\(\)/, 'The UI must fetch a server-backed audit trail');
 assert.match(designers, /actor_id,actor_email/, 'Server audit rows must include a durable actor identity');
 assert.match(designers, /<h3>Серверный аудит<\/h3>/, 'Server audit must be distinct from local activity');
@@ -62,8 +67,8 @@ assert.match(access, /'guest@qeep\.life': \{ role: 'guest'/, 'Guest account must
 assert.match(authGate, /SHARED_AUTHENTICATED_VIEWS = \['documents', 'designers'\]/, 'Every configured portal account must inherit the Designers tab');
 assert.doesNotMatch(authGate, /portal_role: 'owner'/, 'Synthetic guest sessions must never claim owner role');
 assert.match(authGate, /portal_role: 'guest'/, 'Synthetic guest sessions must claim only the restricted guest role');
-assert.match(access, /'a\.i\.zaharova@qeep\.life': \{ role: 'designer'/, 'The requested designer account must be in the portal allowlist');
-assert.match(access, /'a\.kolmogorova@qeep\.life': \{ role: 'designer'/, 'The senior designer account must be in the portal allowlist');
+assert.match(access, /'a\.i\.zaharova@qeep\.life': \{ (?:role: 'designer'|roles: \['designer', 'employee'\])/, 'The requested designer account must be in the portal allowlist');
+assert.match(access, /'a\.kolmogorova@qeep\.life': \{ (?:role: 'designer'|roles: \['designer', 'employee'\])/, 'The senior designer account must be in the portal allowlist');
 assert.match(authGate, /function handlePasswordSetup\(event\)/, 'Invitation and recovery links must open a dedicated password setup flow');
 assert.match(authGate, /auth\.updateUser\(\{ password: password \}\)/, 'Password setup must use the signed-in Supabase recovery session');
 assert.match(authGate, /event === 'PASSWORD_RECOVERY'/, 'Recovery events must remain inside the password setup gate');

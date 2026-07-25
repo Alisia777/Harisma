@@ -432,10 +432,14 @@
       const ownerRows = ownerResult.status === 'fulfilled' ? (ownerResult.value || []) : [];
       const repricerControlsLoaded = repricerControlsResult.status === 'fulfilled';
       const repricerControls = repricerControlsLoaded ? (repricerControlsResult.value || null) : null;
-      const softErrors = [commentResult, decisionResult, ownerResult, repricerControlsResult]
+      const optionalErrors = [commentResult, decisionResult, ownerResult, repricerControlsResult]
         .filter((result) => result.status !== 'fulfilled')
         .map((result) => result.reason?.message || String(result.reason || 'Неизвестная ошибка'))
         .filter(Boolean);
+      const softErrors = [];
+      if (optionalErrors.length) {
+        console.warn('[portal-team-runtime-hotfix] optional team data was not loaded', optionalErrors);
+      }
       app.team.lastPullCoverage = {
         ...(app.team.lastPullCoverage || {}),
         tasks: true,
@@ -482,16 +486,14 @@
       app.team.error = softErrors.join(' | ');
       app.team.note = remoteEmpty
         ? 'Командная база пока пустая — локальные данные сохранены'
-        : softErrors.length
-          ? `Командная база подключена частично · ${typeof fmt?.date === 'function' ? fmt.date(app.team.lastSyncAt) : app.team.lastSyncAt}`
-          : `Командная база синхронизирована · ${typeof fmt?.date === 'function' ? fmt.date(app.team.lastSyncAt) : app.team.lastSyncAt}`;
+        : `Задачи синхронизированы · ${typeof fmt?.date === 'function' ? fmt.date(app.team.lastSyncAt) : app.team.lastSyncAt}`;
       if (typeof updateSyncBadge === 'function') updateSyncBadge();
 
       if (rerender && typeof rerenderCurrentView === 'function') {
         rerenderCurrentView();
         if (app.activeSku && typeof renderSkuModal === 'function') renderSkuModal(app.activeSku);
       }
-      return { remoteEmpty, softErrors };
+      return { remoteEmpty, softErrors, optionalErrors };
     } catch (error) {
       console.error(error);
       app.team.mode = 'error';
@@ -530,21 +532,27 @@
     }
 
     try {
-      if ((cfg.supabase?.auth || 'anonymous') === 'anonymous') {
+      const portalSession = window.alteaPortalAuthGate?.getSession?.()
+        || window.__ALTEA_AUTH_SESSION__
+        || null;
+      if (portalSession?.access_token) {
+        const email = String(portalSession?.user?.email || '').trim();
+        const memberName = String(
+          window.__ALTEA_PORTAL_ACCESS__?.name
+          || portalSession?.user?.user_metadata?.name
+          || email
+          || ''
+        ).trim();
+        app.team.accessToken = portalSession.access_token;
+        app.team.userId = String(portalSession?.user?.id || '').trim();
+        if (memberName) app.team.member = { ...(app.team.member || {}), name: memberName };
+      } else if ((cfg.supabase?.auth || 'anonymous') === 'anonymous') {
         const signIn = await signInAnonymouslyHotfix();
         app.team.accessToken = signIn?.access_token || '';
         app.team.userId = signIn?.user?.id || '';
         if (!app.team.accessToken) throw new Error('Supabase не вернул access token');
       } else {
-        if (!window.supabase?.createClient) throw new Error('Supabase client не загрузился');
-        app.team.client = window.supabase.createClient(cfg.supabase.url, cfg.supabase.anonKey, {
-          auth: {
-            persistSession: false,
-            autoRefreshToken: false,
-            detectSessionInUrl: false,
-            storageKey: 'altea-team-store'
-          }
-        });
+        throw new Error('Supabase auth session is missing');
       }
 
       app.team.mode = 'ready';

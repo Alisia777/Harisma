@@ -10,6 +10,14 @@ const XLSX = require('xlsx');
 const { buildSmartPriceOverlay } = require('./build-smart-price-overlay');
 const { buildLegacyPricesLayer } = require('./build-legacy-prices-layer');
 const { buildLegacyRepricerLayer } = require('./build-legacy-repricer-layer');
+const {
+  atomicWriteJson,
+  mergeOverlayWithPrevious,
+  priceFactMetrics,
+  promoteJsonGeneration,
+  stampPriceGeneration,
+  validatePriceGeneration
+} = require('./price-update-transaction');
 
 const DEFAULT_SOURCE_URL = 'https://docs.google.com/spreadsheets/d/1isYJavBkZWId5WZsu1zTo1dLNhs6Kf4FfB7Isx2eaWA/edit?gid=2003059667#gid=2003059667';
 const MAX_LOCAL_FALLBACK_AGE_HOURS = 48;
@@ -92,9 +100,17 @@ function resolveOptions(args) {
     liveRepricerPath: path.resolve(args['live-repricer-file'] || process.env.ALTEA_LIVE_REPRICER_JSON_PATH || cwdJoin('tmp-live-repricer.json')),
     liveRepricerMaxAgeDays: Number(args['live-repricer-max-age-days'] || process.env.ALTEA_LIVE_REPRICER_MAX_AGE_DAYS || 7),
     supportPath: path.resolve(args['support-file'] || process.env.ALTEA_PRICE_SUPPORT_JSON_PATH || cwdJoin('data', 'price_workbench_support.json')),
+    apiPricePath: args['api-price-file'] || process.env.ALTEA_PRICE_API_OVERLAY_PATH
+      ? path.resolve(args['api-price-file'] || process.env.ALTEA_PRICE_API_OVERLAY_PATH)
+      : '',
     overlayOutputPath: path.resolve(args['overlay-output-file'] || process.env.ALTEA_OVERLAY_JSON_PATH || cwdJoin('data', 'smart_price_overlay.json')),
     pricesOutputPath: path.resolve(args['prices-output-file'] || process.env.ALTEA_PRICES_JSON_PATH || cwdJoin('data', 'prices.json')),
     repricerOutputPath: path.resolve(args['repricer-output-file'] || process.env.ALTEA_REPRICER_JSON_PATH || cwdJoin('data', 'repricer.json')),
+    auditOutputPath: path.resolve(args['audit-output-file'] || process.env.ALTEA_PRICE_UPDATE_AUDIT_PATH || cwdJoin('data', 'price_update_audit.json')),
+    expectedDate: String(args['expected-date'] || process.env.ALTEA_PRICE_EXPECTED_DATE || '').slice(0, 10),
+    maxSourceLagDays: Number(args['max-source-lag-days'] || process.env.ALTEA_PRICE_MAX_SOURCE_LAG_DAYS || 3),
+    maxPlatformGapDays: Number(args['max-platform-gap-days'] || process.env.ALTEA_PRICE_MAX_PLATFORM_GAP_DAYS || 3),
+    minLatestCoverageRatio: Number(args['min-latest-coverage-ratio'] || process.env.ALTEA_PRICE_MIN_LATEST_COVERAGE_RATIO || 0.55),
     profileExportTimeoutMs: Number(args['profile-export-timeout-ms'] || process.env.ALTEA_SMART_PRICE_PROFILE_EXPORT_TIMEOUT_MS || DEFAULT_PROFILE_EXPORT_TIMEOUT_MS),
     dryRun: Boolean(args.dryRun)
   };
@@ -143,25 +159,23 @@ function preserveExtraMarketplace(stagedOverlayPath, liveOverlayPath, previousOv
   if (!overlay || typeof overlay !== 'object') return false;
 
   overlay.extraMarketplace = extraMarketplace;
-  const latestAsOfDate = [overlay.asOfDate, extraMarketplace.asOfDate, previousOverlay?.asOfDate]
-    .map((value) => String(value || '').slice(0, 10))
-    .filter((value) => /^\d{4}-\d{2}-\d{2}$/.test(value))
-    .sort()
-    .pop();
-  if (latestAsOfDate) overlay.asOfDate = latestAsOfDate;
-
-  const latestGeneratedAt = [overlay.generatedAt, extraMarketplace.generatedAt, previousOverlay?.generatedAt]
-    .map((value) => ({ value: String(value || ''), stamp: Date.parse(value) }))
-    .filter((item) => Number.isFinite(item.stamp))
-    .sort((left, right) => left.stamp - right.stamp)
-    .pop();
-  if (latestGeneratedAt) overlay.generatedAt = latestGeneratedAt.value;
-
   writeJson(stagedOverlayPath, overlay);
-  if (path.resolve(stagedOverlayPath) !== path.resolve(liveOverlayPath)) {
-    writeJson(liveOverlayPath, overlay);
-  }
   return true;
+}
+
+function mergeApiPriceOverlay(workbookOverlay, apiPriceOverlay) {
+  if (!apiPriceOverlay?.platforms) return workbookOverlay;
+  return {
+    ...mergeOverlayWithPrevious({
+      generatedAt: apiPriceOverlay.generatedAt || workbookOverlay?.generatedAt,
+      platforms: apiPriceOverlay.platforms
+    }, workbookOverlay || {}),
+    priceApiSnapshot: apiPriceOverlay.priceApiSnapshot || {
+      source: apiPriceOverlay.source || '',
+      generatedAt: apiPriceOverlay.generatedAt || '',
+      asOfDate: apiPriceOverlay.asOfDate || ''
+    }
+  };
 }
 
 function normalizePathList(value) {
@@ -177,6 +191,8 @@ function workbookLooksLikeSmartPrices(filePath) {
     const names = new Set((workbook.SheetNames || []).map((name) => String(name || '').trim()));
     return names.has('База')
       || names.has('Сводная')
+      || names.has('Исходные данные')
+      || (names.has('WB — текущие') && names.has('Ozon — текущие'))
       || (names.has('dim_sku') && names.has('fact_marketplace_daily_sku'));
   } catch (_error) {
     return false;
@@ -187,6 +203,8 @@ function workbookSheetNamesLookLikeSmartPrices(sheetNames = []) {
   const names = new Set((sheetNames || []).map((name) => String(name || '').trim()));
   return names.has('\u0411\u0430\u0437\u0430')
     || names.has('\u0421\u0432\u043e\u0434\u043d\u0430\u044f')
+    || names.has('\u0418\u0441\u0445\u043e\u0434\u043d\u044b\u0435 \u0434\u0430\u043d\u043d\u044b\u0435')
+    || (names.has('WB — текущие') && names.has('Ozon — текущие'))
     || names.has('Р‘Р°Р·Р°')
     || names.has('РЎРІРѕРґРЅР°СЏ')
     || (names.has('dim_sku') && names.has('fact_marketplace_daily_sku'));
@@ -633,49 +651,126 @@ async function main() {
     }
   }
 
-  const stagedOverlayPath = path.join(options.outputDir, 'smart_price_overlay.json');
   const previousOverlay = readJson(options.overlayOutputPath, null);
-  const result = buildSmartPriceOverlay(workbookPath, stagedOverlayPath);
-  fs.mkdirSync(path.dirname(options.overlayOutputPath), { recursive: true });
-  const extraMarketplacePreserved = preserveExtraMarketplace(stagedOverlayPath, options.overlayOutputPath, previousOverlay);
-  if (path.resolve(stagedOverlayPath) !== path.resolve(options.overlayOutputPath)) {
-    fs.copyFileSync(stagedOverlayPath, options.overlayOutputPath);
+  const previousPrices = readJson(options.pricesOutputPath, null);
+  const previousRepricer = readJson(options.repricerOutputPath, null);
+  const stageDir = fs.mkdtempSync(path.join(options.outputDir, '.price-generation-'));
+  const stagedOverlayPath = path.join(stageDir, 'smart_price_overlay.json');
+  const stagedPricesPath = path.join(stageDir, 'prices.json');
+  const stagedRepricerPath = path.join(stageDir, 'repricer.json');
+  const diagnosticAuditPath = path.join(options.outputDir, 'price_update_audit.json');
+
+  try {
+    const result = buildSmartPriceOverlay(workbookPath, stagedOverlayPath);
+    const apiPriceOverlay = readJson(options.apiPricePath, null);
+    const rawOverlay = mergeApiPriceOverlay(result.payload, apiPriceOverlay);
+    const mergedOverlay = mergeOverlayWithPrevious(rawOverlay, previousOverlay || {});
+    const extraMarketplacePreserved = Boolean(
+      previousOverlay?.extraMarketplace && !rawOverlay?.extraMarketplace
+    );
+    atomicWriteJson(stagedOverlayPath, mergedOverlay);
+
+    const pricesResult = buildLegacyPricesLayer({
+      workbenchPath: options.workbenchPath,
+      overlayPath: stagedOverlayPath,
+      livePath: options.livePath,
+      outputPath: stagedPricesPath
+    });
+    const repricerResult = buildLegacyRepricerLayer({
+      workbenchPath: options.workbenchPath,
+      overlayPath: stagedOverlayPath,
+      liveWorkbenchPath: options.livePath,
+      liveRepricerPath: options.liveRepricerPath,
+      liveRepricerMaxAgeDays: options.liveRepricerMaxAgeDays,
+      supportPath: options.supportPath,
+      pricesPath: stagedPricesPath,
+      outputPath: stagedRepricerPath
+    });
+    const stagedPrices = readJson(stagedPricesPath, {});
+    const stagedRepricer = readJson(stagedRepricerPath, {});
+    const audit = validatePriceGeneration({
+      previousOverlay,
+      previousPrices,
+      previousRepricer,
+      rawOverlay,
+      overlay: mergedOverlay,
+      prices: stagedPrices,
+      repricer: stagedRepricer,
+      expectedDate: options.expectedDate,
+      maxSourceLagDays: options.maxSourceLagDays,
+      maxPlatformGapDays: options.maxPlatformGapDays,
+      minLatestCoverageRatio: options.minLatestCoverageRatio
+    });
+    const stamped = stampPriceGeneration({
+      overlay: mergedOverlay,
+      prices: stagedPrices,
+      repricer: stagedRepricer
+    }, {
+      asOfDate: priceFactMetrics(mergedOverlay).latestFactDate,
+      sourceKind: workbook.sourceKind,
+      sourceMtime: workbook.sourceMtimeIso || ''
+    });
+    const finalAudit = {
+      ...audit,
+      generationId: stamped.id,
+      source: {
+        kind: workbook.sourceKind,
+        mtime: workbook.sourceMtimeIso || '',
+        file: path.basename(workbookPath)
+      }
+    };
+    atomicWriteJson(diagnosticAuditPath, finalAudit);
+
+    if (!audit.publishAllowed) {
+      throw new Error(`Price generation rejected:\n- ${audit.blockingReasons.join('\n- ')}`);
+    }
+
+    if (!options.dryRun) {
+      promoteJsonGeneration([
+        { path: options.overlayOutputPath, payload: stamped.payloads.overlay },
+        { path: options.pricesOutputPath, payload: stamped.payloads.prices },
+        { path: options.repricerOutputPath, payload: stamped.payloads.repricer },
+        { path: options.auditOutputPath, payload: finalAudit }
+      ]);
+    }
+
+    const summary = {
+      dryRun: options.dryRun,
+      activated: !options.dryRun,
+      generationId: stamped.id,
+      sourceUrl: redactUrl(options.sourceUrl),
+      workbookUrl: redactUrl(options.sourceXlsxUrl),
+      workbook: workbookPath,
+      sourceKind: workbook.sourceKind,
+      sourceMtime: workbook.sourceMtimeIso || '',
+      apiPriceFile: options.apiPricePath || '',
+      apiPriceSnapshot: rawOverlay.priceApiSnapshot || null,
+      fallbackPath: workbook.fallbackPath || '',
+      fallbackAgeHours: workbook.fallbackAgeHours ?? null,
+      overlay: {
+        ...result.summary,
+        mergedCounts: Object.fromEntries(
+          Object.entries(mergedOverlay.platforms || {}).map(([platform, bucket]) => [
+            platform,
+            Array.isArray(bucket?.rows) ? bucket.rows.length : 0
+          ])
+        ),
+        extraMarketplacePreserved,
+        liveOutput: options.overlayOutputPath
+      },
+      prices: pricesResult.summary,
+      repricer: repricerResult.summary,
+      audit: {
+        status: finalAudit.status,
+        warnings: finalAudit.warnings,
+        output: options.auditOutputPath,
+        diagnosticOutput: diagnosticAuditPath
+      }
+    };
+    console.log(JSON.stringify(summary, null, 2));
+  } finally {
+    fs.rmSync(stageDir, { recursive: true, force: true });
   }
-  const pricesResult = buildLegacyPricesLayer({
-    workbenchPath: options.workbenchPath,
-    overlayPath: options.overlayOutputPath,
-    livePath: options.livePath,
-    outputPath: options.pricesOutputPath
-  });
-  const repricerResult = buildLegacyRepricerLayer({
-    workbenchPath: options.workbenchPath,
-    overlayPath: options.overlayOutputPath,
-    liveWorkbenchPath: options.livePath,
-    liveRepricerPath: options.liveRepricerPath,
-    liveRepricerMaxAgeDays: options.liveRepricerMaxAgeDays,
-    supportPath: options.supportPath,
-    pricesPath: options.pricesOutputPath,
-    outputPath: options.repricerOutputPath
-  });
-  const summary = {
-    dryRun: options.dryRun,
-    sourceUrl: redactUrl(options.sourceUrl),
-    workbookUrl: redactUrl(options.sourceXlsxUrl),
-    workbook: workbookPath,
-    sourceKind: workbook.sourceKind,
-    sourceMtime: workbook.sourceMtimeIso || '',
-    fallbackPath: workbook.fallbackPath || '',
-    fallbackAgeHours: workbook.fallbackAgeHours ?? null,
-    overlay: {
-      ...result.summary,
-      extraMarketplacePreserved,
-      stagedOutput: stagedOverlayPath,
-      liveOutput: options.overlayOutputPath
-    },
-    prices: pricesResult.summary,
-    repricer: repricerResult.summary
-  };
-  console.log(JSON.stringify(summary, null, 2));
 }
 
 module.exports = {
@@ -683,7 +778,10 @@ module.exports = {
   decodeWorkbookFromEnvironment,
   extractGoogleFileId,
   fetchWorkbookFromUrl,
+  mergeApiPriceOverlay,
+  mergeOverlayWithPrevious,
   preserveExtraMarketplace,
+  priceFactMetrics,
   readGoogleServiceAccount,
   redactUrl,
   resolveOptions,

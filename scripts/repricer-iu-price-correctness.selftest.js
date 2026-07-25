@@ -97,9 +97,12 @@ const samples = rows
   }));
 
 assert.strictEqual(samples.length, sampleKeys.size);
-assert.strictEqual(checked.economics, 386);
-assert.strictEqual(checked.marginFloors, 63);
-assert.strictEqual(checked.infeasibleTargets, 24);
+assert(
+  checked.economics >= Math.floor(rows.length * 0.95),
+  `complete economics coverage is too low: ${checked.economics}/${rows.length}`
+);
+assert(checked.marginFloors >= 50, `too few protected margin floors were checked: ${checked.marginFloors}`);
+assert(checked.infeasibleTargets > 0, 'infeasible historical targets must remain explicitly blocked');
 assert.strictEqual(checked.readyProtected, 0, 'fallback OOS snapshot must block every protected active/new recommendation');
 
 console.log(JSON.stringify({

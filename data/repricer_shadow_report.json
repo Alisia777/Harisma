@@ -1,9 +1,9 @@
 {
   "schema": "repricer-shadow-report-v1",
-  "generatedAt": "2026-07-25T02:19:11.115Z",
+  "generatedAt": "2026-07-25T02:38:22.685Z",
   "mode": "legacy_shadow",
   "cutover_allowed": false,
-  "source_snapshot_id": "repricer:ed790b8989c95802",
+  "source_snapshot_id": "repricer:c53c42c469e32ce0",
   "thresholds": {
     "price_tolerance_rub": 1,
     "min_canonical_coverage": 0.95,
@@ -11,17 +11,17 @@
     "required_margin_minmax_gaps": 0
   },
   "summary": {
-    "canonical_rows": 391,
+    "canonical_rows": 411,
     "canonical_ready_rows": 37,
-    "canonical_blocked_rows": 354,
-    "canonical_publishable_coverage": 0.094629,
+    "canonical_blocked_rows": 374,
+    "canonical_publishable_coverage": 0.090024,
     "legacy_side_rows": 391,
     "comparable_ready_rows": 36,
     "matching_price_rows": 7,
     "price_mismatch_rows": 29,
     "canonical_only_ready_rows": 1,
     "price_agreement": 0.194444,
-    "margin_minmax_gap_rows": 28
+    "margin_minmax_gap_rows": 30
   },
   "blocking_reasons": [
     "required_margin_minmax_gaps_open",
@@ -30,7 +30,7 @@
   ],
   "mismatches": [
     {
-      "articleKey": "limfaksbad30caps",
+      "articleKey": "limfaks_bad_30caps",
       "platform": "ozon",
       "canonicalPrice": 816,
       "legacyPrice": 13611,
@@ -42,7 +42,7 @@
       ]
     },
     {
-      "articleKey": "syvorotkaguk30ml",
+      "articleKey": "syvorotka_guk_30ml",
       "platform": "ozon",
       "canonicalPrice": 536,
       "legacyPrice": 4287,
@@ -54,7 +54,7 @@
       ]
     },
     {
-      "articleKey": "insulightbad60caps",
+      "articleKey": "insulight_bad_60caps",
       "platform": "wb",
       "canonicalPrice": 742,
       "legacyPrice": 2500,
@@ -66,7 +66,7 @@
       ]
     },
     {
-      "articleKey": "maslodlyaborodi50ml",
+      "articleKey": "maslo_dlya_borodi_50ml",
       "platform": "ozon",
       "canonicalPrice": 612,
       "legacyPrice": 1755,
@@ -78,7 +78,7 @@
       ]
     },
     {
-      "articleKey": "cardicinbad60caps",
+      "articleKey": "cardicin_bad_60caps",
       "platform": "wb",
       "canonicalPrice": 675,
       "legacyPrice": 900,
@@ -90,7 +90,7 @@
       ]
     },
     {
-      "articleKey": "uromax11",
+      "articleKey": "uromax_1_1",
       "platform": "wb",
       "canonicalPrice": 645,
       "legacyPrice": 859.44,
@@ -102,7 +102,7 @@
       ]
     },
     {
-      "articleKey": "indolaktbad60caps",
+      "articleKey": "indolakt_bad_60caps",
       "platform": "wb",
       "canonicalPrice": 600,
       "legacyPrice": 785.4,
@@ -112,7 +112,7 @@
       "canonicalReasonCodes": []
     },
     {
-      "articleKey": "menoflavonbad60caps",
+      "articleKey": "menoflavon_bad_60caps",
       "platform": "ozon",
       "canonicalPrice": 1466,
       "legacyPrice": 1302,
@@ -124,7 +124,7 @@
       ]
     },
     {
-      "articleKey": "glikironbad60caps",
+      "articleKey": "glikiron_bad_60caps",
       "platform": "wb",
       "canonicalPrice": 502,
       "legacyPrice": 610.68,
@@ -134,7 +134,7 @@
       "canonicalReasonCodes": []
     },
     {
-      "articleKey": "revmastopbad60caps",
+      "articleKey": "revmastop_bad_60caps",
       "platform": "ozon",
       "canonicalPrice": 1142,
       "legacyPrice": 1246,
@@ -144,7 +144,7 @@
       "canonicalReasonCodes": []
     },
     {
-      "articleKey": "dardrakona11",
+      "articleKey": "dardrakona_1_1",
       "platform": "wb",
       "canonicalPrice": 701,
       "legacyPrice": 771.9166666666666,
@@ -168,7 +168,7 @@
       ]
     },
     {
-      "articleKey": "naborremuver40ml11",
+      "articleKey": "nabor_remuver_40ml_1_1",
       "platform": "wb",
       "canonicalPrice": 385,
       "legacyPrice": 442.56,
@@ -202,7 +202,7 @@
       ]
     },
     {
-      "articleKey": "psoral50ml",
+      "articleKey": "psoral_50ml",
       "platform": "wb",
       "canonicalPrice": 395,
       "legacyPrice": 449.475,
@@ -214,7 +214,7 @@
       ]
     },
     {
-      "articleKey": "geldlyabritya300ml",
+      "articleKey": "gel_dlya_britya_300ml",
       "platform": "wb",
       "canonicalPrice": 502,
       "legacyPrice": 552.0257894736842,
@@ -226,7 +226,7 @@
       ]
     },
     {
-      "articleKey": "intimvita300ml",
+      "articleKey": "intimvita_300ml",
       "platform": "wb",
       "canonicalPrice": 552,
       "legacyPrice": 512.1136363636364,
@@ -258,7 +258,7 @@
       ]
     },
     {
-      "articleKey": "daoshen75ml",
+      "articleKey": "daoshen_75ml",
       "platform": "wb",
       "canonicalPrice": 540,
       "legacyPrice": 568,
@@ -292,7 +292,7 @@
       ]
     },
     {
-      "articleKey": "frutalikabad60caps",
+      "articleKey": "frutalika_bad_60caps",
       "platform": "wb",
       "canonicalPrice": 548,
       "legacyPrice": 565.08,
@@ -302,7 +302,7 @@
       "canonicalReasonCodes": []
     },
     {
-      "articleKey": "micardin11",
+      "articleKey": "micardin_1_1",
       "platform": "wb",
       "canonicalPrice": 621,
       "legacyPrice": 634.2875,
@@ -314,7 +314,7 @@
       ]
     },
     {
-      "articleKey": "gelparfumtabaccovanille450ml",
+      "articleKey": "gel_parfum_tabacco_vanille_450ml",
       "platform": "wb",
       "canonicalPrice": 445,
       "legacyPrice": 456.8,
@@ -324,7 +324,7 @@
       "canonicalReasonCodes": []
     },
     {
-      "articleKey": "synergel60ml",
+      "articleKey": "synergel_60ml",
       "platform": "wb",
       "canonicalPrice": 560,
       "legacyPrice": 550.2,
@@ -334,7 +334,7 @@
       "canonicalReasonCodes": []
     },
     {
-      "articleKey": "ekdisteronultraman60caps",
+      "articleKey": "ekdisteron_ultra_man_60caps",
       "platform": "wb",
       "canonicalPrice": 714,
       "legacyPrice": 722.72,
@@ -356,7 +356,7 @@
   ],
   "canonical_only_ready": [
     {
-      "articleKey": "wbbiotrin111",
+      "articleKey": "wbbiotrin_1_1_1",
       "platform": "wb",
       "canonicalPrice": 1066,
       "legacyPrice": null,

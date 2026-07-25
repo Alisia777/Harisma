@@ -9,7 +9,11 @@ function safeReadJson(filePath, fallback = null) {
 }
 
 function normalizeKey(value = '') {
-  return String(value || '').toLowerCase().replace(/[^\p{L}\p{N}]+/gu, '');
+  return String(value || '')
+    .trim()
+    .toLowerCase()
+    .replace(/\s+/g, '')
+    .replace(/[^\p{L}\p{N}_-]+/gu, '');
 }
 
 function parseFreshStamp(value) {
@@ -33,6 +37,7 @@ function asIsoDate(value) {
 }
 
 function numOrNull(value) {
+  if (value === null || value === undefined || value === '') return null;
   const parsed = Number(value);
   return Number.isFinite(parsed) ? parsed : null;
 }
@@ -379,7 +384,12 @@ function mergeWorkbenchOverlayRow(primaryRow = {}, overlayRow = {}, platform = '
     'valueDate',
     'historyFreshnessDate',
     'sourceSheet',
-    'sourceMode'
+    'sourceMode',
+    'clearCurrentFillPrice',
+    'clearCurrentPrice',
+    'clearCurrentClientPrice',
+    'clearCurrentSppPct',
+    'clearCurrentTurnoverDays'
   ].forEach((key) => mergeWorkbenchField(next, key, overlay[key], true));
 
   const keepLiveSellerPrice = (

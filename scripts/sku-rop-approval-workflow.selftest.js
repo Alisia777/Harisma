@@ -35,7 +35,10 @@ function startStaticServer() {
         return;
       }
       const body = relative === 'index.html'
-        ? Buffer.from(data.toString('utf8').replace('<head>', '<head><script>window.APP_CONFIG={portalAuthRequired:false};</script>'), 'utf8')
+        ? Buffer.from(data.toString('utf8').replace(
+          '<head>',
+          '<head><script>window.APP_CONFIG={portalAuthRequired:false};window.__ALTEA_AUTH_SESSION__={access_token:"repricer-selftest-token",user:{id:"repricer-selftest-user",email:"repricer-selftest@example.com",user_metadata:{name:"Repricer selftest"}}};window.__ALTEA_PORTAL_ACCESS__={name:"Repricer selftest",email:"repricer-selftest@example.com",role:"admin"};</script>'
+        ), 'utf8')
         : data;
       response.writeHead(200, {
         'content-type': MIME[path.extname(filePath).toLowerCase()] || 'application/octet-stream',
@@ -61,7 +64,11 @@ async function openView(page, view) {
     await premium.click();
     return;
   }
-  await page.locator(`.nav-btn[data-view="${view}"]`).click({ force: true });
+  await page.evaluate((targetView) => {
+    const target = document.querySelector(`[data-premium-nav="${targetView}"], .nav-btn[data-view="${targetView}"]`);
+    if (!target) throw new Error(`Navigation target is missing: ${targetView}`);
+    target.click();
+  }, view);
 }
 
 async function run() {

@@ -37,6 +37,7 @@ async function installRemoteFixture(page, accessLevel, workspace) {
     window.__designRequests = [];
     window.__designRemoteWorkspace = payload;
     window.__designRemoteRevision = payload ? 3 : 0;
+    window.__designAccessLevel = level;
     window.currentConfig = () => ({ brand: 'Алтея', supabase: { url: 'https://supabase.test', anonKey: 'anon-key' } });
     window.__ALTEA_AUTH_SESSION__ = {
       access_token: 'signed-user-token',
@@ -47,7 +48,8 @@ async function installRemoteFixture(page, accessLevel, workspace) {
       if (!url.startsWith('https://supabase.test/')) return nativeFetch(input, options);
       window.__designRequests.push({ url, method: options.method || 'GET', body: options.body || '' });
       if (url.includes('/portal_design_workspace_members')) {
-        return new Response(JSON.stringify(level ? [{ access_level: level }] : []), { status: 200, headers: { 'Content-Type': 'application/json' } });
+        if (window.__designFailMembership) throw new TypeError('Failed to fetch membership');
+        return new Response(JSON.stringify(window.__designAccessLevel ? [{ access_level: window.__designAccessLevel }] : []), { status: 200, headers: { 'Content-Type': 'application/json' } });
       }
       if (url.includes('/portal_design_workspace_history')) {
         return new Response(JSON.stringify(window.__designRemoteWorkspace ? [{ revision: window.__designRemoteRevision, changed_at: '2026-07-20T12:00:00Z', change_summary: 'Тестовая версия', changed_by: null }] : []), { status: 200, headers: { 'Content-Type': 'application/json' } });
@@ -57,6 +59,17 @@ async function installRemoteFixture(page, accessLevel, workspace) {
       }
       if (url.includes('/rpc/save_portal_design_workspace')) {
         const body = JSON.parse(options.body || '{}');
+        if (Number(body.p_expected_revision) === Number(window.__designRemoteRevision) && Number(window.__designRevisionRaces) > 0) {
+          window.__designRevisionRaces -= 1;
+          window.__designRemoteRevision += 1;
+          const raceCard = window.__designRemoteWorkspace && window.__designRemoteWorkspace.projects.find((item) => item.id === 'race-remote-card');
+          if (raceCard) {
+            raceCard.brief = `Командная правка v${window.__designRemoteRevision}`;
+            raceCard.updatedAt = new Date(Date.UTC(2026, 6, 24, 11, window.__designRemoteRevision, 0)).toISOString();
+            window.__designRemoteWorkspace.updatedAt = raceCard.updatedAt;
+          }
+          return new Response(JSON.stringify({ message: 'revision_conflict' }), { status: 409, headers: { 'Content-Type': 'application/json' } });
+        }
         if (Number(body.p_expected_revision) !== Number(window.__designRemoteRevision)) {
           return new Response(JSON.stringify({ message: 'revision_conflict' }), { status: 409, headers: { 'Content-Type': 'application/json' } });
         }
@@ -230,13 +243,26 @@ async function testViewerKeepsCacheDuringRemoteFailure(browser, baseUrl) {
   const offlinePage = await context.newPage();
   await offlinePage.goto(`${baseUrl}/blank`, { waitUntil: 'domcontentloaded' });
   await installRemoteFixture(offlinePage, 'viewer', workspace);
-  await offlinePage.evaluate(() => { window.__designFailWorkspace = true; });
+  await offlinePage.evaluate(() => {
+    window.__designFailMembership = true;
+    window.__designFailWorkspace = true;
+  });
   const offlineErrors = await loadModule(offlinePage, baseUrl);
   await offlinePage.waitForSelector('[data-design-access="viewer"]');
   await offlinePage.waitForSelector('[data-design-project="cached-viewer-project"]');
   await offlinePage.waitForSelector('.design-ws-notice.is-error [data-design-sync]');
   const diagnostics = await offlinePage.evaluate(() => window.AlteaDesignWorkspace.diagnostics());
   assert.match(diagnostics.remoteLoadError, /503/, 'Remote failure must be reported in diagnostics');
+  assert.strictEqual(diagnostics.membershipCheckFailed, true, 'A membership timeout must remain distinguishable from a confirmed revocation');
+  assert.match(diagnostics.workspaceAccessMessage, /Офлайн/, 'A membership timeout must use the safe read-only fallback');
+  assert.strictEqual(await offlinePage.locator('[data-design-add-project]').count(), 0, 'Offline membership fallback must not grant write access');
+  await offlinePage.evaluate(() => {
+    window.__designFailMembership = false;
+    window.__designFailWorkspace = false;
+  });
+  await offlinePage.click('[data-design-sync]');
+  await offlinePage.waitForFunction(() => !window.AlteaDesignWorkspace.diagnostics().membershipCheckFailed);
+  assert.strictEqual((await offlinePage.evaluate(() => window.AlteaDesignWorkspace.diagnostics())).workspaceAccess, 'viewer', 'Retry must restore the confirmed membership');
   assert.strictEqual(offlineErrors.length, 0, offlineErrors.join('\n'));
   await context.close();
 }
@@ -278,6 +304,64 @@ async function testRemoteEditor(browser, baseUrl) {
   await page.click('[data-design-project]');
   assert.strictEqual(await page.locator('[data-design-project-attachment-item]').count(), 2, 'Project dialog must show uploaded photo and file');
   assert.strictEqual(await page.locator('.design-project-cover-badge').count(), 1, 'Project dialog must identify the active cover');
+  assert.strictEqual(errors.length, 0, errors.join('\n'));
+  await context.close();
+}
+
+async function testTenEditorRevisionRace(browser, baseUrl) {
+  const context = await browser.newContext();
+  const page = await context.newPage();
+  await page.goto(`${baseUrl}/blank`, { waitUntil: 'domcontentloaded' });
+  await installRemoteFixture(page, 'editor', {
+    schema: 'altea-design-workspace-v1',
+    version: 1,
+    updatedAt: '2026-07-24T11:00:00Z',
+    projects: [
+      {
+        id: 'race-local-card',
+        title: 'Локальная карточка',
+        status: 'inbox',
+        type: 'card',
+        priority: 'normal',
+        createdAt: '2026-07-24T10:00:00Z',
+        updatedAt: '2026-07-24T11:00:00Z'
+      },
+      {
+        id: 'race-remote-card',
+        title: 'Командная карточка',
+        status: 'review',
+        type: 'card',
+        priority: 'normal',
+        brief: 'Базовая командная версия',
+        createdAt: '2026-07-24T10:00:00Z',
+        updatedAt: '2026-07-24T11:00:00Z'
+      }
+    ],
+    tests: [],
+    pages: [],
+    activity: [],
+    settings: {}
+  });
+  const errors = await loadModule(page, baseUrl);
+  await page.waitForSelector('[data-design-access="editor"]');
+  await page.evaluate(() => { window.__designRevisionRaces = 9; });
+  await page.click('[data-design-project="race-local-card"]');
+  await page.selectOption('[data-design-project-form] [name="status"]', 'production');
+  await page.click('[data-design-project-form] button[type="submit"]');
+  await page.waitForFunction(() => window.__designRequests.filter((request) => request.method === 'POST' && request.url.includes('/rpc/save_portal_design_workspace')).length === 10);
+  await page.waitForFunction(() => window.AlteaDesignWorkspace.diagnostics().cacheDirty === false);
+  const state = await page.evaluate(() => ({
+    diagnostics: window.AlteaDesignWorkspace.diagnostics(),
+    remoteRevision: window.__designRemoteRevision,
+    remoteWorkspace: window.__designRemoteWorkspace,
+    postCount: window.__designRequests.filter((request) => request.method === 'POST' && request.url.includes('/rpc/save_portal_design_workspace')).length
+  }));
+  assert.strictEqual(state.postCount, 10, 'Nine competing writers plus the local writer must use ten optimistic POST attempts');
+  assert.strictEqual(state.diagnostics.lastSyncRebaseAttempts, 10, 'The client must rebase across every competing revision');
+  assert.strictEqual(state.remoteRevision, 13, 'All nine competing revisions and the final local revision must be serialized');
+  assert.strictEqual(state.remoteWorkspace.projects.find((item) => item.id === 'race-local-card').status, 'production', 'The local card move must survive all competing revisions');
+  assert.strictEqual(state.remoteWorkspace.projects.find((item) => item.id === 'race-remote-card').brief, 'Командная правка v12', 'The latest competing team edit must survive the final local write');
+  assert.strictEqual(state.diagnostics.syncConflictCount, 0, 'Independent edits from ten writers must not create false conflicts');
   assert.strictEqual(errors.length, 0, errors.join('\n'));
   await context.close();
 }
@@ -382,7 +466,7 @@ async function testConcurrentConflict(browser, baseUrl) {
     window.__designRemoteRevision = 4;
   });
   await page.click('[data-design-project-form] button[type="submit"]');
-  await page.waitForSelector('[data-design-conflict-local]');
+  await page.waitForSelector('[data-design-conflict-choice="local"]');
   const state = await page.evaluate(() => ({
     diagnostics: window.AlteaDesignWorkspace.diagnostics(),
     requests: window.__designRequests,
@@ -391,6 +475,200 @@ async function testConcurrentConflict(browser, baseUrl) {
   assert.strictEqual(state.diagnostics.syncConflictCount, 1, 'Same-entity concurrent edits must surface a conflict');
   assert.strictEqual(state.title, 'Локальная версия', 'The client must preserve the local edit until the user resolves the conflict');
   assert.strictEqual(state.requests.some((item) => item.method === 'POST'), false, 'A detected conflict must not overwrite the server');
+  assert.strictEqual(errors.length, 0, errors.join('\n'));
+  await context.close();
+}
+
+async function testOfflineEditorThreeWayMerge(browser, baseUrl) {
+  const context = await browser.newContext();
+  const workspace = {
+    schema: 'altea-design-workspace-v1',
+    version: 1,
+    updatedAt: '2026-07-24T09:00:00Z',
+    projects: [
+      {
+        id: 'offline-card-a',
+        title: 'Карточка A',
+        status: 'review',
+        type: 'card',
+        priority: 'normal',
+        brief: 'Исходный бриф A',
+        createdAt: '2026-07-24T08:00:00Z',
+        updatedAt: '2026-07-24T09:00:00Z'
+      },
+      {
+        id: 'offline-card-b',
+        title: 'Карточка B',
+        status: 'inbox',
+        type: 'card',
+        priority: 'normal',
+        brief: 'Исходный бриф B',
+        createdAt: '2026-07-24T08:00:00Z',
+        updatedAt: '2026-07-24T09:00:00Z'
+      },
+      {
+        id: 'offline-card-c',
+        title: 'Карточка C',
+        status: 'brief',
+        type: 'card',
+        priority: 'normal',
+        brief: 'Исходный бриф C',
+        createdAt: '2026-07-24T08:00:00Z',
+        updatedAt: '2026-07-24T09:00:00Z'
+      }
+    ],
+    tests: [],
+    pages: [],
+    activity: [],
+    settings: {}
+  };
+
+  const onlinePage = await context.newPage();
+  await onlinePage.goto(`${baseUrl}/blank`, { waitUntil: 'domcontentloaded' });
+  await installRemoteFixture(onlinePage, 'editor', workspace);
+  const onlineErrors = await loadModule(onlinePage, baseUrl);
+  await onlinePage.waitForSelector('[data-design-access="editor"]');
+  await onlinePage.evaluate(() => window.AlteaDesignWorkspace.whenLocalSaved());
+  assert.strictEqual(
+    (await onlinePage.evaluate(() => window.AlteaDesignWorkspace.diagnostics())).confirmedAccessLevel,
+    'editor',
+    'A successful online membership check must authorize later offline editing'
+  );
+  assert.strictEqual(onlineErrors.length, 0, onlineErrors.join('\n'));
+  await onlinePage.close();
+
+  const offlinePage = await context.newPage();
+  await offlinePage.goto(`${baseUrl}/blank`, { waitUntil: 'domcontentloaded' });
+  await installRemoteFixture(offlinePage, 'editor', workspace);
+  await offlinePage.evaluate(() => {
+    window.__designFailMembership = true;
+    window.__designFailWorkspace = true;
+  });
+  const offlineErrors = await loadModule(offlinePage, baseUrl);
+  await offlinePage.waitForSelector('[data-design-access="editor"]');
+  assert.strictEqual(
+    (await offlinePage.evaluate(() => window.AlteaDesignWorkspace.diagnostics())).offlineEditMode,
+    true,
+    'A recently confirmed editor must be able to keep working offline'
+  );
+
+  await offlinePage.click('[data-design-project="offline-card-a"]');
+  await offlinePage.selectOption('[data-design-project-form] [name="status"]', 'production');
+  await offlinePage.click('[data-design-project-form] button[type="submit"]');
+  await offlinePage.click('[data-design-project="offline-card-b"]');
+  await offlinePage.selectOption('[data-design-project-form] [name="status"]', 'review');
+  await offlinePage.click('[data-design-project-form] button[type="submit"]');
+  await offlinePage.click('[data-design-project="offline-card-c"]');
+  await offlinePage.selectOption('[data-design-project-form] [name="status"]', 'production');
+  await offlinePage.click('[data-design-project-form] button[type="submit"]');
+  await offlinePage.evaluate(() => window.AlteaDesignWorkspace.whenLocalSaved());
+  assert.strictEqual(
+    (await offlinePage.evaluate(() => window.__designRequests)).some((request) => request.method === 'POST'),
+    false,
+    'Offline moves must remain local until membership and the latest revision are fetched'
+  );
+
+  await offlinePage.evaluate(() => {
+    window.__designRemoteWorkspace = JSON.parse(JSON.stringify(window.__designRemoteWorkspace));
+    window.__designRemoteWorkspace.projects.find((item) => item.id === 'offline-card-a').title = 'Карточка A · правка команды';
+    window.__designRemoteWorkspace.projects.find((item) => item.id === 'offline-card-a').updatedAt = '2026-07-24T09:05:00Z';
+    window.__designRemoteWorkspace.projects.find((item) => item.id === 'offline-card-b').status = 'done';
+    window.__designRemoteWorkspace.projects.find((item) => item.id === 'offline-card-b').updatedAt = '2026-07-24T09:06:00Z';
+    window.__designRemoteWorkspace.projects.find((item) => item.id === 'offline-card-c').status = 'done';
+    window.__designRemoteWorkspace.projects.find((item) => item.id === 'offline-card-c').updatedAt = '2026-07-24T09:07:00Z';
+    window.__designRemoteWorkspace.updatedAt = '2026-07-24T09:07:00Z';
+    window.__designRemoteRevision = 4;
+    window.__designFailMembership = false;
+    window.__designFailWorkspace = false;
+  });
+
+  await offlinePage.click('[data-design-sync]');
+  await offlinePage.waitForSelector('[data-design-conflict-choice="local"]');
+  const conflictState = await offlinePage.evaluate(() => ({
+    diagnostics: window.AlteaDesignWorkspace.diagnostics(),
+    requests: window.__designRequests
+  }));
+  assert.strictEqual(conflictState.diagnostics.syncConflictCount, 2, 'Every card moved to two different columns must be listed separately');
+  assert.deepStrictEqual(conflictState.diagnostics.syncConflictFields, ['status', 'status'], 'Each conflict must be limited to its status field');
+  assert.strictEqual(conflictState.requests.some((request) => request.method === 'POST'), false, 'No payload may be written before the conflict is resolved');
+
+  await offlinePage.click('[data-design-conflict-choice="local"][data-design-conflict-index="0"]');
+  assert.strictEqual(await offlinePage.locator('[data-design-conflict-apply]').isDisabled(), true, 'Apply must stay blocked until every card has a decision');
+  await offlinePage.click('[data-design-conflict-choice="remote"][data-design-conflict-index="1"]');
+  assert.strictEqual(await offlinePage.locator('[data-design-conflict-apply]').isEnabled(), true, 'Apply must unlock after every card has a decision');
+  offlinePage.once('dialog', (dialog) => dialog.accept());
+  await offlinePage.click('[data-design-conflict-apply]');
+  await offlinePage.waitForFunction(() => window.__designRequests.some((request) => request.method === 'POST' && request.url.includes('/rpc/save_portal_design_workspace')));
+  const saveRequest = await offlinePage.evaluate(() => window.__designRequests.findLast((request) => request.method === 'POST' && request.url.includes('/rpc/save_portal_design_workspace')));
+  const saved = JSON.parse(saveRequest.body).p_payload;
+  const savedA = saved.projects.find((item) => item.id === 'offline-card-a');
+  const savedB = saved.projects.find((item) => item.id === 'offline-card-b');
+  const savedC = saved.projects.find((item) => item.id === 'offline-card-c');
+  assert.strictEqual(savedA.title, 'Карточка A · правка команды', 'A remote title edit must survive an unrelated offline column move');
+  assert.strictEqual(savedA.status, 'production', 'The offline column move must survive an unrelated remote title edit');
+  assert.strictEqual(savedB.status, 'review', 'The local decision must apply only to its selected card');
+  assert.strictEqual(savedC.status, 'done', 'The team decision must apply only to its selected card');
+  assert.strictEqual(offlineErrors.length, 0, offlineErrors.join('\n'));
+  await context.close();
+}
+
+async function testOfflineEditorRoleDowngradeStopsPush(browser, baseUrl) {
+  const context = await browser.newContext();
+  const workspace = {
+    schema: 'altea-design-workspace-v1',
+    version: 1,
+    updatedAt: '2026-07-24T10:00:00Z',
+    projects: [{
+      id: 'offline-downgrade-card',
+      title: 'Карточка со сменой роли',
+      status: 'inbox',
+      type: 'card',
+      priority: 'normal',
+      createdAt: '2026-07-24T09:00:00Z',
+      updatedAt: '2026-07-24T10:00:00Z'
+    }],
+    tests: [],
+    pages: [],
+    activity: [],
+    settings: {}
+  };
+
+  const onlinePage = await context.newPage();
+  await onlinePage.goto(`${baseUrl}/blank`, { waitUntil: 'domcontentloaded' });
+  await installRemoteFixture(onlinePage, 'editor', workspace);
+  await loadModule(onlinePage, baseUrl);
+  await onlinePage.waitForSelector('[data-design-access="editor"]');
+  await onlinePage.evaluate(() => window.AlteaDesignWorkspace.whenLocalSaved());
+  await onlinePage.close();
+
+  const offlinePage = await context.newPage();
+  await offlinePage.goto(`${baseUrl}/blank`, { waitUntil: 'domcontentloaded' });
+  await installRemoteFixture(offlinePage, 'editor', workspace);
+  await offlinePage.evaluate(() => {
+    window.__designFailMembership = true;
+    window.__designFailWorkspace = true;
+  });
+  const errors = await loadModule(offlinePage, baseUrl);
+  await offlinePage.waitForSelector('[data-design-access="editor"]');
+  await offlinePage.click('[data-design-project="offline-downgrade-card"]');
+  await offlinePage.selectOption('[data-design-project-form] [name="status"]', 'production');
+  await offlinePage.click('[data-design-project-form] button[type="submit"]');
+  await offlinePage.evaluate(() => window.AlteaDesignWorkspace.whenLocalSaved());
+  await offlinePage.evaluate(() => {
+    window.__designAccessLevel = 'viewer';
+    window.__designFailMembership = false;
+    window.__designFailWorkspace = false;
+  });
+  await offlinePage.click('[data-design-sync]');
+  await offlinePage.waitForFunction(() => window.AlteaDesignWorkspace.diagnostics().workspaceAccess === 'viewer');
+  const state = await offlinePage.evaluate(() => ({
+    diagnostics: window.AlteaDesignWorkspace.diagnostics(),
+    status: window.AlteaDesignWorkspace.getData().projects.find((item) => item.id === 'offline-downgrade-card').status,
+    requests: window.__designRequests
+  }));
+  assert.strictEqual(state.diagnostics.cacheDirty, true, 'Unsent offline work must remain marked dirty after an editor downgrade');
+  assert.strictEqual(state.status, 'production', 'A role downgrade must not overwrite the unsent local card move');
+  assert.strictEqual(state.requests.some((request) => request.method === 'POST'), false, 'A downgraded editor must never push offline changes');
   assert.strictEqual(errors.length, 0, errors.join('\n'));
   await context.close();
 }
@@ -456,8 +734,11 @@ async function run() {
     await testViewer(browser, baseUrl);
     await testViewerKeepsCacheDuringRemoteFailure(browser, baseUrl);
     await testRemoteEditor(browser, baseUrl);
+    await testTenEditorRevisionRace(browser, baseUrl);
     await testBoardAndModalOverflow(browser, baseUrl);
     await testConcurrentConflict(browser, baseUrl);
+    await testOfflineEditorThreeWayMerge(browser, baseUrl);
+    await testOfflineEditorRoleDowngradeStopsPush(browser, baseUrl);
     await testRevokedMember(browser, baseUrl);
     console.log('portal-designers-browser.selftest: ok');
   } finally {

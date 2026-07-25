@@ -2041,6 +2041,58 @@ button.sku-data-focus-row:hover{border-color:rgba(255,214,130,.36);background:rg
 .oos-action-card__metrics em{color:var(--muted);font-size:11px;font-style:normal;line-height:1.2}
 .oos-action-card p{margin:0;color:var(--text);font-size:13px;line-height:1.45}
 .oos-detail-card .sku-plan-fact-table td{vertical-align:top}
+#view-oos-control .oos-view-tabs{display:flex;gap:8px;align-items:stretch;margin-top:14px;padding:5px;border:1px solid rgba(255,255,255,.09);border-radius:10px;background:rgba(0,0,0,.2)}
+#view-oos-control .oos-view-tabs button{display:flex;gap:9px;align-items:center;justify-content:center;min-height:42px;padding:8px 16px;border:1px solid transparent;border-radius:8px;background:transparent;color:var(--muted);font-size:12px;font-weight:900;cursor:pointer;transition:border-color .2s ease,background .2s ease,color .2s ease}
+#view-oos-control .oos-view-tabs button span{color:inherit;font-size:10px;font-weight:700;opacity:.82}
+#view-oos-control .oos-view-tabs button:hover,#view-oos-control .oos-view-tabs button.is-active{border-color:rgba(var(--oos-platform-rgb),.35);background:linear-gradient(135deg,rgba(var(--oos-platform-rgb),.14),rgba(255,255,255,.035));color:var(--text)}
+#view-oos-control .oos-view-tabs button:focus-visible{outline:2px solid rgba(var(--oos-platform-rgb),.55);outline-offset:2px}
+#view-oos-control .oos-procurement-board{margin-top:14px;overflow:hidden;border-color:rgba(var(--oos-platform-rgb),.26);background:radial-gradient(760px 280px at 4% 0,rgba(var(--oos-platform-rgb),.1),transparent 70%),rgba(255,255,255,.018)}
+#view-oos-control .oos-procurement-board h2{margin:0 0 5px;font-size:19px}
+#view-oos-control .oos-procurement-toolbar{display:grid;grid-template-columns:minmax(220px,1.2fr) minmax(240px,.95fr) minmax(190px,.7fr) minmax(180px,.65fr) auto;gap:10px;align-items:end;margin-top:14px;padding:12px;border:1px solid rgba(255,255,255,.08);border-radius:9px;background:rgba(0,0,0,.17)}
+#view-oos-control .oos-procurement-toolbar>label,#view-oos-control .oos-procurement-toolbar>div{display:grid;gap:6px;min-width:0}
+#view-oos-control .oos-procurement-toolbar>label>span,#view-oos-control .oos-procurement-toolbar>div>span{color:var(--muted);font-size:10px;font-weight:800;text-transform:uppercase;letter-spacing:.07em}
+#view-oos-control .oos-procurement-toolbar input,#view-oos-control .oos-procurement-toolbar select{width:100%;height:39px;border:1px solid rgba(255,255,255,.1);border-radius:8px;background:rgba(0,0,0,.3);color:var(--text);font-size:12px}
+#view-oos-control .oos-procurement-toolbar>.btn{min-height:39px;white-space:nowrap}
+#view-oos-control .oos-procurement-platform-switch{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:5px}
+#view-oos-control .oos-procurement-platform-switch button{min-height:39px;padding:7px 9px;border:1px solid rgba(255,255,255,.09);border-radius:8px;background:rgba(255,255,255,.02);color:var(--muted);font-size:11px;font-weight:900;cursor:pointer}
+#view-oos-control .oos-procurement-platform-switch button:hover,#view-oos-control .oos-procurement-platform-switch button.is-active{border-color:color-mix(in srgb,var(--pc) 48%,var(--line));background:color-mix(in srgb,var(--pc) 12%,transparent);color:var(--text)}
+#view-oos-control .oos-procurement-scenarios{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:9px;margin-top:12px}
+#view-oos-control .oos-procurement-scenario{display:grid;gap:4px;min-width:0;padding:13px;text-align:left;border:1px solid rgba(255,255,255,.09);border-radius:9px;background:rgba(255,255,255,.022);color:var(--text);cursor:pointer;transition:border-color .2s ease,background .2s ease,transform .2s ease}
+#view-oos-control .oos-procurement-scenario:hover,#view-oos-control .oos-procurement-scenario.is-active{transform:translateY(-1px);border-color:rgba(var(--oos-platform-rgb),.42);background:linear-gradient(145deg,rgba(var(--oos-platform-rgb),.13),rgba(255,255,255,.025))}
+#view-oos-control .oos-procurement-scenario span{color:var(--muted);font-size:10px;font-weight:800;text-transform:uppercase;letter-spacing:.05em}
+#view-oos-control .oos-procurement-scenario strong{font-size:18px;line-height:1.15;overflow-wrap:anywhere}
+#view-oos-control .oos-procurement-scenario small{color:var(--muted);font-size:11px}
+#view-oos-control .oos-procurement-kpis{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:9px;margin-top:12px}
+#view-oos-control .oos-procurement-kpis>div{min-width:0;padding:14px;border:1px solid rgba(255,255,255,.08);border-radius:9px;background:rgba(0,0,0,.16)}
+#view-oos-control .oos-procurement-kpis>div.accent{border-color:rgba(var(--oos-platform-rgb),.33);background:linear-gradient(145deg,rgba(var(--oos-platform-rgb),.11),rgba(0,0,0,.12))}
+#view-oos-control .oos-procurement-kpis span,#view-oos-control .oos-procurement-kpis small{display:block;color:var(--muted);font-size:11px;line-height:1.3}
+#view-oos-control .oos-procurement-kpis strong{display:block;margin:7px 0 5px;color:var(--text);font-size:22px;line-height:1.12;letter-spacing:-.025em;overflow-wrap:anywhere}
+#view-oos-control .oos-procurement-kpis .accent strong{color:#ffd36d}
+#view-oos-control .oos-procurement-quality{margin-top:12px}
+#view-oos-control .oos-procurement-concentration{margin-top:9px}
+#view-oos-control .oos-procurement-passport{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:8px;margin-top:10px}
+#view-oos-control .oos-procurement-passport>div{min-width:0;padding:10px 12px;border:1px solid rgba(255,255,255,.08);border-radius:8px;background:rgba(0,0,0,.14)}
+#view-oos-control .oos-procurement-passport span,#view-oos-control .oos-procurement-passport strong{display:block}
+#view-oos-control .oos-procurement-passport span{color:var(--muted);font-size:9px;font-weight:800;text-transform:uppercase;letter-spacing:.06em}
+#view-oos-control .oos-procurement-passport strong{margin-top:5px;font-size:13px}
+#view-oos-control .oos-procurement-platforms{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:9px;margin-top:12px}
+#view-oos-control .oos-procurement-platform{min-width:0;padding:12px;border:1px solid color-mix(in srgb,var(--pc) 28%,var(--line));border-radius:9px;background:color-mix(in srgb,var(--pc) 7%,rgba(0,0,0,.16))}
+#view-oos-control .oos-procurement-platform span{display:flex;gap:7px;align-items:center;color:var(--muted);font-size:10px;font-weight:900;text-transform:uppercase;letter-spacing:.06em}
+#view-oos-control .oos-procurement-platform span i,#view-oos-control .oos-procurement-platform-label i{width:7px;height:7px;border-radius:50%;background:var(--pc);box-shadow:0 0 12px color-mix(in srgb,var(--pc) 65%,transparent)}
+#view-oos-control .oos-procurement-platform strong{display:block;margin-top:6px;font-size:16px}
+#view-oos-control .oos-procurement-platform small{display:block;margin-top:3px;color:var(--muted);font-size:11px}
+#view-oos-control .oos-procurement-table{margin-top:13px;max-height:720px;border:1px solid rgba(255,255,255,.08);border-radius:9px}
+#view-oos-control .oos-procurement-table table{min-width:1180px}
+#view-oos-control .oos-procurement-table th{position:sticky;top:0;z-index:2;background:color-mix(in srgb,var(--panel) 94%,#050505);white-space:nowrap}
+#view-oos-control .oos-procurement-table td{vertical-align:top}
+#view-oos-control .oos-procurement-table td:first-child{min-width:250px}
+#view-oos-control .oos-procurement-table td strong,#view-oos-control .oos-procurement-table td small,#view-oos-control .oos-procurement-table td em{display:block}
+#view-oos-control .oos-procurement-table td small,#view-oos-control .oos-procurement-table td em{max-width:280px;margin-top:4px;color:var(--muted);font-size:10px;font-style:normal;line-height:1.25;overflow-wrap:anywhere}
+#view-oos-control .oos-procurement-table td em.is-stale{color:#ff9a8f}
+#view-oos-control .oos-procurement-table td.num{text-align:right;white-space:nowrap}
+#view-oos-control .oos-procurement-table td.is-missing strong{color:#ff9a8f}
+#view-oos-control .oos-procurement-platform-label{display:inline-flex;gap:7px;align-items:center;margin-bottom:6px;color:var(--text);font-size:11px;font-weight:900}
+#view-oos-control .oos-procurement-formula{border-color:rgba(var(--oos-platform-rgb),.28);background:rgba(var(--oos-platform-rgb),.045)}
 #view-oos-control .oos-command{display:grid;grid-template-columns:1.12fr .72fr .9fr 1.12fr;gap:0;margin-top:14px;padding:0;overflow:hidden;border:1px solid rgba(210,73,73,.26);border-radius:8px;background:linear-gradient(135deg,rgba(210,73,73,.08),rgba(var(--oos-platform-rgb),.05) 45%,rgba(255,255,255,.02));box-shadow:0 16px 44px rgba(0,0,0,.18)}
 #view-oos-control .oos-command>div{min-width:0;padding:17px 18px;border-right:1px solid rgba(255,255,255,.08)}
 #view-oos-control .oos-command>div:last-child{border-right:0}
@@ -2157,6 +2209,8 @@ button.sku-data-focus-row:hover{border-color:rgba(255,214,130,.36);background:rg
   #view-oos-control .oos-command>div:nth-child(-n+2){border-bottom:1px solid rgba(255,255,255,.08)}
   #view-oos-control .oos-signal-tools{grid-template-columns:repeat(3,minmax(0,1fr))}
   #view-oos-control .oos-signal{grid-template-columns:34px minmax(0,1.15fr) minmax(0,1fr) 100px 140px 30px}
+  #view-oos-control .oos-procurement-toolbar{grid-template-columns:repeat(2,minmax(0,1fr))}
+  #view-oos-control .oos-procurement-scenarios,#view-oos-control .oos-procurement-kpis,#view-oos-control .oos-procurement-passport{grid-template-columns:repeat(2,minmax(0,1fr))}
   .oos-briefing-grid{grid-template-columns:1fr}
   .oos-game-grid{grid-template-columns:1fr}
   .oos-chart-grid{grid-template-columns:repeat(2,minmax(0,1fr))}
@@ -2184,6 +2238,9 @@ button.sku-data-focus-row:hover{border-color:rgba(255,214,130,.36);background:rg
   #view-oos-control .oos-focus-arrow{transform:rotate(90deg)}
   #view-oos-control .oos-focus-meta{grid-template-columns:repeat(2,minmax(0,1fr))}
   #view-oos-control .oos-signal-tools,#view-oos-control .oos-localization-metrics{grid-template-columns:1fr}
+  #view-oos-control .oos-view-tabs{display:grid}
+  #view-oos-control .oos-view-tabs button{display:grid;gap:3px}
+  #view-oos-control .oos-procurement-toolbar,#view-oos-control .oos-procurement-scenarios,#view-oos-control .oos-procurement-kpis,#view-oos-control .oos-procurement-platforms,#view-oos-control .oos-procurement-passport{grid-template-columns:1fr}
   #view-oos-control .oos-signal{grid-template-columns:28px minmax(0,1fr) 92px;min-height:92px;padding:8px 10px 8px 0}
   #view-oos-control .oos-cluster{grid-column:2/3}
   #view-oos-control .oos-when{grid-column:3;grid-row:1/3}

@@ -12,6 +12,7 @@ const SNAPSHOT_NAMES = [
   'prices',
   'repricer',
   'smart_price_overlay',
+  'price_update_audit',
   'warehouse_stock_overlay',
   'loyalty_system',
   'product_leaderboard',
@@ -27,6 +28,7 @@ const SNAPSHOT_NAMES = [
   'wb_feedbacks_summary',
   'portal_data_quality',
   'portal_data_quarantine',
+  'portal_daily_intake',
   'sku_aliases',
   'sku_alias_ignore',
   'sku_alias_audit',
@@ -41,7 +43,8 @@ const REQUIRED_SNAPSHOTS = [
   'order_procurement',
   'warehouse_stock_overlay',
   'sku_matrix',
-  'portal_data_quality'
+  'portal_data_quality',
+  'portal_daily_intake'
 ];
 
 const LAST_GOOD_MANIFEST = 'manifest.json';
@@ -462,6 +465,7 @@ function latestPayloadDate(name, payload) {
   if (name === 'oos_control') return dateKey(payload.dataFreshness?.dataDate || payload.summary?.dataDate || payload.generatedAt);
   if (name === 'warehouse_stock_overlay') return dateKey(payload.asOfDate || payload.generatedAt);
   if (name === 'portal_data_quality') return dateKey(payload.summary?.maxDate || payload.generatedAt);
+  if (name === 'portal_daily_intake') return dateKey(payload.expectedDate || payload.generatedAt);
   if (name === 'portal_sync_health') return dateKey(payload.generatedAt);
   return dateKey(payload.asOfDate || payload.generatedAt || payload.updatedAt);
 }
@@ -588,6 +592,11 @@ function buildHealth(options) {
   const sources = Object.fromEntries(SNAPSHOT_NAMES.map((name) => [name, snapshotMetric(name, snapshots[name])]));
   const quality = snapshots.portal_data_quality || {};
   const qualitySummary = quality.summary || {};
+  const dailyIntake = snapshots.portal_daily_intake || {};
+  if (sources.portal_daily_intake) {
+    sources.portal_daily_intake.status = dailyIntake.status || '';
+    sources.portal_daily_intake.rows = numberOrZero(dailyIntake.summary?.checkedSources) || sources.portal_daily_intake.rows;
+  }
   const quarantine = buildQuarantine(quality);
   const blockingReasons = [];
   const warnings = [];
@@ -612,6 +621,33 @@ function buildHealth(options) {
     const ok = metric.exists && metric.rows > 0;
     checks.push({ name: `required:${name}`, status: ok ? 'ok' : 'blocked', rows: metric.rows });
     if (!ok) blockingReasons.push(`Required snapshot ${name} is missing or empty.`);
+  });
+
+  const intakeAllowed = Boolean(
+    dailyIntake.schema === 'portal-unified-daily-intake-v1'
+    && dailyIntake.publish?.allowed === true
+  );
+  checks.push({
+    name: 'daily-intake:all-views',
+    status: intakeAllowed ? (dailyIntake.status === 'warning' ? 'warning' : 'ok') : 'blocked',
+    expectedDate: dailyIntake.expectedDate || '',
+    runDate: dailyIntake.runDate || '',
+    registeredViews: numberOrZero(dailyIntake.summary?.registeredViews),
+    blockedViews: numberOrZero(dailyIntake.summary?.blockedViews),
+    warningViews: numberOrZero(dailyIntake.summary?.warningViews)
+  });
+  if (!intakeAllowed) {
+    const reasons = Array.isArray(dailyIntake.publish?.blockingReasons)
+      ? dailyIntake.publish.blockingReasons
+      : [];
+    blockingReasons.push(
+      reasons.length
+        ? `Unified daily intake is blocked: ${reasons.join(' | ')}`
+        : 'Unified daily intake receipt is missing or not publishable.'
+    );
+  }
+  (dailyIntake.publish?.warnings || []).forEach((warning) => {
+    warnings.push(`Unified daily intake: ${warning}`);
   });
 
   const aliasCount = activeAliasCount(snapshots.sku_aliases || {});
@@ -696,6 +732,36 @@ function buildHealth(options) {
   if (!sources.oos_control?.exists || sources.oos_control.rows <= 0) {
     warnings.push('OOS control snapshot is missing or empty; daily OOS queue will not be visible.');
   }
+  const priceGenerationIds = [
+    snapshots.smart_price_overlay?.priceGeneration?.id,
+    snapshots.prices?.priceGeneration?.id,
+    snapshots.repricer?.priceGeneration?.id
+  ].filter(Boolean);
+  const priceGenerationAligned = priceGenerationIds.length === 3 && new Set(priceGenerationIds).size === 1;
+  const activePriceGenerationId = priceGenerationAligned ? priceGenerationIds[0] : '';
+  const priceAuditGenerationId = snapshots.price_update_audit?.generationId || '';
+  const priceAuditAligned = Boolean(
+    snapshots.price_update_audit?.publishAllowed === true
+    && activePriceGenerationId
+    && priceAuditGenerationId === activePriceGenerationId
+  );
+  if (!priceAuditAligned) {
+    blockingReasons.push('Price update audit is missing, blocked, or belongs to another price generation.');
+  }
+  if (!priceGenerationAligned) {
+    blockingReasons.push('Price artifacts do not belong to one atomic price generation.');
+  }
+  checks.push({
+    name: 'price-generation:published-audit',
+    status: priceAuditAligned ? 'ok' : 'blocked',
+    generationId: priceAuditGenerationId,
+    activeGenerationId: activePriceGenerationId
+  });
+  checks.push({
+    name: 'price-generation:aligned-artifacts',
+    status: priceGenerationAligned ? 'ok' : 'blocked',
+    generationIds: priceGenerationIds
+  });
 
   const maxDate = qualitySummary.maxDate || sources.platform_trends.asOfDate || sources.dashboard.asOfDate;
   const completenessGuard = buildCompletenessGuard(options, snapshots, maxDate);
@@ -814,7 +880,7 @@ function writeSummary(filePath, health) {
     'Warnings:',
     ...(health.publish.warnings.length ? health.publish.warnings.map((item) => `- ${item}`) : ['- none'])
   ];
-  fs.writeFileSync(filePath, `${lines.join('\r\n')}\r\n`, 'utf8');
+  fs.writeFileSync(filePath, `${lines.join('\n')}\n`, 'utf8');
 }
 
 function mirrorOutput(options, files) {
@@ -897,6 +963,7 @@ if (require.main === module) {
 }
 
 module.exports = {
+  buildHealth,
   buildQuarantine,
   resolveOptions
 };

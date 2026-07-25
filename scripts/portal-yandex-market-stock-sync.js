@@ -5,6 +5,7 @@ const path = require('path');
 const zlib = require('zlib');
 
 const API_BASE_URL = 'https://api.partner.market.yandex.ru';
+const BLOCKED_LIFECYCLE_RE = /вывод|на вывод|вывед|снят|снимаем|spa|архив|archive|paused|pause|freeze|hold|под вопрос|question/i;
 const UNMAPPED_CLUSTER = '\u0411\u0435\u0437 \u043a\u043b\u0430\u0441\u0442\u0435\u0440\u0430 \u042f\u041c';
 const FBY_UNMAPPED_CLUSTER = 'FBY \u0431\u0435\u0437 \u043a\u043b\u0430\u0441\u0442\u0435\u0440\u0430';
 
@@ -362,6 +363,21 @@ function ownerForSku(sku) {
   return normalizeText(sku?.owner?.byPlatform?.ym || sku?.ownersByPlatform?.ym || sku?.owner?.name || sku?.owner || '');
 }
 
+function lifecycleStatus(sku = {}) {
+  const candidates = [
+    sku?.status,
+    sku?.lifecycleStatus,
+    sku?.lifecycle,
+    sku?.productLifecycle,
+    sku?.registryStatus,
+    sku?.owner?.registryStatus
+  ].map(normalizeText).filter(Boolean);
+  return {
+    label: candidates[0] || '',
+    blocked: candidates.some((item) => BLOCKED_LIFECYCLE_RE.test(item))
+  };
+}
+
 function trendsByArticle(platformTrends) {
   const articles = platformTrends?.extraMarketplace?.platforms?.ya?.articles
     || platformTrends?.extraMarketplace?.platforms?.ym?.articles
@@ -601,7 +617,8 @@ function projectedNeedRaw(avgDaily, available, days, safetyStock = 0) {
   return Math.ceil((avgDaily * days) + numberOrZero(safetyStock) - numberOrZero(available));
 }
 
-function targetNeedFromRaw(rawNeed) {
+function targetNeedFromRaw(rawNeed, blocked = false) {
+  if (blocked) return 0;
   return Math.max(0, numberOrZero(rawNeed));
 }
 
@@ -685,6 +702,7 @@ function buildPayload(options, sourceRows, context) {
     const articleKey = articleKeyForSku(sku, offerId);
     const article = normalizeText(sku?.article || articleKey);
     const trend = trends.get(normalizeKey(articleKey)) || trends.get(normalizeKey(article)) || null;
+    const lifecycle = lifecycleStatus(sku || {});
     const key = `${normalizeKey(articleKey)}|${resolvedWarehouse.cluster}`;
     const current = aggregate.get(key) || {
       platform: 'YM',
@@ -713,7 +731,8 @@ function buildPayload(options, sourceRows, context) {
       placementType: item.placementType || '',
       campaignDomain: item.campaignDomain || '',
       warehouseMatchState: resolvedWarehouse.matchedBy,
-      trend
+      trend,
+      lifecycle
     };
 
     const turnoverDays = numberOrZero(item.offer?.turnoverSummary?.turnoverDays);
@@ -776,6 +795,7 @@ function buildPayload(options, sourceRows, context) {
       const safetyStock = 0;
       const rawNeed28 = projectedNeedRaw(avgDaily, available, 28, safetyStock);
       const rawNeed30 = projectedNeedRaw(avgDaily, available, 30, safetyStock);
+      const lifecycle = row.lifecycle || { label: '', blocked: false };
       rows.push({
         platform: 'YM',
         platformKey: 'ym',
@@ -799,12 +819,14 @@ function buildPayload(options, sourceRows, context) {
         rawNeed14: projectedNeedRaw(avgDaily, available, 14, safetyStock),
         rawNeed28,
         rawNeed30,
-        targetNeed7: targetNeedFromRaw(projectedNeedRaw(avgDaily, available, 7, safetyStock)),
-        targetNeed14: targetNeedFromRaw(projectedNeedRaw(avgDaily, available, 14, safetyStock)),
-        targetNeed28: targetNeedFromRaw(rawNeed28),
-        targetNeed30: targetNeedFromRaw(rawNeed30),
+        targetNeed7: targetNeedFromRaw(projectedNeedRaw(avgDaily, available, 7, safetyStock), lifecycle.blocked),
+        targetNeed14: targetNeedFromRaw(projectedNeedRaw(avgDaily, available, 14, safetyStock), lifecycle.blocked),
+        targetNeed28: targetNeedFromRaw(rawNeed28, lifecycle.blocked),
+        targetNeed30: targetNeedFromRaw(rawNeed30, lifecycle.blocked),
         targetHorizonDays: 30,
         needFormula: 'max(0, ceil(avgDaily * 30 + safetyStock - (inStock + inTransit + inRequest)))',
+        lifecycleStatus: lifecycle.label,
+        needSuppressedByLifecycle: lifecycle.blocked,
         stockAvailable: Math.round(row.stockAvailable),
         stockFit: Math.round(row.stockFit),
         stockFreeze: Math.round(row.stockFreeze),

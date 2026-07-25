@@ -1,12 +1,12 @@
 {
   "schema": "repricer-price-apply-plan-v1",
-  "generatedAt": "2026-07-25T02:19:11.155Z",
-  "requestedBy": "local-regression-audit",
+  "generatedAt": "2026-07-25T02:38:23.473Z",
+  "requestedBy": "merge-revalidation",
   "status": "blocked",
   "applyAllowed": false,
   "confirmationHash": "9922511b8c684e43dd2657c178b9e7d186e492d541aa112a6df8e6492f26dafd",
   "source": {
-    "canonicalSnapshotId": "repricer:ed790b8989c95802",
+    "canonicalSnapshotId": "repricer:c53c42c469e32ce0",
     "livePriceGeneratedAt": "2026-07-25T00:48:50.043Z",
     "liveSignalGeneratedAt": "2026-07-25T01:30:22.722Z",
     "actions": []

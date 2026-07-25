@@ -1,16 +1,16 @@
 {
   "schema": "repricer-margin-minmax-gaps-v1",
   "generatedAt": "2026-07-25T00:48:50.043Z",
-  "sourceSnapshotId": "repricer:7a76e23c53fe1fc6",
+  "sourceSnapshotId": "repricer:c53c42c469e32ce0",
   "summary": {
-    "requiredRows": 115,
+    "requiredRows": 117,
     "completeRows": 87,
-    "existingRegistryRows": 97,
-    "migratedRows": 2,
-    "blockedRows": 28,
-    "missingMarginRows": 28,
-    "missingMinRows": 10,
-    "missingMaxRows": 10
+    "existingRegistryRows": 99,
+    "migratedRows": 0,
+    "blockedRows": 30,
+    "missingMarginRows": 30,
+    "missingMinRows": 12,
+    "missingMaxRows": 12
   },
   "publish_allowed": false,
   "rows": [
@@ -55,6 +55,36 @@
     },
     {
       "articleKey": "lifting_maska_pdrn_75ml",
+      "platform": "ozon",
+      "lifecycle": "new",
+      "targetMarginPct": null,
+      "minPrice": null,
+      "maxPrice": null,
+      "missing": [
+        "margin",
+        "min",
+        "max"
+      ],
+      "status": "blocked_missing_required_policy",
+      "action": "Заполнить margin, min, max и загрузить утверждённый файл маржи/MIN/MAX"
+    },
+    {
+      "articleKey": "maska_dlya_lica_intens_uvl_50ml",
+      "platform": "ozon",
+      "lifecycle": "new",
+      "targetMarginPct": null,
+      "minPrice": null,
+      "maxPrice": null,
+      "missing": [
+        "margin",
+        "min",
+        "max"
+      ],
+      "status": "blocked_missing_required_policy",
+      "action": "Заполнить margin, min, max и загрузить утверждённый файл маржи/MIN/MAX"
+    },
+    {
+      "articleKey": "maslo-shimmer_spf15_100ml",
       "platform": "ozon",
       "lifecycle": "new",
       "targetMarginPct": null,

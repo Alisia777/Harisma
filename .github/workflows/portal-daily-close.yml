@@ -11,6 +11,11 @@ on:
       cutoff-date:
         description: 'Business cutoff YYYY-MM-DD; empty means Europe/Moscow D-1'
         required: false
+      upload-runtime-data:
+        description: 'Upload the complete runtime data generation for a protected portal refresh'
+        required: false
+        default: false
+        type: boolean
 
 concurrency:
   group: portal-daily-close
@@ -217,7 +222,8 @@ jobs:
             --status-file data/retail_network_source_status.json \
             --from "$RETAIL_FROM" \
             --to '${{ steps.cutoff.outputs.value }}' \
-            --strict --optional-source --max-lag-days 1
+            --strict --optional-source --max-lag-days 1 \
+            --allow-stale-platforms letu
 
       - name: Refresh advertising and stock
         env:
@@ -252,6 +258,8 @@ jobs:
           ALTEA_WB_PROMOTION_TOKEN: ${{ secrets.ALTEA_WB_PROMOTION_TOKEN }}
           ALTEA_OZON_CLIENT_ID: ${{ secrets.ALTEA_OZON_CLIENT_ID }}
           ALTEA_OZON_API_KEY: ${{ secrets.ALTEA_OZON_API_KEY }}
+          ALTEA_YM_API_KEY: ${{ secrets.ALTEA_YM_API_KEY }}
+          ALTEA_YM_CAMPAIGN_ID: ${{ secrets.ALTEA_YM_CAMPAIGN_ID }}
           ALTEA_SMART_PRICE_SHEET_URL: ${{ secrets.ALTEA_SMART_PRICE_SHEET_URL || vars.ALTEA_SMART_PRICE_SHEET_URL }}
           ALTEA_SMART_PRICE_EXPORT_URL: ${{ secrets.ALTEA_SMART_PRICE_EXPORT_URL || vars.ALTEA_SMART_PRICE_EXPORT_URL }}
           ALTEA_SMART_PRICE_XLSX_URL: ${{ secrets.ALTEA_SMART_PRICE_XLSX_URL || vars.ALTEA_SMART_PRICE_XLSX_URL }}
@@ -281,9 +289,20 @@ jobs:
             fi
             SMART_PRICE_INPUT_ARGS=(--input-xlsx .portal-truth-output/price-sync/smart-price-workbook.xlsx)
           fi
+          node scripts/portal-yandex-market-price-sync.js \
+            --output-file .portal-truth-output/price-sync/yandex-market-prices.json \
+            --as-of-date '${{ steps.cutoff.outputs.value }}' \
+            --min-mapped-rows 10
           node scripts/build-sku-registry-meta.js --input-dir data --output-dir data --run-date '${{ steps.cutoff.outputs.run_date }}'
           node scripts/build-logistics-from-warehouse-overlay.js --input-dir data --output-dir data --run-date '${{ steps.cutoff.outputs.run_date }}'
-          node scripts/portal-smart-price-overlay-sync.js sync --output-dir .portal-truth-output/price-sync "${SMART_PRICE_INPUT_ARGS[@]}"
+          node scripts/portal-smart-price-overlay-sync.js sync \
+            --output-dir .portal-truth-output/price-sync \
+            --expected-date '${{ steps.cutoff.outputs.value }}' \
+            --max-source-lag-days 3 \
+            --max-platform-gap-days 3 \
+            --min-latest-coverage-ratio 0.55 \
+            --api-price-file .portal-truth-output/price-sync/yandex-market-prices.json \
+            "${SMART_PRICE_INPUT_ARGS[@]}"
           node scripts/portal-repricer-live-prices-sync.js sync --input-dir data --output data/repricer_live_prices.json --as-of-date '${{ steps.cutoff.outputs.run_date }}' --strict
           node scripts/build-order-procurement-layer.js
           node scripts/build-oos-control-layer.js --input-dir data --base-data-dir data --output-dir data
@@ -306,6 +325,11 @@ jobs:
           node scripts/build-control-auto-task-sources.js --input-dir data --output-dir data
           node scripts/portal-sync-health.js --input-dir data --base-data-dir data --output-dir data --expected-date '${{ steps.cutoff.outputs.value }}'
           node scripts/build-oos-control-layer.js --input-dir data --base-data-dir data --output-dir data
+          node scripts/portal-unified-daily-intake.js \
+            --data-dir data \
+            --output-dir .portal-truth-output \
+            --expected-date '${{ steps.cutoff.outputs.value }}' \
+            --run-date '${{ steps.cutoff.outputs.run_date }}'
           node scripts/portal-sync-health.js --input-dir data --base-data-dir data --output-dir data --expected-date '${{ steps.cutoff.outputs.value }}'
 
       - name: D-1 and numeric gates
@@ -348,3 +372,11 @@ jobs:
           include-hidden-files: true
           if-no-files-found: error
           retention-days: 30
+
+      - uses: actions/upload-artifact@v4
+        if: always() && github.event_name == 'workflow_dispatch' && inputs.upload-runtime-data
+        with:
+          name: portal-runtime-data-${{ github.run_id }}
+          path: data/**
+          if-no-files-found: error
+          retention-days: 7

@@ -32,6 +32,8 @@
   var LOCAL_BACKUP_INTERVAL_MS = 5 * 60 * 1000;
   var REMOTE_REQUEST_TIMEOUT_MS = 12000;
   var LOCAL_READ_TIMEOUT_MS = 6000;
+  var OFFLINE_EDITOR_GRACE_MS = 7 * 24 * 60 * 60 * 1000;
+  var MAX_SYNC_REBASE_ATTEMPTS = 12;
   var SEED_PATH = 'data/design_workspace.json';
   var SCHEMA = 'altea-design-workspace-v1';
 
@@ -118,6 +120,11 @@
   var syncState = cache.dirty ? 'pending' : 'local';
   var syncMessage = cache.dirty ? 'Есть несинхронизированные изменения' : 'Сохранено на устройстве';
   var remoteLoadError = '';
+  var lastSyncRebaseAttempts = 0;
+  var confirmedAccessLevel = normalizeConfirmedAccess(cache.accessLevel);
+  var confirmedAccessCheckedAt = string(cache.accessCheckedAt);
+  var offlineEditMode = false;
+  var membershipCheckFailed = false;
   var toastTimer = 0;
 
   function html(value) {
@@ -339,6 +346,19 @@
     };
   }
 
+  function normalizeConfirmedAccess(value) {
+    var level = string(value).toLowerCase();
+    return level === 'editor' || level === 'viewer' ? level : '';
+  }
+
+  function accessCacheFields(raw) {
+    raw = raw && typeof raw === 'object' ? raw : {};
+    return {
+      accessLevel: normalizeConfirmedAccess(raw.accessLevel),
+      accessCheckedAt: string(raw.accessCheckedAt)
+    };
+  }
+
   function readLocal() {
     try {
       var raw = localStorage.getItem(scopedStorageKey());
@@ -351,8 +371,22 @@
       }
       if (!raw) return { data: clone(FALLBACK_DATA), dirty: false, lastSyncedData: null };
       var parsed = JSON.parse(raw);
-      if (parsed && parsed.data) return { data: parsed.data, dirty: parsed.dirty === true, lastSyncedData: parsed.lastSyncedData || null };
-      if (parsed && parsed.indexedDb) return { data: clone(FALLBACK_DATA), dirty: parsed.dirty === true, indexedDb: true, lastSyncedData: null };
+      var access = accessCacheFields(parsed);
+      if (parsed && parsed.data) return {
+        data: parsed.data,
+        dirty: parsed.dirty === true,
+        lastSyncedData: parsed.lastSyncedData || null,
+        accessLevel: access.accessLevel,
+        accessCheckedAt: access.accessCheckedAt
+      };
+      if (parsed && parsed.indexedDb) return {
+        data: clone(FALLBACK_DATA),
+        dirty: parsed.dirty === true,
+        indexedDb: true,
+        lastSyncedData: null,
+        accessLevel: access.accessLevel,
+        accessCheckedAt: access.accessCheckedAt
+      };
       return { data: parsed, dirty: false, lastSyncedData: null };
     } catch (_) {
       return { data: clone(FALLBACK_DATA), dirty: false, lastSyncedData: null };
@@ -544,13 +578,25 @@
   }
 
   function writeLocal(dirty) {
-    cache = { data: data, dirty: dirty === true, lastSyncedData: lastSyncedData };
+    cache = {
+      data: data,
+      dirty: dirty === true,
+      lastSyncedData: lastSyncedData,
+      accessLevel: confirmedAccessLevel,
+      accessCheckedAt: confirmedAccessCheckedAt
+    };
     var snapshot = clone(cache);
     var serialized = JSON.stringify(snapshot);
     var localFallbackSaved = false;
     try {
       if (serialized.length <= LOCAL_STORAGE_SOFT_LIMIT) localStorage.setItem(scopedStorageKey(), serialized);
-      else localStorage.setItem(scopedStorageKey(), JSON.stringify({ indexedDb: true, dirty: dirty === true, updatedAt: data.updatedAt }));
+      else localStorage.setItem(scopedStorageKey(), JSON.stringify({
+        indexedDb: true,
+        dirty: dirty === true,
+        updatedAt: data.updatedAt,
+        accessLevel: confirmedAccessLevel,
+        accessCheckedAt: confirmedAccessCheckedAt
+      }));
       localFallbackSaved = true;
     } catch (_) { localFallbackSaved = false; }
     localPersistState = 'pending';
@@ -706,16 +752,53 @@
       var remoteChanged = !sameValue(remoteItem, baseItem);
       var localChanged = !sameValue(localItem, baseItem);
       var conflict = remoteChanged && localChanged && !sameValue(remoteItem, localItem);
-      if (conflict) {
-        conflicts.push({
-          entityType: entityType,
-          entityId: id,
-          title: string((localItem && localItem.title) || (remoteItem && remoteItem.title) || id)
+      var localChoice;
+      var remoteChoice;
+      if (conflict && baseItem && remoteItem && localItem) {
+        var localMerged = {};
+        var remoteMerged = {};
+        var conflictFields = [];
+        var keys = new Set(Object.keys(baseItem).concat(Object.keys(remoteItem), Object.keys(localItem)));
+        keys.forEach(function (key) {
+          if (key === 'id' || key === 'updatedAt') return;
+          var baseValue = baseItem[key];
+          var remoteValue = remoteItem[key];
+          var localValue = localItem[key];
+          var remoteFieldChanged = !sameValue(remoteValue, baseValue);
+          var localFieldChanged = !sameValue(localValue, baseValue);
+          var fieldConflict = remoteFieldChanged && localFieldChanged && !sameValue(remoteValue, localValue);
+          var safeValue = localFieldChanged ? localValue : remoteValue;
+          if (fieldConflict) conflictFields.push(key);
+          if ((fieldConflict ? localValue : safeValue) !== undefined) localMerged[key] = clone(fieldConflict ? localValue : safeValue);
+          if ((fieldConflict ? remoteValue : safeValue) !== undefined) remoteMerged[key] = clone(fieldConflict ? remoteValue : safeValue);
         });
+        localMerged.id = id;
+        remoteMerged.id = id;
+        localMerged.updatedAt = timestamp(localItem.updatedAt) >= timestamp(remoteItem.updatedAt) ? localItem.updatedAt : remoteItem.updatedAt;
+        remoteMerged.updatedAt = localMerged.updatedAt;
+        localChoice = normalizer(localMerged);
+        remoteChoice = normalizer(remoteMerged);
+        if (conflictFields.length) {
+          conflicts.push({
+            entityType: entityType,
+            entityId: id,
+            title: string((localItem && localItem.title) || (remoteItem && remoteItem.title) || id),
+            fields: conflictFields
+          });
+        }
+      } else {
+        var safeItem = localChanged ? localItem : remoteItem;
+        localChoice = conflict ? localItem : safeItem;
+        remoteChoice = conflict ? remoteItem : safeItem;
+        if (conflict) {
+          conflicts.push({
+            entityType: entityType,
+            entityId: id,
+            title: string((localItem && localItem.title) || (remoteItem && remoteItem.title) || id),
+            fields: ['entity']
+          });
+        }
       }
-      var safeItem = localChanged ? localItem : remoteItem;
-      var localChoice = conflict ? localItem : safeItem;
-      var remoteChoice = conflict ? remoteItem : safeItem;
       if (localChoice) localPreferred.push(localChoice);
       if (remoteChoice) remotePreferred.push(remoteChoice);
     });
@@ -733,7 +816,7 @@
     var remoteSettingsChanged = !sameValue(remote.settings, base.settings);
     var localSettingsChanged = !sameValue(local.settings, base.settings);
     var settingsConflict = remoteSettingsChanged && localSettingsChanged && !sameValue(remote.settings, local.settings);
-    if (settingsConflict) conflicts.push({ entityType: 'settings', entityId: 'settings', title: 'Настройки отдела' });
+    if (settingsConflict) conflicts.push({ entityType: 'settings', entityId: 'settings', title: 'Настройки отдела', fields: ['settings'] });
     var safeSettings = localSettingsChanged ? local.settings : remote.settings;
     var common = {
       updatedAt: timestamp(local.updatedAt) >= timestamp(remote.updatedAt) ? local.updatedAt : remote.updatedAt,
@@ -763,7 +846,8 @@
       localData: clone(result.localData),
       remoteData: clone(result.remoteData),
       serverData: clone(result.serverData),
-      remoteRevision: number(revision)
+      remoteRevision: number(revision),
+      resolutions: {}
     };
     queueLocalBackup('Перед разрешением конфликта синхронизации', true, data);
     syncState = 'error';
@@ -771,16 +855,81 @@
     renderDesigners();
   }
 
-  function resolveSyncConflict(preferLocal) {
+  function syncConflictKey(conflict) {
+    return string(conflict && conflict.entityType) + ':' + string(conflict && conflict.entityId);
+  }
+
+  function setSyncConflictResolution(index, source) {
     if (!ensureEditor() || !pendingConflict) return false;
+    var conflict = syncConflicts[number(index)];
+    if (!conflict || (source !== 'local' && source !== 'remote')) return false;
+    pendingConflict.resolutions[syncConflictKey(conflict)] = source;
+    renderDesigners();
+    return true;
+  }
+
+  function resolvedSyncConflictCount() {
+    if (!pendingConflict || !pendingConflict.resolutions) return 0;
+    return syncConflicts.filter(function (conflict) {
+      return pendingConflict.resolutions[syncConflictKey(conflict)] === 'local'
+        || pendingConflict.resolutions[syncConflictKey(conflict)] === 'remote';
+    }).length;
+  }
+
+  function conflictEntityList(snapshot, entityType) {
+    if (entityType === 'project') return snapshot.projects;
+    if (entityType === 'test') return snapshot.tests;
+    if (entityType === 'page') return snapshot.pages;
+    return null;
+  }
+
+  function applyLocalConflictChoice(target, localSource, conflict) {
+    if (conflict.entityType === 'settings') {
+      target.settings = clone(localSource.settings);
+      return;
+    }
+    var targetList = conflictEntityList(target, conflict.entityType);
+    var sourceList = conflictEntityList(localSource, conflict.entityType);
+    if (!targetList || !sourceList) return;
+    var targetIndex = targetList.findIndex(function (item) { return item.id === conflict.entityId; });
+    var sourceItem = sourceList.find(function (item) { return item.id === conflict.entityId; }) || null;
+    var fields = conflict.fields || ['entity'];
+    if (fields.indexOf('entity') >= 0 || targetIndex < 0 || !sourceItem) {
+      if (!sourceItem && targetIndex >= 0) targetList.splice(targetIndex, 1);
+      else if (sourceItem && targetIndex >= 0) targetList[targetIndex] = clone(sourceItem);
+      else if (sourceItem) targetList.push(clone(sourceItem));
+      return;
+    }
+    fields.forEach(function (field) {
+      if (Object.prototype.hasOwnProperty.call(sourceItem, field)) targetList[targetIndex][field] = clone(sourceItem[field]);
+      else delete targetList[targetIndex][field];
+    });
+    targetList[targetIndex].updatedAt = sourceItem.updatedAt;
+  }
+
+  function finalizeSyncConflictResolutions() {
+    if (!ensureEditor() || !pendingConflict || resolvedSyncConflictCount() !== syncConflicts.length) return false;
     var resolution = pendingConflict;
-    data = normalizeData(preferLocal ? resolution.localData : resolution.remoteData);
+    var selectedConflicts = syncConflicts.slice();
+    var localCount = 0;
+    var remoteCount = 0;
+    var resolvedData = clone(resolution.remoteData);
+    selectedConflicts.forEach(function (conflict) {
+      var choice = resolution.resolutions[syncConflictKey(conflict)];
+      if (choice === 'local') {
+        localCount += 1;
+        applyLocalConflictChoice(resolvedData, resolution.localData, conflict);
+      } else {
+        remoteCount += 1;
+      }
+    });
+    data = normalizeData(resolvedData);
     lastSyncedData = normalizeData(resolution.serverData);
     remoteRevision = number(resolution.remoteRevision);
     syncConflicts = [];
     pendingConflict = null;
-    appendActivity(preferLocal ? 'Конфликт разрешён в пользу локальной версии' : 'Конфликт разрешён в пользу командной версии', {
-      action: preferLocal ? 'workspace.conflict.local' : 'workspace.conflict.remote'
+    appendActivity('Конфликты разрешены по карточкам: локальные — ' + localCount + ', командные — ' + remoteCount, {
+      action: localCount && remoteCount ? 'workspace.conflict.mixed' : (localCount ? 'workspace.conflict.local' : 'workspace.conflict.remote')
     });
     data.updatedAt = nowIso();
     lastCommittedData = clone(data);
@@ -927,6 +1076,39 @@
     }
   }
 
+  function hydrateConfirmedAccess(record) {
+    var access = accessCacheFields(record);
+    if (!access.accessLevel) return;
+    if (!confirmedAccessLevel || timestamp(access.accessCheckedAt) > timestamp(confirmedAccessCheckedAt)) {
+      confirmedAccessLevel = access.accessLevel;
+      confirmedAccessCheckedAt = access.accessCheckedAt;
+    }
+  }
+
+  function rememberConfirmedMembership(membership) {
+    var level = normalizeConfirmedAccess(membership && membership.level);
+    if (!level) {
+      confirmedAccessLevel = '';
+      confirmedAccessCheckedAt = '';
+      return;
+    }
+    confirmedAccessLevel = level;
+    confirmedAccessCheckedAt = nowIso();
+  }
+
+  function offlineMembership() {
+    var checkedAt = timestamp(confirmedAccessCheckedAt);
+    var accessAge = Date.now() - checkedAt;
+    var editorIsFresh = confirmedAccessLevel === 'editor'
+      && checkedAt > 0
+      && accessAge >= -5 * 60 * 1000
+      && accessAge <= OFFLINE_EDITOR_GRACE_MS;
+    offlineEditMode = editorIsFresh;
+    return editorIsFresh
+      ? { level: 'editor', message: 'Офлайн · правки сохраняются на устройстве' }
+      : { level: 'viewer', message: 'Офлайн · показана сохранённая копия' };
+  }
+
   async function fetchMembership() {
     var cfg = remoteConfig();
     if (!cfg || !cfg.token || typeof fetch !== 'function') return { level: 'local', message: 'Локальный режим' };
@@ -936,7 +1118,8 @@
     url.searchParams.set('limit', '1');
     var response = await fetchRemoteRequest(url.toString(), { headers: remoteHeaders(cfg) }, 'Проверка доступа заняла слишком много времени');
     if (response.status === 404) return { level: 'setup', message: 'Командная база ожидает настройки' };
-    if (!response.ok) return { level: 'none', message: response.status === 401 ? 'Сессия доступа истекла' : 'Не удалось проверить роль' };
+    if (response.status === 401 || response.status === 403) return { level: 'none', message: 'Сессия доступа истекла' };
+    if (!response.ok) throw new Error('Проверка роли вернула ' + response.status);
     var rows = await response.json();
     var level = rows && rows[0] && rows[0].access_level;
     if (level === 'editor') return { level: 'editor', message: 'Редактор командной базы' };
@@ -1047,11 +1230,23 @@
       var seed = results[0].status === 'fulfilled' ? results[0].value : null;
       var remote = results[1].status === 'fulfilled' ? results[1].value : null;
       var remoteRequestFailed = results[1].status === 'rejected';
+      var membershipRequestFailed = results[3].status === 'rejected';
+      membershipCheckFailed = membershipRequestFailed;
       remoteLoadError = remoteRequestFailed
         ? string(results[1].reason && results[1].reason.message) || 'Не удалось получить командные данные'
-        : '';
+        : (membershipRequestFailed
+          ? string(results[3].reason && results[3].reason.message) || 'Не удалось проверить права доступа'
+          : '');
       var indexed = results[2].status === 'fulfilled' ? results[2].value : null;
-      var membership = results[3].status === 'fulfilled' ? results[3].value : { level: 'none', message: 'Не удалось проверить права доступа' };
+      hydrateConfirmedAccess(indexed);
+      var membership;
+      if (results[3].status === 'fulfilled') {
+        membership = results[3].value;
+        offlineEditMode = false;
+        rememberConfirmedMembership(membership);
+      } else {
+        membership = offlineMembership();
+      }
       remoteHistory = results[4].status === 'fulfilled' ? (results[4].value || []) : [];
       localBackups = results[5].status === 'fulfilled' ? (results[5].value || []) : [];
       remoteAudit = results[6].status === 'fulfilled' ? (results[6].value || []) : [];
@@ -1095,11 +1290,11 @@
       if (localBackups[0]) lastBackupAt = timestamp(localBackups[0].createdAt);
       writeLocal(cache.dirty);
       if (workspaceAccess === 'editor') {
-        syncState = remoteRequestFailed ? 'error' : (remote && remote.payload ? (cache.dirty ? 'pending' : 'ok') : 'pending');
-        syncMessage = remoteRequestFailed ? remoteLoadError : (remote && remote.payload ? (cache.dirty ? 'Нужно отправить локальные изменения' : 'Командная база подключена · редактор') : 'Редактор · создаём общую базу');
+        syncState = membershipRequestFailed ? 'local' : (remoteRequestFailed ? 'error' : (remote && remote.payload ? (cache.dirty ? 'pending' : 'ok') : 'pending'));
+        syncMessage = membershipRequestFailed ? workspaceAccessMessage : (remoteRequestFailed ? remoteLoadError : (remote && remote.payload ? (cache.dirty ? 'Нужно отправить локальные изменения' : 'Командная база подключена · редактор') : 'Редактор · создаём общую базу'));
       } else if (workspaceAccess === 'viewer') {
-        syncState = remoteRequestFailed ? 'error' : 'ok';
-        syncMessage = remoteRequestFailed ? remoteLoadError : 'Командная база · только просмотр';
+        syncState = (remoteRequestFailed || membershipRequestFailed) ? 'error' : 'ok';
+        syncMessage = membershipRequestFailed ? workspaceAccessMessage : (remoteRequestFailed ? remoteLoadError : 'Командная база · только просмотр');
       } else if (workspaceAccess === 'local') {
         syncState = 'local';
         syncMessage = 'Локальный режим';
@@ -1117,11 +1312,73 @@
     }
   }
 
+  async function refreshMembershipAccess() {
+    if (!membershipCheckFailed) return true;
+    try {
+      var membership = await fetchMembership();
+      membershipCheckFailed = false;
+      offlineEditMode = false;
+      rememberConfirmedMembership(membership);
+      workspaceAccess = membership.level;
+      workspaceAccessMessage = membership.message;
+      if (workspaceAccess === 'editor' || workspaceAccess === 'local') return true;
+      if (workspaceAccess === 'viewer' && cache.dirty) {
+        syncState = 'error';
+        syncMessage = 'Офлайн-правки сохранены, но роль редактора не подтверждена';
+        remoteLoadError = syncMessage;
+        await writeLocal(true);
+        renderDesigners();
+        return false;
+      }
+      if (workspaceAccess === 'viewer') return true;
+      if (workspaceAccess === 'none') {
+        if (cache.dirty) {
+          syncState = 'error';
+          syncMessage = 'Офлайн-правки не отправлены: доступ редактора отозван';
+          remoteLoadError = syncMessage;
+          await writeLocal(true);
+          renderDesigners();
+          return false;
+        }
+        data = normalizeData(FALLBACK_DATA);
+        lastSyncedData = normalizeData(FALLBACK_DATA);
+        lastCommittedData = clone(data);
+        remoteHistory = [];
+        remoteAudit = [];
+        localBackups = [];
+        cache.dirty = false;
+        await purgeScopedLocalData();
+        await writeLocal(false);
+      }
+      syncState = 'error';
+      syncMessage = workspaceAccessMessage;
+      remoteLoadError = workspaceAccessMessage;
+      renderDesigners();
+      return false;
+    } catch (error) {
+      membershipCheckFailed = true;
+      var cachedMembership = offlineMembership();
+      workspaceAccess = cachedMembership.level;
+      workspaceAccessMessage = cachedMembership.message;
+      remoteLoadError = string(error && error.message) || 'Не удалось проверить права доступа';
+      syncState = workspaceAccess === 'editor' ? 'local' : 'error';
+      syncMessage = workspaceAccessMessage;
+      renderDesigners();
+      return false;
+    }
+  }
+
   function scheduleSync(delay) {
     if (syncTimer) window.clearTimeout(syncTimer);
     if (workspaceAccess !== 'editor') {
       syncState = workspaceAccess === 'local' ? 'local' : (workspaceAccess === 'viewer' ? 'ok' : 'error');
       syncMessage = workspaceAccess === 'local' ? 'Сохранено на устройстве' : workspaceAccessMessage;
+      return;
+    }
+    if (membershipCheckFailed || offlineEditMode) {
+      syncState = localPersistState === 'error' ? 'error' : 'local';
+      syncMessage = localPersistState === 'error' ? 'Не удалось сохранить на устройстве' : 'Офлайн · изменения сохранены на устройстве';
+      renderDesigners();
       return;
     }
     syncState = remoteConfig() && remoteConfig().token ? 'pending' : (localPersistState === 'error' ? 'error' : 'local');
@@ -1132,6 +1389,41 @@
     }, delay == null ? 650 : delay);
   }
 
+  async function pushEditorChangesWithRebase(baseData, serverData, revision) {
+    var mergeBase = normalizeData(baseData);
+    var latestServerData = normalizeData(serverData);
+    var latestRevision = number(revision);
+    var localCandidate = normalizeData(data);
+    lastSyncRebaseAttempts = 0;
+    for (var attempt = 1; attempt <= MAX_SYNC_REBASE_ATTEMPTS; attempt += 1) {
+      lastSyncRebaseAttempts = attempt;
+      var mergeResult = threeWayMergeData(mergeBase, latestServerData, localCandidate);
+      if (mergeResult.conflicts.length) {
+        data = localCandidate;
+        registerSyncConflict(mergeResult, latestRevision);
+        return null;
+      }
+      localCandidate = mergeResult.localData;
+      localCandidate.updatedAt = nowIso();
+      data = localCandidate;
+      try {
+        return await pushRemote(data, latestRevision);
+      } catch (error) {
+        if (!error || error.code !== 'revision_conflict') throw error;
+        if (attempt >= MAX_SYNC_REBASE_ATTEMPTS) {
+          var busyError = new Error('Команда активно меняет доску. Локальные правки сохранены — повторите синхронизацию.');
+          busyError.code = 'revision_race_limit';
+          throw busyError;
+        }
+        var latest = await fetchRemote();
+        mergeBase = latestServerData;
+        latestServerData = latest && latest.payload ? normalizeData(latest.payload) : normalizeData(FALLBACK_DATA);
+        latestRevision = latest ? number(latest.revision) : 0;
+      }
+    }
+    return null;
+  }
+
   async function syncRemote(force) {
     var cfg = remoteConfig();
     if (!cfg || !cfg.token) {
@@ -1140,6 +1432,7 @@
       renderDesigners();
       return false;
     }
+    if (membershipCheckFailed && !await refreshMembershipAccess()) return false;
     remoteLoadError = '';
     if (workspaceAccess === 'viewer') {
       syncState = 'pending';
@@ -1161,6 +1454,8 @@
         renderDesigners();
         return true;
       } catch (viewerError) {
+        membershipCheckFailed = true;
+        offlineEditMode = false;
         syncState = 'error';
         syncMessage = viewerError && viewerError.message ? viewerError.message : 'Обновление недоступно';
         remoteLoadError = syncMessage;
@@ -1206,30 +1501,8 @@
         renderDesigners();
         return true;
       }
-      var mergeResult = threeWayMergeData(lastSyncedData, serverData, data);
-      if (mergeResult.conflicts.length) {
-        registerSyncConflict(mergeResult, remoteRevision);
-        return false;
-      }
-      data = mergeResult.localData;
-      data.updatedAt = nowIso();
-      var pushed;
-      try {
-        pushed = await pushRemote(data, remoteRevision);
-      } catch (error) {
-        if (!error || error.code !== 'revision_conflict') throw error;
-        var latest = await fetchRemote();
-        var latestServerData = latest && latest.payload ? normalizeData(latest.payload) : normalizeData(FALLBACK_DATA);
-        var retryMerge = threeWayMergeData(serverData, latestServerData, data);
-        remoteRevision = latest ? number(latest.revision) : 0;
-        if (retryMerge.conflicts.length) {
-          registerSyncConflict(retryMerge, remoteRevision);
-          return false;
-        }
-        data = retryMerge.localData;
-        data.updatedAt = nowIso();
-        pushed = await pushRemote(data, remoteRevision);
-      }
+      var pushed = await pushEditorChangesWithRebase(lastSyncedData, serverData, remoteRevision);
+      if (!pushed) return false;
       remoteRevision = pushed ? number(pushed.revision) : remoteRevision;
       remoteHistory = await fetchRemoteHistory().catch(function () { return remoteHistory; });
       remoteAudit = await fetchRemoteAudit().catch(function () { return remoteAudit; });
@@ -1244,8 +1517,14 @@
       return true;
     } catch (error) {
       writeLocal(true);
-      syncState = 'error';
-      syncMessage = 'Сохранено локально · ' + (error && error.message ? error.message : 'синк недоступен');
+      membershipCheckFailed = true;
+      var cachedAccess = offlineMembership();
+      workspaceAccess = cachedAccess.level;
+      workspaceAccessMessage = cachedAccess.message;
+      syncState = workspaceAccess === 'editor' ? 'local' : 'error';
+      syncMessage = workspaceAccess === 'editor'
+        ? 'Офлайн · изменения сохранены на устройстве'
+        : ('Сохранено локально · ' + (error && error.message ? error.message : 'синк недоступен'));
       remoteLoadError = error && error.message ? error.message : 'Синхронизация недоступна';
       renderDesigners();
       return false;
@@ -1825,7 +2104,8 @@
       'workspace.save': 'Сохранение',
       'workspace.restore': 'Восстановление',
       'workspace.conflict.local': 'Конфликт · локальная версия',
-      'workspace.conflict.remote': 'Конфликт · командная версия'
+      'workspace.conflict.remote': 'Конфликт · командная версия',
+      'workspace.conflict.mixed': 'Конфликт · решения по карточкам'
     })[string(eventType)] || 'Изменение базы';
   }
 
@@ -2067,6 +2347,22 @@
       '<button type="button" class="design-ws-btn" data-design-sync>' + (canEdit() ? 'Синхронизировать' : 'Обновить') + '</button></div>';
   }
 
+  function conflictFieldLabel(field) {
+    var labels = {
+      title: 'название',
+      status: 'статус / колонка',
+      owner: 'ответственный',
+      dueDate: 'срок',
+      priority: 'приоритет',
+      brief: 'бриф',
+      attachments: 'вложения',
+      coverImageUrl: 'обложка',
+      archived: 'архив',
+      entity: 'карточка целиком'
+    };
+    return labels[field] || field;
+  }
+
   function renderDesigners(rootId) {
     var root = document.getElementById(rootId || ROOT_ID);
     if (!root) return null;
@@ -2083,8 +2379,16 @@
     var remoteNotice = remoteLoadError && (workspaceAccess === 'viewer' || workspaceAccess === 'editor')
       ? '<div class="design-ws-notice is-error"><strong>Командные данные временно не загрузились.</strong> Показана последняя сохранённая копия. Проверьте интернет и нажмите «Обновить».<div class="design-ws-head-actions"><button type="button" class="design-ws-btn primary" data-design-sync>Повторить загрузку</button></div></div>'
       : '';
+    var conflictResolved = resolvedSyncConflictCount();
+    var conflictDetails = syncConflicts.map(function (conflict, index) {
+      var choice = pendingConflict && pendingConflict.resolutions && pendingConflict.resolutions[syncConflictKey(conflict)];
+      return '<div class="design-ws-conflict-item"><div><strong>' + html(conflict.title) + '</strong><small>' + html((conflict.fields || ['entity']).map(conflictFieldLabel).join(', ')) + '</small></div><div class="design-ws-head-actions">' +
+        '<button type="button" class="design-ws-btn' + (choice === 'remote' ? ' primary' : '') + '" data-design-conflict-choice="remote" data-design-conflict-index="' + index + '">Командная</button>' +
+        '<button type="button" class="design-ws-btn' + (choice === 'local' ? ' primary' : '') + '" data-design-conflict-choice="local" data-design-conflict-index="' + index + '">Локальная</button>' +
+        '</div></div>';
+    }).join('');
     var conflictNotice = syncConflicts.length && pendingConflict
-      ? '<div class="design-ws-notice is-error"><strong>Одновременно изменены одни и те же материалы: ' + syncConflicts.length + '.</strong> Локальная копия сохранена. Выберите версию для конфликтующих карточек.<div class="design-ws-head-actions"><button type="button" class="design-ws-btn" data-design-conflict-remote>Командная версия</button><button type="button" class="design-ws-btn primary" data-design-conflict-local>Локальная версия</button></div></div>'
+      ? '<div class="design-ws-notice is-error"><strong>Конфликтующие карточки: ' + syncConflicts.length + '.</strong> Совместимые правки уже объединены. Для каждой карточки выберите источник только спорных полей.<div class="design-ws-conflict-list">' + conflictDetails + '</div><div class="design-ws-conflict-apply"><span>Выбрано ' + conflictResolved + ' из ' + syncConflicts.length + '</span><button type="button" class="design-ws-btn primary" data-design-conflict-apply' + (conflictResolved === syncConflicts.length ? '' : ' disabled') + '>Применить решения</button></div></div>'
       : '';
     var renderedSyncLabel = syncStatusLabel();
     root.innerHTML = '<div class="design-ws" data-design-workspace data-design-access="' + html(workspaceAccess) + '" data-design-readonly="' + (!canEdit()) + '">' +
@@ -2715,12 +3019,18 @@
         }
         writeUi(); renderDesigners(); return;
       }
-      if (event.target.closest('[data-design-conflict-remote]')) {
-        if (window.confirm('Принять командную версию конфликтующих материалов? Локальная копия уже сохранена.')) resolveSyncConflict(false);
+      var conflictChoice = event.target.closest('[data-design-conflict-choice]');
+      if (conflictChoice) {
+        setSyncConflictResolution(
+          conflictChoice.getAttribute('data-design-conflict-index'),
+          conflictChoice.getAttribute('data-design-conflict-choice')
+        );
         return;
       }
-      if (event.target.closest('[data-design-conflict-local]')) {
-        if (window.confirm('Сохранить локальную версию конфликтующих материалов поверх командной? Неконфликтующие изменения коллег сохранятся.')) resolveSyncConflict(true);
+      if (event.target.closest('[data-design-conflict-apply]')) {
+        if (resolvedSyncConflictCount() === syncConflicts.length && window.confirm('Применить выбранные решения и синхронизировать объединённую версию?')) {
+          finalizeSyncConflictResolutions();
+        }
         return;
       }
       var restoreLocal = event.target.closest('[data-design-restore-local]');
@@ -2967,13 +3277,22 @@
       return {
         localPersistState: localPersistState,
         localPersistError: localPersistError,
+        cacheDirty: cache.dirty === true,
         remoteRevision: remoteRevision,
+        lastSyncRebaseAttempts: lastSyncRebaseAttempts,
         workspaceAccess: workspaceAccess,
         workspaceAccessMessage: workspaceAccessMessage,
         remoteHistoryCount: remoteHistory.length,
         remoteAuditCount: remoteAudit.length,
         remoteLoadError: remoteLoadError,
+        membershipCheckFailed: membershipCheckFailed,
+        offlineEditMode: offlineEditMode,
+        confirmedAccessLevel: confirmedAccessLevel,
+        confirmedAccessCheckedAt: confirmedAccessCheckedAt,
         syncConflictCount: syncConflicts.length,
+        syncConflictFields: syncConflicts.reduce(function (fields, conflict) {
+          return fields.concat(conflict.fields || []);
+        }, []),
         localBackupCount: localBackups.length,
         storageScope: storageScope()
       };
@@ -2989,5 +3308,18 @@
   }
   window.addEventListener('altea:viewchange', function (event) {
     if (event && event.detail && event.detail.view === 'designers') renderDesigners();
+  });
+  window.addEventListener('offline', function () {
+    if (workspaceAccess !== 'editor') return;
+    membershipCheckFailed = true;
+    var cachedMembership = offlineMembership();
+    workspaceAccess = cachedMembership.level;
+    workspaceAccessMessage = cachedMembership.message;
+    syncState = workspaceAccess === 'editor' ? 'local' : 'error';
+    syncMessage = workspaceAccessMessage;
+    renderDesigners();
+  });
+  window.addEventListener('online', function () {
+    if (cache.dirty && (membershipCheckFailed || offlineEditMode)) syncRemote(true);
   });
 })();

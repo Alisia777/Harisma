@@ -309,9 +309,26 @@ function Invoke-LayerAudit {
     "--output-dir",
     $resolvedOutputDir,
     "--manifest",
-    "scripts/portal-layer-manifest.json",
+    "scripts/portal-truth-manifest.json",
     "--mirror-local-fallback"
   ) -Attempts 1 -RetryDelaySeconds 10 -TimeoutSeconds 900
+}
+
+function Invoke-UnifiedDailyIntake {
+  $arguments = @(
+    "scripts/portal-unified-daily-intake.js",
+    "--data-dir",
+    $resolvedOutputDir,
+    "--base-data-dir",
+    "data",
+    "--output-dir",
+    $resolvedOutputDir
+  )
+  if (-not [string]::IsNullOrWhiteSpace($script:expectedDate)) {
+    $arguments += "--expected-date"
+    $arguments += $script:expectedDate
+  }
+  Invoke-NodeStep -StepName "unified daily intake" -Arguments $arguments -Attempts 1 -RetryDelaySeconds 10 -TimeoutSeconds 900
 }
 
 function Invoke-DailyGuard {
@@ -727,10 +744,11 @@ try {
   }
 
   try {
+    Invoke-UnifiedDailyIntake
     Invoke-HealthRefresh -MarkLastGood
     Invoke-LayerAudit
     Invoke-DailyGuard
-    Invoke-Upload @("portal_sync_health", "portal_layer_freshness", "portal_daily_guard")
+    Invoke-Upload @("portal_daily_intake", "portal_sync_health", "portal_layer_freshness", "portal_daily_guard")
     Invoke-StaticDataPublish
   } catch {
     $failed += [ordered]@{

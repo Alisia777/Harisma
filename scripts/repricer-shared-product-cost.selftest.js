@@ -3,6 +3,7 @@
 
 const assert = require('assert');
 const { buildSharedProductCostMap } = require('./build-canonical-repricer');
+const { normalizeKey } = require('./smart-price-contour');
 
 function run() {
   const payload = {
@@ -23,9 +24,9 @@ function run() {
   };
 
   const shared = buildSharedProductCostMap(payload, ['wb', 'ozon']);
-  assert.strictEqual(shared.get('samesku').cost, 150);
-  assert.strictEqual(shared.get('samesku').sourceStore, 'smart_price_workbench_cross_platform');
-  assert.strictEqual(shared.has('conflictsku'), false);
+  assert.strictEqual(shared.get(normalizeKey('same_sku')).cost, 150);
+  assert.strictEqual(shared.get(normalizeKey('same_sku')).sourceStore, 'smart_price_workbench_cross_platform');
+  assert.strictEqual(shared.has(normalizeKey('conflict_sku')), false);
   console.log('[repricer-shared-product-cost] OK: exact SKU cost is shared across platforms; conflicting costs remain blocked');
 }
 

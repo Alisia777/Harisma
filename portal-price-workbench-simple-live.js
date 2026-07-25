@@ -36,7 +36,7 @@
   var ORDER_PROCUREMENT_OZON_URL = "data/order_procurement_ozon.json";
   var VIEW_ID = "view-prices";
   var STYLE_ID = "altea-price-simple-style";
-  var STYLE_VERSION = "20260626-prices-modal-scroll-v1";
+  var STYLE_VERSION = "20260724-prices-correctness-v5";
   var SNAPSHOT_WAIT_MS = 1800;
   var SNAPSHOT_HARD_WAIT_MS = 4500;
   var LOCAL_FETCH_TIMEOUT_MS = 3200;
@@ -162,6 +162,7 @@
   }
 
   function sanitizeDiscountPct(value) {
+    if (value === null || value === undefined || value === "") return null;
     if (!Number.isFinite(Number(value))) return null;
     return Math.min(1, Math.max(0, Number(value)));
   }
@@ -1033,18 +1034,62 @@
     var dates = [];
     rows.forEach(function (row) {
       (row.timeline || []).forEach(function (item) {
-        if (item && item.date) dates.push(item.date);
+        var date = isoDate(item && item.date);
+        if (date && priceTimelinePointHasFact(item)) dates.push(date);
       });
     });
     dates.sort();
     return dates[dates.length - 1] || "";
   }
 
+  function priceFactDateForRow(row) {
+    var dates = [];
+    if (positiveNum(row && row.currentFillPrice) != null) {
+      [
+        isoDate(row && row.priceFactDate),
+        isoDate(row && row.currentPriceDate),
+        isoDate(row && row.valueDate)
+      ].filter(Boolean).forEach(function (date) { dates.push(date); });
+    }
+    if (positiveNum(row && row.listPrice) != null) {
+      [
+        isoDate(row && row.listPriceFactDate),
+        isoDate(row && row.listPriceDate),
+        isoDate(row && row.valueDate)
+      ].filter(Boolean).forEach(function (date) { dates.push(date); });
+    }
+    (row && row.timeline || []).forEach(function (item) {
+      var date = isoDate(item && item.date);
+      var price = positiveNum(item && (item.price != null ? item.price : item.currentPrice));
+      if (date && price != null) dates.push(date);
+    });
+    dates.sort();
+    return dates[dates.length - 1] || "";
+  }
+
+  function latestPriceFactDate(rows) {
+    var dates = (rows || []).map(priceFactDateForRow).filter(Boolean).sort();
+    return dates[dates.length - 1] || "";
+  }
+
+  function priceHasDailyFact(row) {
+    return rangeSlice(row).some(priceTimelinePointHasFact);
+  }
+
+  function priceTimelinePointHasFact(item) {
+    return positiveNum(item && item.price) != null
+      || positiveNum(item && item.clientPrice) != null
+      || num(item && item.ordersUnits) != null
+      || num(item && item.deliveredUnits) != null
+      || num(item && item.revenue) != null;
+  }
+
   function earliestDate(rows) {
     var dates = [];
     rows.forEach(function (row) {
       (row.timeline || []).forEach(function (item) {
-        if (item && item.date) dates.push(item.date);
+        var date = isoDate(item && item.date);
+        if (date && priceTimelinePointHasFact(item)) dates.push(date);
       });
     });
     dates.sort();
@@ -1066,11 +1111,17 @@
     return Math.round((to.getTime() - from.getTime()) / 86400000);
   }
 
+  function dataFreshnessLabelForDate(dateValue) {
+    var factDate = isoDate(dateValue);
+    var lagDays = factDate ? Math.max(0, diffDays(factDate, todayKey())) : null;
+    if (!factDate) return "\u0414\u0430\u0442\u0430 \u0441\u0440\u0435\u0437\u0430 \u043d\u0435 \u043e\u043f\u0440\u0435\u0434\u0435\u043b\u0435\u043d\u0430.";
+    if (lagDays <= 0) return "\u0422\u0435\u043a\u0443\u0449\u0438\u0439 \u0441\u0440\u0435\u0437 \u043d\u0430 \u0441\u0435\u0433\u043e\u0434\u043d\u044f.";
+    if (lagDays === 1) return "\u0421\u0440\u0435\u0437 \u043e\u0442\u0441\u0442\u0430\u0435\u0442 \u043e\u0442 \u0441\u0435\u0433\u043e\u0434\u043d\u044f \u043d\u0430 1 \u0434\u0435\u043d\u044c.";
+    return "\u0421\u0440\u0435\u0437 \u043e\u0442\u0441\u0442\u0430\u0435\u0442 \u043e\u0442 \u0441\u0435\u0433\u043e\u0434\u043d\u044f \u043d\u0430 " + lagDays + " \u0434\u043d.";
+  }
+
   function dataFreshnessLabel() {
-    if (!state.latestFactDate) return "\u0414\u0430\u0442\u0430 \u0441\u0440\u0435\u0437\u0430 \u043d\u0435 \u043e\u043f\u0440\u0435\u0434\u0435\u043b\u0435\u043d\u0430.";
-    if (state.dataLagDays <= 0) return "\u0422\u0435\u043a\u0443\u0449\u0438\u0439 \u0441\u0440\u0435\u0437 \u043d\u0430 \u0441\u0435\u0433\u043e\u0434\u043d\u044f.";
-    if (state.dataLagDays === 1) return "\u0421\u0440\u0435\u0437 \u043e\u0442\u0441\u0442\u0430\u0435\u0442 \u043e\u0442 \u0441\u0435\u0433\u043e\u0434\u043d\u044f \u043d\u0430 1 \u0434\u0435\u043d\u044c.";
-    return "\u0421\u0440\u0435\u0437 \u043e\u0442\u0441\u0442\u0430\u0435\u0442 \u043e\u0442 \u0441\u0435\u0433\u043e\u0434\u043d\u044f \u043d\u0430 " + state.dataLagDays + " \u0434\u043d.";
+    return dataFreshnessLabelForDate(state.latestFactDate);
   }
 
   function stampLabel(value) {
@@ -1084,12 +1135,16 @@
     return year + "-" + month + "-" + day + " " + hours + ":" + minutes;
   }
 
-  function overlayFreshnessLabel() {
+  function overlayFreshnessLabel(factDateValue) {
     if (!state.overlayGeneratedAt) return "";
     var generated = stampLabel(state.overlayGeneratedAt);
     var generatedDate = isoDate(state.overlayGeneratedAt);
-    if (state.latestFactDate && generatedDate && generatedDate !== state.latestFactDate) {
-      return "\u0421\u043b\u043e\u0439 \u043e\u0431\u043d\u043e\u0432\u043b\u0451\u043d " + generated + ", \u043d\u043e \u0444\u0430\u043a\u0442\u0438\u0447\u0435\u0441\u043a\u0438\u0439 \u0441\u0440\u0435\u0437 \u0446\u0435\u043d \u0432\u043d\u0443\u0442\u0440\u0438 \u043d\u0435\u0433\u043e \u0434\u043e " + state.latestFactDate + ".";
+    var factDate = isoDate(arguments.length ? factDateValue : state.latestFactDate);
+    if (!factDate) {
+      return "\u0421\u043b\u043e\u0439 \u043e\u0431\u043d\u043e\u0432\u043b\u0451\u043d " + generated + ", \u043d\u043e \u0444\u0430\u043a\u0442 \u0446\u0435\u043d\u044b \u0434\u043b\u044f \u0432\u044b\u0431\u0440\u0430\u043d\u043d\u043e\u0439 \u043f\u043b\u043e\u0449\u0430\u0434\u043a\u0438 \u043d\u0435 \u043d\u0430\u0439\u0434\u0435\u043d.";
+    }
+    if (factDate && generatedDate && generatedDate !== factDate) {
+      return "\u0421\u043b\u043e\u0439 \u043e\u0431\u043d\u043e\u0432\u043b\u0451\u043d " + generated + ", \u043d\u043e \u0444\u0430\u043a\u0442\u0438\u0447\u0435\u0441\u043a\u0438\u0439 \u0441\u0440\u0435\u0437 \u0446\u0435\u043d \u0432\u043d\u0443\u0442\u0440\u0438 \u043d\u0435\u0433\u043e \u0434\u043e " + factDate + ".";
     }
     return "\u0421\u043b\u043e\u0439 \u043e\u0431\u043d\u043e\u0432\u043b\u0451\u043d " + generated + ".";
   }
@@ -1117,8 +1172,52 @@
     );
   }
 
+  function priceFactFreshnessOfPayload(payload) {
+    if (!payload || typeof payload !== "object") return 0;
+    var latest = "";
+    Object.keys(payload.platforms || {}).forEach(function (platform) {
+      normalizeRows((((payload.platforms || {})[platform] || {}).rows)).forEach(function (row) {
+        var hasRowPrice = [
+          row && row.currentFillPrice,
+          row && row.currentPrice,
+          row && row.currentClientPrice,
+          row && row.listPrice,
+          row && row.firstPrice
+        ].some(function (value) { return positiveNum(value) != null; });
+        if (hasRowPrice) {
+          [
+            row && row.currentPriceDate,
+            row && row.currentFillPriceDate,
+            row && row.valueDate,
+            row && row.historyFreshnessDate
+          ].map(isoDate).filter(Boolean).forEach(function (date) {
+            if (date > latest) latest = date;
+          });
+        }
+        ["daily", "timeline", "monthly"].forEach(function (field) {
+          (Array.isArray(row && row[field]) ? row[field] : []).forEach(function (point) {
+            var hasPointPrice = positiveNum(point && (
+              point.price != null ? point.price
+                : (point.currentPrice != null ? point.currentPrice : point.clientPrice)
+            )) != null || positiveNum(point && point.clientPrice) != null;
+            var date = hasPointPrice ? isoDate(point && point.date) : "";
+            if (date && date > latest) latest = date;
+          });
+        });
+      });
+    });
+    return parseFreshStamp(latest);
+  }
+
   function chooseFreshestPayload(snapshotPayload, localPayload) {
     if (snapshotPayload && localPayload) {
+      var snapshotFactFreshness = priceFactFreshnessOfPayload(snapshotPayload);
+      var localFactFreshness = priceFactFreshnessOfPayload(localPayload);
+      if (snapshotFactFreshness !== localFactFreshness) {
+        return snapshotFactFreshness > localFactFreshness
+          ? { payload: snapshotPayload, source: "snapshot" }
+          : { payload: localPayload, source: "local" };
+      }
       return freshnessOfPayload(snapshotPayload) >= freshnessOfPayload(localPayload)
         ? { payload: snapshotPayload, source: "snapshot" }
         : { payload: localPayload, source: "local" };
@@ -1881,6 +1980,11 @@
   function buildRow(source, market, manualMap, overlayRow, priceRow, liveRow, liveGeneratedAt, maxDate, skuMeta, orderProcurementRow) {
     var timeline = pickPrimaryTimeline(source, overlayRow);
     timeline = mergeTimelineWithOverlay(timeline, overlayRow, maxDate);
+    var timelineValueDate = timeline.filter(function (item) {
+      return positiveNum(item && (item.price != null ? item.price : item.currentPrice)) != null;
+    }).map(function (item) {
+      return isoDate(item && item.date);
+    }).filter(Boolean).sort().pop() || "";
     var overlayClearsFill = overlayFlagEnabled(overlayRow && (overlayRow.clearCurrentFillPrice || overlayRow.clearCurrentPrice));
     var overlayClearsClient = overlayFlagEnabled(overlayRow && overlayRow.clearCurrentClientPrice);
     var overlayClearsSpp = overlayFlagEnabled(overlayRow && overlayRow.clearCurrentSppPct);
@@ -1904,7 +2008,7 @@
     var liveClientPrice = positiveNum(liveRow && liveRow.currentClientPrice);
     var liveListPrice = firstPositive(liveRow && liveRow.firstPrice, liveRow && liveRow.currentFirstPrice, liveRow && liveRow.sellerPrice, liveRow && liveRow.currentSellerPriceBeforeDiscount);
     var livePriceDate = isoDate(liveRow && (liveRow.valueDate || liveRow.historyFreshnessDate || liveGeneratedAt));
-    var sourceValueDate = isoDate(source && source.historyFreshnessDate) || isoDate(maxDate);
+    var sourceValueDate = isoDate(source && (source.currentPriceDate || source.historyFreshnessDate || source.valueDate)) || timelineValueDate;
     var useOverlayFacts = Boolean(overlayRow) && (!overlayValueDate || !sourceValueDate || overlayValueDate >= sourceValueDate);
     var sourceFillPrice = positiveNum(source.currentFillPrice != null ? source.currentFillPrice : source.currentPrice);
     var sourceClientPrice = positiveNum(source.currentClientPrice);
@@ -1960,12 +2064,12 @@
         ? overlayPriceMode
         : (sourceListPrice != null ? sourcePriceMode : livePriceMode));
     var listPriceDate = listPriceSource === "prices"
-      ? (priceCurrentDate || livePriceDate || overlayValueDate || sourceValueDate || isoDate(maxDate))
+      ? (priceCurrentDate || livePriceDate || overlayValueDate || sourceValueDate)
       : (listPriceSource === "overlay"
-        ? (overlayValueDate || priceCurrentDate || sourceValueDate || livePriceDate || isoDate(maxDate))
+        ? (overlayValueDate || priceCurrentDate || sourceValueDate || livePriceDate)
         : (listPriceSource === "workbench"
-          ? (sourceValueDate || overlayValueDate || priceCurrentDate || livePriceDate || isoDate(maxDate))
-          : (livePriceDate || isoDate(liveGeneratedAt) || sourceValueDate || overlayValueDate || priceCurrentDate || isoDate(maxDate))));
+          ? (sourceValueDate || overlayValueDate || priceCurrentDate || livePriceDate)
+          : (livePriceDate || isoDate(liveGeneratedAt) || sourceValueDate || overlayValueDate || priceCurrentDate)));
     var turnoverDays = null;
     var turnoverSource = "";
     if (priceTurnoverDays != null) {
@@ -2032,11 +2136,11 @@
       requiredPriceForMargin: num(source.requiredPriceForMargin),
       historyNote: source.historyNote || "",
       currentPriceDate: priceFillPrice != null
-        ? (priceCurrentDate || livePriceDate || overlayValueDate || sourceValueDate || isoDate(maxDate))
+        ? (priceCurrentDate || livePriceDate || overlayValueDate || sourceValueDate)
         : (liveFillPrice != null
-        ? (livePriceDate || overlayValueDate || sourceValueDate || isoDate(maxDate))
-        : ((useOverlayFacts && overlayValueDate) ? overlayValueDate : (sourceValueDate || isoDate(maxDate)))),
-      valueDate: (useOverlayFacts && overlayValueDate) ? overlayValueDate : (sourceValueDate || isoDate(maxDate)),
+        ? (livePriceDate || overlayValueDate || sourceValueDate)
+        : ((useOverlayFacts && overlayValueDate) ? overlayValueDate : sourceValueDate)),
+      valueDate: (useOverlayFacts && overlayValueDate) ? overlayValueDate : sourceValueDate,
       timeline: timeline
     };
     var manual = manualMap[norm(row.articleKey)];
@@ -2143,7 +2247,7 @@
         ? DATA_URL + " (" + dataResult.source + ")"
           + (pricesPayload && pricesPayload.generatedAt ? " + " + PRICES_URL + " (" + pricesSource + ")" : "")
           + (state.liveGeneratedAt ? " + " + LIVE_DATA_URL + " (" + liveSource + ")" : "")
-          + " + " + OVERLAY_URL + " (" + overlaySource + ") \u00b7 \u0446\u0435\u043d\u044b \u0434\u043e " + isoDate(overlayPayload.asOfDate || overlayPayload.generatedAt)
+          + " + " + OVERLAY_URL + " (" + overlaySource + ") \u00b7 overlay \u0434\u043e " + isoDate(overlayPayload.asOfDate || overlayPayload.generatedAt)
         : DATA_URL + " (" + dataResult.source + ") \u00b7 \u0431\u0435\u0437 \u0441\u0432\u0435\u0436\u0435\u0433\u043e overlay";
       if (state.orderProcurementFallbackCount > 0) {
         state.sourceNote += " \u00b7 \u043e\u0431\u043e\u0440\u043e\u0442 fallback: order_procurement";
@@ -2157,11 +2261,18 @@
       var last = latestDate(rows);
       state.latestTimelineDate = last;
       state.earliestTimelineDate = earliestDate(rows);
-      state.latestFactDate = isoDate((overlayPayload && (overlayPayload.asOfDate || overlayPayload.generatedAt)) || payload.generatedAt || last);
+      state.latestFactDate = latestPriceFactDate(rows) || last;
       state.dataLagDays = state.latestFactDate ? Math.max(0, diffDays(state.latestFactDate, todayKey())) : 0;
-      if (last) {
-        state.dateTo = last;
-        state.dateFrom = shiftDate(last, -6);
+      state.sourceNote += state.latestFactDate
+        ? " \u00b7 \u0444\u0430\u043a\u0442 \u0446\u0435\u043d \u0434\u043e " + state.latestFactDate
+        : " \u00b7 \u0434\u0430\u0442\u0430 \u0444\u0430\u043a\u0442\u0430 \u0446\u0435\u043d \u043d\u0435 \u043e\u043f\u0440\u0435\u0434\u0435\u043d\u0430";
+      var selectedMarketRows = rows.filter(function (row) {
+        return state.market === "all" || row.market === state.market;
+      });
+      var dateAnchor = latestPriceFactDate(selectedMarketRows) || latestDate(selectedMarketRows) || state.latestFactDate || last;
+      if (dateAnchor) {
+        state.dateTo = dateAnchor;
+        state.dateFrom = shiftDate(dateAnchor, -6);
       }
       normalizeDateRange();
     } catch (error) {
@@ -2175,16 +2286,32 @@
 
   function rangeSlice(row) {
     return (row.timeline || []).filter(function (item) {
-      if (!item || !item.date) return false;
-      if (state.dateFrom && item.date < state.dateFrom) return false;
-      if (state.dateTo && item.date > state.dateTo) return false;
+      var date = isoDate(item && item.date);
+      if (!date) return false;
+      if (state.dateFrom && date < state.dateFrom) return false;
+      if (state.dateTo && date > state.dateTo) return false;
       return true;
     });
   }
 
   function latestRangePoint(row) {
-    var items = rangeSlice(row);
-    return items.length ? items[items.length - 1] : null;
+    var items = rangeSlice(row).filter(priceTimelinePointHasFact);
+    if (items.length) return items[items.length - 1];
+    var snapshots = [];
+    var fillPrice = positiveNum(row && row.currentFillPrice);
+    var fillDate = isoDate(row && (row.currentPriceDate || row.valueDate));
+    if (fillPrice != null && fillDate) snapshots.push({ date: fillDate, price: fillPrice, snapshotOnly: true });
+    var listPrice = positiveNum(row && row.listPrice);
+    var listDate = isoDate(row && (row.listPriceDate || row.valueDate));
+    if (listPrice != null && listDate) snapshots.push({ date: listDate, price: listPrice, snapshotOnly: true, listPriceOnly: true });
+    return snapshots
+      .filter(function (item) {
+        if (state.dateFrom && item.date < state.dateFrom) return false;
+        if (state.dateTo && item.date > state.dateTo) return false;
+        return true;
+      })
+      .sort(function (left, right) { return left.date.localeCompare(right.date); })
+      .pop() || null;
   }
 
   function latestNonNullRangeMetric(row, key) {
@@ -2234,6 +2361,12 @@
       found = true;
     });
     return found ? total : null;
+  }
+
+  function countHistoryMetric(items, key) {
+    return (items || []).reduce(function (count, item) {
+      return num(item && item[key]) == null ? count : count + 1;
+    }, 0);
   }
 
   function roundedHistoryPrice(item) {
@@ -2292,14 +2425,24 @@
     if (!change) return result;
     var afterItems = items.slice(change.index);
     var beforeItems = items.slice(Math.max(0, change.index - afterItems.length), change.index);
-    result.afterDays = afterItems.length;
-    result.beforeDays = beforeItems.length;
     result.afterOrders = sumHistoryMetric(afterItems, "ordersUnits");
     result.beforeOrders = sumHistoryMetric(beforeItems, "ordersUnits");
     result.afterRevenue = sumHistoryMetric(afterItems, "revenue");
     result.beforeRevenue = sumHistoryMetric(beforeItems, "revenue");
-    if (result.afterOrders != null && result.beforeOrders != null) result.orderDelta = result.afterOrders - result.beforeOrders;
-    if (result.afterRevenue != null && result.beforeRevenue != null) result.revenueDelta = result.afterRevenue - result.beforeRevenue;
+    result.afterDays = countHistoryMetric(afterItems, "ordersUnits");
+    result.beforeDays = countHistoryMetric(beforeItems, "ordersUnits");
+    result.afterRevenueDays = countHistoryMetric(afterItems, "revenue");
+    result.beforeRevenueDays = countHistoryMetric(beforeItems, "revenue");
+    result.afterOrdersPerDay = result.afterOrders != null && result.afterDays > 0 ? result.afterOrders / result.afterDays : null;
+    result.beforeOrdersPerDay = result.beforeOrders != null && result.beforeDays > 0 ? result.beforeOrders / result.beforeDays : null;
+    result.afterRevenuePerDay = result.afterRevenue != null && result.afterRevenueDays > 0 ? result.afterRevenue / result.afterRevenueDays : null;
+    result.beforeRevenuePerDay = result.beforeRevenue != null && result.beforeRevenueDays > 0 ? result.beforeRevenue / result.beforeRevenueDays : null;
+    if (result.afterOrdersPerDay != null && result.beforeOrdersPerDay != null) {
+      result.orderDelta = result.afterOrdersPerDay - result.beforeOrdersPerDay;
+    }
+    if (result.afterRevenuePerDay != null && result.beforeRevenuePerDay != null) {
+      result.revenueDelta = result.afterRevenuePerDay - result.beforeRevenuePerDay;
+    }
     return result;
   }
 
@@ -2354,6 +2497,12 @@
     return next;
   }
 
+  function shouldIncludePriceRowForRange(displayRow, hasSearch) {
+    if (!(state.dateFrom || state.dateTo)) return true;
+    if (displayRow && displayRow.rangeHasPoint) return true;
+    return Boolean(hasSearch);
+  }
+
   function visibleRows() {
     var search = String(state.search || "").trim().toLowerCase();
     var searchNorm = norm(search);
@@ -2387,7 +2536,8 @@
         var hayNorm = norm(hay);
         if (hay.indexOf(search) === -1 && (!searchNorm || hayNorm.indexOf(searchNorm) === -1)) return;
       }
-      if ((state.dateFrom || state.dateTo) && !displayRow.rangeHasPoint) return;
+      if (!shouldIncludePriceRowForRange(displayRow, search)) return;
+      displayRow.rangeFallback = Boolean((state.dateFrom || state.dateTo) && !displayRow.rangeHasPoint && search);
       next.push(displayRow);
     });
     derived.visibleRows.rowsRef = state.rows;
@@ -2549,32 +2699,120 @@
     var note = intf(impact.ordersUnits) + " \u0437\u0430\u043a\u0430\u0437\u043e\u0432 \u0437\u0430 \u043f\u0435\u0440\u0438\u043e\u0434";
     if (impact.change) {
       note += "; \u043f\u043e\u0441\u043b\u0435 \u0441\u043c\u0435\u043d\u044b " + (impact.afterOrders == null ? "\u2014" : intf(impact.afterOrders));
-      if (impact.orderDelta != null) note += ", \u0394 " + signedIntLabel(impact.orderDelta);
+      if (impact.orderDelta != null) note += ", \u0394 " + signedDailyLabel(impact.orderDelta);
     }
     return note;
   }
 
   function priceBoundaryState(row) {
+    var stateValue = priceCorridorState(row);
+    return stateValue && stateValue.risk ? stateValue : null;
+  }
+
+  function priceCorridorState(row) {
     var bounds = row && row.repricerBounds || {};
     var price = num(row && row.currentFillPrice);
     var min = num(bounds.effectiveMin);
     var max = num(bounds.effectiveMax);
-    if (price == null) return null;
+    if (price == null || price <= 0) {
+      return {
+        tone: "unknown",
+        label: "\u043d\u0435\u0442 \u0446\u0435\u043d\u044b",
+        title: "\u041d\u0435\u0442 \u0444\u0430\u043a\u0442\u0438\u0447\u0435\u0441\u043a\u043e\u0439 \u0446\u0435\u043d\u044b \u0434\u043b\u044f \u043f\u0440\u043e\u0432\u0435\u0440\u043a\u0438 MIN/MAX.",
+        quality: true,
+        risk: false
+      };
+    }
+    if (!(min > 0) && !(max > 0)) {
+      return {
+        tone: "unknown",
+        label: "MIN/MAX \u043d\u0435 \u0437\u0430\u0434\u0430\u043d",
+        title: "\u041a\u043e\u0440\u0438\u0434\u043e\u0440 \u043d\u0435 \u0437\u0430\u0434\u0430\u043d, \u043f\u043e\u044d\u0442\u043e\u043c\u0443 \u043d\u0435\u043b\u044c\u0437\u044f \u0443\u0442\u0432\u0435\u0440\u0436\u0434\u0430\u0442\u044c, \u0447\u0442\u043e \u0446\u0435\u043d\u0430 \u0432 \u043d\u043e\u0440\u043c\u0435.",
+        quality: true,
+        risk: false
+      };
+    }
+    if (min > 0 && max > 0 && min > max) {
+      return {
+        tone: "danger",
+        label: "MIN \u0432\u044b\u0448\u0435 MAX",
+        title: "\u041a\u043e\u0440\u0438\u0434\u043e\u0440 \u043d\u0435\u043a\u043e\u0440\u0440\u0435\u043a\u0442\u0435\u043d: MIN " + money(min) + " \u0432\u044b\u0448\u0435 MAX " + money(max),
+        quality: true,
+        risk: true
+      };
+    }
     if (min != null && min > 0 && price < min) {
       return {
         tone: "danger",
         label: "\u043d\u0438\u0436\u0435 MIN",
-        title: "\u0426\u0435\u043d\u0430 " + money(price) + " \u043d\u0438\u0436\u0435 MIN " + money(min)
+        title: "\u0426\u0435\u043d\u0430 " + money(price) + " \u043d\u0438\u0436\u0435 MIN " + money(min),
+        risk: true
       };
     }
     if (max != null && max > 0 && price > max) {
       return {
         tone: "warn",
         label: "\u0432\u044b\u0448\u0435 MAX",
-        title: "\u0426\u0435\u043d\u0430 " + money(price) + " \u0432\u044b\u0448\u0435 MAX " + money(max)
+        title: "\u0426\u0435\u043d\u0430 " + money(price) + " \u0432\u044b\u0448\u0435 MAX " + money(max),
+        risk: true
       };
     }
-    return null;
+    return {
+      tone: "ok",
+      label: "\u0432 \u043a\u043e\u0440\u0438\u0434\u043e\u0440\u0435",
+      title: "\u0426\u0435\u043d\u0430 \u043d\u0430\u0445\u043e\u0434\u0438\u0442\u0441\u044f \u0432 \u0437\u0430\u0434\u0430\u043d\u043d\u043e\u043c MIN/MAX.",
+      quality: false,
+      risk: false
+    };
+  }
+
+  function priceFactLagDays(row) {
+    var date = priceFactDateForRow(row);
+    return date ? Math.max(0, diffDays(date, todayKey())) : null;
+  }
+
+  function priceDataAudit(rows) {
+    var result = {
+      rows: 0,
+      withPrice: 0,
+      withPriceDate: 0,
+      stalePrice: 0,
+      withMargin: 0,
+      withBounds: 0,
+      invalidBounds: 0,
+      withOwner: 0,
+      withDaily: 0
+    };
+    (rows || []).forEach(function (row) {
+      result.rows += 1;
+      if (positiveNum(row && row.currentFillPrice) != null) result.withPrice += 1;
+      if (priceFactDateForRow(row)) result.withPriceDate += 1;
+      var lag = priceFactLagDays(row);
+      if (lag != null && lag > 2) result.stalePrice += 1;
+      if (num(row && row.marginTotalPct) != null) result.withMargin += 1;
+      var bounds = row && row.repricerBounds || {};
+      var min = positiveNum(bounds.effectiveMin);
+      var max = positiveNum(bounds.effectiveMax);
+      if (min != null || max != null) result.withBounds += 1;
+      if (min != null && max != null && min > max) result.invalidBounds += 1;
+      if (String(row && row.owner || "").trim() && row.owner !== "\u2014") result.withOwner += 1;
+      if (priceHasDailyFact(row)) result.withDaily += 1;
+    });
+    return result;
+  }
+
+  function priceDataAuditText(audit) {
+    if (!audit || !audit.rows) return "\u0412 \u0441\u0440\u0435\u0437\u0435 \u043d\u0435\u0442 SKU.";
+    return [
+      "\u0446\u0435\u043d\u0430 " + audit.withPrice + "/" + audit.rows,
+      "\u0434\u0430\u0442\u0430 \u0446\u0435\u043d\u044b " + audit.withPriceDate + "/" + audit.rows,
+      "\u043c\u0430\u0440\u0436\u0430 " + audit.withMargin + "/" + audit.rows,
+      "MIN/MAX " + audit.withBounds + "/" + audit.rows,
+      "owner " + audit.withOwner + "/" + audit.rows,
+      "daily " + audit.withDaily + "/" + audit.rows,
+      audit.stalePrice ? "\u0443\u0441\u0442\u0430\u0440\u0435\u043b\u043e >2 \u0434\u043d.: " + audit.stalePrice : "",
+      audit.invalidBounds ? "MIN>MAX: " + audit.invalidBounds : ""
+    ].filter(Boolean).join(" \u00b7 ");
   }
 
   function priceBadgeToneClass(tone) {
@@ -2617,7 +2855,7 @@
     var deltaRows = summary.impactWins + summary.impactDrops + summary.impactFlat;
     var winTone = summary.impactDrops > summary.impactWins ? "danger" : (summary.impactWins ? "ok" : "info");
     var riskTone = summary.minMaxDanger ? "danger" : (summary.minMaxRisk ? "warn" : "ok");
-    var orderDeltaLabel = summary.orderDeltaTotal == null ? "\u2014" : signedIntLabel(summary.orderDeltaTotal);
+    var orderDeltaLabel = summary.orderDeltaTotal == null ? "\u2014" : signedDailyLabel(summary.orderDeltaTotal);
     var changeFoot = "+ " + intf(summary.priceRaises) + " / - " + intf(summary.priceDrops);
     var minMaxWarn = Math.max(0, summary.minMaxRisk - summary.minMaxDanger);
     var riskFoot = "\u043a\u043e\u0440\u0438\u0434\u043e\u0440 \u0440\u043e\u0432\u043d\u044b\u0439";
@@ -2673,7 +2911,7 @@
       renderPriceGamePill("\u0446\u0435\u043d\u0443 \u043c\u0435\u043d\u044f\u043b\u0438: " + intf(summary.changedRows) + " SKU", summary.changedRows ? "violet" : "info"),
       renderPriceGamePill("MIN/MAX: " + intf(summary.minMaxRisk) + " \u0440\u0438\u0441\u043a", riskTone),
       summary.bestWin ? renderPriceGamePill("\u043b\u0443\u0447\u0448\u0438\u0439 \u043e\u0442\u043a\u043b\u0438\u043a: " + (summary.bestWin.articleKey || "\u2014") + " " + signedIntLabel(summary.bestWin.delta), "ok", summary.bestWin.name || "") : "",
-      summary.worstDrop ? renderPriceGamePill("\u043f\u0440\u043e\u0441\u0430\u0434\u043a\u0430: " + (summary.worstDrop.articleKey || "\u2014") + " " + signedIntLabel(summary.worstDrop.delta), "danger", summary.worstDrop.name || "") : ""
+      summary.worstDrop ? renderPriceGamePill("\u043f\u0440\u043e\u0441\u0430\u0434\u043a\u0430: " + (summary.worstDrop.articleKey || "\u2014") + " " + signedDailyLabel(summary.worstDrop.delta), "danger", summary.worstDrop.name || "") : ""
     ].filter(Boolean);
     return [
       '<div class="pw-game-panel" aria-label="\u0426\u0435\u043d\u043e\u0432\u044b\u0435 \u0441\u0438\u0433\u043d\u0430\u043b\u044b">',
@@ -2691,8 +2929,8 @@
     }
     if (impact && impact.orderDelta != null && Number.isFinite(Number(impact.orderDelta))) {
       var delta = Number(impact.orderDelta);
-      if (delta > 0) badges.push(renderPriceBadge("\u0437\u0430\u043a\u0430\u0437\u044b " + signedIntLabel(delta), "ok", "\u041f\u043e\u0441\u043b\u0435 \u0441\u043c\u0435\u043d\u044b \u0446\u0435\u043d\u044b"));
-      else if (delta < 0) badges.push(renderPriceBadge("\u043f\u0440\u043e\u0441\u0430\u0434\u043a\u0430 " + signedIntLabel(delta), "danger", "\u041f\u043e\u0441\u043b\u0435 \u0441\u043c\u0435\u043d\u044b \u0446\u0435\u043d\u044b"));
+      if (delta > 0) badges.push(renderPriceBadge("\u0437\u0430\u043a\u0430\u0437\u044b " + signedDailyLabel(delta), "ok", "\u041f\u043e\u0441\u043b\u0435 \u0441\u043c\u0435\u043d\u044b \u0446\u0435\u043d\u044b"));
+      else if (delta < 0) badges.push(renderPriceBadge("\u043f\u0440\u043e\u0441\u0430\u0434\u043a\u0430 " + signedDailyLabel(delta), "danger", "\u041f\u043e\u0441\u043b\u0435 \u0441\u043c\u0435\u043d\u044b \u0446\u0435\u043d\u044b"));
       else badges.push(renderPriceBadge("\u0437\u0430\u043a\u0430\u0437\u044b \u0440\u043e\u0432\u043d\u043e", "info", "\u041f\u043e\u0441\u043b\u0435 \u0441\u043c\u0435\u043d\u044b \u0446\u0435\u043d\u044b"));
     }
     var boundary = priceBoundaryState(row);
@@ -2766,6 +3004,13 @@
     return sign + intf(Math.abs(number));
   }
 
+  function signedDailyLabel(value) {
+    if (value == null || !Number.isFinite(Number(value))) return "\u2014";
+    var number = Number(value);
+    var sign = number > 0 ? "+" : (number < 0 ? "-" : "");
+    return sign + Math.abs(number).toFixed(1).replace(".", ",") + " /\u0434\u043d.";
+  }
+
   function signedPctLabel(value) {
     if (value == null || !Number.isFinite(Number(value))) return "";
     var number = Number(value);
@@ -2830,7 +3075,7 @@
       '<div class="pw-impact-cell"><strong>', impact.afterOrders == null ? "\u2014" : intf(impact.afterOrders), '</strong>',
       '<small>\u043f\u043e\u0441\u043b\u0435 ', esc(impact.change.date || ""), ' \u00b7 ', intf(impact.afterDays), ' \u0434\u043d.</small>',
       '<small>\u0434\u043e: ', impact.beforeOrders == null ? "\u2014" : intf(impact.beforeOrders),
-      delta != null ? ' \u00b7 <span class="pw-delta ' + deltaTone(delta) + '">&Delta; ' + esc(signedIntLabel(delta)) + '</span>' : '',
+      delta != null ? ' \u00b7 <span class="pw-delta ' + deltaTone(delta) + '">&Delta; ' + esc(signedDailyLabel(delta)) + '</span>' : '',
       '</small></div>'
     ].join("");
   }
@@ -3041,7 +3286,12 @@
         price_change_pct: change.deltaPct != null ? Math.round(Number(change.deltaPct) * 10000) / 100 : "",
         orders_after_change: impact.afterOrders,
         orders_before_change_window: impact.beforeOrders,
-        orders_delta_after_change: impact.orderDelta,
+        orders_delta_after_change: impact.afterOrders != null && impact.beforeOrders != null
+          ? impact.afterOrders - impact.beforeOrders
+          : null,
+        orders_after_change_per_day: impact.afterOrdersPerDay,
+        orders_before_change_per_day: impact.beforeOrdersPerDay,
+        orders_delta_after_change_per_day: impact.orderDelta,
         current_price_mp_before_discount: moneyRound(row.listPrice),
         current_price_mp_before_discount_date: row.listPriceFactDate || row.priceFactDate || row.currentPriceDate || row.valueDate || "",
         current_price_mp_before_discount_source: row.listPriceSource || "",
@@ -3119,6 +3369,9 @@ function downloadPriceSummaryExcel(rows) {
     ["orders_after_change", "\u0417\u0430\u043a\u0430\u0437\u044b \u043f\u043e\u0441\u043b\u0435 \u0441\u043c\u0435\u043d\u044b"],
     ["orders_before_change_window", "\u0417\u0430\u043a\u0430\u0437\u044b \u0434\u043e \u0441\u043c\u0435\u043d\u044b"],
     ["orders_delta_after_change", "\u0414\u0435\u043b\u044c\u0442\u0430 \u0437\u0430\u043a\u0430\u0437\u043e\u0432"],
+    ["orders_after_change_per_day", "\u0417\u0430\u043a\u0430\u0437\u044b \u043f\u043e\u0441\u043b\u0435, \u0432 \u0434\u0435\u043d\u044c"],
+    ["orders_before_change_per_day", "\u0417\u0430\u043a\u0430\u0437\u044b \u0434\u043e, \u0432 \u0434\u0435\u043d\u044c"],
+    ["orders_delta_after_change_per_day", "\u0414\u0435\u043b\u044c\u0442\u0430 \u0437\u0430\u043a\u0430\u0437\u043e\u0432, \u0432 \u0434\u0435\u043d\u044c"],
     ["status", "Статус"],
     ["current_price_mp_before_discount", "Цена MP до скидки"],
     ["current_price_mp_before_discount_date", "Дата цены MP до скидки"],
@@ -3312,7 +3565,7 @@ function downloadPriceSummaryExcel(rows) {
       '<div class="pw-mini"><span class="pw-label">\u0417\u0430\u043a\u0430\u0437\u044b \u043f\u0435\u0440\u0438\u043e\u0434\u0430</span><strong>', impact.ordersUnits == null ? "\u2014" : intf(impact.ordersUnits), '</strong><small>\u0421\u0443\u043c\u043c\u0430 \u0437\u0430\u043a\u0430\u0437\u043e\u0432 \u0432 \u0432\u044b\u0431\u0440\u0430\u043d\u043d\u043e\u0439 \u0434\u0430\u0442\u0435/\u043f\u0435\u0440\u0438\u043e\u0434\u0435.</small></div>',
       renderOrderLevelMini(impact),
       '<div class="pw-mini"><span class="pw-label">\u0412\u044b\u0440\u0443\u0447\u043a\u0430 \u043f\u0435\u0440\u0438\u043e\u0434\u0430</span><strong>', money(impact.revenue), '</strong><small>\u0412\u044b\u0440\u0443\u0447\u043a\u0430 \u0432 \u0442\u0435 \u0436\u0435 \u0434\u043d\u0438, \u0433\u0434\u0435 \u0432\u0438\u0434\u0438\u043c \u0446\u0435\u043d\u0443.</small></div>',
-      '<div class="pw-mini"><span class="pw-label">\u041f\u043e\u0441\u043b\u0435 \u0441\u043c\u0435\u043d\u044b \u0446\u0435\u043d\u044b</span><strong>', impact.change ? (impact.afterOrders == null ? "\u2014" : intf(impact.afterOrders)) : "\u2014", '</strong><small>', impact.change ? ('\u0441 ' + esc(impact.change.date || "") + ', \u0434\u043e: ' + (impact.beforeOrders == null ? "\u2014" : intf(impact.beforeOrders)) + (impact.orderDelta != null ? ', \u0394 ' + esc(signedIntLabel(impact.orderDelta)) : '')) : '\u0432 \u043f\u0435\u0440\u0438\u043e\u0434\u0435 \u0441\u043c\u0435\u043d\u044b \u0446\u0435\u043d\u044b \u043d\u0435\u0442', '</small></div>',
+      '<div class="pw-mini"><span class="pw-label">\u041f\u043e\u0441\u043b\u0435 \u0441\u043c\u0435\u043d\u044b \u0446\u0435\u043d\u044b</span><strong>', impact.change ? (impact.afterOrders == null ? "\u2014" : intf(impact.afterOrders)) : "\u2014", '</strong><small>', impact.change ? ('\u0441 ' + esc(impact.change.date || "") + ', \u0434\u043e: ' + (impact.beforeOrders == null ? "\u2014" : intf(impact.beforeOrders)) + (impact.orderDelta != null ? ', \u0394 ' + esc(signedDailyLabel(impact.orderDelta)) : '')) : '\u0432 \u043f\u0435\u0440\u0438\u043e\u0434\u0435 \u0441\u043c\u0435\u043d\u044b \u0446\u0435\u043d\u044b \u043d\u0435\u0442', '</small></div>',
       '<div class="pw-mini"><span class="pw-label">\u0421\u043a\u0438\u0434\u043a\u0430 \u043f\u0440\u043e\u0434\u0430\u0432\u0446\u0430</span><strong>', pct(row.sellerDiscountPct), '</strong><small>\u0421\u0447\u0438\u0442\u0430\u0435\u043c \u043a\u0430\u043a \u0440\u0430\u0437\u043d\u0438\u0446\u0443 \u043c\u0435\u0436\u0434\u0443 \u0446\u0435\u043d\u043e\u0439 \u0434\u043e \u0441\u043a\u0438\u0434\u043a\u0438 \u0438 \u0446\u0435\u043d\u043e\u0439 \u0441\u043e \u0441\u043a\u0438\u0434\u043a\u043e\u0439.</small></div>',
       '<div class="pw-mini"><span class="pw-label">\u0426\u0435\u043d\u0430 \u043a\u043b\u0438\u0435\u043d\u0442\u0430</span><strong>', money(row.currentClientPrice), '</strong><small>', esc(metricHelp("\u041f\u043e\u0441\u043b\u0435\u0434\u043d\u0438\u0439 \u0434\u043e\u0441\u0442\u0443\u043f\u043d\u044b\u0439 \u043a\u043b\u0438\u0435\u043d\u0442\u0441\u043a\u0438\u0439 \u043a\u043e\u043d\u0442\u0443\u0440.", row.clientPriceFactDate, row.valueDate)), '</small></div>',
       '<div class="pw-mini"><span class="pw-label">\u0414\u043e\u043f\u0443\u0441\u0442\u0438\u043c\u0430\u044f \u043c\u0430\u0440\u0436\u0430 3\u043c</span><strong>', pct(row.allowedMarginPct), '</strong><small>\u0411\u0435\u0440\u0435\u043c \u0438\u0437 smart/workbench \u0441\u043b\u043e\u044f \u0431\u0435\u0437 \u043f\u0440\u0438\u0432\u044f\u0437\u043a\u0438 \u043a \u043d\u043e\u043c\u0435\u0440\u0443 \u0441\u0442\u0440\u043e\u043a\u0438.</small></div>',
@@ -3758,6 +4011,16 @@ function downloadPriceSummaryExcel(rows) {
     }
     if (state.market !== market) {
       state.market = market;
+      if (state.loaded) {
+        var scopedRows = state.rows.filter(function (row) {
+          return market === "all" || row.market === market;
+        });
+        var marketAnchor = latestPriceFactDate(scopedRows) || latestDate(scopedRows);
+        if (marketAnchor) {
+          state.dateTo = marketAnchor;
+          state.dateFrom = shiftDate(marketAnchor, -6);
+        }
+      }
       priceV1InvalidateRows();
     }
     return market;
@@ -3774,6 +4037,10 @@ function downloadPriceSummaryExcel(rows) {
       { key: "ordersDropped", label: "Заказы упали", group: "Эффект цены" },
       { key: "minMaxRisk", label: "MIN/MAX риск", group: "Коридор" },
       { key: "belowMargin", label: "Маржа ниже нормы", group: "Экономика" },
+      { key: "stalePrice", label: "Цена устарела", group: "Качество данных" },
+      { key: "missingPrice", label: "Нет цены", group: "Качество данных" },
+      { key: "missingBounds", label: "Нет MIN/MAX", group: "Качество данных" },
+      { key: "missingMargin", label: "Нет маржи", group: "Качество данных" },
       { key: "noDailyFact", label: "Нет daily-факта", group: "Качество данных" },
       { key: "noOwner", label: "Без owner", group: "Качество данных" }
     ];
@@ -3793,7 +4060,11 @@ function downloadPriceSummaryExcel(rows) {
       if (advanced.ordersDropped && !(impact && Number(impact.orderDelta) < 0)) return false;
       if (advanced.minMaxRisk && !priceBoundaryState(row)) return false;
       if (advanced.belowMargin && !(row.allowedMarginPct != null && row.marginTotalPct != null && row.marginTotalPct < row.allowedMarginPct)) return false;
-      if (advanced.noDailyFact && historyItemsForRow(row).length) return false;
+      if (advanced.stalePrice && !(priceFactLagDays(row) != null && priceFactLagDays(row) > 2)) return false;
+      if (advanced.missingPrice && positiveNum(row && row.currentFillPrice) != null) return false;
+      if (advanced.missingBounds && priceCorridorState(row).label !== "MIN/MAX \u043d\u0435 \u0437\u0430\u0434\u0430\u043d") return false;
+      if (advanced.missingMargin && num(row && row.marginTotalPct) != null) return false;
+      if (advanced.noDailyFact && priceHasDailyFact(row)) return false;
       if (advanced.noOwner && String(row.owner || "").trim() && row.owner !== "\u2014") return false;
       return true;
     });
@@ -3805,7 +4076,11 @@ function downloadPriceSummaryExcel(rows) {
     if (key === "ordersDropped") return Boolean(impact && Number(impact.orderDelta) < 0);
     if (key === "minMaxRisk") return Boolean(priceBoundaryState(row));
     if (key === "belowMargin") return Boolean(row.allowedMarginPct != null && row.marginTotalPct != null && row.marginTotalPct < row.allowedMarginPct);
-    if (key === "noDailyFact") return !historyItemsForRow(row).length;
+    if (key === "stalePrice") return Boolean(priceFactLagDays(row) != null && priceFactLagDays(row) > 2);
+    if (key === "missingPrice") return positiveNum(row && row.currentFillPrice) == null;
+    if (key === "missingBounds") return priceCorridorState(row).label === "MIN/MAX \u043d\u0435 \u0437\u0430\u0434\u0430\u043d";
+    if (key === "missingMargin") return num(row && row.marginTotalPct) == null;
+    if (key === "noDailyFact") return !priceHasDailyFact(row);
     if (key === "noOwner") return !(String(row.owner || "").trim() && row.owner !== "\u2014");
     return false;
   }
@@ -3817,6 +4092,8 @@ function downloadPriceSummaryExcel(rows) {
       { key: "ordersDropped", label: "Заказы просели" },
       { key: "belowMargin", label: "Маржа ниже нормы" },
       { key: "minMaxRisk", label: "MIN/MAX риск" },
+      { key: "stalePrice", label: "Цена устарела" },
+      { key: "missingPrice", label: "Нет цены" },
       { key: "noDailyFact", label: "Нет daily" }
     ];
     var buttons = items.map(function (item) {
@@ -3876,8 +4153,13 @@ function downloadPriceSummaryExcel(rows) {
   }
 
   function priceV1EffectPct(impact) {
-    if (!impact || impact.beforeOrders == null || impact.afterOrders == null || Number(impact.beforeOrders) <= 0) return null;
-    return (Number(impact.afterOrders) / Number(impact.beforeOrders)) - 1;
+    if (!impact) return null;
+    var before = num(impact.beforeOrdersPerDay);
+    var after = num(impact.afterOrdersPerDay);
+    if (before == null && impact.beforeOrders != null && impact.beforeDays > 0) before = Number(impact.beforeOrders) / Number(impact.beforeDays);
+    if (after == null && impact.afterOrders != null && impact.afterDays > 0) after = Number(impact.afterOrders) / Number(impact.afterDays);
+    if (before == null || after == null || before <= 0) return null;
+    return (after / before) - 1;
   }
 
   function priceChartUi() {
@@ -4329,8 +4611,8 @@ function downloadPriceSummaryExcel(rows) {
     }, "asc");
     add(cards, "Топ SKU по заказам", ordersLeader, ordersLeader ? intf(impact(ordersLeader).ordersUnits) + " заказов" : "", "где сейчас основной объем");
     add(cards, "Топ SKU по выручке", revenueLeader, revenueLeader ? money(impact(revenueLeader).revenue) : "", "самая крупная строка в деньгах");
-    add(cards, "Лучший эффект цены", model.bestPriceRow && model.bestPriceRow.row, model.bestPriceRow ? signedIntLabel(model.bestPriceRow.delta) + " заказов" : "", "после изменения цены");
-    add(cards, "Просадка после цены", orderDropLeader, orderDropLeader ? signedIntLabel(impact(orderDropLeader).orderDelta) + " заказов" : "", "заказы упали после изменения");
+    add(cards, "Лучший эффект цены", model.bestPriceRow && model.bestPriceRow.row, model.bestPriceRow ? signedDailyLabel(model.bestPriceRow.delta) : "", "после изменения цены");
+    add(cards, "Просадка после цены", orderDropLeader, orderDropLeader ? signedDailyLabel(impact(orderDropLeader).orderDelta) : "", "заказы упали после изменения");
     add(cards, "Маржа ниже нормы", model.belowMarginRows[0], model.belowMarginRows[0] ? pct(model.belowMarginRows[0].marginTotalPct) : "", "сравнить цену и допустимую маржу");
     add(cards, "Цена вне коридора", model.riskRows[0], model.riskRows[0] ? (priceBoundaryState(model.riskRows[0]) || {}).label : "", "проверить MIN/MAX");
     if (!cards.length) return "";
@@ -4446,7 +4728,7 @@ function downloadPriceSummaryExcel(rows) {
 
   function renderPriceInsights(model) {
     var best = model.bestPriceRow && model.bestPriceRow.row;
-    var bestLabel = best ? priceMarketLabel(best.market) + " · " + best.articleKey + " · " + signedIntLabel(model.bestPriceRow.delta) + " заказов" : "\u043d\u0435\u0442 \u044d\u0444\u0444\u0435\u043a\u0442\u0430";
+    var bestLabel = best ? priceMarketLabel(best.market) + " · " + best.articleKey + " · " + signedDailyLabel(model.bestPriceRow.delta) : "\u043d\u0435\u0442 \u044d\u0444\u0444\u0435\u043a\u0442\u0430";
     var below = model.belowMarginRows[0];
     var risk = model.riskRows[0];
     var cards = [
@@ -4481,15 +4763,26 @@ function downloadPriceSummaryExcel(rows) {
 
   function priceV1DataQuality(row) {
     var flags = [];
-    if (!historyItemsForRow(row).length) flags.push("нет daily");
+    if (!priceHasDailyFact(row)) flags.push("нет daily");
+    if (positiveNum(row && row.currentFillPrice) == null) flags.push("нет цены");
+    if (!priceFactDateForRow(row)) flags.push("нет даты цены");
+    var lag = priceFactLagDays(row);
+    if (lag != null && lag > 2) flags.push("цена устарела: " + lag + " дн.");
+    if (num(row && row.marginTotalPct) == null) flags.push("нет маржи");
+    var corridor = priceCorridorState(row);
+    if (corridor && corridor.quality && corridor.label !== "нет цены") flags.push(corridor.label);
     if (!String(row.owner || "").trim() || row.owner === "\u2014") flags.push("без owner");
     if (row.matrixProblemLabel) flags.push(row.matrixProblemLabel);
     return flags.length ? flags.join(" · ") : "OK";
   }
 
   function priceV1DecisionStatus(row) {
+    if (positiveNum(row && row.currentFillPrice) == null) return "нет цены";
     var boundary = priceBoundaryState(row);
     if (boundary) return "review";
+    var corridor = priceCorridorState(row);
+    if (corridor && corridor.label === "MIN/MAX не задан") return "задать MIN/MAX";
+    if (priceFactLagDays(row) != null && priceFactLagDays(row) > 2) return "обновить цену";
     var impact = row.priceImpact || rowPriceImpact(row);
     if (impact && impact.change && Number(impact.orderDelta) < 0) return "стоп / проверить";
     if (row.repricerDisplay && moneyRound(row.repricerDisplay.price) != null) return "есть рекомендация";
@@ -4500,7 +4793,7 @@ function downloadPriceSummaryExcel(rows) {
     var cards = [
       { label: "SKU в срезе", value: intf(summary.count), note: priceMarketLabel(state.market || "all") },
       { label: "Цена сработала", value: intf(summary.impactWins), note: intf(summary.impactDrops) + " просадок" },
-      { label: "Уровень заказов", value: formatOrdersPerDay(summary.avgOrdersPerDay), note: summary.orderDeltaTotal == null ? "без эффекта" : "\u0394 " + signedIntLabel(summary.orderDeltaTotal) },
+      { label: "Уровень заказов", value: formatOrdersPerDay(summary.avgOrdersPerDay), note: summary.orderDeltaTotal == null ? "без эффекта" : "\u0394 " + signedDailyLabel(summary.orderDeltaTotal) },
       { label: "Смены цен", value: intf(summary.priceChanges), note: intf(summary.changedRows) + " SKU меняли цену" },
       { label: "MIN/MAX риск", value: intf(summary.minMaxRisk), note: summary.minMaxDanger ? intf(summary.minMaxDanger) + " ниже MIN" : "коридор под контролем" },
       { label: "Выручка", value: money(summary.revenue), note: summary.ordersUnits == null ? "нет заказов" : intf(summary.ordersUnits) + " заказов" }
@@ -4599,7 +4892,7 @@ function downloadPriceSummaryExcel(rows) {
     var beforeAfter = "";
     if (impact && impact.change) {
       var changeX = x(Math.max(0, Math.min(items.length - 1, Number(impact.change.index) || 0)));
-      beforeAfter = '<text class="prices-v1-before-after" x="' + Math.max(left, changeX - 42).toFixed(1) + '" y="' + (effectTop + effectHeight + 24) + '">\u0434\u043e</text><text class="prices-v1-before-after" x="' + Math.min(width - right, changeX + 28).toFixed(1) + '" y="' + (effectTop + effectHeight + 24) + '">\u043f\u043e\u0441\u043b\u0435 \u00b7 ' + esc(impact.orderDelta == null ? "\u2014" : signedIntLabel(impact.orderDelta)) + '</text>';
+      beforeAfter = '<text class="prices-v1-before-after" x="' + Math.max(left, changeX - 42).toFixed(1) + '" y="' + (effectTop + effectHeight + 24) + '">\u0434\u043e</text><text class="prices-v1-before-after" x="' + Math.min(width - right, changeX + 28).toFixed(1) + '" y="' + (effectTop + effectHeight + 24) + '">\u043f\u043e\u0441\u043b\u0435 \u00b7 ' + esc(impact.orderDelta == null ? "\u2014" : signedDailyLabel(impact.orderDelta)) + '</text>';
     }
     return [
       '<svg class="prices-v1-chart" viewBox="0 0 940 382" role="img" aria-label="\u0426\u0435\u043d\u0430, \u0437\u0430\u043a\u0430\u0437\u044b \u0438 \u044d\u0444\u0444\u0435\u043a\u0442 \u043f\u043e \u0434\u043d\u044f\u043c">',
@@ -4793,8 +5086,12 @@ function downloadPriceSummaryExcel(rows) {
   }
 
   function priceV1DecisionText(row) {
+    if (positiveNum(row && row.currentFillPrice) == null) return "Нет цены / заполнить";
     var boundary = priceBoundaryState(row);
     if (boundary) return "Проверить коридор";
+    var corridor = priceCorridorState(row);
+    if (corridor && corridor.label === "MIN/MAX не задан") return "Задать MIN/MAX";
+    if (priceFactLagDays(row) != null && priceFactLagDays(row) > 2) return "Обновить цену";
     var impact = row.priceImpact || rowPriceImpact(row);
     if (impact && impact.change && Number(impact.orderDelta) < 0) return "Стоп / проверить";
     if (row.allowedMarginPct != null && row.marginTotalPct != null && row.marginTotalPct < row.allowedMarginPct) return "Проверить маржу";
@@ -4803,11 +5100,8 @@ function downloadPriceSummaryExcel(rows) {
   }
 
   function priceV1QualityText(row) {
-    var flags = [];
-    if (!historyItemsForRow(row).length) flags.push("нет daily");
-    if (!String(row.owner || "").trim() || row.owner === "\u2014") flags.push("без owner");
-    if (row.matrixProblemLabel) flags.push(row.matrixProblemLabel);
-    return flags.length ? flags.join(" · ") : "данные есть";
+    var value = priceV1DataQuality(row);
+    return value === "OK" ? "данные есть" : value;
   }
 
   function priceV1MarginRub(row, impact) {
@@ -4838,6 +5132,7 @@ function downloadPriceSummaryExcel(rows) {
         var change = impact && impact.change;
         var bounds = row.repricerBounds || {};
         var boundary = priceBoundaryState(row);
+        var corridor = priceCorridorState(row);
         var effectPct = priceV1EffectPct(impact);
         var currentPrice = row.listPrice != null ? row.listPrice : row.currentFillPrice;
         var key = priceSelectionKey(row);
@@ -4848,16 +5143,19 @@ function downloadPriceSummaryExcel(rows) {
         var afterBefore = "до " + priceV1OrdersPerDay(impact.beforeOrders, impact.beforeDays) + " · после " + priceV1OrdersPerDay(impact.afterOrders, impact.afterDays);
         var priceNote = ["клиент " + money(row.currentClientPrice), "СПП " + pct(row.currentSppPct)].join(" · ");
         var corridorNote = ["MIN " + money(bounds.effectiveMin), "MAX " + money(bounds.effectiveMax)].join(" · ");
+        var periodNote = row.rangeFallback
+          ? "Нет daily-факта за период · снимок " + (isoDate(row.currentPriceDate || row.valueDate) || "\u2014")
+          : (state.dateFrom || "\u2014") + " - " + (state.dateTo || "\u2014");
         return [
           '<tr class="prices-v1-row ', selected ? 'is-selected' : '', '" data-open-price="', esc(key), '" data-price-market="', esc(row.market), '">',
           '<td><button type="button" class="prices-v1-sku-link" data-price-v1-select="', esc(key), '">', esc(row.articleKey || "\u2014"), '</button><small>', esc(row.name || ""), '</small><small>', esc(lifecycle.label || row.status || "\u2014"), '</small></td>',
-          '<td><div class="prices-v1-answer-cell"><strong>', esc(priceMarketLabel(row.market)), '</strong><span>', esc(row.owner || "\u2014"), '</span><small>', esc(state.dateFrom || "\u2014"), ' - ', esc(state.dateTo || "\u2014"), '</small></div></td>',
+          '<td><div class="prices-v1-answer-cell"><strong>', esc(priceMarketLabel(row.market)), '</strong><span>', esc(row.owner || "\u2014"), '</span><small>', esc(periodNote), '</small></div></td>',
           '<td><div class="prices-v1-answer-cell"><strong>', money(currentPrice), '</strong><span>', esc(priceNote), '</span><small>', esc(metricHelp(modalListPriceHelp(row), row.listPriceFactDate || row.priceFactDate, row.valueDate)), '</small></div></td>',
           '<td><div class="prices-v1-answer-cell"><strong>', impact.ordersUnits == null ? "\u2014" : intf(impact.ordersUnits), ' заказов</strong><span>', impact.deliveredUnits == null ? "\u2014" : intf(impact.deliveredUnits), ' выкупов</span><small>', esc(afterBefore), '</small></div></td>',
           '<td><div class="prices-v1-answer-cell"><strong>', money(revenue), '</strong><span>средний чек ', money(averageCheck), '</span><small>по выбранному периоду</small></div></td>',
           '<td><div class="prices-v1-answer-cell"><strong>', pct(row.marginTotalPct), '</strong><span>', marginRub == null ? "\u2014" : money(marginRub), '</span><small>план/допуск ', pct(row.allowedMarginPct), '</small></div></td>',
           '<td><div class="prices-v1-answer-cell"><strong>', change ? esc(signedMoneyLabel(change.deltaRub)) : "без смены", '</strong><span>', effectPct == null ? "\u2014" : esc(signedPctLabel(effectPct)), '</span><small>', change ? esc(change.date || "") : "цена в периоде не менялась", '</small></div></td>',
-          '<td><div class="prices-v1-answer-cell"><strong class="', boundary ? 'bad' : 'ok', '">', esc(boundary ? boundary.label : "в коридоре"), '</strong><span>', esc(corridorNote), '</span><small>', esc(priceV1QualityText(row)), '</small></div></td>',
+          '<td><div class="prices-v1-answer-cell"><strong class="', boundary ? 'bad' : (corridor && corridor.tone === "ok" ? 'ok' : ''), '">', esc(corridor ? corridor.label : "статус не определен"), '</strong><span>', esc(corridorNote), '</span><small>', esc(priceV1QualityText(row)), '</small></div></td>',
           '<td><div class="prices-v1-answer-cell"><strong>', esc(priceV1DecisionText(row)), '</strong><div>', renderRepricerCell(row.repricerDisplay), '</div><small><button type="button" class="sku-plan-open-card" data-price-v1-open-detail="', esc(key), '">Открыть SKU</button></small></div></td>',
           '</tr>'
         ].join("");
@@ -4896,6 +5194,12 @@ function downloadPriceSummaryExcel(rows) {
     var baseRows = visibleRows();
     var rows = priceV1Rows(baseRows);
     var summary = stats(rows);
+    var dataAudit = priceDataAudit(rows);
+    var poolAuditRows = state.rows.filter(function (row) {
+      return activeMarket === "all" || row.market === activeMarket;
+    }).map(buildDisplayRow).filter(Boolean);
+    var poolAudit = priceDataAudit(poolAuditRows);
+    var marketLatestFactDate = latestPriceFactDate(poolAuditRows) || latestDate(poolAuditRows);
     var overview = buildPriceOverviewModel(rows, summary);
     var sortedRows = sortedVisiblePriceRows(rows);
     var selected = state.selectedKey ? buildDisplayRow(findRow(state.selectedKey)) : sortedRows[0];
@@ -4933,7 +5237,7 @@ function downloadPriceSummaryExcel(rows) {
       '<div class="prices-v1-actions"><button type="button" data-price-v1-refresh>Обновить</button><button type="button" data-price-export="summary">Свод в Excel</button><button type="button" data-price-export="daily">Динамика по дням</button></div>',
       '</section>',
       state.error ? '<div class="pw-error">' + esc(state.error) + '</div>' : '',
-      state.loaded ? '<div class="prices-v1-freshness"><strong>Факт до ' + esc(state.latestFactDate || "\u2014") + '</strong><span>' + esc(dataFreshnessLabel()) + '</span><span>' + esc(overlayFreshnessLabel()) + '</span></div>' : '',
+      state.loaded ? '<div class="prices-v1-freshness"><strong>Факт цены до ' + esc(marketLatestFactDate || "\u2014") + '</strong><span>' + esc(dataFreshnessLabelForDate(marketLatestFactDate)) + '</span><span>' + esc(overlayFreshnessLabel(marketLatestFactDate)) + '</span><span data-prices-v1-quality>Срез: ' + esc(priceDataAuditText(dataAudit)) + '</span><span data-prices-v1-pool-quality>Пул ' + esc(priceMarketLabel(activeMarket)) + ': ' + esc(priceDataAuditText(poolAudit)) + '</span></div>' : '',
       '<section class="prices-v1-filter-dock">',
       '<div class="prices-v1-filter-grid">',
       '<label class="prices-v1-control prices-v1-search"><span>Поиск</span><input id="pwSearch" placeholder="SKU, название, owner..." value="', esc(state.search), '"></label>',
@@ -5546,13 +5850,9 @@ function downloadPriceSummaryExcel(rows) {
   });
 
   if (document.readyState === "loading") {
-    document.addEventListener("DOMContentLoaded", function () {
-      renderPriceWorkbench();
-      loadData();
-    }, { once: true });
+    document.addEventListener("DOMContentLoaded", renderPriceWorkbenchIfActive, { once: true });
   } else {
-    renderPriceWorkbench();
-    loadData();
+    renderPriceWorkbenchIfActive();
   }
 
   document.getElementById("pullRemoteBtn")?.addEventListener("click", function () {

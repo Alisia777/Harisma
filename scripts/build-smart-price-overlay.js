@@ -19,7 +19,7 @@ const OUT_OF_SCOPE_BRAND_TOKENS = [
   '\u043a\u0432\u0438\u043f',
   '\u0445\u0430\u0440\u043b\u0438'
 ].map((token) => normalizeArticleKey(token).replace(/[_-]+/g, ''));
-const SMART_PRICE_PLATFORM_KEYS = ['wb', 'ozon', 'ya', 'goldapple', 'letu', 'megamarket', 'samokat', 'magnit'];
+const SMART_PRICE_PLATFORM_KEYS = ['wb', 'ozon', 'ym', 'goldapple', 'letu', 'megamarket', 'samokat', 'magnit'];
 
 function isOutOfScopeBrandText(value) {
   const compact = normalizeArticleKey(value).replace(/[_-]+/g, '');
@@ -124,7 +124,7 @@ function normalizePriceLookupToken(value = '') {
 
 function priceOverlayPlatformKey(value = '') {
   const raw = String(value || '').trim().toLowerCase();
-  if (raw === 'ym' || raw === 'ya' || raw === 'yandex' || raw === 'yandex market') return 'ya';
+  if (raw === 'ym' || raw === 'ya' || raw === 'yandex' || raw === 'yandex market') return 'ym';
   return raw;
 }
 
@@ -248,6 +248,32 @@ function buildRowBase(articleKey, brand, status, valueDate) {
   };
 }
 
+function normalizeReportDate(value) {
+  if (value instanceof Date && !Number.isNaN(value.getTime())) {
+    return value.toISOString().slice(0, 10);
+  }
+  const raw = String(value || '').trim();
+  if (!raw) return '';
+  const isoMatch = raw.match(/^(\d{4})-(\d{2})-(\d{2})/);
+  if (isoMatch) return `${isoMatch[1]}-${isoMatch[2]}-${isoMatch[3]}`;
+  const ruMatch = raw.match(/^(\d{1,2})[./-](\d{1,2})[./-](\d{4})$/);
+  if (!ruMatch) return '';
+  return `${ruMatch[3]}-${ruMatch[2].padStart(2, '0')}-${ruMatch[1].padStart(2, '0')}`;
+}
+
+function extractReportDate(value) {
+  if (value instanceof Date && !Number.isNaN(value.getTime())) {
+    return value.toISOString().slice(0, 10);
+  }
+  const raw = String(value || '').trim();
+  if (!raw) return '';
+  const isoMatch = raw.match(/(?:^|\D)(\d{4})-(\d{2})-(\d{2})(?:\D|$)/);
+  if (isoMatch) return `${isoMatch[1]}-${isoMatch[2]}-${isoMatch[3]}`;
+  const ruMatch = raw.match(/(?:^|\D)(\d{1,2})[./-](\d{1,2})[./-](\d{4})(?:\D|$)/);
+  if (!ruMatch) return '';
+  return `${ruMatch[3]}-${ruMatch[2].padStart(2, '0')}-${ruMatch[1].padStart(2, '0')}`;
+}
+
 function normalizePortalMarketplace(value = '') {
   const raw = String(value || '')
     .trim()
@@ -255,7 +281,15 @@ function normalizePortalMarketplace(value = '') {
     .replace(/[^a-zа-я0-9]+/gi, '');
   if (raw === 'wb' || raw === 'wildberries') return 'wb';
   if (raw === 'oz' || raw === 'ozon') return 'ozon';
-  if (raw === 'ya' || raw === 'ym' || raw === 'yandexmarket' || raw === 'yandex') return 'ya';
+  if (raw === 'ya' || raw === 'ym' || raw === 'yandexmarket' || raw === 'yandex') return 'ym';
+  return '';
+}
+
+function normalizePriceReportMarketplace(value = '') {
+  const normalized = normalizePortalMarketplace(value);
+  if (normalized) return normalized;
+  const raw = String(value || '').trim().toLowerCase().replace(/ё/g, 'е');
+  if (raw.includes('яндекс')) return 'ym';
   return '';
 }
 
@@ -445,6 +479,174 @@ function parseMainPortalFacts(workbook, payload) {
   return latestBySkuPlatform.size > 0;
 }
 
+function parsePriceHistoryReport(workbook, payload) {
+  const sheet = workbook.Sheets['Исходные данные'];
+  if (!sheet) return false;
+  const rows = XLSX.utils.sheet_to_json(sheet, { header: 1, raw: false, defval: '' });
+  if (rows.length < 4) return false;
+
+  const seriesBySkuPlatform = new Map();
+  const metaBySkuPlatform = new Map();
+
+  rows.slice(3).forEach((row) => {
+    const date = normalizeReportDate(row[0]);
+    const articleKey = normalizeArticleKey(row[1]);
+    const platform = normalizePriceReportMarketplace(row[4]);
+    if (!date || !articleKey || !platform) return;
+
+    const currentClientPrice = positiveValue(parseSmartNumber(row[11]));
+    let currentFillPrice = positiveValue(parseSmartNumber(row[12]));
+    if (platform === 'ym' && !Number.isFinite(currentFillPrice)) currentFillPrice = currentClientPrice;
+    const buyerQty = positiveValue(parseSmartNumber(row[6]));
+    const sellerQty = positiveValue(parseSmartNumber(row[8]));
+    const buyerTotal = positiveValue(parseSmartNumber(row[7]));
+    const key = `${platform}::${articleKey}`;
+    const point = { date };
+
+    if (Number.isFinite(currentFillPrice)) point.price = currentFillPrice;
+    if (Number.isFinite(currentClientPrice)) point.clientPrice = currentClientPrice;
+    const sppPct = computeClientDiscount(currentFillPrice, currentClientPrice, null);
+    if (Number.isFinite(sppPct)) point.sppPct = sppPct;
+    if (Number.isFinite(buyerQty) || Number.isFinite(sellerQty)) {
+      point.ordersUnits = Number.isFinite(buyerQty) ? buyerQty : sellerQty;
+    }
+    if (Number.isFinite(buyerTotal)) point.revenue = buyerTotal;
+    if (!Number.isFinite(point.price) && !Number.isFinite(point.clientPrice)
+      && !Number.isFinite(point.ordersUnits) && !Number.isFinite(point.revenue)) return;
+
+    let byDate = seriesBySkuPlatform.get(key);
+    if (!byDate) {
+      byDate = new Map();
+      seriesBySkuPlatform.set(key, byDate);
+    }
+    byDate.set(date, { ...(byDate.get(date) || { date }), ...point });
+    metaBySkuPlatform.set(key, {
+      name: String(row[2] || '').trim(),
+      status: String(row[3] || '').trim(),
+      sourceField: String(row[10] || '').trim(),
+      group: String(row[13] || '').trim()
+    });
+  });
+
+  seriesBySkuPlatform.forEach((byDate, key) => {
+    const [platform, articleKey] = key.split('::');
+    const daily = Array.from(byDate.values())
+      .sort((left, right) => String(left.date || '').localeCompare(String(right.date || '')));
+    const latestPricePoint = daily
+      .filter((point) => Number.isFinite(point.price) || Number.isFinite(point.clientPrice))
+      .slice(-1)[0];
+    if (!latestPricePoint) return;
+
+    const currentFillPrice = positiveValue(latestPricePoint.price)
+      || positiveValue(latestPricePoint.clientPrice);
+    const currentClientPrice = positiveValue(latestPricePoint.clientPrice)
+      || currentFillPrice;
+    const meta = metaBySkuPlatform.get(key) || {};
+    const bucket = ensurePlatformBucket(payload, platform);
+    upsertRow(bucket, {
+      ...buildRowBase(articleKey, meta.group, meta.status, latestPricePoint.date),
+      name: meta.name,
+      currentFillPrice,
+      currentPrice: currentFillPrice,
+      currentClientPrice,
+      currentSppPct: computeClientDiscount(currentFillPrice, currentClientPrice, null),
+      sourceSheet: 'Исходные данные',
+      sourceField: meta.sourceField,
+      sourceMode: `${platform}-price-history-report`,
+      daily
+    });
+  });
+
+  return seriesBySkuPlatform.size > 0;
+}
+
+function currentPriceSnapshotDate(workbook, sheetNames = [], fallbackDate = '') {
+  for (const sheetName of sheetNames) {
+    const sheet = workbook.Sheets[sheetName];
+    if (!sheet) continue;
+    const rows = XLSX.utils.sheet_to_json(sheet, {
+      header: 1,
+      raw: false,
+      defval: '',
+      range: 0
+    });
+    for (const row of rows.slice(0, 8)) {
+      for (const cell of row) {
+        const date = extractReportDate(cell);
+        if (date) return date;
+      }
+    }
+  }
+  return normalizeReportDate(fallbackDate) || extractReportDate(fallbackDate);
+}
+
+function currentPriceSnapshotHeaderIndex(rows = []) {
+  return rows.findIndex((row) => {
+    const normalized = (Array.isArray(row) ? row : []).map((cell) => String(cell || '').trim().toLowerCase());
+    return normalized.some((cell) => cell === 'sku')
+      && normalized.some((cell) => cell.includes('загруженная цена'));
+  });
+}
+
+function parseCurrentPriceSnapshot(workbook, payload, fallbackDate = '') {
+  const sheetConfig = [
+    { platform: 'wb', sheetName: 'WB — текущие' },
+    { platform: 'ozon', sheetName: 'Ozon — текущие' }
+  ].filter(({ sheetName }) => workbook.Sheets[sheetName]);
+  if (!sheetConfig.length) return false;
+
+  const valueDate = currentPriceSnapshotDate(
+    workbook,
+    sheetConfig.map(({ sheetName }) => sheetName),
+    fallbackDate
+  );
+  if (!valueDate) return false;
+
+  const rowsByPlatform = {};
+  sheetConfig.forEach(({ platform, sheetName }) => {
+    const sheet = workbook.Sheets[sheetName];
+    const rows = XLSX.utils.sheet_to_json(sheet, { header: 1, raw: false, defval: '' });
+    const headerIndex = currentPriceSnapshotHeaderIndex(rows);
+    if (headerIndex < 0) return;
+
+    const bucket = ensurePlatformBucket(payload, platform);
+    let importedRows = 0;
+    rows.slice(headerIndex + 1).forEach((row) => {
+      const articleKey = normalizeArticleKey(row[1]);
+      const currentFillPrice = positiveValue(parseSmartNumber(row[3]));
+      const currentClientPrice = positiveValue(parseSmartNumber(row[4]));
+      if (!articleKey || (!Number.isFinite(currentFillPrice) && !Number.isFinite(currentClientPrice))) return;
+
+      const currentSppPct = computeClientDiscount(currentFillPrice, currentClientPrice, null);
+      upsertRow(bucket, {
+        ...buildRowBase(articleKey, row[0], '', valueDate),
+        name: String(row[2] || '').trim(),
+        currentFillPrice,
+        currentPrice: currentFillPrice,
+        currentClientPrice,
+        currentSppPct,
+        clearCurrentClientPrice: !Number.isFinite(currentClientPrice),
+        clearCurrentSppPct: !Number.isFinite(currentSppPct),
+        sourceSheet: sheetName,
+        sourceField: 'Smart-Sale → Prices',
+        sourceMode: `${platform}-cabinet-current-snapshot`
+      });
+      importedRows += 1;
+    });
+    rowsByPlatform[platform] = importedRows;
+  });
+
+  const totalRows = Object.values(rowsByPlatform).reduce((sum, count) => sum + count, 0);
+  if (!totalRows) return false;
+  payload.priceCurrentSnapshot = {
+    importedAt: payload.generatedAt,
+    sourceFile: payload.sourceFile,
+    asOfDate: valueDate,
+    rowsByPlatform
+  };
+  return true;
+}
+
 function parseBazaSheet(workbook, payload, valueDate) {
   const sheet = workbook.Sheets['База'];
   if (!sheet) return;
@@ -568,9 +770,17 @@ function buildSmartPriceOverlay(inputPath, outputPath = path.join('data', 'smart
   };
 
   const parsedMainPortalFacts = parseMainPortalFacts(workbook, payload);
+  let parsedCurrentPriceSnapshot = false;
+  let parsedPriceHistoryReport = false;
   if (!parsedMainPortalFacts) {
-    parseBazaSheet(workbook, payload, valueDate);
-    parseSvodnayaSheet(workbook, payload, valueDate);
+    parsedCurrentPriceSnapshot = parseCurrentPriceSnapshot(workbook, payload, valueDate);
+    if (!parsedCurrentPriceSnapshot) {
+      parsedPriceHistoryReport = parsePriceHistoryReport(workbook, payload);
+    }
+    if (!parsedCurrentPriceSnapshot && !parsedPriceHistoryReport) {
+      parseBazaSheet(workbook, payload, valueDate);
+      parseSvodnayaSheet(workbook, payload, valueDate);
+    }
   }
 
   const priceSnapshot = readJsonIfExists(path.join(path.dirname(resolvedOutputPath), 'prices.json'))
@@ -588,6 +798,19 @@ function buildSmartPriceOverlay(inputPath, outputPath = path.join('data', 'smart
   if (overlayDates.length) {
     overlayDates.sort();
     payload.asOfDate = overlayDates[overlayDates.length - 1];
+  }
+  if (parsedPriceHistoryReport) {
+    payload.priceHistoryImport = {
+      importedAt: generatedAt,
+      sourceFile: path.basename(resolvedInputPath),
+      asOfDate: payload.asOfDate,
+      rowsByPlatform: Object.fromEntries(
+        Object.entries(payload.platforms).map(([platform, bucket]) => [
+          platform,
+          Array.isArray(bucket?.rows) ? bucket.rows.length : 0
+        ])
+      )
+    };
   }
 
   fs.mkdirSync(path.dirname(resolvedOutputPath), { recursive: true });
@@ -620,5 +843,9 @@ module.exports = {
   buildSmartPriceOverlay,
   normalizeArticleKey,
   parseSmartNumber,
-  parsePercentFraction
+  parsePercentFraction,
+  normalizeReportDate,
+  extractReportDate,
+  parseCurrentPriceSnapshot,
+  parsePriceHistoryReport
 };

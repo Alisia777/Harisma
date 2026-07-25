@@ -102,6 +102,19 @@ assert.deepStrictEqual(updatedLetu.articles.map((article) => article.articleKey)
 assert.deepStrictEqual(updatedLetu.articles.find((article) => article.articleKey === 'cream_1').daily.map((point) => point.date), ['2026-07-19', '2026-07-20']);
 assert.strictEqual(updatedLetu.articles.find((article) => article.articleKey === 'cream_1').monthly[0].revenue, 1500);
 
+const preservedEmptyLetu = updatePayload(base, {
+  goldapple: parsed.goldapple,
+  letu: [],
+  megamarket: parsed.megamarket
+}, { to: '2026-07-21', sourceId: 'test' });
+assert.strictEqual(preservedEmptyLetu.status.platforms.letu.status, 'stale');
+assert.strictEqual(preservedEmptyLetu.status.platforms.letu.latestDate, '2026-07-19');
+assert.strictEqual(
+  preservedEmptyLetu.payload.platforms.find((platform) => platform.key === 'letu').series.at(-1).date,
+  '2026-07-19',
+  'An empty source window must preserve the last finalized Letual fact'
+);
+
 const currentAt20 = JSON.parse(JSON.stringify(updated.payload));
 for (const platform of currentAt20.platforms) {
   if (['goldapple', 'letu', 'megamarket'].includes(platform.key)) {
@@ -129,6 +142,21 @@ const preservedWithinTolerance = buildPreservedSourceStatus(
 );
 assert.deepStrictEqual(preservedWithinTolerance.stale, ['goldapple', 'letu', 'megamarket'], 'Lagging status must remain visible even when publication is tolerated');
 assert.deepStrictEqual(preservedWithinTolerance.blocking, [], 'A one-day source delay may be published when the workflow opts into one-day tolerance');
+const preservedWithExplicitException = buildPreservedSourceStatus(
+  currentAt20,
+  {
+    inputFile: 'data/platform_trends.json',
+    to: '2026-07-22',
+    maxLagDays: 1,
+    allowStalePlatforms: new Set(['letu'])
+  },
+  new Error('service account unavailable')
+);
+assert.deepStrictEqual(
+  preservedWithExplicitException.blocking,
+  ['goldapple', 'megamarket'],
+  'An explicit exception must stay scoped to the named platform'
+);
 
 assert.strictEqual(isoDate(46218), '2026-07-15');
 assert.strictEqual(numberOrZero('1 234,56'), 1234.56);

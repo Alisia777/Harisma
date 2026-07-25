@@ -39,19 +39,19 @@ async function run() {
         input.type = 'date';
         if (target.id) input.id = target.id;
         if (target.attribute) input.setAttribute(target.attribute, '');
-        input.value = '2026-07-20';
-        input.max = '2026-07-22';
+        input.value = '2026-07-22';
+        input.max = '2026-07-23';
         input.addEventListener('change', () => { window.changedDates[index] = input.value; });
         document.body.appendChild(input);
       });
     });
     await page.addScriptTag({ url: `http://127.0.0.1:${server.address().port}/${MODULE}` });
-    await page.waitForFunction(() => window.changedDates?.length === 4 && window.changedDates.every((value) => value === '2026-07-22'));
+    await page.waitForFunction(() => window.changedDates?.length === 4 && window.changedDates.every((value) => value === '2026-07-23'));
     assert.deepStrictEqual(await page.locator('input[type="date"]').evaluateAll((inputs) => inputs.map((input) => input.value)), [
-      '2026-07-22',
-      '2026-07-22',
-      '2026-07-22',
-      '2026-07-22'
+      '2026-07-23',
+      '2026-07-23',
+      '2026-07-23',
+      '2026-07-23'
     ]);
 
     await page.locator('input[type="date"]').first().fill('2026-07-16');

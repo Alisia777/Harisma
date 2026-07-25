@@ -14,6 +14,7 @@ const {
   resolveOptions,
   skuIndexes
 } = require('./portal-repricer-live-signals-sync');
+const { normalizeKey } = require('./smart-price-contour');
 
 function writeJson(filePath, payload) {
   fs.mkdirSync(path.dirname(filePath), { recursive: true });
@@ -124,8 +125,8 @@ async function run() {
     });
     assert.strictEqual(enrichedIndexes.byWbNmId.get('777'), 'sku-alias');
     assert.strictEqual(enrichedIndexes.byWbNmId.get('888'), 'sku-live');
-    assert.strictEqual(enrichedIndexes.byArticle.get('ozonofferalias'), 'sku-alias');
-    assert.strictEqual(enrichedIndexes.byArticle.get('ozonliveoffer'), 'sku-live');
+    assert.strictEqual(enrichedIndexes.byArticle.get(normalizeKey('ozon-offer-alias')), 'sku-alias');
+    assert.strictEqual(enrichedIndexes.byArticle.get(normalizeKey('ozon-live-offer')), 'sku-live');
 
     const mixed = mergeDirectWithFallback(normalized, {
       rows: [
@@ -165,7 +166,7 @@ async function run() {
 function stockRowFixture(articleKey, platform, available, sourceMode) {
   return {
     articleKey,
-    normalizedArticleKey: String(articleKey).toLowerCase().replace(/[^a-z0-9а-яё]/g, ''),
+    normalizedArticleKey: normalizeKey(articleKey),
     platform,
     present: available,
     reserved: 0,

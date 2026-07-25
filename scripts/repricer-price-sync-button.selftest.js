@@ -37,7 +37,7 @@ function startStaticServer() {
       const body = relative === 'index.html'
         ? Buffer.from(data.toString('utf8').replace(
           '<head>',
-          '<head><script>window.APP_CONFIG={portalAuthRequired:false};window.__ALTEA_REPRICER_PRICE_SYNC_TEST_POLL_MS__=20;window.__ALTEA_REPRICER_PRICE_APPLY_TEST_POLL_MS__=20;</script>'
+          '<head><script>window.APP_CONFIG={portalAuthRequired:false};window.__ALTEA_AUTH_SESSION__={access_token:\"repricer-selftest-token\",user:{id:\"repricer-selftest-user\",email:\"repricer-selftest@example.com\",user_metadata:{name:\"Repricer selftest\"}}};window.__ALTEA_PORTAL_ACCESS__={name:\"Repricer selftest\",email:\"repricer-selftest@example.com\",role:\"admin\"};window.__ALTEA_REPRICER_PRICE_SYNC_TEST_POLL_MS__=20;window.__ALTEA_REPRICER_PRICE_APPLY_TEST_POLL_MS__=20;</script>'
         ), 'utf8')
         : data;
       response.writeHead(200, {

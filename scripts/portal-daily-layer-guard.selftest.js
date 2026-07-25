@@ -139,6 +139,15 @@ function buildFixture(dir) {
     skuTokenConflicts: []
   });
   write(dir, 'sku_aliases.json', { generatedAt, aliases: [{ target_sku: 'A', platform: 'wb', api_sku: 'A-WB-ALIAS' }] });
+  write(dir, 'portal_daily_intake.json', {
+    schema: 'portal-unified-daily-intake-v1',
+    generatedAt,
+    expectedDate: date,
+    runDate: '2026-06-20',
+    status: 'ok',
+    publish: { allowed: true, blockingReasons: [], warnings: [] },
+    summary: { registeredViews: 19, blockedViews: 0, warningViews: 0 }
+  });
   writePhase3Reports(dir);
 }
 
@@ -168,6 +177,43 @@ try {
   assert.strictEqual(qualityCheck.unmappedRevenue, 0);
   assert.strictEqual(qualityCheck.knownOutsideRegistryRevenue, 50000);
   assert.ok(!clean.report.publish.warningReasons.some((reason) => reason.includes('unmapped revenue')));
+
+  buildFixture(dir);
+  write(dir, 'prices.json', { generatedAt: '2026-06-19T21:55:56.585Z', asOfDate: date, rows: [{ id: 1 }] });
+  write(dir, 'repricer.json', { generatedAt: '2026-06-19T21:55:56.585Z', asOfDate: date, rows: [{ id: 1 }] });
+  const moscowMidnightBuild = run(options(dir));
+  assert.strictEqual(
+    moscowMidnightBuild.report.publish.allowed,
+    true,
+    'A build after Moscow midnight must belong to the expected Moscow run date'
+  );
+
+  buildFixture(dir);
+  for (const [file, artifact] of [['prices.json', 'prices'], ['repricer.json', 'repricer']]) {
+    write(dir, file, {
+      generatedAt: '2026-06-06T06:17:17.001Z',
+      asOfDate: date,
+      priceGeneration: {
+        id: 'prices-selftest',
+        builtAt: generatedAt,
+        asOfDate: date,
+        artifact
+      },
+      rows: [{ id: 1 }]
+    });
+  }
+  const currentPriceGeneration = run(options(dir));
+  assert.strictEqual(
+    currentPriceGeneration.report.publish.allowed,
+    true,
+    currentPriceGeneration.report.publish.blockingReasons.join('\n')
+  );
+  for (const source of ['price_master', 'repricer']) {
+    assert.strictEqual(
+      currentPriceGeneration.report.checks.find((check) => check.id === `source:${source}`).generatedAt,
+      generatedAt
+    );
+  }
 
   buildFixture(dir);
   write(dir, 'product_leaderboard.json', {

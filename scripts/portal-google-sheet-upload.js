@@ -11,16 +11,21 @@ const SNAPSHOT_TABLE = 'portal_data_snapshots';
 const SNAPSHOT_SOURCE = 'google-sheets-bridge';
 const SNAPSHOT_KEYS = [
   'dashboard',
+  'company_plan',
   'skus',
+  'seed_comments',
+  'launches',
+  'meetings',
+  'documents',
   'platform_trends',
   'iu_plan',
+  'loyalty_system',
   'logistics',
   'smart_price_overlay',
   'product_leaderboard',
   'product_leaderboard_history',
   'ads_summary',
   'iu_drr_summary',
-  'loyalty_system',
   'wb_feedbacks_summary',
   'wb_sales_funnel_report',
   'ozon_feedbacks_summary',
@@ -34,6 +39,7 @@ const SNAPSHOT_KEYS = [
   'warehouse_stock_overlay',
   'portal_data_quality',
   'portal_data_quarantine',
+  'portal_daily_intake',
   'portal_daily_guard',
   'sku_aliases',
   'sku_alias_ignore',
@@ -41,10 +47,14 @@ const SNAPSHOT_KEYS = [
   'sku_matrix',
   'wb_owner_distribution_audit',
   'portal_layer_freshness',
-  'portal_daily_guard',
   'portal_sync_health'
 ];
 const OPTIONAL_SNAPSHOT_KEYS = new Set([
+  'company_plan',
+  'seed_comments',
+  'launches',
+  'meetings',
+  'documents',
   'loyalty_system',
   'ozon_feedbacks_summary',
   'order_procurement_ym',
@@ -52,6 +62,7 @@ const OPTIONAL_SNAPSHOT_KEYS = new Set([
   'wb_sales_funnel_report',
   'portal_layer_freshness',
   'portal_daily_guard',
+  'portal_daily_intake',
   'wb_substitution_traffic',
   'wb_substitution_traffic_history'
 ]);

@@ -48,7 +48,7 @@ for (const htmlFile of ["index.html", "live-index.html", path.join("docs", "inde
   const html = fs.readFileSync(path.join(root, htmlFile), "utf8");
   assert.match(
     html,
-    /portal-price-workbench-simple-live\.js\?v=20260724pricescorrectness5/,
+    /portal-price-workbench-simple-live\.js\?v=20260725cabinetlive1/,
     `${htmlFile} must load the fixed renderer without a stale browser cache`
   );
 }

@@ -109,6 +109,8 @@ async function run() {
         freshnessText: root?.querySelector('.prices-v1-freshness')?.textContent || '',
         qualityText: root?.querySelector('[data-prices-v1-quality]')?.textContent || '',
         poolQualityText: root?.querySelector('[data-prices-v1-pool-quality]')?.textContent || '',
+        cabinetLiveRows: wbRows.filter((row) => row.currentFillPriceSource === 'live').length,
+        cabinetLiveListRows: wbRows.filter((row) => row.listPriceSource === 'live').length,
         missingPriceArticle: missingPrice?.articleKey || '',
         missingClientPriceArticle: missingClientPrice?.articleKey || ''
       };
@@ -125,6 +127,9 @@ async function run() {
     assert.strictEqual(audit.dateTo, audit.expectedMarketFactDate, 'Период должен открываться на последнем факте выбранной площадки');
     assert.ok(audit.visibleRows > 0, 'Последний фактический период площадки не должен открываться пустым');
     assert.match(audit.sourceNote, /факт цен до/);
+    assert.match(audit.sourceNote, /data\/repricer_live_prices\.json/);
+    assert.ok(audit.cabinetLiveRows > 0, 'Текущая цена должна читаться из свежего кабинетного snapshot');
+    assert.ok(audit.cabinetLiveListRows > 0, 'Цена до скидки должна читать currentListPrice из кабинетного snapshot');
     assert.match(audit.qualityText, /^Срез:/);
     assert.match(
       audit.poolQualityText,
@@ -287,6 +292,33 @@ async function run() {
       'local',
       'Более новый generatedAt не должен перекрывать источник с более свежим фактом цены'
     );
+
+    const preferCabinetStart = renderer.indexOf('  function shouldPreferCabinetPrice(');
+    const preferCabinetEnd = renderer.indexOf('\n\n  function buildRow(', preferCabinetStart);
+    assert.ok(
+      preferCabinetStart >= 0 && preferCabinetEnd > preferCabinetStart,
+      'Приоритет кабинетной цены должен оставаться доступным для unit-проверки'
+    );
+    const createCabinetPreference = new Function(
+      `"use strict";
+      function positiveNum(value) {
+        const parsed = Number(value);
+        return Number.isFinite(parsed) && parsed > 0 ? parsed : null;
+      }
+      function isoDate(value) {
+        const match = String(value || "").match(/^\\d{4}-\\d{2}-\\d{2}/);
+        return match ? match[0] : "";
+      }
+      ${renderer.slice(preferCabinetStart, preferCabinetEnd)}
+      return shouldPreferCabinetPrice;`
+    );
+    const preferCabinetPrice = createCabinetPreference();
+    assert.strictEqual(preferCabinetPrice(120, '2026-07-24', 100, '2026-07-24'), true);
+    assert.strictEqual(preferCabinetPrice(120, '2026-07-25', 100, '2026-07-24'), true);
+    assert.strictEqual(preferCabinetPrice(120, '2026-07-23', 100, '2026-07-24'), false);
+    assert.strictEqual(preferCabinetPrice(120, '', 100, '2026-07-24'), false);
+    assert.strictEqual(preferCabinetPrice(120, '2026-07-24', null, ''), true);
+    assert.strictEqual(preferCabinetPrice(null, '2026-07-24', 100, '2026-07-24'), false);
 
     assert.deepStrictEqual(pageErrors, []);
     console.log(`portal-prices-correctness selftest: ok (${audit.poolRows} WB SKU, факт до ${audit.expectedMarketFactDate})`);

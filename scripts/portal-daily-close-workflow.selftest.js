@@ -42,15 +42,26 @@ if (!workflow.includes("workflows: ['Portal data truth']") || !workflow.includes
 if (!workflow.includes('branches: [main]')) {
   fail('daily close workflow_run trigger must not instantiate production close runs for feature branches');
 }
-if (
-  !workflow.includes(
-    "github.event_name != 'workflow_run' || (github.event.workflow_run.conclusion == 'success' && github.event.workflow_run.head_branch == 'main')"
-  )
-) {
+if (!workflow.includes("github.event.workflow_run.conclusion == 'success'")) {
   fail('daily close workflow_run trigger must only publish after successful Portal data truth runs on main');
+}
+if (!workflow.includes("github.event.workflow_run.head_branch == 'main'")) {
+  fail('daily close workflow_run trigger must only publish after successful Portal data truth runs on main');
+}
+if (!workflow.includes("github.event.workflow_run.event != 'schedule'")) {
+  fail('scheduled pre-settlement truth audits must not enqueue an early daily close');
+}
+if (!workflow.includes("cron: '30 7 * * *'")) {
+  fail('the protected D-1 close must remain scheduled for 07:30 UTC (10:30 MSK)');
 }
 if (!workflow.includes('ref: ${{ github.event.workflow_run.head_sha || github.sha }}')) {
   fail('daily close must check out the exact revision that passed the Portal data truth gate');
+}
+if (!dataTruthWorkflow.includes('group: portal-data-truth-${{ github.event_name }}-${{ github.ref }}')) {
+  fail('truth runs must be grouped by event and ref so newer main pushes supersede only older main pushes');
+}
+if (!dataTruthWorkflow.includes('cancel-in-progress: true')) {
+  fail('superseded truth runs must be cancelled before they can enqueue obsolete daily closes');
 }
 
 const scriptRefs = new Set();

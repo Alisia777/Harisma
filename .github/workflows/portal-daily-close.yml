@@ -30,7 +30,9 @@ env:
 
 jobs:
   close:
-    if: ${{ github.event_name != 'workflow_run' || (github.event.workflow_run.conclusion == 'success' && github.event.workflow_run.head_branch == 'main') }}
+    # The scheduled truth audit runs before the 10:00 MSK settlement boundary.
+    # It must not start an early close; the dedicated 07:30 UTC cron does that.
+    if: ${{ github.event_name != 'workflow_run' || (github.event.workflow_run.conclusion == 'success' && github.event.workflow_run.head_branch == 'main' && github.event.workflow_run.event != 'schedule') }}
     runs-on: ubuntu-latest
     timeout-minutes: 90
     steps:

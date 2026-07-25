@@ -74,9 +74,13 @@ async function run() {
   const priceApplyBodies = [];
   const supabaseRequests = [];
   const liveFixture = JSON.parse(fs.readFileSync(path.join(ROOT, 'data', 'repricer_live_prices.json'), 'utf8'));
+  const currentPlanFixture = JSON.parse(fs.readFileSync(path.join(ROOT, 'data', 'repricer_price_apply_plan.json'), 'utf8'));
+  const currentVerificationFixture = JSON.parse(fs.readFileSync(path.join(ROOT, 'data', 'repricer_price_apply_verification.json'), 'utf8'));
   const fixtureBaseStamp = Math.max(
     Date.now(),
-    Date.parse(liveFixture.generatedAt || '') || 0
+    Date.parse(liveFixture.generatedAt || '') || 0,
+    Date.parse(currentPlanFixture.generatedAt || '') || 0,
+    Date.parse(currentVerificationFixture.generatedAt || '') || 0
   );
   const generatedAt = new Date(fixtureBaseStamp + 60_000).toISOString();
   const expectedMappedRows = Number(liveFixture.summary?.mappedRows || 0) + 1;
@@ -90,6 +94,9 @@ async function run() {
   };
   const planGeneratedAt = new Date(Date.parse(generatedAt) + 60_000).toISOString();
   const verificationGeneratedAt = new Date(Date.parse(generatedAt) + 120_000).toISOString();
+  assert(Date.parse(generatedAt) > (Date.parse(liveFixture.generatedAt || '') || 0));
+  assert(Date.parse(planGeneratedAt) > (Date.parse(currentPlanFixture.generatedAt || '') || 0));
+  assert(Date.parse(verificationGeneratedAt) > (Date.parse(currentVerificationFixture.generatedAt || '') || 0));
   const planFixture = {
     schema: 'repricer-price-apply-plan-v1',
     generatedAt: planGeneratedAt,

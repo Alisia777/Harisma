@@ -665,6 +665,14 @@
       "updatedAt": "2026-06-07T08:22:08.602Z"
     },
     {
+      "target_sku": "syvorotka_dlya_lica_30ml",
+      "platform": "goldapple",
+      "api_sku": "syvorotka_dlya_lica_",
+      "status": "active",
+      "note": "ЗЯ усеченный article alias, подтверждено production-аудитом 2026-07-24",
+      "updatedAt": "2026-07-24T20:57:04.000Z"
+    },
+    {
       "target_sku": "gel_brows_5ml",
       "platform": "goldapple",
       "api_sku": "99000114725",
@@ -879,6 +887,14 @@
       "status": "active",
       "note": "ЗЯ штрихкод",
       "updatedAt": "2026-06-07T08:22:08.602Z"
+    },
+    {
+      "target_sku": "retinol_boost_krem_dlya_vek_30ml",
+      "platform": "goldapple",
+      "api_sku": "retinol_boost_krem_d",
+      "status": "active",
+      "note": "ЗЯ усеченный article alias, подтверждено production-аудитом 2026-07-24",
+      "updatedAt": "2026-07-24T20:57:04.000Z"
     },
     {
       "target_sku": "curly_method_300ml",
@@ -2776,5 +2792,5 @@
       "note": "Quick action from SKU workspace 2026-06-29"
     }
   ],
-  "updatedAt": "2026-07-24T18:53:42.000Z"
+  "updatedAt": "2026-07-24T20:57:04.000Z"
 }

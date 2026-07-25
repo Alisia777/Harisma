@@ -74,7 +74,11 @@ async function run() {
   const priceApplyBodies = [];
   const supabaseRequests = [];
   const liveFixture = JSON.parse(fs.readFileSync(path.join(ROOT, 'data', 'repricer_live_prices.json'), 'utf8'));
-  const generatedAt = new Date(Date.now() + 60_000).toISOString();
+  const fixtureBaseStamp = Math.max(
+    Date.now(),
+    Date.parse(liveFixture.generatedAt || '') || 0
+  );
+  const generatedAt = new Date(fixtureBaseStamp + 60_000).toISOString();
   const expectedMappedRows = Number(liveFixture.summary?.mappedRows || 0) + 1;
   const nextFixture = {
     ...liveFixture,

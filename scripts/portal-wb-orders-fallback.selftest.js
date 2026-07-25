@@ -6,6 +6,7 @@ const {
   mergeSeriesPoints,
   mergeWbArticles,
   normalizeWbOrderRows,
+  resolveOptions,
   wbOrderRevenue
 } = require('./portal-wb-orders-trends-sync');
 
@@ -74,5 +75,41 @@ const skuA = mergedArticles.find((article) => article.articleKey === 'sku_a');
 assert.deepStrictEqual(skuA.daily.map((point) => point.date), ['2026-07-23', '2026-07-24']);
 assert.deepStrictEqual(skuA.daily.map((point) => point.dayOffset), [1, 0]);
 assert.strictEqual(skuA.sourceMode, 'wb-statistics-orders-fallback');
+
+const tokenEnvKeys = [
+  'ALTEA_WB_API_TOKEN',
+  'ALTEA_WB_FINANCE_TOKEN',
+  'ALTEA_WB_ANALYTICS_TOKEN',
+  'ALTEA_WB_STATISTICS_TOKEN',
+  'ALTEA_WB_PROMOTION_TOKEN'
+];
+const previousTokenEnv = Object.fromEntries(tokenEnvKeys.map((key) => [key, process.env[key]]));
+try {
+  for (const key of tokenEnvKeys) delete process.env[key];
+  process.env.ALTEA_WB_API_TOKEN = 'general-token';
+  process.env.ALTEA_WB_FINANCE_TOKEN = 'finance-token';
+  const routed = resolveOptions({
+    from: '2026-07-23',
+    to: '2026-07-24'
+  });
+  assert.strictEqual(routed.analyticsToken, 'general-token');
+  assert.strictEqual(routed.statisticsToken, 'general-token');
+  assert.strictEqual(routed.financeToken, 'finance-token');
+
+  process.env.ALTEA_WB_ANALYTICS_TOKEN = 'analytics-token';
+  process.env.ALTEA_WB_STATISTICS_TOKEN = 'statistics-token';
+  const explicit = resolveOptions({
+    from: '2026-07-23',
+    to: '2026-07-24'
+  });
+  assert.strictEqual(explicit.analyticsToken, 'analytics-token');
+  assert.strictEqual(explicit.statisticsToken, 'statistics-token');
+  assert.strictEqual(explicit.financeToken, 'finance-token');
+} finally {
+  for (const key of tokenEnvKeys) {
+    if (previousTokenEnv[key] === undefined) delete process.env[key];
+    else process.env[key] = previousTokenEnv[key];
+  }
+}
 
 console.log('portal-wb-orders-fallback selftest ok');

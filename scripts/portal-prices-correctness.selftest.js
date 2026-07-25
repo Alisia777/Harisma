@@ -94,6 +94,15 @@ async function run() {
       const expectedLatestFactDate = (state.rows || []).map(priceDate).filter(Boolean).sort().pop() || '';
       const wbRows = (state.rows || []).filter((row) => row.market === 'wb');
       const expectedMarketFactDate = wbRows.map(priceDate).filter(Boolean).sort().pop() || '';
+      const businessDate = new Intl.DateTimeFormat('en-CA', {
+        timeZone: 'Europe/Moscow',
+        year: 'numeric',
+        month: '2-digit',
+        day: '2-digit'
+      }).formatToParts(new Date()).reduce((result, part) => {
+        if (part.type !== 'literal') result[part.type] = part.value;
+        return result;
+      }, {});
       let missingPrice = wbRows.find((row) => !positive(row.currentFillPrice));
       let missingClientPrice = wbRows.find((row) => positive(row.currentFillPrice) && !positive(row.currentClientPrice));
       let fixtureChanged = false;
@@ -134,6 +143,8 @@ async function run() {
         sourceNote: state.sourceNote || '',
         activeMarket: root?.dataset.priceActiveMarket || '',
         dateTo: root?.querySelector('#pwTo')?.value || '',
+        dateMax: root?.querySelector('#pwTo')?.max || '',
+        businessDate: [businessDate.year, businessDate.month, businessDate.day].join('-'),
         visibleRows: root?.querySelectorAll('.prices-v1-table tbody .prices-v1-row').length || 0,
         poolRows: wbRows.length,
         freshnessText: root?.querySelector('.prices-v1-freshness')?.textContent || '',
@@ -154,6 +165,8 @@ async function run() {
       'Дата факта должна вычисляться по фактическим ценовым точкам, а не по generatedAt/asOfDate оболочки'
     );
     assert.match(audit.freshnessText, new RegExp(`Факт цены до ${audit.expectedMarketFactDate}`));
+    assert.strictEqual(audit.dateMax, audit.businessDate, 'Максимальная дата периода должна использовать бизнес-день Europe/Moscow');
+    assert.ok(audit.expectedMarketFactDate <= audit.businessDate, 'Дата факта кабинета не должна быть позже московского бизнес-дня');
     assert.strictEqual(audit.dateTo, audit.expectedMarketFactDate, 'Период должен открываться на последнем факте выбранной площадки');
     assert.ok(audit.visibleRows > 0, 'Последний фактический период площадки не должен открываться пустым');
     assert.match(audit.sourceNote, /факт цен до/);

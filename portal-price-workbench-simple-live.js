@@ -254,7 +254,24 @@
     return parsed ? localDateKey(parsed) : "";
   }
 
+  var BUSINESS_TIMEZONE = "Europe/Moscow";
+
   function todayKey() {
+    try {
+      var parts = new Intl.DateTimeFormat("en", {
+        timeZone: BUSINESS_TIMEZONE,
+        year: "numeric",
+        month: "2-digit",
+        day: "2-digit"
+      }).formatToParts(new Date());
+      var values = Object.create(null);
+      parts.forEach(function (part) {
+        if (part.type !== "literal") values[part.type] = part.value;
+      });
+      if (values.year && values.month && values.day) {
+        return [values.year, values.month, values.day].join("-");
+      }
+    } catch {}
     return localDateKey(new Date());
   }
 

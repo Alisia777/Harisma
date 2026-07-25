@@ -43,6 +43,10 @@
     { id: 'clean', name: 'Чистый', caption: 'Минимум подсветок для тяжелых таблиц' }
   ];
   var root = document.documentElement;
+  var themeFrame = 0;
+  var themeFrameTwo = 0;
+  var themeTransitionTimer = 0;
+  var chromeTransitionTimer = 0;
 
   function qs(selector, parent) {
     return (parent || document).querySelector(selector);
@@ -240,9 +244,30 @@
 
   function flashTheme() {
     if (!document.body || (window.matchMedia && window.matchMedia('(prefers-reduced-motion: reduce)').matches)) return;
+    if (themeFrame) window.cancelAnimationFrame(themeFrame);
+    if (themeFrameTwo) window.cancelAnimationFrame(themeFrameTwo);
+    if (themeTransitionTimer) window.clearTimeout(themeTransitionTimer);
     document.body.classList.remove('shell-theme-switching');
-    void document.body.offsetWidth;
-    document.body.classList.add('shell-theme-switching');
+    themeFrame = window.requestAnimationFrame(function () {
+      themeFrameTwo = window.requestAnimationFrame(function () {
+        if (!document.body) return;
+        document.body.classList.add('shell-theme-switching');
+        themeTransitionTimer = window.setTimeout(function () {
+          if (document.body) document.body.classList.remove('shell-theme-switching');
+          themeTransitionTimer = 0;
+        }, 720);
+      });
+    });
+  }
+
+  function flashChromeTransition() {
+    if (!document.body || reducedMotion()) return;
+    if (chromeTransitionTimer) window.clearTimeout(chromeTransitionTimer);
+    document.body.classList.add('shell-chrome-transitioning');
+    chromeTransitionTimer = window.setTimeout(function () {
+      if (document.body) document.body.classList.remove('shell-chrome-transitioning');
+      chromeTransitionTimer = 0;
+    }, 430);
   }
 
   function applyTheme(id, options) {
@@ -255,16 +280,24 @@
     var hidden = state === 'hidden';
     var premium = mountPremiumSidebarToggle();
     var activeSidebar = premiumSidebar() || qs('.sidebar');
+    var activeTopbar = premiumTopbar();
     if (activeSidebar && !activeSidebar.id) activeSidebar.id = premium ? 'portalPremiumSidebar' : 'portalSidebar';
+    if (activeTopbar && !activeTopbar.id) activeTopbar.id = 'portalPremiumTopbar';
     qsa('[data-sidebar-toggle]').forEach(function (toggle) {
       if (premium && toggle !== premium && toggle.id === 'sidebarToggle') toggle.removeAttribute('id');
       if (premium && toggle === premium) toggle.id = 'sidebarToggle';
       if (!premium && !qs('#sidebarToggle')) toggle.id = 'sidebarToggle';
-      toggle.dataset.tooltip = hidden ? 'Show menu · Alt+M' : 'Hide menu · Alt+M';
-      toggle.setAttribute('aria-controls', activeSidebar ? activeSidebar.id : 'portalSidebar');
+      toggle.dataset.tooltip = hidden ? 'Показать панели · Alt+M' : 'Скрыть панели · Alt+M';
+      toggle.setAttribute(
+        'aria-controls',
+        [
+          activeSidebar ? activeSidebar.id : 'portalSidebar',
+          activeTopbar ? activeTopbar.id : ''
+        ].filter(Boolean).join(' ')
+      );
       toggle.setAttribute('aria-expanded', hidden ? 'false' : 'true');
-      toggle.setAttribute('aria-label', hidden ? 'Show menu' : 'Hide menu');
-      toggle.title = hidden ? 'Show menu' : 'Hide menu';
+      toggle.setAttribute('aria-label', hidden ? 'Показать панели' : 'Скрыть панели');
+      toggle.title = hidden ? 'Показать панели' : 'Скрыть панели';
     });
     var activeCompact = qs('[data-shell-compact-switch]');
     if (activeCompact) {
@@ -294,13 +327,18 @@
     var state = normalizeSidebar(value) || 'expanded';
     var shell = qs('.app-shell');
     var premium = refreshPremiumShell();
+    if (!options || options.animate !== false) flashChromeTransition();
     root.dataset.sidebar = state;
+    root.dataset.chrome = state === 'hidden' ? 'hidden' : 'visible';
+    if (document.body) document.body.dataset.chrome = root.dataset.chrome;
     if (shell) shell.classList.toggle('sidebar-collapsed', state === 'hidden');
     if (premium) {
       premium.dataset.sidebar = state;
+      premium.dataset.chrome = root.dataset.chrome;
       premium.classList.toggle('is-sidebar-hidden', state === 'hidden');
+      premium.classList.toggle('is-chrome-hidden', state === 'hidden');
       premium.classList.toggle('is-sidebar-compact', state === 'compact');
-      premium.style.setProperty('--premium-sidebar', state === 'hidden' ? '0px' : state === 'compact' ? '74px' : '254px');
+      premium.style.removeProperty('--premium-sidebar');
     }
     setSidebarControls(state);
     if (!options || options.persist !== false) {
@@ -308,6 +346,11 @@
       write(OLD_SIDEBAR_KEY, state === 'hidden' ? '1' : '0');
       if (state !== 'hidden') write(LAST_VISIBLE_KEY, state);
     }
+    try {
+      window.dispatchEvent(new CustomEvent('altea:chromechange', {
+        detail: { sidebar: state, chrome: root.dataset.chrome }
+      }));
+    } catch (error) {}
   }
 
   function toggleSidebarHidden() {
@@ -525,7 +568,7 @@
     mountDrawer();
     applyTheme(initialTheme(), { persist: false, animate: false });
     applyBackground(initialBackground(), { persist: false });
-    applySidebar(initialSidebar(), { persist: false });
+    applySidebar(initialSidebar(), { persist: false, animate: false });
     bindEvents();
   }
 

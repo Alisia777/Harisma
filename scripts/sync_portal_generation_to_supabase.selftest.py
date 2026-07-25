@@ -3,14 +3,17 @@ from __future__ import annotations
 
 import json
 import tempfile
+from io import BytesIO
 from pathlib import Path
-from urllib import parse
+from urllib import error, parse
 
 import sync_portal_generation_to_supabase as publisher
 from sync_portal_generation_to_supabase import (
     build_rows,
     cleanup_stale_parts,
     expected_base_keys,
+    retry_delay_seconds,
+    retryable_http_status,
     row_batches,
     stale_part_keys,
 )
@@ -136,6 +139,69 @@ try:
     assert delete_calls[0]["timeout_seconds"] == 90
 finally:
     publisher.rest_request = original_rest_request
+
+assert retryable_http_status(520)
+assert retryable_http_status(429)
+assert not retryable_http_status(400)
+assert retry_delay_seconds({"Retry-After": "7"}, "", 0.8) == 7
+assert retry_delay_seconds({}, '{"retry_after":60}', 0.8) == 60
+assert retry_delay_seconds(
+    {
+        "Date": "Fri, 24 Jul 2026 19:50:23 GMT",
+        "Retry-After": "Fri, 24 Jul 2026 19:51:23 GMT",
+    },
+    "",
+    0.8,
+) == 60
+
+
+class FakeResponse:
+    def __enter__(self):
+        return self
+
+    def __exit__(self, *_args):
+        return False
+
+    def read(self):
+        return b'{"ok":true}'
+
+
+retry_calls = []
+retry_sleeps = []
+
+
+def retrying_urlopen(_request, timeout):
+    retry_calls.append(timeout)
+    if len(retry_calls) == 1:
+        raise error.HTTPError(
+            "https://example.supabase.co/rest/v1/snapshots",
+            520,
+            "Cloudflare origin error",
+            {},
+            BytesIO(b'{"status":520,"retryable":true,"retry_after":60}'),
+        )
+    return FakeResponse()
+
+
+original_urlopen = publisher.request.urlopen
+original_sleep = publisher.sleep
+publisher.request.urlopen = retrying_urlopen
+publisher.sleep = retry_sleeps.append
+try:
+    response = publisher.rest_request(
+        "POST",
+        "https://example.supabase.co/rest/v1/snapshots",
+        "secret",
+        payload=[{"snapshot_key": "dashboard"}],
+        attempts=2,
+        timeout_seconds=90,
+    )
+    assert response == {"ok": True}
+    assert retry_calls == [90, 90]
+    assert retry_sleeps == [60]
+finally:
+    publisher.request.urlopen = original_urlopen
+    publisher.sleep = original_sleep
 
 
 def failing_cleanup_request(*_args, **_kwargs):

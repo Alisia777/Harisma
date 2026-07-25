@@ -284,26 +284,36 @@ async function wbAnalyticsRequest(options, apiPath, requestOptions = {}) {
   Object.entries(requestOptions.query || {}).forEach(([key, value]) => {
     if (value !== undefined && value !== null && value !== '') url.searchParams.set(key, String(value));
   });
-  const response = await fetch(url, {
-    method: requestOptions.method || 'GET',
-    headers: {
-      Authorization: options.analyticsToken || options.token,
-      'Content-Type': 'application/json; charset=utf-8'
-    },
-    body: requestOptions.body === undefined ? undefined : JSON.stringify(requestOptions.body)
-  });
-  const contentType = response.headers.get('content-type') || '';
-  if (contentType.includes('application/zip')) {
-    if (!response.ok) throw new Error(`WB analytics ${apiPath}: HTTP ${response.status}`);
-    return Buffer.from(await response.arrayBuffer());
+  let lastAuthError = '';
+  for (const token of wbTokenCandidates(options, 'analytics')) {
+    const response = await fetch(url, {
+      method: requestOptions.method || 'GET',
+      headers: {
+        Authorization: token,
+        'Content-Type': 'application/json; charset=utf-8'
+      },
+      body: requestOptions.body === undefined ? undefined : JSON.stringify(requestOptions.body)
+    });
+    const contentType = response.headers.get('content-type') || '';
+    if (contentType.includes('application/zip')) {
+      if (!response.ok) throw new Error(`WB analytics ${apiPath}: HTTP ${response.status}`);
+      options.analyticsToken = token;
+      return Buffer.from(await response.arrayBuffer());
+    }
+    const text = await response.text();
+    if (response.status === 401 || response.status === 403) {
+      lastAuthError = `WB analytics ${apiPath}: HTTP ${response.status} ${text.slice(0, 700)}`;
+      continue;
+    }
+    if (!response.ok) throw new Error(`WB analytics ${apiPath}: HTTP ${response.status} ${text.slice(0, 700)}`);
+    options.analyticsToken = token;
+    try {
+      return text ? JSON.parse(text) : null;
+    } catch {
+      return text;
+    }
   }
-  const text = await response.text();
-  if (!response.ok) throw new Error(`WB analytics ${apiPath}: HTTP ${response.status} ${text.slice(0, 700)}`);
-  try {
-    return text ? JSON.parse(text) : null;
-  } catch {
-    return text;
-  }
+  throw new Error(lastAuthError || `WB analytics ${apiPath}: no configured token candidates`);
 }
 
 async function createAndDownloadWbFunnelReport(options, startDate, endDate) {
@@ -363,30 +373,40 @@ function resolveOptions(args) {
   const autoLagDays = new Date().getHours() < settlementHour ? 2 : 1;
   const to = explicitTo || localDateKey(-autoLagDays);
   const from = isoDate(args.from || args['date-from'] || `${to.slice(0, 7)}-01`);
-  const genericToken =
-    args.token
-    || process.env.ALTEA_WB_API_TOKEN
-    || process.env.ALTEA_WB_PROMOTION_TOKEN
-    || '';
-  const financeToken =
-    args['finance-token']
-    || process.env.ALTEA_WB_FINANCE_TOKEN
-    || genericToken;
-  const analyticsToken =
-    args['analytics-token']
-    || process.env.ALTEA_WB_ANALYTICS_TOKEN
-    || genericToken
-    || financeToken;
-  const statisticsToken =
-    args['statistics-token']
-    || process.env.ALTEA_WB_STATISTICS_TOKEN
-    || genericToken
-    || financeToken;
+  const apiToken = args.token || process.env.ALTEA_WB_API_TOKEN || '';
+  const promotionToken = process.env.ALTEA_WB_PROMOTION_TOKEN || '';
+  const genericToken = apiToken || promotionToken;
+  const financeTokenCandidates = uniqueTokenCandidates(
+    args['finance-token'],
+    process.env.ALTEA_WB_FINANCE_TOKEN,
+    apiToken,
+    promotionToken
+  );
+  const analyticsTokenCandidates = uniqueTokenCandidates(
+    args['analytics-token'],
+    process.env.ALTEA_WB_ANALYTICS_TOKEN,
+    apiToken,
+    promotionToken,
+    financeTokenCandidates[0]
+  );
+  const statisticsTokenCandidates = uniqueTokenCandidates(
+    args['statistics-token'],
+    process.env.ALTEA_WB_STATISTICS_TOKEN,
+    apiToken,
+    promotionToken,
+    financeTokenCandidates[0]
+  );
+  const financeToken = financeTokenCandidates[0] || '';
+  const analyticsToken = analyticsTokenCandidates[0] || financeToken;
+  const statisticsToken = statisticsTokenCandidates[0] || financeToken;
   return {
     token: genericToken || financeToken || statisticsToken || analyticsToken,
     analyticsToken,
+    analyticsTokenCandidates,
     financeToken,
+    financeTokenCandidates,
     statisticsToken,
+    statisticsTokenCandidates,
     financeApiBaseUrl: String(args['finance-api-base-url'] || FINANCE_API_BASE_URL).replace(/\/+$/, ''),
     financeMinIntervalMs,
     financeLastRequestAt: 0,
@@ -402,6 +422,20 @@ function resolveOptions(args) {
     from,
     to
   };
+}
+
+function uniqueTokenCandidates(...values) {
+  return Array.from(new Set(values.map((value) => String(value || '').trim()).filter(Boolean)));
+}
+
+function wbTokenCandidates(options, category) {
+  const preferred = options?.[`${category}Token`];
+  const configured = options?.[`${category}TokenCandidates`];
+  return uniqueTokenCandidates(
+    preferred,
+    ...(Array.isArray(configured) ? configured : []),
+    options?.token
+  );
 }
 
 function skuMaps(skus) {
@@ -756,131 +790,143 @@ async function wbRequest(options, query) {
     url.searchParams.set(key, String(value));
   }
 
-  for (let attempt = 1; attempt <= 6; attempt += 1) {
-    let response;
-    try {
-      response = await fetch(url, {
-        method: 'GET',
-        headers: {
-          Authorization: options.statisticsToken || options.token,
-          Accept: 'application/json'
-        }
-      });
-    } catch (error) {
-      if (attempt === 6) throw error;
-      await sleep(Math.min(30000, attempt * 5000));
-      continue;
-    }
-
-    if (response.status === 204) {
-      return { rows: [], status: 204 };
-    }
-
-    const text = await response.text();
-
-    if (response.ok) {
-      let payload = [];
+  let lastAuthError = '';
+  for (const token of wbTokenCandidates(options, 'statistics')) {
+    for (let attempt = 1; attempt <= 6; attempt += 1) {
+      let response;
       try {
-        payload = text ? JSON.parse(text) : [];
+        response = await fetch(url, {
+          method: 'GET',
+          headers: {
+            Authorization: token,
+            Accept: 'application/json'
+          }
+        });
       } catch (error) {
-        throw new Error(`WB orders response parse failed: ${error.message || error}`);
+        if (attempt === 6) throw error;
+        await sleep(Math.min(30000, attempt * 5000));
+        continue;
       }
-      if (!Array.isArray(payload)) {
-        throw new Error(`WB orders response must be an array, got ${typeof payload}`);
-      }
-      return { rows: payload, status: response.status };
-    }
 
-    if (response.status === 429) {
-      const waitSeconds = Number(response.headers.get('x-ratelimit-retry') || response.headers.get('x-ratelimit-reset') || 60);
-      const waitMs = Number.isFinite(waitSeconds) && waitSeconds > 0
-        ? (waitSeconds + 1) * 1000
-        : attempt * 60000;
+      if (response.status === 204) {
+        options.statisticsToken = token;
+        return { rows: [], status: 204 };
+      }
+
+      const text = await response.text();
+
+      if (response.ok) {
+        let payload = [];
+        try {
+          payload = text ? JSON.parse(text) : [];
+        } catch (error) {
+          throw new Error(`WB orders response parse failed: ${error.message || error}`);
+        }
+        if (!Array.isArray(payload)) {
+          throw new Error(`WB orders response must be an array, got ${typeof payload}`);
+        }
+        options.statisticsToken = token;
+        return { rows: payload, status: response.status };
+      }
+
+      if (response.status === 429) {
+        const waitSeconds = Number(response.headers.get('x-ratelimit-retry') || response.headers.get('x-ratelimit-reset') || 60);
+        const waitMs = Number.isFinite(waitSeconds) && waitSeconds > 0
+          ? (waitSeconds + 1) * 1000
+          : attempt * 60000;
+        if (attempt === 6) {
+          throw new Error(`WB orders API ${ORDERS_PATH} rate-limited after retries: HTTP 429 ${text.slice(0, 500)}`);
+        }
+        await sleep(waitMs);
+        continue;
+      }
+
+      if (response.status === 401 || response.status === 403) {
+        lastAuthError = `WB orders API ${ORDERS_PATH} failed: HTTP ${response.status} ${text.slice(0, 500)}`;
+        break;
+      }
+
       if (attempt === 6) {
-        throw new Error(`WB orders API ${ORDERS_PATH} rate-limited after retries: HTTP 429 ${text.slice(0, 500)}`);
+        throw new Error(`WB orders API ${ORDERS_PATH} failed: HTTP ${response.status} ${text.slice(0, 500)}`);
       }
-      await sleep(waitMs);
-      continue;
+      await sleep(attempt * 2000);
     }
-
-    if (response.status === 401 || response.status === 403) {
-      throw new Error(`WB orders API ${ORDERS_PATH} failed: HTTP ${response.status} ${text.slice(0, 500)}`);
-    }
-
-    if (attempt === 6) {
-      throw new Error(`WB orders API ${ORDERS_PATH} failed: HTTP ${response.status} ${text.slice(0, 500)}`);
-    }
-    await sleep(attempt * 2000);
   }
 
-  throw new Error(`WB orders API ${ORDERS_PATH} failed after retries`);
+  throw new Error(lastAuthError || `WB orders API ${ORDERS_PATH} failed after retries`);
 }
 
 async function wbFinanceRequest(options, endpoint, body) {
   const url = new URL(`${options.financeApiBaseUrl}${endpoint}`);
 
-  for (let attempt = 1; attempt <= 6; attempt += 1) {
-    await waitForFinanceRequestWindow(options);
-    let response;
-    try {
-      response = await fetch(url, {
-        method: 'POST',
-        headers: {
-          Authorization: options.financeToken || options.token,
-          'Content-Type': 'application/json',
-          Accept: 'application/json'
-        },
-        body: JSON.stringify(body || {})
-      });
-    } catch (error) {
-      if (attempt === 6) throw error;
-      await sleep(Math.min(30000, attempt * 5000));
-      continue;
-    }
-
-    if (response.status === 204) {
-      return { rows: [], status: 204 };
-    }
-
-    const text = await response.text();
-
-    if (response.ok) {
-      let payload = [];
+  let lastAuthError = '';
+  for (const token of wbTokenCandidates(options, 'finance')) {
+    for (let attempt = 1; attempt <= 6; attempt += 1) {
+      await waitForFinanceRequestWindow(options);
+      let response;
       try {
-        payload = text ? JSON.parse(text) : [];
+        response = await fetch(url, {
+          method: 'POST',
+          headers: {
+            Authorization: token,
+            'Content-Type': 'application/json',
+            Accept: 'application/json'
+          },
+          body: JSON.stringify(body || {})
+        });
       } catch (error) {
-        throw new Error(`WB finance response parse failed: ${error.message || error}`);
+        if (attempt === 6) throw error;
+        await sleep(Math.min(30000, attempt * 5000));
+        continue;
       }
-      if (!Array.isArray(payload)) {
-        throw new Error(`WB finance response must be an array, got ${typeof payload}`);
-      }
-      return { rows: payload, status: response.status };
-    }
 
-    if (response.status === 429) {
-      const waitMs = financeRetryDelayMs(
-        response.headers,
-        attempt,
-        options.financeMinIntervalMs
-      );
+      if (response.status === 204) {
+        options.financeToken = token;
+        return { rows: [], status: 204 };
+      }
+
+      const text = await response.text();
+
+      if (response.ok) {
+        let payload = [];
+        try {
+          payload = text ? JSON.parse(text) : [];
+        } catch (error) {
+          throw new Error(`WB finance response parse failed: ${error.message || error}`);
+        }
+        if (!Array.isArray(payload)) {
+          throw new Error(`WB finance response must be an array, got ${typeof payload}`);
+        }
+        options.financeToken = token;
+        return { rows: payload, status: response.status };
+      }
+
+      if (response.status === 429) {
+        const waitMs = financeRetryDelayMs(
+          response.headers,
+          attempt,
+          options.financeMinIntervalMs
+        );
+        if (attempt === 6) {
+          throw new Error(`WB finance API ${endpoint} rate-limited after retries: HTTP 429 ${text.slice(0, 500)}`);
+        }
+        await sleep(waitMs);
+        continue;
+      }
+
+      if (response.status === 401 || response.status === 403) {
+        lastAuthError = `WB finance API ${endpoint} failed: HTTP ${response.status} ${text.slice(0, 500)}`;
+        break;
+      }
+
       if (attempt === 6) {
-        throw new Error(`WB finance API ${endpoint} rate-limited after retries: HTTP 429 ${text.slice(0, 500)}`);
+        throw new Error(`WB finance API ${endpoint} failed: HTTP ${response.status} ${text.slice(0, 500)}`);
       }
-      await sleep(waitMs);
-      continue;
+      await sleep(attempt * 2000);
     }
-
-    if (response.status === 401 || response.status === 403) {
-      throw new Error(`WB finance API ${endpoint} failed: HTTP ${response.status} ${text.slice(0, 500)}`);
-    }
-
-    if (attempt === 6) {
-      throw new Error(`WB finance API ${endpoint} failed: HTTP ${response.status} ${text.slice(0, 500)}`);
-    }
-    await sleep(attempt * 2000);
   }
 
-  throw new Error(`WB finance API ${endpoint} failed after retries`);
+  throw new Error(lastAuthError || `WB finance API ${endpoint} failed after retries`);
 }
 
 async function fetchWbAnalyticsRows(options) {

@@ -52,7 +52,7 @@ function startStaticServer() {
     server.listen(0, '127.0.0.1', () => {
       resolve({
         server,
-        url: `http://127.0.0.1:${server.address().port}/index.html`
+        url: `http://127.0.0.1:${server.address().port}/index.html?academy=off`
       });
     });
   });

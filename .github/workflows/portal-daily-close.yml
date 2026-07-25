@@ -218,6 +218,7 @@ jobs:
           ALTEA_GOOGLE_SERVICE_ACCOUNT_JSON: ${{ secrets.ALTEA_GOOGLE_SERVICE_ACCOUNT_JSON }}
           GOOGLE_APPLICATION_CREDENTIALS_JSON: ${{ secrets.GOOGLE_APPLICATION_CREDENTIALS_JSON }}
           ALTEA_RETAIL_NETWORK_GOOGLE_SHEET_ID: ${{ secrets.ALTEA_RETAIL_NETWORK_GOOGLE_SHEET_ID || vars.ALTEA_RETAIL_NETWORK_GOOGLE_SHEET_ID || '1Zy0ec9-snLwh-J88KoFXyHxtYg3DXC8oWnC17iHNNS4' }}
+          ALTEA_RETAIL_NETWORK_SALES_XLSX: ${{ secrets.ALTEA_RETAIL_NETWORK_SALES_XLSX || vars.ALTEA_RETAIL_NETWORK_SALES_XLSX || 'data/external_sources/retail_network_sales.xlsx' }}
         run: |
           RETAIL_FROM="$(date -u -d '${{ steps.cutoff.outputs.value }} - 1 day' +%F)"
           node scripts/portal-retail-network-daily-sync.js sync \

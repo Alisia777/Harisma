@@ -157,8 +157,8 @@ if (workflow.indexOf('Preflight production secrets') > workflow.indexOf('Refresh
   }
 });
 const retailNetworkFallback = "secrets.ALTEA_RETAIL_NETWORK_SALES_XLSX || vars.ALTEA_RETAIL_NETWORK_SALES_XLSX || 'data/external_sources/retail_network_sales.xlsx'";
-if (workflow.split(retailNetworkFallback).length - 1 !== 2) {
-  fail('daily close must use the committed retail network workbook in both preflight and marketplace refresh');
+if (workflow.split(retailNetworkFallback).length - 1 !== 3) {
+  fail('daily close must use the committed retail network workbook in preflight, marketplace refresh, and retail daily refresh');
 }
 ['ALTEA_YM_CAMPAIGN_ID', 'ALTEA_YM_BUSINESS_ID'].forEach((optionalName) => {
   if (!workflow.includes(optionalName)) {

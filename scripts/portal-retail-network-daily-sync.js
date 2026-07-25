@@ -123,9 +123,13 @@ function moscowDateKey(offsetDays = 0, now = new Date()) {
 
 function resolveOptions(args) {
   const root = process.cwd();
+  const fallbackWorkbook = normalizeText(
+    args['fallback-workbook'] || process.env.ALTEA_RETAIL_NETWORK_SALES_XLSX
+  );
   return {
     command: args.command || 'sync',
     workbookPath: args.workbook ? path.resolve(args.workbook) : '',
+    fallbackWorkbookPath: fallbackWorkbook ? path.resolve(fallbackWorkbook) : '',
     sourceId: normalizeText(args['source-id'] || process.env.ALTEA_RETAIL_NETWORK_GOOGLE_SHEET_ID || DEFAULT_SOURCE_ID),
     inputFile: path.resolve(args['input-file'] || path.join(root, 'data', 'platform_trends.json')),
     outputFile: path.resolve(args['output-file'] || args['input-file'] || path.join(root, 'data', 'platform_trends.json')),
@@ -590,6 +594,11 @@ function buildAllSeries(platforms) {
 
 function updatePayload(basePayload, parsedPlatforms, options = {}) {
   const next = JSON.parse(JSON.stringify(basePayload || {}));
+  const resolvedSource = normalizeText(options.resolvedSource)
+    || `google-sheet:${options.sourceId || DEFAULT_SOURCE_ID}`;
+  const sourceKind = resolvedSource.startsWith('google-sheet:')
+    ? 'google-sheets-retail-daily'
+    : 'retail-workbook-daily';
   const existing = new Map((Array.isArray(next.platforms) ? next.platforms : []).map((platform) => [platform.key, platform]));
   const statusPlatforms = {};
   for (const key of TARGET_PLATFORMS) {
@@ -649,7 +658,7 @@ function updatePayload(basePayload, parsedPlatforms, options = {}) {
   next.platforms = platforms;
   next.generatedAt = new Date().toISOString();
   next.latestMarketplaceDate = platforms.find((platform) => platform.key === 'all')?.series?.at(-1)?.date || next.latestMarketplaceDate || '';
-  next.note = 'Retail-network daily facts refreshed directly from Google Sheets raw tabs; monthly values are not distributed across days.';
+  next.note = `Retail-network daily facts refreshed from ${resolvedSource}; monthly values are not distributed across days.`;
   const previousExtra = next.extraMarketplace && typeof next.extraMarketplace === 'object' ? next.extraMarketplace : {};
   const previousExtraPlatforms = previousExtra.platforms && typeof previousExtra.platforms === 'object' ? previousExtra.platforms : {};
   const extraPlatforms = { ...previousExtraPlatforms };
@@ -670,8 +679,8 @@ function updatePayload(basePayload, parsedPlatforms, options = {}) {
     ...previousExtra,
     generatedAt: next.generatedAt,
     asOfDate: options.to,
-    source: 'google-sheets-retail-daily',
-    workbook: `google-sheet:${options.sourceId || DEFAULT_SOURCE_ID}`,
+    source: sourceKind,
+    workbook: resolvedSource,
     platforms: extraPlatforms
   };
   return {
@@ -680,7 +689,8 @@ function updatePayload(basePayload, parsedPlatforms, options = {}) {
       schema: 'retail-network-source-status-v1',
       generatedAt: next.generatedAt,
       cutoffDate: options.to,
-      source: `google-sheet:${options.sourceId || DEFAULT_SOURCE_ID}`,
+      source: resolvedSource,
+      sourceWarning: normalizeText(options.sourceWarning),
       platforms: {
         ...statusPlatforms,
         samokat: {
@@ -748,6 +758,39 @@ async function downloadWorkbook(sourceId) {
   return { workbookPath, cleanup: () => fs.rmSync(tempDir, { recursive: true, force: true }) };
 }
 
+function workbookSourceLabel(prefix, workbookPath) {
+  const relative = path.relative(process.cwd(), workbookPath).replace(/\\/g, '/');
+  return `${prefix}:${relative && !relative.startsWith('../') ? relative : path.basename(workbookPath)}`;
+}
+
+async function resolveWorkbookSource(options, downloader = downloadWorkbook) {
+  if (options.workbookPath) {
+    if (!fs.existsSync(options.workbookPath)) throw new Error(`Workbook not found: ${options.workbookPath}`);
+    return {
+      workbookPath: options.workbookPath,
+      cleanup: () => {},
+      source: workbookSourceLabel('workbook', options.workbookPath),
+      sourceWarning: ''
+    };
+  }
+  try {
+    const downloaded = await downloader(options.sourceId);
+    return {
+      ...downloaded,
+      source: `google-sheet:${options.sourceId || DEFAULT_SOURCE_ID}`,
+      sourceWarning: ''
+    };
+  } catch (error) {
+    if (!options.fallbackWorkbookPath || !fs.existsSync(options.fallbackWorkbookPath)) throw error;
+    return {
+      workbookPath: options.fallbackWorkbookPath,
+      cleanup: () => {},
+      source: workbookSourceLabel('workbook-fallback', options.fallbackWorkbookPath),
+      sourceWarning: error.message
+    };
+  }
+}
+
 function readJson(filePath, fallback = {}) {
   try { return JSON.parse(fs.readFileSync(filePath, 'utf8').replace(/^\uFEFF/, '')); } catch { return fallback; }
 }
@@ -808,12 +851,7 @@ async function main(argv = process.argv) {
   if (options.command !== 'sync') throw new Error(`Unsupported command: ${options.command}`);
   let workbookSource = null;
   try {
-    if (options.workbookPath) {
-      if (!fs.existsSync(options.workbookPath)) throw new Error(`Workbook not found: ${options.workbookPath}`);
-      workbookSource = { workbookPath: options.workbookPath, cleanup: () => {} };
-    } else {
-      workbookSource = await downloadWorkbook(options.sourceId);
-    }
+    workbookSource = await resolveWorkbookSource(options);
   } catch (error) {
     if (!options.optionalSource) throw error;
     const base = readJson(options.inputFile, { platforms: [] });
@@ -827,6 +865,8 @@ async function main(argv = process.argv) {
     return;
   }
   try {
+    options.resolvedSource = workbookSource.source;
+    options.sourceWarning = workbookSource.sourceWarning;
     const workbook = XLSX.readFile(workbookSource.workbookPath, { cellDates: false });
     const parsed = parseRetailWorkbook(workbook, options);
     const base = readJson(options.inputFile, { platforms: [] });
@@ -881,6 +921,7 @@ module.exports = {
   numberOrZero,
   parseArgs,
   parseRetailWorkbook,
+  resolveWorkbookSource,
   resolveOptions,
   updatePayload
 };

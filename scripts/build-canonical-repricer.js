@@ -42,12 +42,17 @@ function parseArgs(argv) {
 
 function resolveOptions(args = {}) {
   const root = process.cwd();
+  const inputDir = path.resolve(args['input-dir'] || path.join(root, 'data'));
   return {
-    inputDir: path.resolve(args['input-dir'] || path.join(root, 'data')),
+    inputDir,
     outputDir: path.resolve(args['output-dir'] || path.join(root, '.portal-truth-output')),
+    liveWorkbenchPath: path.resolve(args['live-file'] || path.join(inputDir, 'repricer_live_prices.json')),
+    legacyLiveWorkbenchPath: path.resolve(args['legacy-live-file'] || path.join(root, 'tmp-smart_price_workbench-live.json')),
+    asOfDate: asIsoDate(args['as-of-date'] || args['reference-date'] || new Date().toISOString()),
     policyPath: path.resolve(args['policy'] || path.join(root, 'data', 'portal_indicator_policy.json')),
     metricRegistryPath: path.resolve(args['metric-registry'] || path.join(root, 'data', 'portal_metric_registry.json')),
     featurePolicyPath: path.resolve(args['feature-policy'] || path.join(root, 'data', 'portal_feature_policy.json')),
+    economicsPolicyPath: path.resolve(args['economics-policy'] || path.join(inputDir, 'repricer_economics_policy.json')),
     noFail: Boolean(args['no-fail']),
     noWrite: Boolean(args['no-write'])
   };
@@ -97,6 +102,14 @@ function sourceMeta(inputDir, names) {
   }));
 }
 
+function sourcePathMeta(filePath, label = path.basename(filePath || '')) {
+  return {
+    file: label,
+    exists: Boolean(filePath && fs.existsSync(filePath)),
+    sha256: filePath ? sha256File(filePath) : ''
+  };
+}
+
 function payloadRows(payload = {}) {
   if (Array.isArray(payload?.rows)) return payload.rows;
   if (Array.isArray(payload?.items)) return payload.items;
@@ -119,6 +132,38 @@ function buildMap(rows = []) {
     map.set(key, row);
   });
   return map;
+}
+
+function buildSharedProductCostMap(payload = {}, platforms = []) {
+  const candidates = new Map();
+  platforms.forEach((platform) => {
+    platformRows(payload, platform).forEach((row) => {
+      const key = normalizeKey(row?.articleKey || row?.article || row?.sku || row?.offerId);
+      const cost = firstPositive(row?.costRub, row?.cost, row?.costPrice);
+      if (!key || cost === null) return;
+      const bucket = candidates.get(key) || [];
+      bucket.push({
+        cost,
+        platform: String(platform || '').trim().toLowerCase()
+      });
+      candidates.set(key, bucket);
+    });
+  });
+
+  const shared = new Map();
+  candidates.forEach((rows, key) => {
+    const uniqueCosts = [...new Set(rows.map((row) => Math.round(row.cost * 100)))];
+    if (uniqueCosts.length !== 1) return;
+    shared.set(key, {
+      cost: uniqueCosts[0] / 100,
+      sourceStore: 'smart_price_workbench_cross_platform',
+      sourceFile: 'smart_price_workbench.json+smart_price_overlay.json',
+      sourceChecksum: '',
+      batchId: '',
+      id: `shared-cost:${key}`
+    });
+  });
+  return shared;
 }
 
 function buildProcurementMap(payload = {}) {
@@ -144,6 +189,48 @@ function buildProcurementMap(payload = {}) {
     generatedAt: payload?.generatedAt || '',
     asOfDate: asIsoDate(payload?.asOfDate || payload?.generatedAt || ''),
     map
+  };
+}
+
+function buildLiveSignalBucket(payload = {}, platform = '') {
+  const platformSignal = payload?.platforms?.[platform] || {};
+  const stockPayload = platformSignal?.stock || {};
+  const rows = Array.isArray(stockPayload?.rows)
+    ? stockPayload.rows
+    : (Array.isArray(payload?.rows)
+      ? payload.rows.filter((row) => String(row?.platform || '').trim().toLowerCase() === platform)
+      : []);
+  const status = String(stockPayload?.status || '').trim().toLowerCase();
+  const snapshotAvailable = ['trusted_direct', 'trusted_fallback'].includes(status) && rows.length > 0;
+  const map = new Map();
+  rows.forEach((row) => {
+    const key = normalizeKey(row?.articleKey || row?.article || row?.sku || '');
+    if (!key) return;
+    map.set(key, {
+      present: true,
+      inStock: firstNumber(row?.available, row?.stock, row?.inStock, 0) || 0,
+      inTransit: firstNumber(row?.inbound, row?.inTransit, 0) || 0,
+      inRequest: firstNumber(row?.inRequest, 0) || 0,
+      date: asIsoDate(row?.asOfDate || stockPayload?.asOfDate || payload?.asOfDate || payload?.generatedAt || ''),
+      source: row?.source || stockPayload?.source || 'repricer_live_signals.json',
+      sourceMode: row?.sourceMode || stockPayload?.sourceMode || '',
+      partialOos: Boolean(row?.partialOos),
+      oosRiskStatus: String(row?.oosRiskStatus || ''),
+      oosRiskRule: String(row?.oosRiskRule || ''),
+      turnoverDays: row?.turnoverDays === null || row?.turnoverDays === undefined
+        ? null
+        : firstNumber(row?.turnoverDays),
+      oosTaskId: String(row?.oosTaskId || '')
+    });
+  });
+  return {
+    snapshotAvailable,
+    generatedAt: payload?.generatedAt || '',
+    asOfDate: asIsoDate(stockPayload?.asOfDate || payload?.asOfDate || payload?.generatedAt || ''),
+    status,
+    source: stockPayload?.source || '',
+    map,
+    platformSignal
   };
 }
 
@@ -178,6 +265,27 @@ function approvalMap(inputDir) {
 }
 
 function approvalFor(map, articleKey, platform) {
+  const key = normalizeKey(articleKey || '');
+  return map.get(`${platform}|${key}`) || map.get(`all|${key}`) || null;
+}
+
+function lifecycleApprovalMap(inputDir) {
+  const payload = readJsonFile(file(inputDir, 'product_lifecycle_approved.json'), { records: [] });
+  const records = Array.isArray(payload?.records) ? payload.records : (Array.isArray(payload) ? payload : []);
+  const map = new Map();
+  records.filter(approvedRecord).forEach((record) => {
+    const articleKey = normalizeKey(record.articleKey || record.article || record.sku || '');
+    const platform = String(record.platform || 'all').trim().toLowerCase() || 'all';
+    const lifecycleKey = normalizeLifecycleKey({
+      productLifecycleStatus: record.lifecycleKey || record.productLifecycleStatus || record.productStatus || record.proposedStatus
+    });
+    if (!articleKey || !lifecycleKey) return;
+    map.set(`${platform}|${articleKey}`, { ...record, lifecycleKey });
+  });
+  return map;
+}
+
+function lifecycleApprovalFor(map, articleKey, platform) {
   const key = normalizeKey(articleKey || '');
   return map.get(`${platform}|${key}`) || map.get(`all|${key}`) || null;
 }
@@ -275,8 +383,131 @@ function normalizePolicyPct(value) {
   return parsed !== null && parsed >= 0 ? parsed : null;
 }
 
+function firstConfiguredNumber(...values) {
+  for (const value of values) {
+    if (value === null || value === undefined || String(value).trim() === '') continue;
+    const parsed = Number(String(value).replace(',', '.'));
+    if (Number.isFinite(parsed)) return parsed;
+  }
+  return null;
+}
+
+function firstConfiguredPct(...values) {
+  const parsed = firstConfiguredNumber(...values);
+  if (parsed === null) return null;
+  return parsed > 1 && parsed <= 100 ? parsed / 100 : parsed;
+}
+
+function normalizeLifecycleKey(...records) {
+  const raw = records
+    .filter((record) => record && typeof record === 'object')
+    .flatMap((record) => [
+      record.productLifecycleStatus,
+      record.lifecycleStatus,
+      record.productStatus,
+      record.registryStatus,
+      record.repricerStatus,
+      record.status
+    ])
+    .find((value) => String(value || '').trim());
+  const text = String(raw || '').trim().toLowerCase().replace(/ё/g, 'е');
+  if (!text) return '';
+  if (/перезапуск|relaunch|restart/.test(text)) return 'relaunch';
+  if (/новин|новый|\bnew\b|\blaunch\b|запуск/.test(text)) return 'new';
+  if (/актуал|active|в работе|работает/.test(text)) return 'active';
+  if (/вывод|вывед|архив|exit|archiv|removed/.test(text)) return 'exit';
+  if (/нет на площадке|не представлен|not.?listed|absent/.test(text)) return 'not_listed';
+  if (/пауза|замороз|freeze|hold|стоп/.test(text)) return 'paused';
+  if (/вопрос|перераб|review/.test(text)) return 'question';
+  return 'other';
+}
+
+function marginGuardRequired(lifecycleKey = '') {
+  return ['active', 'new', 'relaunch'].includes(String(lifecycleKey || '').trim().toLowerCase());
+}
+
+function targetMarginFloor(economics = {}, targetMarginPct = null) {
+  const target = normalizePolicyPct(targetMarginPct);
+  if (!economics.complete || target === null || target <= 0 || target >= 1) return null;
+  const denominator = 1
+    - (economics.commission_pct || 0)
+    - (economics.internal_advertising_pct || 0)
+    - (economics.tax_pct || 0)
+    - target;
+  if (denominator <= 0) return null;
+  return Math.ceil(((economics.cost || 0) + economicsFixedCostsPerUnit(economics)) / denominator);
+}
+
+function economicsFixedCostsPerUnit(economics = {}) {
+  const platformCosts = firstConfiguredNumber(economics.platform_costs_per_unit);
+  const internalAdvertising = firstConfiguredNumber(economics.internal_advertising_per_unit);
+  if (platformCosts !== null && internalAdvertising !== null) {
+    return platformCosts + internalAdvertising;
+  }
+  return firstConfiguredNumber(
+    economics.fixed_costs_per_unit,
+    economics.logistics_per_unit
+  ) || 0;
+}
+
 function priceDate(row = {}) {
   return asIsoDate(row.currentPriceDate || row.currentFillPriceDate || row.valueDate || row.historyFreshnessDate || '');
+}
+
+function dateAgeDays(value = '', referenceValue = '') {
+  const date = asIsoDate(value);
+  const referenceDate = asIsoDate(referenceValue);
+  if (!date || !referenceDate) return null;
+  const stamp = Date.parse(`${date}T00:00:00Z`);
+  const referenceStamp = Date.parse(`${referenceDate}T00:00:00Z`);
+  if (!Number.isFinite(stamp) || !Number.isFinite(referenceStamp)) return null;
+  return Math.max(0, (referenceStamp - stamp) / 86400000);
+}
+
+function currentPriceMaxAgeDays(economicsPolicy = {}) {
+  const configured = firstConfiguredNumber(
+    economicsPolicy?.priceFreshness?.maxAgeDays,
+    economicsPolicy?.currentPriceMaxAgeDays,
+    economicsPolicy?.current_price_max_age_days
+  );
+  return configured !== null && configured >= 0 ? configured : 2;
+}
+
+function sharpPriceApprovalPct(economicsPolicy = {}) {
+  const configured = firstConfiguredPct(
+    economicsPolicy?.approval?.sharpPriceChangePct,
+    economicsPolicy?.sharpPriceApprovalPct,
+    economicsPolicy?.sharp_price_approval_pct
+  );
+  return configured !== null && configured > 0 && configured < 1 ? configured : 0.10;
+}
+
+function extremePriceChangePct(economicsPolicy = {}) {
+  const configured = firstConfiguredPct(
+    economicsPolicy?.approval?.extremePriceChangePct,
+    economicsPolicy?.extremePriceChangePct,
+    economicsPolicy?.extreme_price_change_pct
+  );
+  return configured !== null && configured >= 1 ? configured : 1;
+}
+
+function minimumResidualContributionPct(economicsPolicy = {}) {
+  const configured = firstConfiguredPct(
+    economicsPolicy?.safety?.minimumResidualContributionPct,
+    economicsPolicy?.minimumResidualContributionPct,
+    economicsPolicy?.minimum_residual_contribution_pct
+  );
+  return configured !== null && configured >= 0 && configured < 1 ? configured : 0.05;
+}
+
+function targetMarginResidualPct(economics = {}, targetMarginPct = null) {
+  const target = normalizePolicyPct(targetMarginPct);
+  if (!economics.complete || target === null) return null;
+  return 1
+    - (economics.commission_pct || 0)
+    - (economics.internal_advertising_pct || 0)
+    - (economics.tax_pct || 0)
+    - target;
 }
 
 function resolveCurrentPrice(row = {}) {
@@ -284,24 +515,193 @@ function resolveCurrentPrice(row = {}) {
   return {
     value: price,
     asOf: priceDate(row),
-    source: row.currentSellerPriceSource || row.currentPriceSource || row.sourceMode || 'smart_price_contour'
+    source: row.currentSellerPriceSource || row.currentPriceSource || row.sourceMode || 'smart_price_contour',
+    file: row.currentSellerPriceFile || ''
   };
 }
 
-function resolveEconomics(sourceRow = {}, supportRow = {}, costRecord = null) {
+function economicsPolicyForPlatform(payload = {}, platform = '') {
+  const key = String(platform || '').trim().toLowerCase();
+  const rule = payload?.platforms?.[key];
+  return rule && typeof rule === 'object' ? rule : {};
+}
+
+function economicsPolicyPlatforms(payload = {}) {
+  const configured = Array.isArray(payload?.enabledPlatforms)
+    ? payload.enabledPlatforms
+    : (Array.isArray(payload?.enabled_platforms) ? payload.enabled_platforms : []);
+  const normalized = configured
+    .map((value) => String(value || '').trim().toLowerCase())
+    .filter((value) => PLATFORM_KEYS.includes(value));
+  return normalized.length ? [...new Set(normalized)] : PLATFORM_KEYS;
+}
+
+function resolveEconomics(sourceRow = {}, supportRow = {}, costRecord = null, economicsPolicy = {}, platform = '', livePlatformSignal = null) {
   sourceRow = sourceRow || {};
   supportRow = supportRow || {};
+  const platformPolicy = economicsPolicyForPlatform(economicsPolicy, platform);
   const cost = firstPositive(costRecord?.cost, sourceRow.costRub, sourceRow.cost, sourceRow.costPrice);
-  const commissionPct = normalizePct(sourceRow.commissionPct ?? sourceRow.commission_pct ?? supportRow.commissionPct);
-  const logisticsPerUnit = firstNumber(sourceRow.logisticsPerUnit, sourceRow.logisticsRub, supportRow.logisticsPerUnit);
-  const taxPct = normalizePct(sourceRow.taxPct ?? sourceRow.tax_pct ?? supportRow.taxPct);
-  const complete = cost !== null && commissionPct !== null && logisticsPerUnit !== null && taxPct !== null;
+  const sourceCommission = firstConfiguredPct(sourceRow.commissionPct, sourceRow.commission_pct, supportRow.commissionPct);
+  const sourceLegacyFixedCosts = firstConfiguredNumber(
+    sourceRow.logisticsPerUnit,
+    supportRow.logisticsPerUnit
+  );
+  const sourceLogistics = firstConfiguredNumber(sourceRow.logisticsRub, supportRow.logisticsRub);
+  const sourceStorage = firstConfiguredNumber(sourceRow.storageRub, supportRow.storageRub);
+  const sourceReturns = firstConfiguredNumber(sourceRow.returnsRub, supportRow.returnsRub);
+  const sourceOther = firstConfiguredNumber(sourceRow.otherRub, supportRow.otherRub);
+  const sourcePlatformCosts = firstConfiguredNumber(
+    sourceRow.platformCostsPerUnit,
+    sourceRow.platform_costs_per_unit,
+    supportRow.platformCostsPerUnit,
+    supportRow.platform_costs_per_unit
+  );
+  const sourceInternalAdvertising = firstConfiguredNumber(
+    sourceRow.internalAdvertisingPerUnit,
+    sourceRow.internal_advertising_per_unit,
+    sourceRow.internalAdRub,
+    sourceRow.adRub,
+    supportRow.internalAdvertisingPerUnit,
+    supportRow.internal_advertising_per_unit,
+    supportRow.internalAdRub,
+    supportRow.adRub
+  );
+  const sourceInternalAdvertisingPct = firstConfiguredPct(
+    sourceRow.internalAdvertisingPct,
+    sourceRow.internal_advertising_pct,
+    sourceRow.adPct,
+    sourceRow.ad_pct,
+    supportRow.internalAdvertisingPct,
+    supportRow.internal_advertising_pct,
+    supportRow.adPct,
+    supportRow.ad_pct
+  );
+  const sourceTax = firstConfiguredPct(sourceRow.taxPct, sourceRow.tax_pct, supportRow.taxPct);
+  const commissionPct = sourceCommission !== null
+    ? sourceCommission
+    : firstConfiguredPct(platformPolicy.commissionPct, platformPolicy.commission_pct);
+  const policyBreakdown = platformPolicy.breakdown && typeof platformPolicy.breakdown === 'object'
+    ? platformPolicy.breakdown
+    : {};
+  const policyPlatformCosts = firstConfiguredNumber(
+    platformPolicy.platformCostsPerUnit,
+    platformPolicy.platform_costs_per_unit
+  );
+  const policyInternalAdvertising = firstConfiguredNumber(
+    platformPolicy.internalAdvertisingPerUnit,
+    platformPolicy.internal_advertising_per_unit,
+    policyBreakdown.internalAdvertisingRub,
+    policyBreakdown.internal_advertising_rub,
+    policyBreakdown.adRub
+  );
+  const policyInternalAdvertisingPct = firstConfiguredPct(
+    platformPolicy.internalAdvertisingPct,
+    platformPolicy.internal_advertising_pct,
+    policyBreakdown.internalAdvertisingPct,
+    policyBreakdown.internal_advertising_pct,
+    policyBreakdown.adPct,
+    policyBreakdown.ad_pct
+  );
+  const liveAdvertising = livePlatformSignal?.advertising && typeof livePlatformSignal.advertising === 'object'
+    ? livePlatformSignal.advertising
+    : {};
+  const liveInternalAdvertisingPct = ['trusted', 'fallback_contract'].includes(String(liveAdvertising.status || '').trim().toLowerCase())
+    ? firstConfiguredPct(liveAdvertising.appliedPct)
+    : null;
+  const liveObservedAdvertisingPct = firstConfiguredPct(liveAdvertising.observedPct);
+  const policyLogistics = firstConfiguredNumber(policyBreakdown.logisticsRub) || 0;
+  const policyStorage = firstConfiguredNumber(policyBreakdown.storageRub) || 0;
+  const policyReturns = firstConfiguredNumber(policyBreakdown.returnsRub) || 0;
+  const policyOther = firstConfiguredNumber(policyBreakdown.otherRub) || 0;
+  const sourcePlatformComponentsPresent = [sourceLogistics, sourceStorage, sourceReturns, sourceOther]
+    .some((value) => value !== null);
+  const legacyFixedCosts = sourceLegacyFixedCosts !== null
+    ? sourceLegacyFixedCosts
+    : firstConfiguredNumber(
+      platformPolicy.fixedCostsPerUnit,
+      platformPolicy.fixed_costs_per_unit,
+      platformPolicy.logisticsPerUnit,
+      platformPolicy.logistics_per_unit
+    );
+  let platformCostsPerUnit = sourcePlatformCosts;
+  const internalAdvertisingPerUnit = sourceInternalAdvertising
+    ?? policyInternalAdvertising
+    ?? 0;
+  const internalAdvertisingPctCandidates = [
+    sourceInternalAdvertisingPct,
+    policyInternalAdvertisingPct,
+    liveInternalAdvertisingPct
+  ].filter((value) => value !== null);
+  const internalAdvertisingPct = internalAdvertisingPctCandidates.length
+    ? Math.max(...internalAdvertisingPctCandidates)
+    : 0;
+  let platformCostsSource = sourcePlatformCosts !== null ? 'smart_price_workbench' : '';
+  if (platformCostsPerUnit === null && sourcePlatformComponentsPresent) {
+    platformCostsPerUnit = (sourceLogistics ?? policyLogistics)
+      + (sourceStorage ?? policyStorage)
+      + (sourceReturns ?? policyReturns)
+      + (sourceOther ?? policyOther);
+    platformCostsSource = 'smart_price_workbench';
+  }
+  if (platformCostsPerUnit === null && policyPlatformCosts !== null) {
+    platformCostsPerUnit = policyPlatformCosts;
+    platformCostsSource = 'repricer_economics_policy';
+  }
+  if (platformCostsPerUnit === null && legacyFixedCosts !== null) {
+    const advertisingAlreadyInsideLegacyTotal = sourceLegacyFixedCosts !== null
+      ? (sourceInternalAdvertising || 0)
+      : (policyInternalAdvertising || 0);
+    platformCostsPerUnit = Math.max(0, legacyFixedCosts - advertisingAlreadyInsideLegacyTotal);
+    platformCostsSource = sourceLegacyFixedCosts !== null
+      ? 'smart_price_workbench'
+      : 'repricer_economics_policy';
+  }
+  const fixedCostsPerUnit = platformCostsPerUnit !== null && internalAdvertisingPerUnit !== null
+    ? platformCostsPerUnit + internalAdvertisingPerUnit
+    : null;
+  const advertisingSource = liveInternalAdvertisingPct !== null && internalAdvertisingPct === liveInternalAdvertisingPct
+    ? 'repricer_live_signals'
+    : (sourceInternalAdvertising !== null
+      ? 'smart_price_workbench'
+      : (sourceInternalAdvertisingPct !== null
+        ? 'smart_price_workbench'
+        : ((policyInternalAdvertising !== null || policyInternalAdvertisingPct !== null)
+          ? 'repricer_economics_policy'
+          : '')));
+  const taxPct = sourceTax !== null
+    ? sourceTax
+    : firstConfiguredPct(platformPolicy.taxPct, platformPolicy.tax_pct);
+  const complete = cost !== null
+    && commissionPct !== null
+    && platformCostsPerUnit !== null
+    && internalAdvertisingPerUnit !== null
+    && internalAdvertisingPct !== null
+    && taxPct !== null;
   return {
     cost,
     commission_pct: commissionPct,
-    logistics_per_unit: logisticsPerUnit,
+    platform_costs_per_unit: platformCostsPerUnit,
+    internal_advertising_per_unit: internalAdvertisingPerUnit,
+    internal_advertising_pct: internalAdvertisingPct,
+    internal_advertising_observed_pct: liveObservedAdvertisingPct,
+    internal_advertising_contract_pct: policyInternalAdvertisingPct,
+    internal_advertising_status: String(liveAdvertising.status || ''),
+    internal_advertising_as_of: asIsoDate(liveAdvertising.to || ''),
+    fixed_costs_per_unit: fixedCostsPerUnit,
+    logistics_per_unit: fixedCostsPerUnit,
     tax_pct: taxPct,
     complete,
+    components: {
+      logistics_rub: sourceLogistics ?? policyLogistics,
+      storage_rub: sourceStorage ?? policyStorage,
+      returns_rub: sourceReturns ?? policyReturns,
+      other_rub: sourceOther ?? policyOther,
+      internal_advertising_rub: internalAdvertisingPerUnit || 0,
+      internal_advertising_pct: internalAdvertisingPct || 0,
+      internal_advertising_observed_pct: liveObservedAdvertisingPct || 0
+    },
+    commission_model: platformPolicy.commissionModel || platformPolicy.commission_model || '',
+    commission_contract: platformPolicy.commissionContract || platformPolicy.commission_contract || null,
     sources: {
       cost: costRecord ? {
         sourceStore: costRecord.sourceStore || 'server_upload',
@@ -310,18 +710,34 @@ function resolveEconomics(sourceRow = {}, supportRow = {}, costRecord = null) {
         batchId: costRecord.batchId || '',
         id: costRecord.id || ''
       } : (sourceRow.costSource || (cost !== null ? 'smart_price_workbench' : '')),
-      commission: commissionPct !== null ? 'smart_price_workbench' : '',
-      logistics: logisticsPerUnit !== null ? 'smart_price_workbench' : '',
-      tax: taxPct !== null ? 'smart_price_workbench' : ''
+      commission: commissionPct !== null
+        ? (sourceCommission !== null ? 'smart_price_workbench' : 'repricer_economics_policy')
+        : '',
+      platform_costs: platformCostsPerUnit !== null ? platformCostsSource : '',
+      internal_advertising: internalAdvertisingPerUnit !== null ? advertisingSource : '',
+      logistics: fixedCostsPerUnit !== null
+        ? [platformCostsSource, advertisingSource].filter(Boolean).join('+')
+        : '',
+      tax: taxPct !== null
+        ? (sourceTax !== null ? 'smart_price_workbench' : 'repricer_economics_policy')
+        : ''
     }
   };
 }
 
-function resolvePolicy(sourceRow = {}, supportRow = {}, policyPayload = {}, minMaxRecord = null) {
+function resolvePolicy(
+  sourceRow = {},
+  supportRow = {},
+  policyPayload = {},
+  minMaxRecord = null,
+  economics = {},
+  lifecycleKey = '',
+  economicsPolicy = {}
+) {
   sourceRow = sourceRow || {};
   supportRow = supportRow || {};
   const turnoverPolicy = policyPayload?.policies?.turnover_default || {};
-  const floor = firstPositive(
+  const minMaxFloor = firstPositive(
     minMaxRecord?.minPrice,
     sourceRow.manualMinPrice,
     supportRow.manualMinPrice,
@@ -332,7 +748,7 @@ function resolvePolicy(sourceRow = {}, supportRow = {}, policyPayload = {}, minM
     supportRow.hardMinPrice,
     supportRow.workingZoneFrom
   );
-  const cap = firstPositive(
+  const minMaxCap = firstPositive(
     minMaxRecord?.maxPrice,
     sourceRow.manualMaxPrice,
     supportRow.manualMaxPrice,
@@ -342,29 +758,66 @@ function resolvePolicy(sourceRow = {}, supportRow = {}, policyPayload = {}, minM
     supportRow.maxPrice,
     supportRow.historicalMaxPrice
   );
-  const targetMargin = normalizePolicyPct(sourceRow.allowedMarginPct ?? supportRow.allowedMarginPct);
+  const registryTargetMargin = normalizePolicyPct(
+    minMaxRecord?.targetMarginPct
+      ?? minMaxRecord?.marginPct
+      ?? minMaxRecord?.allowedMarginPct
+  );
+  const sourceTargetMargin = normalizePolicyPct(
+    sourceRow.manualMarginPct
+      ?? sourceRow.targetMarginPct
+      ?? sourceRow.allowedMarginPct
+      ?? supportRow.manualMarginPct
+      ?? supportRow.targetMarginPct
+      ?? supportRow.allowedMarginPct
+  );
+  const targetMargin = registryTargetMargin ?? sourceTargetMargin;
+  const guardRequired = marginGuardRequired(lifecycleKey);
+  const marginResidualPct = targetMarginResidualPct(economics, targetMargin);
+  const minimumResidualPct = minimumResidualContributionPct(economicsPolicy);
+  const targetMarginFeasible = !guardRequired
+    || targetMargin === null
+    || (marginResidualPct !== null && marginResidualPct + 1e-9 >= minimumResidualPct);
+  const marginFloor = guardRequired && targetMarginFeasible
+    ? targetMarginFloor(economics, targetMargin)
+    : null;
+  const floor = Math.max(minMaxFloor || 0, marginFloor || 0) || null;
+  const capLiftedByMargin = Boolean(
+    guardRequired
+    && marginFloor !== null
+    && minMaxCap !== null
+    && minMaxCap + 1e-9 < marginFloor
+  );
+  const cap = capLiftedByMargin ? marginFloor : minMaxCap;
+  const registrySource = (record) => ({
+    sourceStore: record.sourceStore || 'server_upload',
+    sourceFile: record.sourceFile || '',
+    sourceChecksum: record.sourceChecksum || '',
+    batchId: record.batchId || '',
+    id: record.id || ''
+  });
   return {
     floor,
     cap,
+    min_max_floor: minMaxFloor,
+    min_max_cap: minMaxCap,
+    margin_floor: marginFloor,
+    margin_guard_required: guardRequired,
+    margin_priority_applied: Boolean(marginFloor !== null && marginFloor >= (minMaxFloor || 0)),
+    cap_lifted_by_margin: capLiftedByMargin,
+    lifecycle_key: lifecycleKey,
     target_margin_pct: targetMargin,
+    target_margin_feasible: targetMarginFeasible,
+    margin_residual_pct: marginResidualPct,
+    minimum_margin_residual_pct: minimumResidualPct,
     target_turnover_days: Number(turnoverPolicy.target_days || 30),
     version: policyPayload?.version || '',
     sources: {
-      floor: minMaxRecord ? {
-        sourceStore: minMaxRecord.sourceStore || 'server_upload',
-        sourceFile: minMaxRecord.sourceFile || '',
-        sourceChecksum: minMaxRecord.sourceChecksum || '',
-        batchId: minMaxRecord.batchId || '',
-        id: minMaxRecord.id || ''
-      } : (firstPositive(sourceRow.manualMinPrice, supportRow.manualMinPrice) !== null ? 'approved_min_max_import' : 'price_policy_json'),
-      cap: minMaxRecord ? {
-        sourceStore: minMaxRecord.sourceStore || 'server_upload',
-        sourceFile: minMaxRecord.sourceFile || '',
-        sourceChecksum: minMaxRecord.sourceChecksum || '',
-        batchId: minMaxRecord.batchId || '',
-        id: minMaxRecord.id || ''
-      } : (firstPositive(sourceRow.manualMaxPrice, supportRow.manualMaxPrice) !== null ? 'approved_min_max_import' : 'price_policy_json'),
-      margin: targetMargin !== null ? 'price_policy_json' : ''
+      floor: minMaxRecord ? registrySource(minMaxRecord) : (firstPositive(sourceRow.manualMinPrice, supportRow.manualMinPrice) !== null ? 'approved_min_max_import' : 'price_policy_json'),
+      cap: minMaxRecord ? registrySource(minMaxRecord) : (firstPositive(sourceRow.manualMaxPrice, supportRow.manualMaxPrice) !== null ? 'approved_min_max_import' : 'price_policy_json'),
+      margin: registryTargetMargin !== null
+        ? registrySource(minMaxRecord)
+        : (sourceTargetMargin !== null ? 'price_policy_json' : '')
     }
   };
 }
@@ -374,22 +827,40 @@ function marginAtPrice(price, economics = {}) {
   if (value === null || !economics.complete) return null;
   const net = value
     - value * (economics.commission_pct || 0)
+    - value * (economics.internal_advertising_pct || 0)
     - value * (economics.tax_pct || 0)
-    - (economics.logistics_per_unit || 0)
+    - economicsFixedCostsPerUnit(economics)
     - (economics.cost || 0);
   return Number((net / value).toFixed(6));
 }
 
 function chooseProposedPrice(currentPrice, policy = {}, approval = null) {
   const approvedPrice = firstPositive(approval?.price, approval?.forcePrice, approval?.approvedPrice);
-  if (approvedPrice !== null) return { price: approvedPrice, source: 'approved_override' };
-  if (currentPrice === null) return { price: null, source: '' };
+  if (approvedPrice === null && currentPrice === null) return { price: null, source: '' };
   const floor = firstPositive(policy.floor);
   const cap = firstPositive(policy.cap);
-  let price = currentPrice;
-  if (floor !== null && price < floor) price = floor;
-  if (cap !== null && cap >= (floor || 0) && price > cap) price = cap;
-  return { price: Math.round(price), source: 'canonical_keep_inside_corridor' };
+  const startingPrice = approvedPrice ?? currentPrice;
+  let price = startingPrice;
+  let guard = '';
+  if (floor !== null && price < floor) {
+    price = floor;
+    guard = policy.margin_floor !== null && policy.margin_floor >= (policy.min_max_floor || 0)
+      ? 'margin_floor'
+      : 'min_floor';
+  }
+  if (cap !== null && cap >= (floor || 0) && price > cap) {
+    price = cap;
+    guard = 'max_cap';
+  }
+  const roundedPrice = guard === 'margin_floor' || guard === 'min_floor'
+    ? Math.ceil(price)
+    : (guard === 'max_cap' ? Math.floor(price) : Math.round(price));
+  return {
+    price: roundedPrice,
+    source: approvedPrice !== null ? 'approved_override_guarded' : 'canonical_keep_inside_corridor',
+    guard,
+    requested_price: startingPrice
+  };
 }
 
 function duplicateSignature(row = {}) {
@@ -465,54 +936,173 @@ function dedupeExactArticleRows(rows = []) {
 function buildCanonicalSide({
   sourceRow,
   supportRow,
+  skuRow,
   procurementBucket,
+  liveSignalBucket,
+  livePlatformSignal,
   platform,
   snapshotId,
   policyPayload,
   metricRegistry,
+  economicsPolicy,
+  snapshotAsOf,
   approval,
+  lifecycleApproval,
   minMaxRecord,
   costRecord
 }) {
   const articleKey = String(sourceRow?.articleKey || sourceRow?.article || '').trim();
   const normalizedArticle = normalizeKey(articleKey);
   const current = resolveCurrentPrice(sourceRow);
+  const liveStock = liveSignalBucket?.map?.get(normalizedArticle) || null;
   const procurement = procurementBucket?.map?.get(normalizedArticle) || null;
-  const stockSnapshotAvailable = Boolean(procurementBucket?.snapshotAvailable);
-  const stockTrusted = Boolean(stockSnapshotAvailable && procurement);
-  const stock = stockTrusted ? firstNumber(procurement.inStock, 0) : null;
-  const inbound = stockTrusted ? (firstNumber(procurement.inTransit, 0) || 0) + (firstNumber(procurement.inRequest, 0) || 0) : null;
-  const economics = resolveEconomics(sourceRow, supportRow, costRecord);
-  const policy = resolvePolicy(sourceRow, supportRow, policyPayload, minMaxRecord);
+  const preferLiveStock = Boolean(liveSignalBucket?.snapshotAvailable);
+  const stockSnapshotAvailable = preferLiveStock
+    ? Boolean(liveSignalBucket?.snapshotAvailable)
+    : Boolean(procurementBucket?.snapshotAvailable);
+  const selectedStock = preferLiveStock ? liveStock : procurement;
+  const stockTrusted = Boolean(stockSnapshotAvailable && selectedStock);
+  const stock = stockTrusted ? firstNumber(selectedStock.inStock, 0) : null;
+  const inbound = stockTrusted ? (firstNumber(selectedStock.inTransit, 0) || 0) + (firstNumber(selectedStock.inRequest, 0) || 0) : null;
+  const economics = resolveEconomics(sourceRow, supportRow, costRecord, economicsPolicy, platform, livePlatformSignal);
+  const skuPlatformStatus = skuRow?.platformMatrix?.[platform]?.status
+    || skuRow?.[platform]?.status
+    || '';
+  const platformAliases = Array.isArray(skuRow?.platformAliases?.[platform])
+    ? skuRow.platformAliases[platform].filter((value) => String(value || '').trim())
+    : [];
+  const platformListingId = platform === 'wb'
+    ? (skuRow?.nmId || skuRow?.wbNmId || skuRow?.wb?.nmId)
+    : (skuRow?.ozon?.offerId || skuRow?.ozonOfferId);
+  const platformListingEvidence = Boolean(
+    skuPlatformStatus
+    || skuRow?.platformMatrix?.[platform]
+    || platformAliases.length
+    || String(platformListingId || '').trim()
+    || current.value !== null
+  );
+  const skuLifecycleStatus = skuRow
+    ? (
+      skuPlatformStatus
+      || (!platformListingEvidence
+        ? 'Нет на площадке'
+        : (skuRow.productStatus || skuRow.registryStatus || skuRow.status || skuRow.sheetStatus))
+    )
+    : '';
+  const skuLifecycleRow = skuRow
+    ? {
+      ...skuRow,
+      productStatus: skuLifecycleStatus,
+      status: skuLifecycleStatus
+    }
+    : null;
+  const lifecycleKey = normalizeLifecycleKey(lifecycleApproval, skuLifecycleRow, minMaxRecord, sourceRow, supportRow);
+  const policy = resolvePolicy(sourceRow, supportRow, policyPayload, minMaxRecord, economics, lifecycleKey, economicsPolicy);
   const reasonCodes = [];
   const price = current.value;
+  const maxPriceAgeDays = currentPriceMaxAgeDays(economicsPolicy);
+  const priceAgeDays = dateAgeDays(current.asOf, snapshotAsOf);
+  const currentPriceStale = priceAgeDays !== null && priceAgeDays > maxPriceAgeDays;
   if (price === null) reasonCodes.push('missing_current_seller_price');
   if (!current.asOf) reasonCodes.push('missing_current_price_date');
+  if (currentPriceStale) reasonCodes.push('stale_current_seller_price');
   if (!economics.complete) reasonCodes.push('economics_incomplete');
   if (policy.floor === null) reasonCodes.push('missing_floor');
+  if (policy.margin_guard_required && policy.target_margin_pct === null) reasonCodes.push('missing_target_margin');
+  if (policy.margin_guard_required && policy.target_margin_pct !== null && policy.target_margin_feasible === false) {
+    reasonCodes.push('target_margin_not_economically_feasible');
+  }
+  if (policy.margin_guard_required && policy.target_margin_pct !== null && policy.margin_floor === null) reasonCodes.push('invalid_target_margin_policy');
+  if (lifecycleKey === 'not_listed') reasonCodes.push('platform_not_listed');
+  if (policy.cap_lifted_by_margin) reasonCodes.push('cap_lifted_by_margin_floor');
   if (policy.cap !== null && policy.floor !== null && policy.cap + 1e-9 < policy.floor) reasonCodes.push('cap_below_floor');
   if (!stockSnapshotAvailable) reasonCodes.push('stock_snapshot_missing');
-  else if (!procurement) reasonCodes.push('stock_unknown');
+  else if (!selectedStock) reasonCodes.push('stock_unknown');
   else if ((stock || 0) <= 0 && (inbound || 0) <= 0) reasonCodes.push('trusted_oos');
+  const requiredLivePlatforms = Array.isArray(economicsPolicy?.liveSignals?.requiredPlatforms)
+    ? economicsPolicy.liveSignals.requiredPlatforms.map((value) => String(value || '').trim().toLowerCase())
+    : [];
+  const liveSignalsRequired = requiredLivePlatforms.includes(platform);
+  const advertisingSignalStatus = String(livePlatformSignal?.advertising?.status || '').trim().toLowerCase();
+  const advertisingSignalTrusted = advertisingSignalStatus === 'trusted';
+  const selectedStockSourceMode = String(selectedStock?.sourceMode || '').trim().toLowerCase();
+  const selectedStockDirect = selectedStockSourceMode === 'wb_stock_api'
+    || selectedStockSourceMode.startsWith('ozon_stock_api_');
+  if (liveSignalsRequired && !livePlatformSignal?.advertising) reasonCodes.push('advertising_snapshot_missing');
+  else if (liveSignalsRequired && !advertisingSignalTrusted) reasonCodes.push('advertising_snapshot_stale');
+  if (liveSignalsRequired && !liveSignalBucket?.snapshotAvailable) reasonCodes.push('live_stock_snapshot_missing');
+  if (liveSignalsRequired && policy.margin_guard_required && !selectedStockDirect) reasonCodes.push('direct_stock_required');
 
   const corridorValid = !(policy.cap !== null && policy.floor !== null && policy.cap + 1e-9 < policy.floor);
   const canRecommend = price !== null
     && current.asOf
+    && !currentPriceStale
     && economics.complete
     && policy.floor !== null
+    && (!policy.margin_guard_required || policy.margin_floor !== null)
     && corridorValid
     && !reasonCodes.includes('stock_snapshot_missing')
-    && !reasonCodes.includes('stock_unknown');
+    && !reasonCodes.includes('stock_unknown')
+    && !reasonCodes.includes('trusted_oos')
+    && !reasonCodes.includes('advertising_snapshot_missing')
+    && !reasonCodes.includes('advertising_snapshot_stale')
+    && !reasonCodes.includes('live_stock_snapshot_missing')
+    && !reasonCodes.includes('direct_stock_required');
   const proposed = canRecommend ? chooseProposedPrice(price, policy, approval) : { price: null, source: '' };
+  if (proposed.guard === 'margin_floor') reasonCodes.push('margin_floor_applied');
+  if (proposed.guard === 'min_floor') reasonCodes.push('min_floor_applied');
+  if (proposed.guard === 'max_cap') reasonCodes.push('max_cap_applied');
+  const oosRiskStatus = String(selectedStock?.oosRiskStatus || '').trim().toLowerCase();
+  const oosDemandGuardActive = policy.margin_guard_required
+    && (Boolean(selectedStock?.partialOos) || ['risk', 'watch'].includes(oosRiskStatus));
+  const oosRiskPriceDecreaseBlocked = Boolean(
+    oosDemandGuardActive
+    && price !== null
+    && proposed.price !== null
+    && proposed.price + 1e-9 < price
+  );
+  if (oosRiskPriceDecreaseBlocked) reasonCodes.push('oos_risk_price_decrease_blocked');
   const proposedMargin = proposed.price !== null ? marginAtPrice(proposed.price, economics) : null;
   const currentMargin = price !== null ? marginAtPrice(price, economics) : null;
+  const changePct = price !== null && proposed.price !== null
+    ? Number(((proposed.price - price) / price).toFixed(6))
+    : null;
+  const sharpThresholdPct = sharpPriceApprovalPct(economicsPolicy);
+  const extremeThresholdPct = extremePriceChangePct(economicsPolicy);
+  const extremePricePolicyReviewRequired = changePct !== null
+    && Math.abs(changePct) + 1e-9 >= extremeThresholdPct
+    && !approval;
+  const sharpPriceApprovalRequired = changePct !== null
+    && Math.abs(changePct) + 1e-9 >= sharpThresholdPct
+    && !extremePricePolicyReviewRequired
+    && !approval;
+  if (extremePricePolicyReviewRequired) reasonCodes.push('extreme_price_requires_margin_policy_review');
+  if (sharpPriceApprovalRequired) reasonCodes.push('sharp_price_requires_rop');
+  const marginSafe = !policy.margin_guard_required
+    || (
+      policy.target_margin_pct !== null
+      && proposedMargin !== null
+      && proposedMargin + 1e-9 >= policy.target_margin_pct
+    );
+  if (policy.margin_guard_required && currentMargin !== null && policy.target_margin_pct !== null && currentMargin + 1e-9 < policy.target_margin_pct) {
+    reasonCodes.push('current_margin_below_target');
+  }
+  if (proposed.price !== null && !marginSafe) reasonCodes.push('margin_guard_violation');
   const insideCorridor = proposed.price === null
     ? false
     : (policy.floor === null || proposed.price + 1e-9 >= policy.floor)
       && (policy.cap === null || proposed.price <= policy.cap + 1e-9);
   if (proposed.price !== null && !insideCorridor && !approval) reasonCodes.push('price_outside_corridor');
 
-  const dataStatus = canRecommend && proposed.price !== null && insideCorridor ? 'trusted' : 'blocked';
+  const dataStatus = canRecommend
+    && proposed.price !== null
+    && insideCorridor
+    && marginSafe
+    && !oosRiskPriceDecreaseBlocked
+    && !extremePricePolicyReviewRequired
+    && !sharpPriceApprovalRequired
+      ? 'trusted'
+      : 'blocked';
   const indicator = evaluateIndicator({
     policy_id: 'price_default',
     value: proposed.price,
@@ -536,21 +1126,60 @@ function buildCanonicalSide({
       seller_price: price,
       client_price: firstPositive(sourceRow.currentClientPrice),
       spp_pct: normalizePct(sourceRow.currentSppPct),
+      lifecycle_key: lifecycleKey,
+      product_status: String(
+        lifecycleApproval?.productLifecycleStatus
+          || lifecycleApproval?.productStatus
+          || lifecycleApproval?.proposedStatus
+          || lifecycleApproval?.lifecycleKey
+          || skuLifecycleStatus
+          || skuRow?.productStatus
+          || skuRow?.registryStatus
+          || skuRow?.status
+          || skuRow?.sheetStatus
+          || sourceRow.productStatus
+          || sourceRow.status
+          || supportRow?.productStatus
+          || supportRow?.status
+          || ''
+      ).trim(),
       stock,
       inbound,
       stock_status: !stockSnapshotAvailable ? 'stock_snapshot_missing' : (stockTrusted ? ((stock || 0) <= 0 && (inbound || 0) <= 0 ? 'trusted_zero_oos' : 'trusted') : 'stock_unknown'),
+      stock_source_status: preferLiveStock
+        ? (selectedStockDirect ? 'trusted_direct' : 'trusted_fallback')
+        : 'procurement_fallback',
+      partial_oos: Boolean(selectedStock?.partialOos),
+      oos_risk_status: String(selectedStock?.oosRiskStatus || ''),
+      oos_risk_rule: String(selectedStock?.oosRiskRule || ''),
+      stock_turnover_days: firstNumber(selectedStock?.turnoverDays),
+      oos_task_id: String(selectedStock?.oosTaskId || ''),
       as_of: current.asOf,
+      price_age_days: priceAgeDays,
+      price_freshness: currentPriceStale ? 'stale' : (current.asOf ? 'fresh' : 'unknown'),
       sources: {
         seller_price: {
           source_id: 'marketplace_current_price',
-          file: 'smart_price_workbench.json+smart_price_overlay.json',
+          file: current.file || (
+            current.source === 'live'
+              ? 'tmp-smart_price_workbench-live.json'
+              : 'smart_price_workbench.json+smart_price_overlay.json'
+          ),
           field: 'currentFillPrice/currentPrice',
           source_mode: current.source
         },
         stock: {
-          source_id: 'order_procurement_stock',
-          file: `order_procurement_${platform}.json`,
-          as_of: procurement?.date || procurementBucket?.asOfDate || ''
+          source_id: preferLiveStock ? 'repricer_live_stock' : 'order_procurement_stock',
+          file: preferLiveStock ? 'repricer_live_signals.json' : `order_procurement_${platform}.json`,
+          as_of: selectedStock?.date || (preferLiveStock ? liveSignalBucket?.asOfDate : procurementBucket?.asOfDate) || '',
+          source_mode: selectedStock?.sourceMode || ''
+        },
+        internal_advertising: {
+          source_id: economics.sources?.internal_advertising || '',
+          file: economics.sources?.internal_advertising === 'repricer_live_signals'
+            ? 'repricer_live_signals.json'
+            : 'repricer_economics_policy.json',
+          as_of: economics.internal_advertising_as_of || ''
         }
       }
     },
@@ -560,8 +1189,12 @@ function buildCanonicalSide({
       price: proposed.price,
       margin_pct: proposedMargin,
       current_margin_pct: currentMargin,
-      change_pct: price !== null && proposed.price !== null ? Number(((proposed.price - price) / price).toFixed(6)) : null,
-      status: proposed.price !== null && dataStatus === 'trusted' ? 'ready' : 'blocked',
+      change_pct: changePct,
+      status: extremePricePolicyReviewRequired
+        ? 'blocked'
+        : sharpPriceApprovalRequired
+        ? 'waiting_rop'
+        : (proposed.price !== null && dataStatus === 'trusted' ? 'ready' : 'blocked'),
       reason_codes: [...new Set(reasonCodes)],
       source: proposed.source
     },
@@ -576,15 +1209,34 @@ function buildCanonicalSide({
       expiresAt: approval.expiresAt || approval.expires_at || '',
       supersedes_id: approval.supersedes_id || approval.supersedesId || null
     } : null,
+    approval_gate: {
+      required: sharpPriceApprovalRequired || extremePricePolicyReviewRequired,
+      type: extremePricePolicyReviewRequired
+        ? 'MARGIN_POLICY_REVIEW'
+        : (sharpPriceApprovalRequired ? 'SHARP_PRICE_CHANGE' : ''),
+      threshold_pct: sharpThresholdPct,
+      extreme_threshold_pct: extremeThresholdPct,
+      status: extremePricePolicyReviewRequired
+        ? 'blocked_policy_review'
+        : (sharpPriceApprovalRequired ? 'waiting_rop' : (approval ? 'approved' : 'not_required'))
+    },
     data_status: dataStatus,
     indicator,
     passports: {
       metric_ids: ['repricer.current_seller_price', 'repricer.proposed_margin_pct', 'stock.turnover_days'],
       metric_registry_version: metricRegistry?.version || '',
-      source_ids: ['marketplace_current_price', 'repricer_policy_json', 'order_procurement_stock']
+      source_ids: [
+        'marketplace_current_price',
+        'repricer_policy_json',
+        preferLiveStock ? 'repricer_live_stock' : 'order_procurement_stock',
+        'repricer_internal_advertising'
+      ]
     },
     audit: {
       preserves_original_current_price: price,
+      requested_price_before_guards: proposed.requested_price ?? price,
+      calculated_price_before_policy_review: extremePricePolicyReviewRequired ? proposed.price : null,
+      margin_guard_has_priority: policy.margin_guard_required,
       ozon_export_current_price_used: false,
       local_storage_override_used: false,
       target_turnover_source: 'portal_indicator_policy.turnover_default.target_days'
@@ -600,42 +1252,88 @@ function buildCanonicalRepricer(options = resolveOptions({})) {
     'order_procurement_wb.json',
     'order_procurement_ozon.json',
     'order_procurement_ym.json',
+    'repricer_live_signals.json',
+    'repricer_live_prices.json',
     'skus.json',
     'portal_metric_registry.json',
     'portal_indicator_policy.json',
     'portal_feature_policy.json',
-    'repricer_minmax_registry.json',
-    'repricer_cost_registry.json'
+      'repricer_economics_policy.json',
+      'repricer_minmax_registry.json',
+      'repricer_cost_registry.json',
+      'product_lifecycle_approved.json'
   ];
   const workbench = safeReadJson(file(options.inputDir, 'smart_price_workbench.json'), { generatedAt: '', platforms: {} });
   const overlay = safeReadJson(file(options.inputDir, 'smart_price_overlay.json'), { generatedAt: '', platforms: {} });
-  const live = safeReadJson(file(options.inputDir, 'tmp-smart_price_workbench-live.json'), { generatedAt: '', platforms: {} });
+  const configuredLivePath = options.liveWorkbenchPath
+    || path.resolve(options.inputDir, 'repricer_live_prices.json');
+  const legacyLivePath = options.legacyLiveWorkbenchPath
+    || path.resolve(process.cwd(), 'tmp-smart_price_workbench-live.json');
+  const configuredLive = safeReadJson(configuredLivePath, { generatedAt: '', platforms: {} });
+  const configuredLiveHasRows = Object.values(configuredLive?.platforms || {}).some((bucket) => (
+    Array.isArray(bucket?.rows) && bucket.rows.length > 0
+  ));
+  const liveWorkbenchPath = configuredLiveHasRows ? configuredLivePath : legacyLivePath;
+  const live = configuredLiveHasRows
+    ? configuredLive
+    : safeReadJson(liveWorkbenchPath, { generatedAt: '', platforms: {} });
   const support = safeReadJson(file(options.inputDir, 'price_workbench_support.json'), { generatedAt: '', platforms: {} });
+  const skus = safeReadJson(file(options.inputDir, 'skus.json'), []);
   const procurement = {
     wb: buildProcurementMap(safeReadJson(file(options.inputDir, 'order_procurement_wb.json'), { generatedAt: '', rows: [] })),
     ozon: buildProcurementMap(safeReadJson(file(options.inputDir, 'order_procurement_ozon.json'), { generatedAt: '', rows: [] })),
     ym: buildProcurementMap(safeReadJson(file(options.inputDir, 'order_procurement_ym.json'), { generatedAt: '', rows: [] }))
   };
+  const liveSignalsPayload = safeReadJson(
+    file(options.inputDir, 'repricer_live_signals.json'),
+    { generatedAt: '', platforms: {}, rows: [] }
+  );
+  const liveSignals = {
+    wb: buildLiveSignalBucket(liveSignalsPayload, 'wb'),
+    ozon: buildLiveSignalBucket(liveSignalsPayload, 'ozon'),
+    ym: buildLiveSignalBucket(liveSignalsPayload, 'ym')
+  };
   const policyPayload = readPolicyJson(options.policyPath, {});
   const metricRegistry = readJsonFile(options.metricRegistryPath, {});
   const featurePolicy = readJsonFile(options.featurePolicyPath, {});
+  const economicsPolicy = readJsonFile(
+    options.economicsPolicyPath || file(options.inputDir, 'repricer_economics_policy.json'),
+    {}
+  );
+  const enabledPlatforms = economicsPolicyPlatforms(economicsPolicy);
   const minMaxRows = minMaxRegistry(options.inputDir);
   const costRows = costRegistry(options.inputDir);
   const approvals = approvalMap(options.inputDir);
-  const merged = mergeSmartPriceContour(workbench || {}, overlay || {}, live || {});
-  const supportMaps = Object.fromEntries(PLATFORM_KEYS.map((platform) => [platform, buildMap(platformRows(support, platform))]));
-  const sources = sourceMeta(options.inputDir, sourceFiles);
+  const lifecycleApprovals = lifecycleApprovalMap(options.inputDir);
+  const merged = mergeSmartPriceContour(workbench || {}, overlay || {}, live || {}, {
+    includeLiveOnlyRows: false
+  });
+  const sharedProductCosts = buildSharedProductCostMap(merged, enabledPlatforms);
+  const supportMaps = Object.fromEntries(enabledPlatforms.map((platform) => [platform, buildMap(platformRows(support, platform))]));
+  const skuMap = buildMap(registryRows(skus));
+  const sources = {
+    ...sourceMeta(options.inputDir, sourceFiles),
+    [path.basename(liveWorkbenchPath)]: sourcePathMeta(
+      liveWorkbenchPath,
+      path.basename(liveWorkbenchPath)
+    )
+  };
   const snapshotHash = crypto.createHash('sha256')
     .update(stableStringify(sources))
     .digest('hex');
   const snapshotId = `repricer:${snapshotHash.slice(0, 16)}`;
   const generatedAt = merged?.generatedAt || overlay?.generatedAt || workbench?.generatedAt || snapshotId;
+  const freshnessReferenceDate = asIsoDate(
+    options.asOfDate
+      || options.referenceDate
+      || new Date().toISOString()
+  );
   const rows = [];
   const duplicateKeys = new Map();
   const dedupedExactDuplicates = [];
   const collisionKeys = new Map();
 
-  PLATFORM_KEYS.forEach((platform) => {
+  enabledPlatforms.forEach((platform) => {
     const seen = new Map();
     const dedupedSource = dedupeExactArticleRows(platformRows(merged, platform));
     dedupedSource.duplicates.forEach(({ normalizedArticle, articleKey }) => {
@@ -661,17 +1359,26 @@ function buildCanonicalRepricer(options = resolveOptions({})) {
       if (!collisionKeys.has(normalizedArticle)) collisionKeys.set(normalizedArticle, new Set());
       collisionKeys.get(normalizedArticle).add(articleKey);
       const supportRow = supportMaps[platform]?.get(normalizedArticle) || null;
+      const skuRow = skuMap.get(normalizedArticle) || null;
       const minMaxRecord = latestEffectiveRecord(minMaxRows, articleKey, platform);
-      const costRecord = latestEffectiveRecord(costRows, articleKey, '');
+      const costRecord = latestEffectiveRecord(costRows, articleKey, '')
+        || sharedProductCosts.get(normalizedArticle)
+        || null;
       rows.push(buildCanonicalSide({
         sourceRow,
         supportRow,
+        skuRow,
         procurementBucket: procurement[platform],
+        liveSignalBucket: liveSignals[platform],
+        livePlatformSignal: liveSignals[platform]?.platformSignal || null,
         platform,
         snapshotId,
         policyPayload,
         metricRegistry,
+        economicsPolicy,
+        snapshotAsOf: freshnessReferenceDate,
         approval: approvalFor(approvals, articleKey, platform),
+        lifecycleApproval: lifecycleApprovalFor(lifecycleApprovals, articleKey, platform),
         minMaxRecord,
         costRecord
       }));
@@ -707,9 +1414,12 @@ function buildCanonicalRepricer(options = resolveOptions({})) {
   const payload = {
     schema: 'canonical-repricer-v1',
     generatedAt,
+    freshness_reference_date: freshnessReferenceDate,
     snapshot_id: snapshotId,
     source_checksums: sources,
     policy_version: policyPayload?.version || '',
+    economics_policy_version: economicsPolicy?.version || '',
+    enabled_platforms: enabledPlatforms,
     metric_registry_version: metricRegistry?.version || '',
     feature_policy: featurePolicy,
     feature_status: readiness.feature_status,
@@ -721,6 +1431,7 @@ function buildCanonicalRepricer(options = resolveOptions({})) {
   const reconciliation = {
     schema: 'portal-repricing-reconciliation-v1',
     generatedAt,
+    freshness_reference_date: freshnessReferenceDate,
     snapshot_id: snapshotId,
     status: reportStatus,
     publish_allowed: blockingReasons.length === 0,
@@ -803,6 +1514,14 @@ module.exports = {
   parseArgs,
   stableStringify,
   approvedRecord,
+  lifecycleApprovalMap,
+  lifecycleApprovalFor,
+  economicsFixedCostsPerUnit,
   marginAtPrice,
-  featureReadiness
+  marginGuardRequired,
+  normalizeLifecycleKey,
+  resolveEconomics,
+  targetMarginFloor,
+  featureReadiness,
+  buildSharedProductCostMap
 };

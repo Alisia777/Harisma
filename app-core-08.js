@@ -477,7 +477,25 @@ function repricerFindSkuProfile(articleKey) {
 
 function repricerHasSkuProfile(profile) {
   if (!profile) return false;
-  return Boolean(String(profile.status || '').trim() || String(profile.role || '').trim() || String(profile.launchReady || '').trim());
+  return Boolean(
+    String(profile.status || '').trim()
+    || String(profile.role || '').trim()
+    || String(profile.launchReady || '').trim()
+    || repricerMarginRatio(profile.targetMarginPct) > 0
+  );
+}
+
+function repricerRequiredMarginGap(articleKey, platform) {
+  const targetArticle = repricerNormalizeArticleKey(articleKey);
+  const targetPlatform = String(platform || '').trim().toLowerCase();
+  const rows = Array.isArray(state.repricerMarginMinMaxGaps?.rows)
+    ? state.repricerMarginMinMaxGaps.rows
+    : [];
+  return rows.some((row) => (
+    repricerNormalizeArticleKey(row?.articleKey || row?.article || row?.sku) === targetArticle
+    && String(row?.platform || '').trim().toLowerCase() === targetPlatform
+    && (Array.isArray(row?.missing) ? row.missing.includes('margin') : true)
+  ));
 }
 
 function repricerRecordNotExpired(record) {
@@ -896,13 +914,12 @@ function repricerProjectedUnits(keepUnits, currentBuyerPrice, nextBuyerPrice, el
   return Math.max(0, baseUnits * ((nextBuyer / currentBuyer) ** elasticityValue));
 }
 
-function repricerMarginAtPrice(price, discountFactor, commissionPct, logisticsRub, storageRub, adRub, costRub) {
+function repricerMarginAtPrice(price, discountFactor, commissionPct, internalAdvertisingPct, platformCostsRub, internalAdvertisingRub, costRub) {
   const fillPrice = numberOrZero(price);
   if (fillPrice <= 0) return 0;
-  return fillPrice * numberOrZero(discountFactor) * (1 - numberOrZero(commissionPct))
-    - numberOrZero(logisticsRub)
-    - numberOrZero(storageRub)
-    - numberOrZero(adRub)
+  return fillPrice * numberOrZero(discountFactor) * (1 - numberOrZero(commissionPct) - numberOrZero(internalAdvertisingPct))
+    - numberOrZero(platformCostsRub)
+    - numberOrZero(internalAdvertisingRub)
     - numberOrZero(costRub);
 }
 
@@ -1013,6 +1030,42 @@ function repricerAgeDays(value) {
   const stamp = repricerParseDateMs(value);
   if (!stamp) return null;
   return (Date.now() - stamp) / 86400000;
+}
+
+const REPRICER_CURRENT_PRICE_MAX_AGE_DAYS = 2;
+const REPRICER_SHARP_PRICE_APPROVAL_THRESHOLD_PCT = 0.10;
+
+function repricerSidePriceDate(side = {}) {
+  return side.currentPriceDate || side.historyFreshnessDate || side.sourceAsOf || '';
+}
+
+function repricerSharpPriceDecisionForSide(side = {}) {
+  const articleKey = String(side.articleKey || '').trim();
+  const platform = String(side.platform || 'all').trim().toLowerCase() || 'all';
+  const finalPrice = Math.round(numberOrZero(side.finalPrice ?? side.recommendedPrice));
+  if (!articleKey || finalPrice <= 0) return null;
+  return (state.storage?.skuDecisionApprovals || []).find((item) => {
+    if (String(item?.type || '').trim().toUpperCase() !== 'SHARP_PRICE_CHANGE') return false;
+    if (String(item.articleKey || '').trim() !== articleKey) return false;
+    const itemPlatform = String(item.platform || 'all').trim().toLowerCase() || 'all';
+    if (itemPlatform !== platform && itemPlatform !== 'all' && platform !== 'all') return false;
+    const requestedPrice = Math.round(numberOrZero(item.payload?.requestedPrice ?? item.proposedValue));
+    return requestedPrice === finalPrice;
+  }) || null;
+}
+
+function repricerSideHasApprovedSharpPrice(side = {}) {
+  const override = side.override && typeof side.override === 'object' ? side.override : {};
+  const approvalStatus = String(override.approvalStatus || override.approval_status || '').trim().toLowerCase();
+  const approvedPrice = Math.round(numberOrZero(
+    override.promoActive && numberOrZero(override.promoPrice) > 0
+      ? override.promoPrice
+      : override.forcePrice
+  ));
+  const finalPrice = Math.round(numberOrZero(side.finalPrice ?? side.recommendedPrice));
+  return ['approved', 'active', 'verified'].includes(approvalStatus)
+    && approvedPrice > 0
+    && approvedPrice === finalPrice;
 }
 
 function repricerAddReason(list, reason) {
@@ -1131,14 +1184,37 @@ function repricerApplyConfidence(side) {
   const floor = numberOrZero(side.effectiveFloor);
   const floorRaiseReady = repricerCanRaiseToMin(side);
   side.floorRaiseReady = floorRaiseReady;
-  const freshAge = repricerAgeDays(side.historyFreshnessDate);
+  const currentPriceDate = repricerSidePriceDate(side);
+  const freshAge = window.__REPRICER_TEST_FORCE_CURRENT_PRICE_FRESH__
+    ? 0
+    : repricerAgeDays(currentPriceDate);
   const cooldownAge = repricerAgeDays(side.lastPriceChangeDate);
   const hasReliableCost = Boolean(side.rawCostPresent) || side.economicFloorSource === 'fee_stack' || side.economicFloorSource === 'snapshot_guard';
+  const deltaPct = currentPrice > 0 && finalPrice > 0 ? (finalPrice - currentPrice) / currentPrice : null;
+  const sharpDecision = repricerSharpPriceDecisionForSide(side);
+  const sharpDecisionStatus = String(sharpDecision?.status || '').trim().toLowerCase();
+  const sharpApprovalPending = ['preparing', 'waiting_rop', 'changes_requested'].includes(sharpDecisionStatus);
+  const sharpApprovalApplied = sharpDecisionStatus === 'applied' || repricerSideHasApprovedSharpPrice(side);
+  const sharpPriceApprovalRequired = deltaPct !== null
+    && Math.abs(deltaPct) + 1e-9 >= REPRICER_SHARP_PRICE_APPROVAL_THRESHOLD_PCT
+    && !sharpApprovalApplied;
+  side.currentPriceFreshnessDate = currentPriceDate;
+  side.currentPriceAgeDays = freshAge;
+  side.currentPriceStale = freshAge !== null && freshAge > REPRICER_CURRENT_PRICE_MAX_AGE_DAYS;
+  side.currentPriceFreshnessMissing = currentPrice > 0 && freshAge === null;
+  side.sharpPriceApprovalRequired = sharpPriceApprovalRequired;
+  side.sharpPriceApprovalPending = sharpApprovalPending;
+  side.sharpPriceApprovalStatus = sharpApprovalApplied ? 'approved' : (sharpApprovalPending ? 'waiting_rop' : (sharpPriceApprovalRequired ? 'required' : 'not_required'));
+  side.sharpPriceDecisionId = sharpDecision?.id || '';
+  side.sharpPriceTaskId = sharpDecision?.taskId || '';
 
   if (side.outOfSpec || side.criticalGate === 'SKIP') repricerAddReason(red, 'строка вне спецификации');
+  if (side.marginPolicyMissing) repricerAddReason(red, 'нет обязательной маржи SKU');
   if (side.criticalGate === 'BLOCK') repricerAddReason(red, 'нет обязательных входов');
   if (side.stockGateBlocksAutoprice) repricerAddReason(red, side.marketplaceUnavailable ? 'товар не продаётся или нет на складе' : 'нет актуального остатка и поставок');
   if (currentPrice <= 0) repricerAddReason(red, 'нет текущей цены');
+  if (side.currentPriceFreshnessMissing) repricerAddReason(red, 'нет даты текущей цены');
+  if (side.currentPriceStale) repricerAddReason(red, `текущая цена старше ${REPRICER_CURRENT_PRICE_MAX_AGE_DAYS} дней`);
   if (finalPrice <= 0) repricerAddReason(red, 'нет финальной цены');
   if (floor <= 0) repricerAddReason(red, 'нет рабочего MIN');
   if (floor > 0 && finalPrice > 0 && finalPrice + 0.001 < floor) repricerAddReason(red, 'финал ниже MIN');
@@ -1153,7 +1229,9 @@ function repricerApplyConfidence(side) {
   if (side.kzRaiseCapApplied) repricerAddReason(yellow, 'КЗ: рост цены ограничен 10%');
   if (side.promoConfigured && !side.promoActive) repricerAddReason(yellow, 'промо не активно сейчас');
   if (side.promoAdjustedToFloor || side.manualPromoAdjustedToFloor || side.promoOfferAdjustedToFloor) repricerAddReason(yellow, 'промо поднято до MIN');
-  if (freshAge != null && freshAge > 4) repricerAddReason(yellow, 'данные старше 4 дней');
+  if (sharpPriceApprovalRequired) {
+    repricerAddReason(yellow, sharpApprovalPending ? 'резкая цена ждёт РОПа' : 'резкая цена требует РОПа');
+  }
   if (cooldownAge != null && cooldownAge >= 0 && cooldownAge < 3 && side.changed && !side.belowFloorNow && !side.marginRisk) {
     side.cooldownActive = true;
     repricerAddReason(yellow, `цена менялась ${fmt.num(cooldownAge, 1)} дн. назад`);
@@ -1170,8 +1248,13 @@ function repricerApplyConfidence(side) {
   side.confidence = level;
   side.confidenceScore = score;
   side.confidenceReasons = [...red, ...yellow];
-  side.safeToExport = level !== 'red' && side.changed && !side.promoActive;
-  side.promoSafeToExport = level !== 'red' && side.changed && side.promoActive;
+  side.sharpPriceAutoTaskEligible = sharpPriceApprovalRequired
+    && !sharpApprovalPending
+    && level !== 'red'
+    && side.criticalGate !== 'BLOCK'
+    && side.criticalGate !== 'SKIP';
+  side.safeToExport = level !== 'red' && side.changed && !side.promoActive && !sharpPriceApprovalRequired;
+  side.promoSafeToExport = level !== 'red' && side.changed && side.promoActive && !sharpPriceApprovalRequired;
   side.floorRaiseSafeToExport = Boolean(floorRaiseReady && side.safeToExport);
   side.decisionText = repricerBuildDecisionText(side, side.confidenceReasons);
   return side;
@@ -1318,6 +1401,7 @@ function buildRepricerSide(sourceRow, platform, settings, context = {}) {
   const skuSide = skuFact && skuFact[platform] && typeof skuFact[platform] === 'object' ? skuFact[platform] : null;
   const supportRow = context.supportRow && typeof context.supportRow === 'object' ? context.supportRow : null;
   const priceRow = context.priceRow && typeof context.priceRow === 'object' ? context.priceRow : null;
+  const profile = context.profile && typeof context.profile === 'object' ? context.profile : null;
   const arrivalFact = context.arrivalFact && typeof context.arrivalFact === 'object' ? context.arrivalFact : {};
   const supportPricingPresent = [
     supportRow?.currentExportPrice,
@@ -1475,13 +1559,56 @@ function buildRepricerSide(sourceRow, platform, settings, context = {}) {
     numberOrZero(legacySide?.cost),
     numberOrZero(legacySide?.costRub)
   );
+  const profileTargetMarginPct = repricerMarginRatio(profile?.targetMarginPct);
   const liveMinMarginPct = repricerMarginRatio(liveSide?.marginNoAdsMinPct);
-  const sourceAllowedMarginPct = repricerMarginRatio(sourceRow.allowedMarginPct);
-  const supportAllowedMarginPct = repricerMarginRatio(supportRow?.allowedMarginPct);
-  const priceAllowedMarginPct = repricerMarginRatio(priceRow?.allowedMarginPct);
+  const sourceAllowedMarginPct = repricerFirstPositiveNumber(
+    repricerMarginRatio(sourceRow.manualMarginPct),
+    repricerMarginRatio(sourceRow.targetMarginPct),
+    repricerMarginRatio(sourceRow.allowedMarginPct)
+  );
+  const supportAllowedMarginPct = repricerFirstPositiveNumber(
+    repricerMarginRatio(supportRow?.manualMarginPct),
+    repricerMarginRatio(supportRow?.targetMarginPct),
+    repricerMarginRatio(supportRow?.allowedMarginPct)
+  );
+  const priceAllowedMarginPct = repricerFirstPositiveNumber(
+    repricerMarginRatio(priceRow?.manualMarginPct),
+    repricerMarginRatio(priceRow?.targetMarginPct),
+    repricerMarginRatio(priceRow?.allowedMarginPct)
+  );
   const legacyAllowedMarginPct = repricerMarginRatio(legacySide?.allowedMarginPct || legacySide?.marginNoAdsMinPct);
-  const baseAllowedMarginPct = Math.max(sourceAllowedMarginPct, supportAllowedMarginPct, priceAllowedMarginPct, legacyAllowedMarginPct, liveMinMarginPct);
-  const requiredMarginPct = Math.max(numberOrZero(brandRule.minMarginPct) / 100, sourceAllowedMarginPct, supportAllowedMarginPct, priceAllowedMarginPct, legacyAllowedMarginPct, liveMinMarginPct);
+  const perSkuMarginPct = repricerFirstPositiveNumber(
+    profileTargetMarginPct,
+    sourceAllowedMarginPct,
+    supportAllowedMarginPct,
+    priceAllowedMarginPct,
+    legacyAllowedMarginPct,
+    liveMinMarginPct
+  );
+  const marginLifecycleKey = repricerLifecycleKey(productLifecycle?.key || productLifecycle?.status || status);
+  const requiredMarginGap = repricerRequiredMarginGap(articleKey, platform);
+  const marginGuardRequired = requiredMarginGap || ['active', 'new', 'relaunch'].includes(marginLifecycleKey);
+  const marginPolicyMissing = marginGuardRequired && (
+    requiredMarginGap
+    || !(perSkuMarginPct > 0 && perSkuMarginPct < 1)
+  );
+  const baseAllowedMarginPct = perSkuMarginPct;
+  const requiredMarginPct = perSkuMarginPct > 0
+    ? perSkuMarginPct
+    : (marginGuardRequired ? 0 : numberOrZero(brandRule.minMarginPct) / 100);
+  const marginPolicySource = profileTargetMarginPct > 0
+    ? 'sku_profile'
+    : (sourceAllowedMarginPct > 0
+      ? 'smart_price_workbench'
+      : (supportAllowedMarginPct > 0
+        ? 'price_workbench_support'
+        : (priceAllowedMarginPct > 0
+          ? 'prices_snapshot'
+          : (legacyAllowedMarginPct > 0
+            ? 'legacy_repricer'
+            : (liveMinMarginPct > 0
+              ? 'live_repricer'
+              : (marginPolicyMissing ? 'missing_required_sku_margin' : 'brand_fallback'))))));
   const requiredPriceForMargin = repricerFirstFilledNumber(sourceRow.requiredPriceForMargin, legacySide?.requiredPriceForMargin);
   const marginFloorMultiplier = baseAllowedMarginPct > 0
     ? Math.max(1, Math.min(requiredMarginPct / baseAllowedMarginPct, 3))
@@ -1489,10 +1616,31 @@ function buildRepricerSide(sourceRow, platform, settings, context = {}) {
   const economicMarginFloor = requiredPriceForMargin > 0
     ? requiredPriceForMargin * marginFloorMultiplier
     : 0;
-  const commissionPct = numberOrZero(feeRule.commissionPct) / 100;
-  const feeStackRub = numberOrZero(feeRule.logisticsRub) + numberOrZero(feeRule.storageRub) + numberOrZero(feeRule.adRub) + numberOrZero(feeRule.returnsRub) + numberOrZero(feeRule.otherRub);
-  const economicFloorByFee = costRub > 0 && (1 - commissionPct - requiredMarginPct) > 0
-    ? Math.ceil((costRub + feeStackRub) / (1 - commissionPct - requiredMarginPct))
+  const commissionPct = repricerMarginRatio(
+    repricerFirstFilledNumber(
+      sourceRow.commissionPct,
+      sourceRow.commission_pct,
+      feeRule.commissionPct
+    )
+  );
+  const internalAdvertisingPct = repricerMarginRatio(
+    repricerFirstFilledNumber(
+      sourceRow.internalAdvertisingPct,
+      sourceRow.internal_advertising_pct,
+      sourceRow.adPct,
+      feeRule.adPct
+    )
+  );
+  const logisticsRubValue = repricerFirstFilledNumber(sourceRow.logisticsRub, feeRule.logisticsRub);
+  const storageRubValue = repricerFirstFilledNumber(sourceRow.storageRub, feeRule.storageRub);
+  const adRubValue = repricerFirstFilledNumber(sourceRow.adRub, feeRule.adRub);
+  const returnsRubValue = repricerFirstFilledNumber(sourceRow.returnsRub, feeRule.returnsRub);
+  const otherRubValue = repricerFirstFilledNumber(sourceRow.otherRub, feeRule.otherRub);
+  const platformCostsRub = logisticsRubValue + storageRubValue + returnsRubValue + otherRubValue;
+  const internalAdvertisingRub = adRubValue;
+  const feeStackRub = platformCostsRub + internalAdvertisingRub;
+  const economicFloorByFee = costRub > 0 && (1 - commissionPct - internalAdvertisingPct - requiredMarginPct) > 0
+    ? Math.ceil((costRub + feeStackRub) / (1 - commissionPct - internalAdvertisingPct - requiredMarginPct))
     : 0;
   const economicFloorFallback = Math.max(
     numberOrZero(sourceRow.requiredPriceForProfitability),
@@ -1648,6 +1796,17 @@ function buildRepricerSide(sourceRow, platform, settings, context = {}) {
   const capPrice = manualCapPrice > 0
     ? (stretchCap > 0 ? Math.min(manualCapPrice, stretchCap) : manualCapPrice)
     : Math.max(stretchCap, 0);
+  const marginPriorityApplied = Boolean(
+    marginGuardRequired
+    && economicFloorByFee > 0
+    && economicFloorByFee >= Math.max(hardFloor, b2bFloor)
+  );
+  const capLiftedByMargin = Boolean(
+    marginGuardRequired
+    && economicFloorByFee > 0
+    && capPrice > 0
+    && capPrice + 0.001 < economicFloorByFee
+  );
   const managedBasePrice = capPrice > 0
     ? Math.min(rawManagedBasePrice, Math.max(capPrice, effectiveFloor))
     : rawManagedBasePrice;
@@ -1741,10 +1900,8 @@ function buildRepricerSide(sourceRow, platform, settings, context = {}) {
     turnoverSource = 'derived_orders';
   }
   const sales7d = Math.max(repricerRecentUnits7d(sourceRow), ordersDaily * 7);
-  const commissionPctValue = repricerHasValue(sourceRow.commissionPct) ? numberOrZero(sourceRow.commissionPct) : numberOrZero(feeRule.commissionPct) / 100;
-  const logisticsRubValue = repricerFirstFilledNumber(sourceRow.logisticsRub, feeRule.logisticsRub);
-  const storageRubValue = repricerFirstFilledNumber(sourceRow.storageRub, feeRule.storageRub);
-  const adRubValue = repricerFirstFilledNumber(sourceRow.adRub, feeRule.adRub);
+  const commissionPctValue = commissionPct;
+  const internalAdvertisingPctValue = internalAdvertisingPct;
   const buyerDiscountFactor = currentPrice > 0 && currentClientPrice > 0 ? currentClientPrice / currentPrice : 1;
   const liftThresholdPct = numberOrZero(roleRule.minLiftPct) / 100;
   const elasticityDefault = corridor?.elasticity === '' || corridor?.elasticity == null
@@ -1777,6 +1934,10 @@ function buildRepricerSide(sourceRow, platform, settings, context = {}) {
     criticalGate = 'OK';
     if (!currentPricePresent) reasons.push(promoSource === 'promo_offer' ? 'promo offer без текущей цены' : 'promo override без текущей цены');
   }
+  if (marginPolicyMissing && !outOfSpec) {
+    criticalGate = 'BLOCK';
+    reasons.push('нет обязательной маржи SKU');
+  }
 
   if (!String(status || '').trim()) reasons.push('status not set');
   if (modeCode === 'LAUNCH' && launchReady !== 'READY') {
@@ -1798,7 +1959,9 @@ function buildRepricerSide(sourceRow, platform, settings, context = {}) {
     reasons.push(`покрытие ${fmt.num(turnoverDays, 1)} дн. <= ${fmt.int(oosDays)} дн.`);
   }
 
-  if (modeCode === 'FORCE') {
+  if (marginPolicyMissing) {
+    turnoverAction = 'BLOCK';
+  } else if (modeCode === 'FORCE') {
     turnoverAction = 'FORCE';
   } else if (criticalGate === 'SKIP') {
     turnoverAction = 'OFF';
@@ -1881,7 +2044,7 @@ function buildRepricerSide(sourceRow, platform, settings, context = {}) {
     strategy = 'NO_STOCK';
   }
 
-  if (modeCode === 'FORCE') {
+  if (modeCode === 'FORCE' && !marginPolicyMissing) {
     recommendedPrice = repricerClamp(numberOrZero(override?.forcePrice) || currentPrice || managedBasePrice || effectiveFloor, effectiveFloor, capPrice || (numberOrZero(override?.forcePrice) || currentPrice || managedBasePrice || effectiveFloor));
     preAlignPrice = recommendedPrice;
     cappedPrice = recommendedPrice;
@@ -1891,7 +2054,7 @@ function buildRepricerSide(sourceRow, platform, settings, context = {}) {
     reasons.push(`ручная цена ${fmt.money(recommendedPrice)}`);
   }
 
-  if (promoActive && criticalGate !== 'SKIP') {
+  if (promoActive && criticalGate !== 'SKIP' && !marginPolicyMissing) {
     const promoResolvedPrice = promoPrice || Math.max(promoRequestedPrice, promoFloor);
     recommendedPrice = promoResolvedPrice;
     preAlignPrice = promoResolvedPrice;
@@ -1959,13 +2122,14 @@ function buildRepricerSide(sourceRow, platform, settings, context = {}) {
     b2bFloor,
     costRub,
     feeRule,
+    platformCostsRub,
+    internalAdvertisingRub,
     feeStackRub,
     economicFloorByFee,
     economicFloorFallback,
     economicFloor,
     economicFloorSource,
     economicFloorSourceLabel,
-    marginFloor: economicFloor,
     effectiveFloor,
     floorSourceSummary: effectiveFloorSourceSummary,
     stretchCap,
@@ -1996,15 +2160,27 @@ function buildRepricerSide(sourceRow, platform, settings, context = {}) {
     kzTrafficActive,
     buyerDiscountFactor,
     commissionPctValue,
+    internalAdvertisingPctValue,
     logisticsRubValue,
     storageRubValue,
     adRubValue,
+    returnsRubValue,
+    otherRubValue,
     marginPct: sourceRow.marginTotalPct == null
       ? (legacySide?.marginPct == null
         ? (liveSide?.marginPct == null ? null : numberOrZero(liveSide.marginPct))
         : numberOrZero(legacySide.marginPct))
       : numberOrZero(sourceRow.marginTotalPct),
     requiredMarginPct,
+    marginPolicySource,
+    perSkuMarginPct,
+    marginGuardRequired,
+    marginPolicyMissing,
+    marginPriorityApplied,
+    capLiftedByMargin,
+    minMaxFloor: hardFloor,
+    minMaxCap: capPrice,
+    marginFloor: marginGuardRequired ? economicFloorByFee : 0,
     strategy,
     reason: reasons.join(' · ') || sourceRow.seedReason || 'Без пояснения',
     currentPriceDate: sourceRow.currentPriceDate || priceRow?.currentPriceDate || supportRow?.currentPriceDate || legacySide?.currentPriceDate || liveSide?.currentPriceDate || '',
@@ -2096,10 +2272,10 @@ function repricerApplyAlignment(row, settings) {
   const ozKeepUnits = numberOrZero(oz.sales7d);
   const wbFollowUnits = repricerProjectedUnits(wbKeepUnits, wb.currentClientPrice, wbFollowOzonPrice * numberOrZero(wb.buyerDiscountFactor || 1), elasticity);
   const ozFollowUnits = repricerProjectedUnits(ozKeepUnits, oz.currentClientPrice, ozFollowWbPrice * numberOrZero(oz.buyerDiscountFactor || 1), elasticity);
-  const wbKeepMargin = repricerMarginAtPrice(wbKeepPrice, wb.buyerDiscountFactor, wb.commissionPctValue, wb.logisticsRubValue, wb.storageRubValue, wb.adRubValue, wb.costRub);
-  const wbFollowMargin = repricerMarginAtPrice(wbFollowOzonPrice, wb.buyerDiscountFactor, wb.commissionPctValue, wb.logisticsRubValue, wb.storageRubValue, wb.adRubValue, wb.costRub);
-  const ozKeepMargin = repricerMarginAtPrice(ozKeepPrice, oz.buyerDiscountFactor, oz.commissionPctValue, oz.logisticsRubValue, oz.storageRubValue, oz.adRubValue, oz.costRub);
-  const ozFollowMargin = repricerMarginAtPrice(ozFollowWbPrice, oz.buyerDiscountFactor, oz.commissionPctValue, oz.logisticsRubValue, oz.storageRubValue, oz.adRubValue, oz.costRub);
+  const wbKeepMargin = repricerMarginAtPrice(wbKeepPrice, wb.buyerDiscountFactor, wb.commissionPctValue, wb.internalAdvertisingPctValue, wb.platformCostsRub, wb.internalAdvertisingRub, wb.costRub);
+  const wbFollowMargin = repricerMarginAtPrice(wbFollowOzonPrice, wb.buyerDiscountFactor, wb.commissionPctValue, wb.internalAdvertisingPctValue, wb.platformCostsRub, wb.internalAdvertisingRub, wb.costRub);
+  const ozKeepMargin = repricerMarginAtPrice(ozKeepPrice, oz.buyerDiscountFactor, oz.commissionPctValue, oz.internalAdvertisingPctValue, oz.platformCostsRub, oz.internalAdvertisingRub, oz.costRub);
+  const ozFollowMargin = repricerMarginAtPrice(ozFollowWbPrice, oz.buyerDiscountFactor, oz.commissionPctValue, oz.internalAdvertisingPctValue, oz.platformCostsRub, oz.internalAdvertisingRub, oz.costRub);
   const keepScore = wbKeepUnits * wbKeepMargin + ozKeepUnits * ozKeepMargin;
   const wbFollowScore = wbFollowUnits * wbFollowMargin + ozKeepUnits * ozKeepMargin;
   const ozFollowScore = wbKeepUnits * wbKeepMargin + ozFollowUnits * ozFollowMargin;
@@ -2276,6 +2452,12 @@ function repricerRowsCacheSignature() {
     state.canonicalRepricer?.generatedAt || '',
     state.canonicalRepricer?.summary?.feature_status || state.canonicalRepricer?.feature_status || '',
     Array.isArray(state.canonicalRepricer?.rows) ? state.canonicalRepricer.rows.length : 0,
+    state.repricerShadowReport?.generatedAt || '',
+    state.repricerShadowReport?.cutover_allowed === true ? 'canonical-active' : 'legacy-shadow',
+    state.repricerShadowReport?.summary?.canonical_ready_rows || 0,
+    state.repricerShadowReport?.summary?.price_agreement || 0,
+    state.repricerMarginMinMaxGaps?.generatedAt || '',
+    state.repricerMarginMinMaxGaps?.summary?.blockedRows || 0,
     (state.portalRuntimeWiring?.artifacts || []).map((artifact) => `${artifact.id}:${artifact.checksum || ''}`).join(','),
     state.portalFeatureReadiness?.features?.repricer?.status || '',
     state.repricer?.generatedAt || '',
@@ -2291,7 +2473,8 @@ function repricerRowsCacheSignature() {
     JSON.stringify(storage.repricerSettings || {}),
     repricerCacheListSignature(storage.repricerOverrides, ['articleKey', 'platform', 'mode', 'floorPrice', 'capPrice', 'forcePrice', 'promoActive', 'promoPrice', 'updatedAt']),
     repricerCacheListSignature(storage.repricerCorridors, ['articleKey', 'platform', 'hardFloor', 'basePrice', 'stretchCap', 'promoFloor', 'updatedAt']),
-    repricerCacheListSignature(storage.repricerSkuProfiles, ['articleKey', 'status', 'role', 'launchReady', 'updatedAt'])
+    repricerCacheListSignature(storage.repricerSkuProfiles, ['articleKey', 'status', 'role', 'launchReady', 'updatedAt']),
+    repricerCacheListSignature(storage.skuDecisionApprovals, ['articleKey', 'platform', 'type', 'status', 'proposedValue', 'updatedAt'])
   ].join('||');
 }
 
@@ -2354,37 +2537,132 @@ function canonicalRepricerRowsAvailable() {
   const canonical = state.canonicalRepricer || {};
   const summary = canonical.summary || {};
   const featureStatus = String(summary.feature_status || canonical.feature_status || '').trim().toLowerCase();
-  const publishableRows = numberOrZero(summary.publishable_rows ?? canonical.publishable_rows);
-  const publishableCoverage = Number(summary.publishable_coverage ?? canonical.publishable_coverage);
-  const blockedRows = numberOrZero(summary.blocked_rows ?? canonical.blocked_rows);
   const rowCount = Array.isArray(canonical.rows) ? canonical.rows.length : 0;
+  const eligibleRows = Number(summary.eligible_rows ?? canonical.eligible_rows);
+  const generatedStamp = Date.parse(String(canonical.generatedAt || ''));
+  const legacyStamp = Date.parse(String(state.repricer?.generatedAt || ''));
   const explicitlyBlocked = ['blocked', 'off', 'disabled', 'maintenance'].includes(featureStatus);
-  const hasPublishableCoverage = publishableRows > 0 || (Number.isFinite(publishableCoverage) && publishableCoverage > 0);
+  const coherentRowCount = !Number.isFinite(eligibleRows) || eligibleRows <= 0 || eligibleRows === rowCount;
+  const notOlderThanLegacy = !Number.isFinite(legacyStamp)
+    || !Number.isFinite(generatedStamp)
+    || generatedStamp >= legacyStamp;
   return canonical.schema === 'canonical-repricer-v1'
     && rowCount > 0
     && !explicitlyBlocked
-    && (hasPublishableCoverage || blockedRows < rowCount);
+    && coherentRowCount
+    && notOlderThanLegacy;
+}
+
+function canonicalRepricerCutoverAllowed() {
+  const shadow = state.repricerShadowReport || {};
+  return shadow.schema === 'repricer-shadow-report-v1' && shadow.cutover_allowed === true;
+}
+
+function canonicalRepricerMarginAtPrice(price, economics = {}) {
+  const value = numberOrZero(price);
+  if (value <= 0) return null;
+  const fixedCosts = economics.fixed_costs_per_unit == null
+    ? numberOrZero(economics.logistics_per_unit)
+    : numberOrZero(economics.fixed_costs_per_unit);
+  const net = value
+    - value * numberOrZero(economics.commission_pct)
+    - value * numberOrZero(economics.internal_advertising_pct)
+    - value * numberOrZero(economics.tax_pct)
+    - fixedCosts
+    - numberOrZero(economics.cost);
+  return Math.round((net / value) * 1000000) / 1000000;
 }
 
 function canonicalRepricerRuntimeSide(canonical = {}) {
   const facts = canonical.facts || {};
   const economics = canonical.economics || {};
+  const economicsComponents = economics.components || {};
   const policy = canonical.policy || {};
   const recommendation = canonical.recommendation || {};
   const price = facts.seller_price == null ? null : numberOrZero(facts.seller_price);
-  const proposedPrice = recommendation.price == null ? null : numberOrZero(recommendation.price);
-  const finalPrice = proposedPrice == null ? price : proposedPrice;
-  const ready = recommendation.status === 'ready' && proposedPrice != null;
+  const canonicalProposedPrice = recommendation.price == null ? null : numberOrZero(recommendation.price);
+  const canonicalReady = recommendation.status === 'ready' && canonicalProposedPrice != null;
   const floor = policy.floor == null ? 0 : numberOrZero(policy.floor);
   const cap = policy.cap == null ? 0 : numberOrZero(policy.cap);
+  const approvedOverride = canonicalReady
+    ? repricerFindOverride(canonical.article_key, canonical.platform)
+    : null;
+  const approvedRequestedPrice = approvedOverride
+    ? numberOrZero(
+      approvedOverride.promoActive && numberOrZero(approvedOverride.promoPrice) > 0
+        ? approvedOverride.promoPrice
+        : approvedOverride.forcePrice
+    )
+    : 0;
+  let approvedOverrideGuard = '';
+  let proposedPrice = canonicalProposedPrice;
+  if (approvedRequestedPrice > 0) {
+    let guardedPrice = approvedRequestedPrice;
+    if (floor > 0 && guardedPrice < floor) {
+      guardedPrice = floor;
+      approvedOverrideGuard = policy.margin_floor != null
+        && numberOrZero(policy.margin_floor) >= numberOrZero(policy.min_max_floor)
+        ? 'margin_floor'
+        : 'min_floor';
+    }
+    if (cap > 0 && cap >= floor && guardedPrice > cap) {
+      guardedPrice = cap;
+      approvedOverrideGuard = 'max_cap';
+    }
+    proposedPrice = approvedOverrideGuard === 'margin_floor' || approvedOverrideGuard === 'min_floor'
+      ? Math.ceil(guardedPrice)
+      : (approvedOverrideGuard === 'max_cap' ? Math.floor(guardedPrice) : Math.round(guardedPrice));
+  }
+  const finalPrice = proposedPrice == null ? price : proposedPrice;
+  const approvedOverrideApplied = canonicalReady && approvedRequestedPrice > 0;
+  const ready = canonicalReady && proposedPrice != null;
+  const cutoverAllowed = canonicalRepricerCutoverAllowed();
+  const auditReady = ready && !cutoverAllowed;
+  const exportReady = ready && cutoverAllowed;
+  const approvalGateType = String(canonical.approval_gate?.type || '').trim().toUpperCase();
+  const policyReviewRequired = approvalGateType === 'MARGIN_POLICY_REVIEW';
+  const waitingRop = recommendation.status === 'waiting_rop'
+    || (approvalGateType === 'SHARP_PRICE_CHANGE' && Boolean(canonical.approval_gate?.required));
   const reasonCodes = Array.isArray(recommendation.reason_codes) ? recommendation.reason_codes : [];
-  const changed = ready && price != null && Math.abs(numberOrZero(finalPrice) - numberOrZero(price)) >= 1;
+  const runtimeReasonCodes = [...reasonCodes];
+  if (approvedOverrideApplied && !runtimeReasonCodes.includes('approved_override')) {
+    runtimeReasonCodes.push('approved_override');
+  }
+  if (approvedOverrideGuard && !runtimeReasonCodes.includes(`approved_override_${approvedOverrideGuard}`)) {
+    runtimeReasonCodes.push(`approved_override_${approvedOverrideGuard}`);
+  }
+  if (auditReady && !runtimeReasonCodes.includes('shadow_cutover_not_allowed')) {
+    runtimeReasonCodes.push('shadow_cutover_not_allowed');
+  }
+  const changed = proposedPrice != null && price != null && Math.abs(numberOrZero(finalPrice) - numberOrZero(price)) >= 1;
+  const marginSource = policy.sources?.margin;
+  const marginPolicySource = typeof marginSource === 'string'
+    ? marginSource
+    : [marginSource?.sourceStore, marginSource?.sourceFile].filter(Boolean).join(' · ');
+  const internalAdvertisingRub = economics.internal_advertising_per_unit == null
+    ? numberOrZero(economicsComponents.internal_advertising_rub)
+    : numberOrZero(economics.internal_advertising_per_unit);
+  const internalAdvertisingPct = economics.internal_advertising_pct == null
+    ? numberOrZero(economicsComponents.internal_advertising_pct)
+    : numberOrZero(economics.internal_advertising_pct);
+  const fixedCostsRub = economics.fixed_costs_per_unit == null
+    ? numberOrZero(economics.logistics_per_unit)
+    : numberOrZero(economics.fixed_costs_per_unit);
+  const platformCostsRub = economics.platform_costs_per_unit == null
+    ? Math.max(0, fixedCostsRub - internalAdvertisingRub)
+    : numberOrZero(economics.platform_costs_per_unit);
+  const feeStackRub = fixedCostsRub > 0
+    ? fixedCostsRub
+    : platformCostsRub + internalAdvertisingRub;
   return {
     canonicalSource: true,
     sourceStore: 'canonical_repricer',
+    shadowAuditOnly: auditReady,
+    cutoverAllowed,
     snapshotId: canonical.snapshot_id || state.canonicalRepricer?.snapshot_id || '',
     platform: canonical.platform,
     articleKey: canonical.article_key,
+    status: facts.product_status || policy.lifecycle_key || '',
     currentPrice: price,
     buyerPrice: facts.client_price == null ? null : numberOrZero(facts.client_price),
     currentClientPrice: facts.client_price == null ? null : numberOrZero(facts.client_price),
@@ -2395,17 +2673,37 @@ function canonicalRepricerRuntimeSide(canonical = {}) {
     stockGateBlocksAutoprice: !ready,
     currentPriceDate: facts.as_of || '',
     sourceAsOf: facts.as_of || '',
+    currentPriceAgeDays: facts.price_age_days == null ? null : numberOrZero(facts.price_age_days),
+    currentPriceStale: facts.price_freshness === 'stale' || reasonCodes.includes('stale_current_seller_price'),
     costRub: economics.cost == null ? null : numberOrZero(economics.cost),
     rawCostPresent: economics.cost != null && numberOrZero(economics.cost) > 0,
     commissionPctValue: economics.commission_pct == null ? null : numberOrZero(economics.commission_pct),
-    logisticsRubValue: economics.logistics_per_unit == null ? null : numberOrZero(economics.logistics_per_unit),
+    internalAdvertisingPctValue: internalAdvertisingPct,
+    logisticsRubValue: economicsComponents.logistics_rub == null
+      ? platformCostsRub
+      : numberOrZero(economicsComponents.logistics_rub),
+    storageRubValue: numberOrZero(economicsComponents.storage_rub),
+    adRubValue: internalAdvertisingRub,
+    returnsRubValue: numberOrZero(economicsComponents.returns_rub),
+    otherRubValue: numberOrZero(economicsComponents.other_rub),
+    platformCostsRub,
+    internalAdvertisingRub,
+    feeStackRub,
     taxPctValue: economics.tax_pct == null ? null : numberOrZero(economics.tax_pct),
     pricingProxyPresent: false,
     hardFloor: floor,
     b2bFloor: floor,
     effectiveFloor: floor,
     economicFloor: floor,
-    marginFloor: floor,
+    minMaxFloor: policy.min_max_floor == null ? null : numberOrZero(policy.min_max_floor),
+    minMaxCap: policy.min_max_cap == null ? null : numberOrZero(policy.min_max_cap),
+    marginFloor: policy.margin_floor == null ? null : numberOrZero(policy.margin_floor),
+    marginPolicySource,
+    marginGuardRequired: Boolean(policy.margin_guard_required),
+    marginPriorityApplied: Boolean(policy.margin_priority_applied),
+    capLiftedByMargin: Boolean(policy.cap_lifted_by_margin),
+    productLifecycleKey: policy.lifecycle_key || facts.lifecycle_key || '',
+    productLifecycleLabel: facts.product_status || policy.lifecycle_key || '',
     finalGuardFloor: floor,
     finalGuardFloorRounded: floor,
     capPrice: cap,
@@ -2416,28 +2714,54 @@ function canonicalRepricerRuntimeSide(canonical = {}) {
     finalPrice,
     preAlignPrice: finalPrice,
     cappedPrice: finalPrice,
-    marginPct: recommendation.margin_pct == null ? null : numberOrZero(recommendation.margin_pct),
+    marginPct: approvedOverrideApplied
+      ? canonicalRepricerMarginAtPrice(finalPrice, economics)
+      : (recommendation.margin_pct == null ? null : numberOrZero(recommendation.margin_pct)),
     currentMarginPct: recommendation.current_margin_pct == null ? null : numberOrZero(recommendation.current_margin_pct),
     requiredMarginPct: policy.target_margin_pct == null ? null : numberOrZero(policy.target_margin_pct),
+    marginPolicyMissing: Boolean(
+      policy.margin_guard_required
+      && (policy.target_margin_pct == null || runtimeReasonCodes.includes('missing_target_margin'))
+    ),
     changeRub: price != null && finalPrice != null ? numberOrZero(finalPrice) - numberOrZero(price) : null,
-    changePct: recommendation.change_pct == null ? null : numberOrZero(recommendation.change_pct),
+    changePct: approvedOverrideApplied && price > 0
+      ? Math.round(((numberOrZero(finalPrice) - price) / price) * 1000000) / 1000000
+      : (recommendation.change_pct == null ? null : numberOrZero(recommendation.change_pct)),
     changed,
     belowFloorNow: price != null && floor > 0 && numberOrZero(price) + 0.001 < floor,
-    confidence: ready ? 'green' : 'red',
+    confidence: exportReady ? 'green' : (auditReady ? 'yellow' : 'red'),
     criticalGate: ready ? '' : 'BLOCK',
-    finalReasonCode: ready ? 'CANONICAL_READY' : 'CANONICAL_BLOCKED',
-    decisionMode: ready ? 'ready' : 'blocked',
-    decisionText: ready ? 'canonical ready' : 'canonical blocked',
-    reasonCodes,
-    reason: reasonCodes.join(' · '),
-    stopReason: reasonCodes.join(' · '),
-    safeToExport: ready && changed,
+    finalReasonCode: exportReady ? 'CANONICAL_READY' : (auditReady ? 'CANONICAL_SHADOW_AUDIT' : 'CANONICAL_BLOCKED'),
+    reasonCode: exportReady ? 'CANONICAL_READY' : (auditReady ? 'CANONICAL_SHADOW_AUDIT' : 'CANONICAL_BLOCKED'),
+    decisionMode: exportReady ? 'ready' : (auditReady ? 'audit' : 'blocked'),
+    decisionText: policyReviewRequired
+      ? 'Сначала пересогласовать маржу и коридор; цену подтверждать нельзя.'
+      : (
+        waitingRop
+          ? 'Резкая цена ждёт подтверждения РОПа.'
+          : (
+            auditReady
+              ? `${approvedOverrideApplied ? 'Цена согласована РОПом и защищена маржой/MIN/MAX. ' : ''}Расчёт готов для аудита; выгрузка откроется только после допуска canonical cutover.`
+              : (
+                exportReady
+                  ? (approvedOverrideApplied ? 'Согласованная РОПом цена защищена маржой/MIN/MAX и готова к применению.' : 'Канонический расчёт готов к применению.')
+                  : 'Канонический расчёт заблокирован.'
+              )
+          )
+      ),
+    reasonCodes: runtimeReasonCodes,
+    reason: runtimeReasonCodes.join(' · '),
+    stopReason: runtimeReasonCodes.join(' · '),
+    safeToExport: exportReady && changed,
     promoSafeToExport: false,
     promoActive: false,
     promoConfigured: false,
     promoOfferConfigured: false,
-    hasOverride: false,
-    hasManualOverride: false,
+    override: approvedOverrideApplied ? approvedOverride : null,
+    approvedOverrideRequestedPrice: approvedOverrideApplied ? approvedRequestedPrice : null,
+    approvedOverrideGuard,
+    hasOverride: approvedOverrideApplied,
+    hasManualOverride: approvedOverrideApplied,
     outOfSpec: false,
     launchHold: '',
     floorRaiseReady: false,
@@ -2454,8 +2778,78 @@ function canonicalRepricerRuntimeSide(canonical = {}) {
     capSourceSummary: 'canonical policy',
     baseSourceSummary: 'canonical recommendation',
     passports: canonical.passports || {},
-    audit: canonical.audit || {}
+    audit: canonical.audit || {},
+    sharpPriceApprovalRequired: waitingRop,
+    sharpPriceApprovalPending: false,
+    sharpPriceApprovalStatus: waitingRop ? 'required' : (canonical.approval ? 'approved' : 'not_required'),
+    sharpPriceAutoTaskEligible: waitingRop
+      && !policyReviewRequired
+      && !reasonCodes.includes('stale_current_seller_price'),
+    marginPolicyReviewRequired: policyReviewRequired
   };
+}
+
+function finalizeCanonicalRepricerRows(rows = []) {
+  const arrivalMaps = repricerBuildArrivalPriceSignalMaps();
+  return rows.map((row) => {
+    const normalizedKey = repricerNormalizeArticleKey(row.articleKey || row.article || '');
+    ['wb', 'ozon'].forEach((platform) => {
+      const side = row?.[platform];
+      if (!side) return;
+      const fallbackFact = {
+        platformStock: numberOrZero(side.stock),
+        inboundUnits: numberOrZero(side.inboundUnits),
+        shippedUnits: 0,
+        procurementSnapshotAvailable: false,
+        procurementPresent: false
+      };
+      side.arrivalFact = arrivalMaps?.[platform]?.get(normalizedKey) || fallbackFact;
+      side.arrivalPriceSignal = repricerBuildArrivalPriceSignal(side, side.arrivalFact);
+    });
+    row.hasManualOverride = false;
+    row.hasManagedProfile = false;
+    row.hasCorridor = false;
+    row.promoActive = false;
+    row.promoConfigured = false;
+    row.changed = Boolean(row.wb?.changed || row.ozon?.changed);
+    row.arrivalPriceCheck = Boolean(row.wb?.arrivalPriceSignal?.needsCheck || row.ozon?.arrivalPriceSignal?.needsCheck);
+    row.arrivalPriceMovement = Boolean(row.wb?.arrivalPriceSignal?.hasMovement || row.ozon?.arrivalPriceSignal?.hasMovement);
+    row.belowFloorNow = Boolean(row.wb?.belowFloorNow || row.ozon?.belowFloorNow);
+    row.marginRisk = Boolean(row.wb?.marginRisk || row.ozon?.marginRisk);
+    row.liveBenchmark = false;
+    row.liveDrift = false;
+    row.blockedByGate = Boolean(row.wb?.criticalGate === 'BLOCK' || row.ozon?.criticalGate === 'BLOCK');
+    row.launchHold = false;
+    row.alignmentEligible = false;
+    row.alignmentChanged = false;
+    row.blocked = row.blockedByGate;
+    row.searchIndex = [
+      row.article,
+      row.articleKey,
+      row.brand,
+      row.name,
+      row.owner,
+      ...Object.values(row.ownerByPlatform || {}),
+      row.status,
+      row.productLifecycle?.label,
+      row.wb?.reason,
+      row.ozon?.reason,
+      row.wb?.reasonCode,
+      row.ozon?.reasonCode,
+      row.wb?.arrivalPriceSignal?.label,
+      row.ozon?.arrivalPriceSignal?.label,
+      ...(row.wb?.arrivalPriceSignal?.reasons || []),
+      ...(row.ozon?.arrivalPriceSignal?.reasons || [])
+    ].filter(Boolean).join(' ').toLowerCase();
+    row.maxAbsDelta = Math.max(Math.abs(numberOrZero(row.wb?.changeRub)), Math.abs(numberOrZero(row.ozon?.changeRub)));
+    return row;
+  }).sort((left, right) => Number(right.blockedByGate) - Number(left.blockedByGate)
+    || Number(right.arrivalPriceCheck) - Number(left.arrivalPriceCheck)
+    || Number(right.belowFloorNow) - Number(left.belowFloorNow)
+    || Number(right.marginRisk) - Number(left.marginRisk)
+    || Number(right.changed) - Number(left.changed)
+    || numberOrZero(right.maxAbsDelta) - numberOrZero(left.maxAbsDelta)
+    || String(left.article || left.articleKey).localeCompare(String(right.article || right.articleKey), 'ru'));
 }
 
 function buildCanonicalRepricerRowsFresh() {
@@ -2479,8 +2873,14 @@ function buildCanonicalRepricerRowsFresh() {
           ? (platformOwnerName(skuFact, platform) || (typeof skuFact?.owner === 'object' ? skuFact.owner?.name : skuFact?.owner) || '')
           : ((typeof skuFact?.owner === 'object' ? skuFact.owner?.name : skuFact?.owner) || ''),
         ownerByPlatform: {},
-        status: skuFact?.status || skuFact?.registryStatus || '',
-        productLifecycle: null,
+        status: canonical?.facts?.product_status || skuFact?.status || skuFact?.registryStatus || '',
+        productLifecycle: canonical?.policy?.lifecycle_key
+          ? {
+            key: canonical.policy.lifecycle_key,
+            label: canonical.facts?.product_status || canonical.policy.lifecycle_key,
+            status: canonical.facts?.product_status || canonical.policy.lifecycle_key
+          }
+          : null,
         role: '',
         launchReady: '',
         segment: skuFact?.segment || '',
@@ -2502,8 +2902,7 @@ function buildCanonicalRepricerRowsFresh() {
       row[platform] = canonicalRepricerRuntimeSide(canonical);
     }
   });
-  return [...byArticle.values()]
-    .sort((left, right) => String(left.articleKey || '').localeCompare(String(right.articleKey || ''), 'ru'));
+  return finalizeCanonicalRepricerRows([...byArticle.values()]);
 }
 
 function buildRepricerRowsFresh() {
@@ -2546,15 +2945,31 @@ function buildRepricerRowsFresh() {
       const platformSpecificOwner = typeof platformOwnerName === 'function'
         ? platformOwnerName(skuFact, platform)
         : '';
-      const fallbackStatus = profile?.status || sourceRow.status || supportRow?.repricerStatus || supportRow?.productStatus || skuFact?.productStatus || skuFact?.status || '';
+      const skuPlatformStatus = skuFact?.platformMatrix?.[platform]?.status
+        || skuFact?.[platform]?.status
+        || '';
+      const fallbackStatus = skuPlatformStatus
+        || skuFact?.productStatus
+        || skuFact?.sheetStatus
+        || skuFact?.registryStatus
+        || skuFact?.status
+        || sourceRow.status
+        || supportRow?.repricerStatus
+        || supportRow?.productStatus
+        || '';
       const productLifecycle = repricerProductLifecycleForRecord({
         ...(skuFact || {}),
         articleKey,
         article: sourceRow.article || articleKey,
         productLifecycle: skuFact?.productLifecycle,
-        productLifecycleStatus: profile?.status || skuFact?.productLifecycleStatus || sourceRow.productLifecycleStatus || supportRow?.productLifecycleStatus,
+        productLifecycleStatus: skuFact?.productLifecycleStatus || sourceRow.productLifecycleStatus || supportRow?.productLifecycleStatus,
         lifecycleStatus: skuFact?.lifecycleStatus || sourceRow.lifecycleStatus || supportRow?.lifecycleStatus,
-        productStatus: profile?.status || sourceRow.productStatus || supportRow?.productStatus || skuFact?.productStatus,
+        productStatus: skuPlatformStatus
+          || skuFact?.productStatus
+          || skuFact?.sheetStatus
+          || skuFact?.registryStatus
+          || sourceRow.productStatus
+          || supportRow?.productStatus,
         sheetStatus: skuFact?.sheetStatus || sourceRow.sheetStatus || supportRow?.sheetStatus,
         registryStatus: skuFact?.registryStatus || sourceRow.registryStatus || supportRow?.registryStatus,
         status: fallbackStatus
@@ -2591,7 +3006,7 @@ function buildRepricerRowsFresh() {
       row.productLifecycle = row.productLifecycle?.key && row.productLifecycle.key !== 'active'
         ? row.productLifecycle
         : (productLifecycle || row.productLifecycle || null);
-      row.status = row.productLifecycle?.label || row.productLifecycle?.status || profile?.status || row.status || sourceRow.status || supportRow?.repricerStatus || supportRow?.productStatus || skuFact?.status || '';
+      row.status = row.productLifecycle?.label || row.productLifecycle?.status || row.status || skuPlatformStatus || skuFact?.status || sourceRow.status || supportRow?.repricerStatus || supportRow?.productStatus || '';
       row.role = profile?.role || row.role || repricerSuggestedRole(row.status || sourceRow.status || supportRow?.repricerStatus || skuFact?.status, sourceRow.segment || supportRow?.segment || skuFact?.segment);
       row.launchReady = normalizeRepricerLaunchReady(profile?.launchReady || row.launchReady || repricerDefaultLaunchReady(row.status || sourceRow.status || skuFact?.status));
       row.segment = row.segment || sourceRow.segment || supportRow?.segment || skuFact?.segment || '';
@@ -2611,6 +3026,7 @@ function buildRepricerRowsFresh() {
         legacySide,
         supportRow,
         priceRow,
+        profile: row.profile,
         arrivalFact: arrivalMaps[platform]?.get(normalizedKey) || null
       });
     });
@@ -2738,10 +3154,13 @@ function repricerOwnerForPlatform(row, platform = '') {
   const owners = row?.ownerByPlatform && typeof row.ownerByPlatform === 'object'
     ? row.ownerByPlatform
     : {};
-  if (platform === 'wb') return owners.wb || row?.owner || '';
-  if (platform === 'ozon') return owners.ozon || row?.owner || '';
+  const ownerText = (value) => typeof normalizeOwnerToken === 'function'
+    ? normalizeOwnerToken(value)
+    : String(typeof value === 'object' ? (value?.name || value?.owner || '') : (value || '')).trim();
+  if (platform === 'wb') return ownerText(owners.wb) || ownerText(row?.owner);
+  if (platform === 'ozon') return ownerText(owners.ozon) || ownerText(row?.owner);
   const unique = [owners.wb, owners.ozon, row?.owner]
-    .map((value) => String(value || '').trim())
+    .map(ownerText)
     .filter(Boolean)
     .filter((value, index, values) => values.indexOf(value) === index);
   return unique.length > 1 ? unique.join(' · ') : (unique[0] || '');
@@ -2959,7 +3378,7 @@ function renderRepricerSettingsCard(settings, brandNames, statuses, roles, feePl
       <div class="stack" style="margin-top:12px">
         ${feePlatforms.map((platform) => {
           const rule = normalizeRepricerFeeRule(settings.feeRules?.[platform] || {});
-          return `<div class="owner-cell" data-repricer-fee-card="${escapeHtml(platform)}" style="display:grid; gap:10px"><div><strong>${escapeHtml(String(platform).toUpperCase())}</strong><div class="muted small">Комиссия и прямые расходы площадки.</div></div><div class="filters repricer-filters">${repricerSettingField('Комиссия, %', `<input type="number" step="0.1" min="0" name="commissionPct" value="${escapeHtml(rule.commissionPct)}" placeholder="Комиссия, %">`)}${repricerSettingField('Логистика, ₽', `<input type="number" step="1" min="0" name="logisticsRub" value="${escapeHtml(rule.logisticsRub)}" placeholder="Логистика, ₽">`)}${repricerSettingField('Хранение, ₽', `<input type="number" step="1" min="0" name="storageRub" value="${escapeHtml(rule.storageRub)}" placeholder="Хранение, ₽">`)}${repricerSettingField('Реклама, ₽', `<input type="number" step="1" min="0" name="adRub" value="${escapeHtml(rule.adRub)}" placeholder="Реклама, ₽">`)}${repricerSettingField('Возвраты, ₽', `<input type="number" step="1" min="0" name="returnsRub" value="${escapeHtml(rule.returnsRub)}" placeholder="Возвраты, ₽">`)}${repricerSettingField('Прочее, ₽', `<input type="number" step="1" min="0" name="otherRub" value="${escapeHtml(rule.otherRub)}" placeholder="Прочее, ₽">`)}</div></div>`;
+          return `<div class="owner-cell" data-repricer-fee-card="${escapeHtml(platform)}" style="display:grid; gap:10px"><div><strong>${escapeHtml(String(platform).toUpperCase())}</strong><div class="muted small">Комиссия ИУ и внутренняя реклама считаются процентами от цены; логистика, хранение и возвраты — рублями на единицу.</div></div><div class="filters repricer-filters">${repricerSettingField('Комиссия ИУ, %', `<input type="number" step="0.0001" min="0" name="commissionPct" value="${escapeHtml(rule.commissionPct)}" placeholder="Комиссия ИУ, %">`)}${repricerSettingField('Логистика, ₽', `<input type="number" step="1" min="0" name="logisticsRub" value="${escapeHtml(rule.logisticsRub)}" placeholder="Логистика, ₽">`)}${repricerSettingField('Хранение, ₽', `<input type="number" step="1" min="0" name="storageRub" value="${escapeHtml(rule.storageRub)}" placeholder="Хранение, ₽">`)}${repricerSettingField('Внутр. реклама, %', `<input type="number" step="0.001" min="0" name="adPct" value="${escapeHtml(rule.adPct)}" placeholder="Реклама, %">`)}${repricerSettingField('Внутр. реклама, ₽/шт.', `<input type="number" step="1" min="0" name="adRub" value="${escapeHtml(rule.adRub)}" placeholder="Доп. реклама, ₽/шт.">`)}${repricerSettingField('Возвраты, ₽', `<input type="number" step="1" min="0" name="returnsRub" value="${escapeHtml(rule.returnsRub)}" placeholder="Возвраты, ₽">`)}${repricerSettingField('Прочее, ₽', `<input type="number" step="1" min="0" name="otherRub" value="${escapeHtml(rule.otherRub)}" placeholder="Прочее, ₽">`)}</div></div>`;
         }).join('')}
       </div>
     `
@@ -3173,11 +3592,17 @@ function renderRepricerSide(title, side) {
     ? badge(`товар: ${side.productLifecycleLabel || side.productLifecycleKey}`, side.productLifecycleTone || 'warn')
     : '';
   const businessBadges = [
+    side.requiredMarginPct == null ? '' : badge(`Маржа ≥ ${fmt.pct(side.requiredMarginPct)}`, side.marginRisk ? 'danger' : 'ok'),
+    numberOrZero(side.marginFloor) > 0 ? badge(`floor маржи ${fmt.money(side.marginFloor)}`, side.marginPriorityApplied ? 'warn' : 'info') : '',
+    numberOrZero(side.costRub) > 0 ? badge(`себестоимость ${fmt.money(side.costRub)}`, 'info') : '',
+    numberOrZero(side.platformCostsRub) > 0 ? badge(`площадка ${fmt.money(side.platformCostsRub)}`, 'info') : '',
+    numberOrZero(side.internalAdvertisingPctValue) > 0 ? badge(`внутр. реклама ${fmt.pct(side.internalAdvertisingPctValue)}`, 'info') : '',
+    numberOrZero(side.internalAdvertisingRub) > 0 ? badge(`внутр. реклама ${fmt.money(side.internalAdvertisingRub)}`, 'info') : '',
     badge(`MIN ${fmt.money(side.effectiveFloor)}`, side.belowFloorNow ? 'danger' : ''),
     badge(`MAX ${fmt.money(displayedCap)}`),
-    capLiftedByFloorGuard ? badge(`MAX поднят до MIN ${fmt.money(displayedCap)}`, 'warn') : '',
+    side.capLiftedByMargin ? badge(`MAX поднят до маржи ${fmt.money(displayedCap)}`, 'warn') : (capLiftedByFloorGuard ? badge(`MAX поднят до MIN ${fmt.money(displayedCap)}`, 'warn') : ''),
     badge(`оборот ${fmt.num(side.turnoverDays, 1)} дн.`, side.lowStockRisk ? 'warn' : ''),
-    side.marginPct == null ? '' : badge(`маржа ${fmt.pct(side.marginPct)}`, side.marginRisk ? 'danger' : 'ok'),
+    side.marginPct == null ? '' : badge(`факт маржи ${fmt.pct(side.marginPct)}`, side.marginRisk ? 'danger' : 'ok'),
     side.arrivalPriceSignal?.hasMovement ? badge(`приход: ${side.arrivalPriceSignal.stockLabel}`, side.arrivalPriceSignal.needsCheck ? 'warn' : 'ok') : '',
     side.promoActive ? badge(`${side.promoSource === 'promo_offer' ? 'акция' : 'промо'} ${fmt.money(side.promoPrice)}`, side.promoSource === 'promo_offer' ? 'info' : 'warn') : '',
     side.hasLiveBenchmark ? badge(`live ${fmt.money(side.liveReferencePrice)}`, side.liveDrift ? 'warn' : 'info') : ''
@@ -3368,6 +3793,7 @@ function saveRepricerSettings(form) {
       commissionPct: card.querySelector('[name="commissionPct"]')?.value,
       logisticsRub: card.querySelector('[name="logisticsRub"]')?.value,
       storageRub: card.querySelector('[name="storageRub"]')?.value,
+      adPct: card.querySelector('[name="adPct"]')?.value,
       adRub: card.querySelector('[name="adRub"]')?.value,
       returnsRub: card.querySelector('[name="returnsRub"]')?.value,
       otherRub: card.querySelector('[name="otherRub"]')?.value
@@ -3394,11 +3820,19 @@ function saveRepricerSettings(form) {
 
 function saveRepricerSkuProfile(form) {
   const articleKey = form.getAttribute('data-article-key') || '';
+  const currentRow = buildRepricerRows().find((item) => String(item.articleKey || '').trim() === articleKey) || null;
+  const currentLifecycleKey = repricerLifecycleKey(currentRow?.productLifecycle?.key || currentRow?.status || '');
+  const requestedLifecycleKey = repricerLifecycleKey(form.status?.value || '');
+  if (requestedLifecycleKey && currentLifecycleKey && requestedLifecycleKey !== currentLifecycleKey) {
+    window.alert('Статус здесь напрямую не меняется. Используйте блок «Статус товара» выше: он создаст задачу РОПу и применит статус только после подтверждения.');
+    return false;
+  }
   const next = normalizeRepricerSkuProfile({
     articleKey,
-    status: form.status.value,
+    status: '',
     role: form.role.value,
     launchReady: form.launchReady.value,
+    targetMarginPct: form.targetMarginPct?.value,
     updatedAt: new Date().toISOString(),
     updatedBy: state.team?.member?.name || 'Команда'
   });
@@ -3410,6 +3844,7 @@ function saveRepricerSkuProfile(form) {
     markRepricerDeleteTombstone('repricerSkuProfileDeletes', articleKey, 'all', false);
   }
   persistRepricerState();
+  return true;
 }
 
 function resetRepricerSkuProfile(articleKey) {
@@ -3478,7 +3913,156 @@ function upsertRepricerOverride(next) {
   persistRepricerState();
 }
 
-function saveRepricerOverride(form) {
+const REPRICER_SHARP_PRICE_APPROVAL_PCT = REPRICER_SHARP_PRICE_APPROVAL_THRESHOLD_PCT;
+
+function repricerRequestedExactPrice(override = {}) {
+  if (override.promoActive && numberOrZero(override.promoPrice) > 0) return numberOrZero(override.promoPrice);
+  if (override.mode === 'force' && numberOrZero(override.forcePrice) > 0) return numberOrZero(override.forcePrice);
+  return 0;
+}
+
+function repricerCurrentSideForApproval(articleKey = '', platform = 'all') {
+  const row = buildRepricerRows().find((item) => String(item?.articleKey || '').trim() === String(articleKey || '').trim());
+  return platform === 'ozon' ? row?.ozon || null : row?.wb || null;
+}
+
+function repricerSharpPriceChange(currentPrice, requestedPrice) {
+  const current = numberOrZero(currentPrice);
+  const requested = numberOrZero(requestedPrice);
+  if (current <= 0 || requested <= 0) return null;
+  const deltaPct = (requested - current) / current;
+  return Math.abs(deltaPct) + 1e-9 >= REPRICER_SHARP_PRICE_APPROVAL_PCT ? deltaPct : null;
+}
+
+async function requestRepricerSharpPriceApproval(next, side, deltaPct, options = {}) {
+  if (typeof window.requestSkuDecisionApproval !== 'function') {
+    throw new Error('Модуль согласования РОПа не загружен; резкая цена не применена.');
+  }
+  const requestedPrice = repricerRequestedExactPrice(next);
+  const reason = String(next.note || next.promoLabel || '').trim();
+  if (!reason) throw new Error('Для резкого изменения цены укажите комментарий с основанием.');
+  const decision = await window.requestSkuDecisionApproval({
+    type: 'SHARP_PRICE_CHANGE',
+    articleKey: next.articleKey,
+    platform: next.platform,
+    currentValue: Math.round(numberOrZero(side?.currentPrice)),
+    proposedValue: Math.round(requestedPrice),
+    reason,
+    payload: {
+      currentPrice: numberOrZero(side?.currentPrice),
+      requestedPrice,
+      deltaPct,
+      thresholdPct: REPRICER_SHARP_PRICE_APPROVAL_PCT,
+      autoGenerated: Boolean(options.autoGenerated),
+      override: next
+    },
+    metrics: {
+      currentMarginPct: side?.marginPct ?? null,
+      requiredMarginPct: side?.requiredMarginPct ?? null,
+      marginFloor: side?.marginFloor ?? null,
+      minPrice: side?.effectiveFloor ?? side?.minPrice ?? null,
+      maxPrice: side?.finalGuardCap ?? side?.capPrice ?? null,
+      turnoverDays: side?.turnoverDays ?? null,
+      stock: side?.stock ?? null
+    }
+  });
+  if (!options.silent) {
+    window.alert(decision.duplicate
+      ? 'Такая цена уже ждёт решения РОПа. Рабочая цена не изменена.'
+      : 'Резкая цена не применена. РОПу создана задача на подтверждение.');
+  }
+  return decision;
+}
+
+const REPRICER_AUTO_SHARP_APPROVAL_SYNC = {
+  signature: '',
+  running: false,
+  scheduled: false
+};
+
+function repricerAutomaticSharpPriceCandidates(rows = []) {
+  const candidates = [];
+  const seen = new Set();
+  repricerCollectSides(rows).forEach(({ row, side }) => {
+    if (!side?.sharpPriceAutoTaskEligible || side.sharpPriceApprovalPending) return;
+    const currentPrice = numberOrZero(side.currentPrice);
+    const requestedPrice = Math.round(numberOrZero(side.finalPrice ?? side.recommendedPrice));
+    if (currentPrice <= 0 || requestedPrice <= 0) return;
+    const deltaPct = (requestedPrice - currentPrice) / currentPrice;
+    if (Math.abs(deltaPct) + 1e-9 < REPRICER_SHARP_PRICE_APPROVAL_PCT) return;
+    const articleKey = String(side.articleKey || row?.articleKey || row?.article || '').trim();
+    const platform = String(side.platform || '').trim().toLowerCase();
+    const key = `${articleKey}|${platform}|${requestedPrice}`;
+    if (!articleKey || !platform || seen.has(key)) return;
+    seen.add(key);
+    candidates.push({ row, side, articleKey, platform, currentPrice, requestedPrice, deltaPct, key });
+  });
+  return candidates.slice(0, 250);
+}
+
+async function syncRepricerAutomaticSharpPriceApprovals(rows = buildRepricerRows()) {
+  if (window.__REPRICER_TEST_DISABLE_AUTO_APPROVAL_SYNC__) return { created: 0, duplicates: 0, skipped: 0 };
+  if (REPRICER_AUTO_SHARP_APPROVAL_SYNC.running) return { created: 0, duplicates: 0, skipped: 0, running: true };
+  const candidates = repricerAutomaticSharpPriceCandidates(rows);
+  const signature = candidates.map((item) => item.key).sort().join('||');
+  if (!signature || signature === REPRICER_AUTO_SHARP_APPROVAL_SYNC.signature) {
+    return { created: 0, duplicates: 0, skipped: candidates.length };
+  }
+  if (typeof window.requestSkuDecisionApproval !== 'function') {
+    return { created: 0, duplicates: 0, skipped: candidates.length, unavailable: true };
+  }
+  REPRICER_AUTO_SHARP_APPROVAL_SYNC.running = true;
+  const summary = { created: 0, duplicates: 0, skipped: 0 };
+  try {
+    for (const candidate of candidates) {
+      const note = [
+        'Автопредложение репрайсера: изменение цены не менее 10%.',
+        `${fmt.money(candidate.currentPrice)} → ${fmt.money(candidate.requestedPrice)}.`,
+        candidate.side.reason || candidate.side.decisionText || ''
+      ].filter(Boolean).join(' ');
+      const next = normalizeRepricerOverride({
+        articleKey: candidate.articleKey,
+        platform: candidate.platform,
+        mode: 'force',
+        forcePrice: candidate.requestedPrice,
+        note,
+        updatedAt: new Date().toISOString(),
+        updatedBy: 'Репрайсер'
+      });
+      try {
+        const decision = await requestRepricerSharpPriceApproval(next, candidate.side, candidate.deltaPct, {
+          silent: true,
+          autoGenerated: true
+        });
+        if (decision?.duplicate) summary.duplicates += 1;
+        else summary.created += 1;
+      } catch (error) {
+        summary.skipped += 1;
+        console.error('[repricer.autoSharpApproval]', candidate.key, error);
+      }
+    }
+    REPRICER_AUTO_SHARP_APPROVAL_SYNC.signature = signature;
+    invalidateRepricerRowsCache();
+    return summary;
+  } finally {
+    REPRICER_AUTO_SHARP_APPROVAL_SYNC.running = false;
+  }
+}
+
+function scheduleRepricerAutomaticSharpPriceApprovals(rows = []) {
+  if (window.__REPRICER_TEST_DISABLE_AUTO_APPROVAL_SYNC__) return;
+  if (REPRICER_AUTO_SHARP_APPROVAL_SYNC.scheduled) return;
+  REPRICER_AUTO_SHARP_APPROVAL_SYNC.scheduled = true;
+  setTimeout(() => {
+    REPRICER_AUTO_SHARP_APPROVAL_SYNC.scheduled = false;
+    syncRepricerAutomaticSharpPriceApprovals(rows).catch((error) => console.error('[repricer.autoSharpApproval.sync]', error));
+  }, 0);
+}
+
+window.repricerAutomaticSharpPriceCandidates = repricerAutomaticSharpPriceCandidates;
+window.syncRepricerAutomaticSharpPriceApprovals = syncRepricerAutomaticSharpPriceApprovals;
+
+async function saveRepricerOverride(form) {
   const articleKey = form.getAttribute('data-article-key') || '';
   const platform = form.getAttribute('data-platform') || 'all';
   const next = normalizeRepricerOverride({
@@ -3498,6 +4082,19 @@ function saveRepricerOverride(form) {
     updatedAt: new Date().toISOString(),
     updatedBy: state.team?.member?.name || 'Команда'
   });
+  const requestedPrice = repricerRequestedExactPrice(next);
+  const side = requestedPrice > 0 ? repricerCurrentSideForApproval(articleKey, platform) : null;
+  const deltaPct = repricerSharpPriceChange(side?.currentPrice, requestedPrice);
+  if (deltaPct !== null) {
+    try {
+      await requestRepricerSharpPriceApproval(next, side, deltaPct);
+    } catch (error) {
+      console.error(error);
+      window.alert(error?.message || 'Не удалось создать задачу РОПу. Цена не применена.');
+    }
+    renderRepricer();
+    return;
+  }
   upsertRepricerOverride(next);
 }
 
@@ -3507,7 +4104,7 @@ function resetRepricerOverride(articleKey, platform) {
   persistRepricerState();
 }
 
-function applyRepricerPromoOffer(articleKey, platform) {
+async function applyRepricerPromoOffer(articleKey, platform) {
   const normalizedArticleKey = String(articleKey || '').trim();
   const normalizedPlatform = platform === 'ozon' ? 'ozon' : 'wb';
   const row = buildRepricerRows().find((item) => String(item?.articleKey || '').trim() === normalizedArticleKey);
@@ -3534,6 +4131,17 @@ function applyRepricerPromoOffer(articleKey, platform) {
     updatedAt: new Date().toISOString(),
     updatedBy: state.team?.member?.name || 'Команда'
   });
+  const deltaPct = repricerSharpPriceChange(side.currentPrice, next.promoPrice);
+  if (deltaPct !== null) {
+    try {
+      await requestRepricerSharpPriceApproval(next, side, deltaPct);
+    } catch (error) {
+      console.error(error);
+      window.alert(error?.message || 'Не удалось создать задачу РОПу. Акционная цена не применена.');
+    }
+    renderRepricer();
+    return;
+  }
   upsertRepricerOverride(next);
 }
 
@@ -3558,6 +4166,7 @@ function repricerTemplateAction(side) {
 function repricerPrimaryStopReason(side) {
   if (!side) return 'нет стороны';
   if (side.outOfSpec || side.criticalGate === 'SKIP') return 'вне спецификации';
+  if (side.marginPolicyMissing) return 'нет маржи SKU';
   if (side.criticalGate === 'BLOCK') return 'нет входов';
   const flags = repricerIssueFlags(side);
   if (flags.missingPrice) return 'нет цены';
@@ -3579,6 +4188,7 @@ function repricerPrimaryStopReason(side) {
 function repricerIssueFlags(side) {
   const deferredPricing = repricerDeferredPricingSide(side);
   return {
+    missingMargin: Boolean(side?.marginPolicyMissing),
     missingMin: numberOrZero(side?.effectiveFloor) <= 0 && !deferredPricing,
     missingCost: numberOrZero(side?.costRub) <= 0 && !side?.pricingProxyPresent && !deferredPricing,
     fallbackEconomy: !side?.rawCostPresent && side?.economicFloorSource === 'snapshot_fallback' && Boolean(side?.pricingProxyPresent),
@@ -3594,6 +4204,7 @@ function repricerIssueFlags(side) {
 
 function repricerFixSource(side) {
   const flags = repricerIssueFlags(side);
+  if (flags.missingMargin) return 'SKU / маржа';
   if (flags.missingMin || flags.belowMin) return 'Цены';
   if (flags.missingCost) return 'Себестоимость';
   if (flags.missingPrice) return 'Маркетплейс / текущая цена';
@@ -3605,6 +4216,7 @@ function repricerFixSource(side) {
 
 function repricerFixAction(side) {
   const flags = repricerIssueFlags(side);
+  if (flags.missingMargin) return 'заполнить обязательную маржу SKU';
   if (flags.missingMin) return 'заполнить рабочий MIN/MAX';
   if (flags.belowMin) return 'поднять цену до MIN или пересмотреть MIN';
   if (flags.missingCost) return 'добавить себестоимость / fee stack';
@@ -3624,6 +4236,7 @@ function repricerFixProposal(side) {
   const current = numberOrZero(side?.currentPrice);
   const finalPrice = numberOrZero(side?.finalPrice);
   const livePrice = numberOrZero(side?.liveReferencePrice);
+  if (flags.missingMargin) return 'предложение без записи: утвердить маржу SKU и загрузить её через аудит';
   if (flags.missingMin) return current > 0
     ? `предложение без записи: проверить и заполнить MIN в «Цены» около текущей цены ${fmt.money(current)}`
     : 'предложение без записи: заполнить MIN/MAX после проверки карточки';
@@ -3648,6 +4261,7 @@ function repricerFixProposal(side) {
 function repricerCommandHint(side) {
   const flags = repricerIssueFlags(side);
   if (side?.outOfSpec || side?.criticalGate === 'SKIP') return 'УДАЛИТЬ';
+  if (flags.missingMargin) return 'ИСПРАВИТЬ + МАРЖА';
   if (flags.belowMin) return 'ИСПРАВИТЬ или FORCE';
   if (flags.missingMin) return 'ИСПРАВИТЬ + MIN';
   if (flags.missingCost) return 'ИСПРАВИТЬ + себестоимость';
@@ -3665,6 +4279,7 @@ function repricerRecommendedAction(side) {
   const floor = numberOrZero(side?.effectiveFloor);
   const current = numberOrZero(side?.currentPrice);
   if (side?.outOfSpec || side?.criticalGate === 'SKIP') return 'Удалить/выключить: позиция вне ценового контура.';
+  if (flags.missingMargin) return 'Заполнить утверждённую маржу SKU; до этого цену не выгружать.';
   if (flags.belowMin && floor > 0) return `Поднять до ${fmt.money(floor)}: текущая цена ниже рабочего MIN.`;
   if (flags.missingMin) return current > 0 ? `Заполнить MIN около ${fmt.money(current)} после проверки карточки.` : 'Заполнить MIN/MAX после проверки карточки.';
   if (flags.missingCost) return 'Добавить себестоимость / fee stack в API, до этого не выгружать цену.';
@@ -3680,6 +4295,7 @@ function repricerRecommendedAction(side) {
 function repricerFixTeamKey(side) {
   const flags = repricerIssueFlags(side);
   if (side?.outOfSpec || side?.criticalGate === 'SKIP') return 'api';
+  if (flags.missingMargin) return 'sku';
   if (flags.missingMin || flags.belowMin) return 'prices';
   if (flags.missingCost) return 'cost';
   if (flags.missingPrice) return 'marketplace';
@@ -3727,6 +4343,7 @@ function repricerFixTeamCounts(rows = buildRepricerRows()) {
 
 function repricerIssueBatch(side) {
   const flags = repricerIssueFlags(side);
+  if (flags.missingMargin) return 'missing_margin';
   if (flags.missingMin) return 'missing_min';
   if (flags.missingCost) return 'missing_cost';
   if (flags.belowMin) return 'below_min';
@@ -3739,6 +4356,7 @@ function repricerIssueBatch(side) {
 function repricerIssueBatchLabel(batch) {
   const map = {
     all: 'стоп-лист',
+    missing_margin: 'нет маржи SKU',
     missing_min: 'нет MIN',
     missing_cost: 'нет себестоимости',
     below_min: 'ниже MIN',
@@ -3773,6 +4391,7 @@ function repricerHealthcheck(rows, platform = 'all') {
     side_rows: sideRows.length,
     out_of_spec_rows: sideRows.filter(({ side }) => side.outOfSpec).length,
     blocked_gate: activeSideRows.filter(({ side }) => side.criticalGate === 'BLOCK').length,
+    missing_required_margin: activeSideRows.filter(({ side }) => side.marginPolicyMissing).length,
     missing_current_price: activeSideRows.filter(({ side }) => numberOrZero(side.currentPrice) <= 0).length,
     missing_current_price_actionable: activeSideRows.filter(({ side }) => numberOrZero(side.currentPrice) <= 0 && !repricerDeferredPricingSide(side)).length,
     missing_cost: activeSideRows.filter(({ side }) => numberOrZero(side.costRub) <= 0).length,
@@ -3801,6 +4420,7 @@ function repricerHealthcheck(rows, platform = 'all') {
     ozon_change_rows: repricerCollectSides(rows, 'ozon').filter(({ side }) => repricerTemplateAction(side) === 'CHANGE').length
   };
   const issues = [];
+  if (metrics.missing_required_margin > 0) issues.push(`нет обязательной маржи SKU: ${fmt.int(metrics.missing_required_margin)}`);
   if (metrics.blocked_gate > 0) issues.push(`BLOCK gate: ${fmt.int(metrics.blocked_gate)}`);
   if (metrics.missing_current_price_actionable > 0) issues.push(`пустая текущая цена в активном контуре: ${fmt.int(metrics.missing_current_price_actionable)}`);
   if (metrics.missing_cost_actionable > 0) issues.push(`нет себестоимости без защитного proxy: ${fmt.int(metrics.missing_cost_actionable)}`);
@@ -3844,6 +4464,7 @@ function repricerTemplateStats(rows, platform = 'wb') {
     floorRaiseReady: nonPromo.filter(({ side }) => side.floorRaiseReady).length,
     floorRaiseSafe: nonPromo.filter(({ side }) => side.floorRaiseSafeToExport).length,
     blocked: active.filter(({ side }) => side.criticalGate === 'BLOCK').length,
+    missingMargin: active.filter(({ side }) => side.marginPolicyMissing).length,
     missingMin: active.filter(({ side }) => numberOrZero(side.effectiveFloor) <= 0 && !repricerDeferredPricingSide(side)).length,
     missingCost: active.filter(({ side }) => numberOrZero(side.costRub) <= 0 && !side.pricingProxyPresent && !repricerDeferredPricingSide(side)).length,
     promo: active.filter(({ side }) => side.promoActive).length,
@@ -4083,7 +4704,8 @@ function repricerDownloadHtmlTable(columns, rows, filename, options = {}) {
 
 function repricerIssueScore(side) {
   const flags = repricerIssueFlags(side);
-  return (flags.missingMin ? 120 : 0)
+  return (flags.missingMargin ? 150 : 0)
+    + (flags.missingMin ? 120 : 0)
     + (flags.belowMin ? 95 : 0)
     + (flags.blocked ? 75 : 0)
     + (flags.marginRisk ? 55 : 0)
@@ -4158,7 +4780,7 @@ function repricerIssueColumns() {
     ['import_cost_rub', 'Новая себестоимость, ₽'],
     ['import_status', 'Новый статус'],
     ['import_role', 'Новая роль'],
-    ['import_launch_ready', 'Launch ready'],
+    ['import_launch_ready', 'Новый launch ready'],
     ['import_note', 'Комментарий для импорта'],
     ['command_hint', 'Что написать в Команда'],
     ['recommended_action', 'Рекомендованное действие'],
@@ -4238,6 +4860,16 @@ function repricerImportNumber(value) {
   const raw = String(value || '').replace(/\s+/g, '').replace(',', '.').replace(/[^\d.-]/g, '');
   const parsed = Number(raw);
   return Number.isFinite(parsed) && parsed > 0 ? parsed : '';
+}
+
+function repricerImportPercent(value) {
+  const text = String(value || '').trim();
+  if (!text) return '';
+  const raw = text.replace(/\s+/g, '').replace(',', '.').replace(/[^\d.-]/g, '');
+  const parsed = Number(raw);
+  if (!Number.isFinite(parsed) || parsed <= 0) return '';
+  const ratio = text.includes('%') || parsed > 1 ? parsed / 100 : parsed;
+  return ratio > 0 && ratio < 1 ? ratio : '';
 }
 
 function repricerImportPlatform(value) {
@@ -4821,6 +5453,11 @@ function repricerTaskResolvedByCurrentData(task, currentMap) {
   ));
   if (type === 'UPDATE_PRICE_SNAPSHOT') return Boolean(side && numberOrZero(side.currentPrice) > 0);
   if (type === 'UPDATE_SKU_PROFILE') return Boolean(row && (String(row.status || '').trim() || String(row.role || '').trim() || String(row.launchReady || '').trim()));
+  if (type === 'UPDATE_SKU_MARGIN') {
+    const expected = repricerMarginRatio(task.targetMarginPct ?? task.value);
+    const actual = repricerMarginRatio(side?.requiredMarginPct);
+    return Boolean(expected > 0 && actual > 0 && Math.abs(expected - actual) < 0.0001);
+  }
   return false;
 }
 
@@ -4919,18 +5556,19 @@ function repricerImportDraft(row = {}, fileName = '') {
   const marketplace = repricerImportValue(row, ['marketplace', 'Площадка', 'platform']);
   const platform = repricerImportPlatform(marketplace);
   const commandRaw = repricerImportValue(row, ['import_command', 'Команда', 'Действие', 'action', 'cmd']);
-  const price = repricerImportNumber(repricerImportValue(row, ['import_price_rub', 'Новая цена, ₽', 'Новая цена', 'force_price', 'force_price_rub']));
-  const min = repricerImportNumber(repricerImportValue(row, ['import_min_rub', 'Новый MIN, ₽', 'Новый MIN', 'new_min', 'min_rub', 'MIN, ₽']));
-  const max = repricerImportNumber(repricerImportValue(row, ['import_max_rub', 'Новый MAX, ₽', 'Новый MAX', 'new_max', 'max_rub']));
-  const cost = repricerImportNumber(repricerImportValue(row, ['import_cost_rub', 'Новая себестоимость, ₽', 'Новая себестоимость', 'cost_rub', 'Себестоимость, ₽']));
-  const status = repricerImportValue(row, ['import_status', 'Новый статус', 'status', 'Статус']);
-  const role = repricerImportValue(row, ['import_role', 'Новая роль', 'role', 'Роль']);
-  const launchReady = repricerImportValue(row, ['import_launch_ready', 'Launch ready', 'launch_ready']);
-  const importNote = repricerImportValue(row, ['import_note', 'Комментарий для импорта', 'Комментарий', 'note']);
+  const price = repricerImportNumber(repricerImportValue(row, ['import_price_rub', 'Новая цена, ₽', 'Новая цена']));
+  const margin = repricerImportPercent(repricerImportValue(row, ['import_margin_pct', 'Новая маржа SKU, %', 'Маржа SKU, %', 'target_margin_pct', 'target_margin']));
+  const min = repricerImportNumber(repricerImportValue(row, ['import_min_rub', 'Новый MIN, ₽', 'Новый MIN', 'new_min', 'minPrice', 'min_price', 'MIN рекомендованный, ₽']));
+  const max = repricerImportNumber(repricerImportValue(row, ['import_max_rub', 'Новый MAX, ₽', 'Новый MAX', 'new_max', 'maxPrice', 'max_price', 'MAX рекомендованный, ₽']));
+  const cost = repricerImportNumber(repricerImportValue(row, ['import_cost_rub', 'Новая себестоимость, ₽', 'Новая себестоимость']));
+  const status = repricerImportValue(row, ['import_status', 'Новый статус']);
+  const role = repricerImportValue(row, ['import_role', 'Новая роль']);
+  const launchReady = repricerImportValue(row, ['import_launch_ready', 'Новый launch ready']);
+  const importNote = repricerImportValue(row, ['import_note', 'Комментарий для импорта']);
   const note = importNote || `Импорт аудита ${fileName || ''}`.trim();
-  const hasImportFields = Boolean(price || min || max || cost || status || role || launchReady || importNote);
+  const hasImportFields = Boolean(price || margin || min || max || cost || status || role || launchReady || importNote);
   const command = commandRaw ? repricerImportCommand(commandRaw) : (hasImportFields ? 'fix' : '');
-  return { articleKey, platform, commandRaw, command, price, min, max, cost, status, role, launchReady, importNote, note, hasImportFields };
+  return { articleKey, platform, commandRaw, command, price, margin, min, max, cost, status, role, launchReady, importNote, note, hasImportFields };
 }
 
 function validateRepricerAuditImportRows(rows, fileName = '') {
@@ -4969,7 +5607,7 @@ function validateRepricerAuditImportRows(rows, fileName = '') {
       summary.resultRows.push(result);
       return;
     }
-    if (draft.command === 'fix' && !(draft.price || draft.min || draft.max || draft.cost || draft.status || draft.role || draft.launchReady)) {
+    if (draft.command === 'fix' && !(draft.price || draft.margin || draft.min || draft.max || draft.cost || draft.status || draft.role || draft.launchReady)) {
       summary.warnings += 1;
       result.result = 'предупреждение';
       result.details = `строка ${index + 2}: FIX без заполняемых полей`;
@@ -5000,20 +5638,71 @@ function repricerImportValidationMessage(summary) {
   ].join('\n');
 }
 
-function repricerApplyAuditImportRows(rows, fileName = '') {
+async function repricerApplyImportedPriceOverride({ articleKey, platform, price, note, now, existingSide }) {
+  const previous = repricerExactStorageItem('repricerOverrides', articleKey, platform) || {};
+  const next = normalizeRepricerOverride({
+    ...previous,
+    articleKey,
+    platform,
+    mode: 'force',
+    forcePrice: price,
+    note,
+    updatedAt: now,
+    updatedBy: state.team?.member?.name || 'Команда'
+  });
+  const deltaPct = repricerSharpPriceChange(existingSide?.currentPrice, price);
+  if (deltaPct !== null) {
+    const decision = await requestRepricerSharpPriceApproval(next, existingSide, deltaPct, { silent: true });
+    return { applied: false, approvalPending: true, decision };
+  }
+  repricerUpsertImportedOverride(next);
+  return { applied: true, approvalPending: false, decision: null };
+}
+
+async function repricerRequestImportedStatusApproval({ articleKey, platform, status, note, existingRow }) {
+  const proposedKey = repricerLifecycleKey(status);
+  const currentLifecycle = existingRow?.productLifecycle
+    || repricerProductLifecycleForRecord(existingRow || {}, existingRow?.status || '', articleKey);
+  const currentKey = repricerLifecycleKey(currentLifecycle?.key || currentLifecycle?.status || existingRow?.status || '');
+  if (!proposedKey || proposedKey === currentKey) {
+    return { approvalPending: false, unchanged: true, decision: null };
+  }
+  if (typeof window.requestSkuDecisionApproval !== 'function') {
+    throw new Error('Модуль согласования РОПа не загружен; статус не изменён.');
+  }
+  const proposedMeta = repricerLifecycleMeta(proposedKey, status);
+  const decision = await window.requestSkuDecisionApproval({
+    type: 'PRODUCT_STATUS_CHANGE',
+    articleKey,
+    platform: platform || 'all',
+    currentValue: currentLifecycle?.label || currentLifecycle?.status || existingRow?.status || '—',
+    proposedValue: proposedMeta.label || status,
+    reason: note,
+    payload: {
+      currentStatusKey: currentKey || 'active',
+      proposedStatusKey: proposedMeta.key,
+      proposedStatusLabel: proposedMeta.label,
+      clearOverride: false,
+      importSource: true
+    }
+  });
+  return { approvalPending: true, unchanged: false, decision };
+}
+
+async function repricerApplyAuditImportRows(rows, fileName = '') {
   const now = new Date().toISOString();
   const currentRows = buildRepricerRows();
   const currentMap = new Map(currentRows.map((row) => [repricerNormalizeArticleKey(row.articleKey || row.article), row]));
   const summary = { applied: 0, skipped: 0, errors: 0, overrides: 0, corridors: 0, profiles: 0, pendingAdds: 0, pendingDeletes: 0, pendingCosts: 0, pendingTasks: 0, history: 0, resultRows: [] };
-  rows.forEach((row) => {
-    const { articleKey, platform, commandRaw, command, price, min, max, cost, status, role, launchReady, note } = repricerImportDraft(row, fileName);
+  for (const row of rows) {
+    const { articleKey, platform, commandRaw, command, price, margin, min, max, cost, status, role, launchReady, note } = repricerImportDraft(row, fileName);
     const result = { article: articleKey, marketplace: platform.toUpperCase(), command: command || 'skip', result: '', details: '' };
     if (!articleKey) {
       summary.errors += 1;
       result.result = 'ошибка';
       result.details = 'нет артикула';
       summary.resultRows.push(result);
-      return;
+      continue;
     }
     if (commandRaw && !command) {
       summary.errors += 1;
@@ -5021,14 +5710,14 @@ function repricerApplyAuditImportRows(rows, fileName = '') {
       result.result = 'ошибка';
       result.details = 'команда не распознана';
       summary.resultRows.push(result);
-      return;
+      continue;
     }
     if (!command || command === 'ignore') {
       summary.skipped += 1;
       result.result = 'пропущено';
       result.details = 'нет команды';
       summary.resultRows.push(result);
-      return;
+      continue;
     }
     const existingRow = currentMap.get(repricerNormalizeArticleKey(articleKey));
     const existingSide = platform === 'ozon' ? existingRow?.ozon : (platform === 'wb' ? existingRow?.wb : (existingRow?.wb || existingRow?.ozon));
@@ -5050,7 +5739,7 @@ function repricerApplyAuditImportRows(rows, fileName = '') {
       repricerRecordRepairHistory({ articleKey, platform, source: 'import', command: 'ADD_SKU', result: result.result, before: beforeText, after: result.details, details: note, createdAt: now });
       summary.history += 1;
       summary.resultRows.push(result);
-      return;
+      continue;
     }
     if (command === 'clear') {
       state.storage.repricerOverrides = (state.storage.repricerOverrides || []).filter((item) => !(item.articleKey === articleKey && (platform === 'all' || item.platform === platform)));
@@ -5062,7 +5751,7 @@ function repricerApplyAuditImportRows(rows, fileName = '') {
       repricerRecordRepairHistory({ articleKey, platform, source: 'import', command: 'CLEAR', result: result.result, before: beforeText, after: result.details, details: note, createdAt: now });
       summary.history += 1;
       summary.resultRows.push(result);
-      return;
+      continue;
     }
     const details = [];
     if (command === 'off') {
@@ -5083,12 +5772,16 @@ function repricerApplyAuditImportRows(rows, fileName = '') {
         result.result = 'ошибка';
         result.details = 'для FORCE нужна новая цена';
         summary.resultRows.push(result);
-        return;
+        continue;
       }
-      const previous = repricerExactStorageItem('repricerOverrides', articleKey, platform) || {};
-      repricerUpsertImportedOverride({ ...previous, articleKey, platform, mode: 'force', forcePrice: price, note, updatedAt: now, updatedBy: state.team?.member?.name || 'Команда' });
-      summary.overrides += 1;
-      details.push(`force price ${fmt.money(price)}`);
+      const importedPrice = await repricerApplyImportedPriceOverride({ articleKey, platform, price, note, now, existingSide });
+      if (importedPrice.approvalPending) {
+        summary.pendingTasks += 1;
+        details.push(`force price ${fmt.money(price)} ждёт РОПа`);
+      } else {
+        summary.overrides += 1;
+        details.push(`force price ${fmt.money(price)}`);
+      }
     }
     if (command === 'fix' || command === 'force') {
       if (min || max) {
@@ -5100,18 +5793,52 @@ function repricerApplyAuditImportRows(rows, fileName = '') {
         summary.pendingTasks += 1;
       }
       if (price && command === 'fix') {
-        const previous = repricerExactStorageItem('repricerOverrides', articleKey, platform) || {};
-        repricerUpsertImportedOverride({ ...previous, articleKey, platform, mode: 'force', forcePrice: price, note, updatedAt: now, updatedBy: state.team?.member?.name || 'Команда' });
-        summary.overrides += 1;
-        details.push(`цена ${fmt.money(price)}`);
+        const importedPrice = await repricerApplyImportedPriceOverride({ articleKey, platform, price, note, now, existingSide });
+        if (importedPrice.approvalPending) {
+          summary.pendingTasks += 1;
+          details.push(`цена ${fmt.money(price)} ждёт РОПа`);
+        } else {
+          summary.overrides += 1;
+          details.push(`цена ${fmt.money(price)}`);
+        }
       }
-      if (status || role || launchReady) {
+      if (status) {
+        const statusRequest = await repricerRequestImportedStatusApproval({
+          articleKey,
+          platform,
+          status,
+          note,
+          existingRow
+        });
+        if (statusRequest.approvalPending) {
+          summary.pendingTasks += 1;
+          details.push(`статус «${status}» ждёт РОПа`);
+        } else {
+          details.push(`статус уже «${status}»`);
+        }
+      }
+      if (role || launchReady || margin) {
         const previous = repricerFindSkuProfile(articleKey) || {};
-        repricerUpsertImportedProfile({ ...previous, articleKey, status: status || previous.status || '', role: role || previous.role || '', launchReady: launchReady || previous.launchReady || '', updatedAt: now, updatedBy: state.team?.member?.name || 'Команда' });
+        repricerUpsertImportedProfile({
+          ...previous,
+          articleKey,
+          status: '',
+          role: role || previous.role || '',
+          launchReady: launchReady || previous.launchReady || '',
+          targetMarginPct: margin || previous.targetMarginPct || '',
+          updatedAt: now,
+          updatedBy: state.team?.member?.name || 'Команда'
+        });
         summary.profiles += 1;
-        details.push('обновлен профиль SKU');
-        repricerQueueApiTask({ type: 'UPDATE_SKU_PROFILE', action: 'UPDATE_SKU_PROFILE', articleKey, platform: 'all', field: 'status_role_launch', value: [status, role, launchReady].filter(Boolean).join(' / '), note, requestedAt: now });
-        summary.pendingTasks += 1;
+        details.push(margin ? `маржа SKU ≥ ${repricerExportNumber(margin * 100, 1)}%` : 'обновлен профиль SKU');
+        if (role || launchReady) {
+          repricerQueueApiTask({ type: 'UPDATE_SKU_PROFILE', action: 'UPDATE_SKU_PROFILE', articleKey, platform: 'all', field: 'role_launch', value: [role, launchReady].filter(Boolean).join(' / '), note, requestedAt: now });
+          summary.pendingTasks += 1;
+        }
+        if (margin) {
+          repricerQueueApiTask({ type: 'UPDATE_SKU_MARGIN', action: 'UPDATE_SKU_MARGIN', articleKey, platform: 'all', field: 'target_margin_pct', value: margin, targetMarginPct: margin, note, requestedAt: now });
+          summary.pendingTasks += 1;
+        }
       }
       if (cost) {
         repricerUpsertStorageItem('repricerPendingCostFixes', {
@@ -5142,7 +5869,7 @@ function repricerApplyAuditImportRows(rows, fileName = '') {
       summary.history += 1;
     }
     summary.resultRows.push(result);
-  });
+  }
   state.storage.repricerLastAuditImport = {
     fileName,
     importedAt: now,
@@ -5202,7 +5929,7 @@ async function importRepricerAuditFile(file) {
     return;
   }
   repricerCreateRepairSnapshot('import', `Перед импортом ${file.name || 'аудита'}`);
-  const summary = repricerApplyAuditImportRows(rows, file.name || '');
+  const summary = await repricerApplyAuditImportRows(rows, file.name || '');
   repricerDownloadImportResult(summary.resultRows);
   window.alert(`Импорт решений: применено ${summary.applied}, пропущено ${summary.skipped}, ошибок ${summary.errors}. Очередь API: добавить ${summary.pendingAdds}, удалить ${summary.pendingDeletes}, себестоимость ${summary.pendingCosts}, прочие задачи ${summary.pendingTasks}.`);
 }
@@ -5290,7 +6017,7 @@ function applyRepricerSafeFixes() {
       article: row.article || articleKey,
       platform,
       name: row.name || '',
-      owner: row.owner || '',
+      owner: repricerOwnerForPlatform(row, String(platformLabel || '').toLowerCase()) || '',
       requestedAt: now,
       requestedBy: repricerTeamActor()
     };
@@ -5371,6 +6098,7 @@ function repricerExportRows(platform = 'all', sourceRows = null) {
     if ((platform === 'all' || platform === 'wb') && row.wb) sides.push(['WB', row.wb]);
     if ((platform === 'all' || platform === 'ozon') && row.ozon) sides.push(['Ozon', row.ozon]);
     return sides.map(([platformLabel, side]) => ({
+      import_margin_pct: '',
       import_command: '',
       import_price_rub: '',
       import_min_rub: '',
@@ -5390,7 +6118,7 @@ function repricerExportRows(platform = 'all', sourceRows = null) {
       article_key: row.articleKey,
       article: row.article || row.articleKey,
       name: row.name || '',
-      owner: row.owner || '',
+      owner: repricerOwnerForPlatform(row, String(platformLabel || '').toLowerCase()) || '',
       status: row.status || '',
       role: row.role || '',
       launch_ready: row.launchReady || '',
@@ -5416,6 +6144,10 @@ function repricerExportRows(platform = 'all', sourceRows = null) {
       economic_floor_source: side.economicFloorSource || '',
       floor_source: side.floorSourceSummary || '',
       cost_rub: repricerExportNumber(side.costRub),
+      platform_commission_pct: side.commissionPctValue == null ? '' : repricerExportNumber(side.commissionPctValue * 100, 2),
+      platform_costs_rub: repricerExportNumber(side.platformCostsRub),
+      internal_advertising_pct: side.internalAdvertisingPctValue == null ? '' : repricerExportNumber(side.internalAdvertisingPctValue * 100, 3),
+      internal_advertising_rub: repricerExportNumber(side.internalAdvertisingRub),
       fee_stack_rub: repricerExportNumber(side.feeStackRub),
       pre_align_price_rub: repricerExportNumber(side.preAlignPrice),
       capped_price_rub: repricerExportNumber(side.cappedPrice),
@@ -5453,6 +6185,11 @@ function repricerExportRows(platform = 'all', sourceRows = null) {
       alignment_follow_price_rub: repricerExportNumber(side.followPrice),
       margin_pct: side.marginPct == null ? '' : repricerExportNumber(side.marginPct * 100, 1),
       required_margin_pct: side.requiredMarginPct == null ? '' : repricerExportNumber(side.requiredMarginPct * 100, 1),
+      margin_floor_rub: repricerExportNumber(side.marginFloor),
+      margin_policy_source: side.marginPolicySource || '',
+      margin_guard_required: side.marginGuardRequired ? 'yes' : 'no',
+      margin_priority_applied: side.marginPriorityApplied ? 'yes' : 'no',
+      cap_lifted_by_margin: side.capLiftedByMargin ? 'yes' : 'no',
       live_rec_price_rub: repricerExportNumber(side.liveReferencePrice),
       live_delta_rub: side.liveDeltaRub == null ? '' : repricerExportNumber(side.liveDeltaRub),
       live_delta_pct: side.liveDeltaPct == null ? '' : repricerExportNumber(side.liveDeltaPct * 100, 1),
@@ -5504,6 +6241,7 @@ function downloadRepricerExcel(platform = 'all', sourceRows = null) {
   const rows = repricerExportRows(platform, sourceRows);
   if (!rows.length) return { ok: false, rows: 0, tone: 'warn', message: 'В аудите нет строк для выгрузки.' };
   const columns = [
+    ['import_margin_pct', 'Новая маржа SKU, %'],
     ['import_command', 'Команда'],
     ['import_price_rub', 'Новая цена, ₽'],
     ['import_min_rub', 'Новый MIN, ₽'],
@@ -5511,7 +6249,7 @@ function downloadRepricerExcel(platform = 'all', sourceRows = null) {
     ['import_cost_rub', 'Новая себестоимость, ₽'],
     ['import_status', 'Новый статус'],
     ['import_role', 'Новая роль'],
-    ['import_launch_ready', 'Launch ready'],
+    ['import_launch_ready', 'Новый launch ready'],
     ['import_note', 'Комментарий для импорта'],
     ['command_hint', 'Что написать в Команда'],
     ['recommended_action', 'Рекомендованное действие'],
@@ -5547,8 +6285,12 @@ function downloadRepricerExcel(platform = 'all', sourceRows = null) {
     ['economic_floor_fee_rub', 'Economic floor fee, ₽'],
     ['economic_floor_fallback_rub', 'Economic floor fallback, ₽'],
     ['economic_floor_source', 'Economic source'],
-    ['cost_rub', 'Cost, ₽'],
-    ['fee_stack_rub', 'Fee stack, ₽'],
+    ['cost_rub', 'Себестоимость, ₽'],
+    ['platform_commission_pct', 'Комиссия площадки, %'],
+    ['platform_costs_rub', 'Издержки площадки без рекламы, ₽'],
+    ['internal_advertising_pct', 'Внутренняя реклама, %'],
+    ['internal_advertising_rub', 'Внутренняя реклама, ₽/шт.'],
+    ['fee_stack_rub', 'Всего фиксированных издержек, ₽'],
     ['pre_align_price_rub', 'Pre-align, ₽'],
     ['capped_price_rub', 'Capped, ₽'],
     ['reason_code', 'Reason code'],
@@ -5582,6 +6324,11 @@ function downloadRepricerExcel(platform = 'all', sourceRows = null) {
     ['alignment_follow_price_rub', 'Follow price, ₽'],
     ['margin_pct', 'Маржа, %'],
     ['required_margin_pct', 'Порог маржи, %'],
+    ['margin_floor_rub', 'Floor маржи, ₽'],
+    ['margin_policy_source', 'Источник маржи'],
+    ['margin_guard_required', 'Маржа обязательна'],
+    ['margin_priority_applied', 'Маржа приоритетна'],
+    ['cap_lifted_by_margin', 'MAX поднят маржой'],
     ['live_rec_price_rub', 'Live rec, ₽'],
     ['live_delta_rub', 'vs live, ₽'],
     ['live_delta_pct', 'vs live, %'],
@@ -5623,6 +6370,69 @@ function downloadRepricerExcel(platform = 'all', sourceRows = null) {
   ];
   repricerDownloadHtmlTable(columns, rows, `repricer-final-${platform}-${new Date().toISOString().slice(0, 10)}.xls`);
   return { ok: true, rows: rows.length, tone: 'ok', message: `Аудит подготовлен: ${fmt.int(rows.length)} строк.` };
+}
+
+function repricerSkuMarginExportRows(sourceRows = null) {
+  const rows = Array.isArray(sourceRows) ? sourceRows : buildRepricerRows();
+  return rows.map((row) => {
+    const articleKey = String(row.articleKey || row.article || '').trim();
+    const sides = [
+      row.wb ? ['WB', row.wb] : null,
+      row.ozon ? ['Ozon', row.ozon] : null
+    ].filter(Boolean);
+    const profile = repricerFindSkuProfile(articleKey) || {};
+    const sideMargin = sides
+      .map(([, side]) => side?.requiredMarginPct)
+      .find((value) => Number.isFinite(Number(value)) && Number(value) > 0);
+    const currentMargin = Number(profile.targetMarginPct) > 0
+      ? Number(profile.targetMarginPct)
+      : (Number(sideMargin) > 0 ? Number(sideMargin) : null);
+    const marginRequired = sides.some(([, side]) => side?.marginGuardRequired);
+    const marginMissing = sides.some(([, side]) => side?.marginPolicyMissing);
+    const lifecycle = row.productLifecycle || repricerProductLifecycleForRecord(row, row.status || '', articleKey);
+    return {
+      import_margin_pct: '',
+      article_key: articleKey,
+      article: row.article || articleKey,
+      name: row.name || '',
+      status: lifecycle?.label || lifecycle?.status || row.status || '',
+      current_margin_pct: currentMargin == null ? '' : repricerExportNumber(currentMargin * 100, 1),
+      margin_guard_required: marginRequired ? 'да' : 'нет',
+      margin_missing: marginMissing ? 'нужно заполнить' : '',
+      marketplaces: sides.map(([label]) => label).join(' + '),
+      import_note: '',
+      fill_hint: 'Заполните только «Новая маржа SKU, %»: 25, 25% или 0,25. Пусто = не менять.'
+    };
+  }).filter((row) => row.article_key)
+    .sort((left, right) => Number(Boolean(right.margin_missing)) - Number(Boolean(left.margin_missing))
+      || String(left.article || left.article_key).localeCompare(String(right.article || right.article_key), 'ru'));
+}
+
+function downloadRepricerSkuMarginExcel(sourceRows = null) {
+  const rows = repricerSkuMarginExportRows(sourceRows);
+  if (!rows.length) return { ok: false, rows: 0, tone: 'warn', message: 'Нет SKU для заполнения маржи.' };
+  const columns = [
+    ['import_margin_pct', 'Новая маржа SKU, %'],
+    ['article_key', 'article_key'],
+    ['article', 'Артикул'],
+    ['name', 'Название'],
+    ['status', 'Статус товара'],
+    ['current_margin_pct', 'Текущая маржа SKU, %'],
+    ['margin_guard_required', 'Маржа обязательна'],
+    ['margin_missing', 'Что сделать'],
+    ['marketplaces', 'Площадки'],
+    ['import_note', 'Комментарий для импорта'],
+    ['fill_hint', 'Как заполнить']
+  ];
+  const filename = `repricer-sku-margin-${new Date().toISOString().slice(0, 10)}.xls`;
+  repricerDownloadHtmlTable(columns, rows, filename);
+  return {
+    ok: true,
+    rows: rows.length,
+    tone: 'ok',
+    filename,
+    message: `Файл маржи SKU подготовлен: ${fmt.int(rows.length)} товаров. Заполните «Новая маржа SKU, %» и загрузите файл обратно.`
+  };
 }
 
 function repricerExportTemplateRows(platform, options = {}) {
@@ -5813,7 +6623,12 @@ function repricerRenderSignature(operatorLayer = repricerOperatorLayer()) {
     filters.listSize || '',
     JSON.stringify(ui.sections || {}),
     JSON.stringify(ui.history || {}),
-    JSON.stringify(ui.controls || {})
+    JSON.stringify(ui.controls || {}),
+    state.repricerShadowReport?.generatedAt || '',
+    state.repricerShadowReport?.cutover_allowed === true ? 'canonical-active' : 'legacy-shadow',
+    state.repricerLivePrices?.generatedAt || '',
+    state.repricerMarginMinMaxGaps?.generatedAt || '',
+    state.repricerMarginMinMaxGaps?.summary?.blockedRows || 0
   ].join('||');
 }
 
@@ -5983,9 +6798,470 @@ function renderRepricerWorkLogicCard() {
   `;
 }
 
+function repricerLivePriceSnapshotStatus() {
+  const payload = state.repricerLivePrices || state.repricer_live_prices || {};
+  const summary = payload.summary || {};
+  const generatedAt = String(payload.generatedAt || '').trim();
+  const asOfDate = String(payload.asOfDate || '').trim();
+  const generatedStamp = Date.parse(generatedAt);
+  const ageHours = Number.isFinite(generatedStamp) ? Math.max(0, (Date.now() - generatedStamp) / 36e5) : null;
+  const mappedRows = numberOrZero(summary.mappedRows);
+  const unresolvedRows = numberOrZero(summary.unresolvedRows);
+  const wbRows = numberOrZero(summary.platforms?.wb?.mappedRows);
+  const ozonRows = numberOrZero(summary.platforms?.ozon?.mappedRows);
+  const canonicalRows = Array.isArray(state.canonicalRepricer?.rows) ? state.canonicalRepricer.rows : [];
+  const canonicalProtectedRows = canonicalRows.filter((row) => row?.policy?.margin_guard_required === true);
+  const liveKeys = Object.fromEntries(['wb', 'ozon'].map((platform) => [
+    platform,
+    new Set((payload?.platforms?.[platform]?.rows || [])
+      .map((row) => repricerNormalizeArticleKey(row?.articleKey || row?.article || ''))
+      .filter(Boolean))
+  ]));
+  const protectedMissingRows = canonicalProtectedRows.length
+    ? canonicalProtectedRows.filter((row) => !liveKeys[row.platform]?.has(repricerNormalizeArticleKey(row.article_key || row.articleKey || ''))).length
+    : numberOrZero(summary.platforms?.wb?.protectedMissingRows)
+      + numberOrZero(summary.platforms?.ozon?.protectedMissingRows);
+  const liveSignals = state.repricerLiveSignals || state.repricer_live_signals || {};
+  const directStockPlatforms = Array.isArray(liveSignals?.summary?.directPlatforms)
+    ? liveSignals.summary.directPlatforms.map((value) => String(value || '').trim().toLowerCase())
+    : [];
+  const directStockReady = ['wb', 'ozon'].every((platform) => directStockPlatforms.includes(platform));
+  const stockAsOf = ['wb', 'ozon']
+    .map((platform) => String(liveSignals?.platforms?.[platform]?.stock?.asOfDate || '').trim())
+    .filter(Boolean)
+    .sort()
+    .at(-1) || '';
+  const status = String(payload.status || (mappedRows ? 'ok' : 'missing')).trim().toLowerCase();
+  const fresh = status === 'ok' && ageHours !== null && ageHours <= 2;
+  return {
+    payload,
+    summary,
+    generatedAt,
+    asOfDate,
+    ageHours,
+    mappedRows,
+    unresolvedRows,
+    protectedMissingRows,
+    directStockPlatforms,
+    directStockReady,
+    stockAsOf,
+    wbRows,
+    ozonRows,
+    status,
+    fresh
+  };
+}
+
+function renderRepricerLivePriceSyncCard() {
+  const snapshot = repricerLivePriceSnapshotStatus();
+  const cfg = typeof currentConfig === 'function' ? currentConfig() : (window.APP_CONFIG || {});
+  const endpoint = String(
+    cfg.repricerPriceSyncEndpoint
+      || (cfg.supabase?.url ? `${String(cfg.supabase.url).replace(/\/+$/, '')}/functions/v1/repricer-price-sync` : '')
+  ).trim();
+  const tone = snapshot.fresh ? 'ok' : (snapshot.mappedRows ? 'warn' : 'danger');
+  const headline = snapshot.fresh
+    ? `Цены API свежие: ${fmt.int(snapshot.mappedRows)} строк`
+    : (snapshot.mappedRows ? 'Снимок цен нужно обновить' : 'Нет актуального снимка цен API');
+  const snapshotText = snapshot.generatedAt
+    ? `${fmt.date(snapshot.generatedAt)} · дата цены ${snapshot.asOfDate || '—'}`
+    : 'Серверный снимок ещё не опубликован';
+  const blockingText = Array.isArray(snapshot.payload?.blockingReasons)
+    ? snapshot.payload.blockingReasons.map((reason) => String(reason || '').trim()).filter(Boolean).join(' · ')
+    : '';
+  return `
+    <div class="repricer-operator-focus-card repricer-live-price-sync-card" style="margin-top:14px">
+      <div class="section-subhead">
+        <div>
+          <h3>Актуальные цены WB и Ozon</h3>
+          <p class="small muted">Ключи хранятся на сервере. Портал запускает защищённую выгрузку, подставляет articleKey и заново считает маржу → MIN/MAX.</p>
+        </div>
+        ${badge(headline, tone)}
+      </div>
+      <div class="badge-stack" style="margin-top:10px">
+        ${badge(`WB ${fmt.int(snapshot.wbRows)}`, snapshot.wbRows ? 'ok' : 'warn')}
+        ${badge(`Ozon ${fmt.int(snapshot.ozonRows)}`, snapshot.ozonRows ? 'ok' : 'warn')}
+        ${badge(`рабочих SKU не найдено ${fmt.int(snapshot.protectedMissingRows)}`, snapshot.protectedMissingRows ? 'warn' : 'ok')}
+        ${badge(
+          snapshot.directStockReady
+            ? `OOS API WB/Ozon${snapshot.stockAsOf ? ` · ${snapshot.stockAsOf}` : ''}`
+            : `OOS fallback${snapshot.stockAsOf ? ` · ${snapshot.stockAsOf}` : ''}`,
+          snapshot.directStockReady ? 'ok' : 'warn'
+        )}
+        ${snapshot.unresolvedRows ? badge(`внешний каталог ${fmt.int(snapshot.unresolvedRows)}`, 'info') : ''}
+        ${badge(snapshotText, snapshot.fresh ? 'ok' : 'warn')}
+      </div>
+      <div class="quick-actions" style="margin-top:12px">
+        <button type="button" class="quick-chip repricer-price-sync-primary" data-repricer-price-sync ${endpoint ? '' : 'disabled aria-disabled="true"'}>Получить актуальные цены</button>
+      </div>
+      <div class="small muted" style="margin-top:8px" data-repricer-price-sync-status>${endpoint ? 'После запуска WB/Ozon выгрузятся на сервере; страница сама подхватит новый снимок.' : 'Не настроен защищённый server endpoint для синхронизации цен.'}</div>
+      ${blockingText ? `<div class="small muted repricer-price-sync-blocking" style="margin-top:6px">${escapeHtml(`Снимок заблокирован: ${blockingText}`)}</div>` : ''}
+    </div>
+  `;
+}
+
+function setRepricerPriceSyncStatus(root, message, tone = 'info') {
+  const target = root?.querySelector?.('[data-repricer-price-sync-status]');
+  if (!target) return;
+  target.className = `small muted repricer-price-sync-status ${tone || 'info'}`;
+  target.textContent = String(message || '');
+}
+
+function repricerPriceSyncAuthToken() {
+  const cfg = typeof currentConfig === 'function' ? currentConfig() : (window.APP_CONFIG || {});
+  const sessionToken = state.team?.accessToken
+    || window.alteaPortalAuthGate?.getSession?.()?.access_token
+    || window.__ALTEA_AUTH_SESSION__?.access_token
+    || '';
+  if (!sessionToken || sessionToken === cfg.supabase?.anonKey) return '';
+  return sessionToken;
+}
+
+function applyRepricerPriceSnapshotBundle(snapshots = {}) {
+  const livePrices = snapshots.repricer_live_prices;
+  let applied = false;
+  if (livePrices && typeof livePrices === 'object') {
+    state.repricerLivePrices = livePrices;
+    state.repricer_live_prices = livePrices;
+    state.smartPriceWorkbenchLive = livePrices;
+    applied = true;
+  }
+  if (snapshots.canonical_repricer) {
+    state.canonicalRepricer = snapshots.canonical_repricer;
+    applied = true;
+  }
+  if (snapshots.repricer_live_signals) {
+    state.repricerLiveSignals = snapshots.repricer_live_signals;
+    state.repricer_live_signals = snapshots.repricer_live_signals;
+    applied = true;
+  }
+  if (snapshots.repricer_team_policy_proposals) {
+    state.repricerTeamPolicyProposals = snapshots.repricer_team_policy_proposals;
+    applied = true;
+  }
+  if (snapshots.repricer_shadow_report) {
+    state.repricerShadowReport = snapshots.repricer_shadow_report;
+    applied = true;
+  }
+  if (snapshots.repricer_price_apply_plan) {
+    state.repricerPriceApplyPlan = snapshots.repricer_price_apply_plan;
+    applied = true;
+  }
+  if (snapshots.repricer_price_apply_receipt) {
+    state.repricerPriceApplyReceipt = snapshots.repricer_price_apply_receipt;
+    applied = true;
+  }
+  if (snapshots.repricer_price_apply_verification) {
+    state.repricerPriceApplyVerification = snapshots.repricer_price_apply_verification;
+    applied = true;
+  }
+  if (snapshots.repricer) {
+    state.repricer = snapshots.repricer;
+    applied = true;
+  }
+  if (applied && typeof invalidateRepricerRowsCache === 'function') invalidateRepricerRowsCache();
+  return applied;
+}
+
+function pollRepricerPriceSnapshot(root, baselineStamp, attempt = 0) {
+  const maxAttempts = 30;
+  const testPollDelay = Number(window.__ALTEA_REPRICER_PRICE_SYNC_TEST_POLL_MS__);
+  const pollDelay = Number.isFinite(testPollDelay) && testPollDelay >= 0
+    ? testPollDelay
+    : (attempt === 0 ? 10000 : 15000);
+  window.setTimeout(async () => {
+    try {
+      if (typeof resetPortalSnapshotState === 'function') resetPortalSnapshotState();
+      const snapshots = typeof loadPortalSnapshotRows === 'function' ? await loadPortalSnapshotRows() : {};
+      const nextStamp = Date.parse(snapshots?.repricer_live_prices?.generatedAt || '');
+      if (Number.isFinite(nextStamp) && nextStamp > baselineStamp) {
+        applyRepricerPriceSnapshotBundle(snapshots);
+        delete root.dataset.repricerRenderSignature;
+        renderRepricer();
+        const nextRoot = document.getElementById('view-repricer') || root;
+        setRepricerPriceSyncStatus(nextRoot, 'Готово: свежие цены подставлены, рекомендации пересчитаны.', 'ok');
+        return;
+      }
+      if (attempt + 1 < maxAttempts) {
+        setRepricerPriceSyncStatus(root, `Сервер собирает цены и сопоставляет артикулы… проверка ${fmt.int(attempt + 1)}/${fmt.int(maxAttempts)}`, 'info');
+        pollRepricerPriceSnapshot(root, baselineStamp, attempt + 1);
+        return;
+      }
+      setRepricerPriceSyncStatus(root, 'Запуск принят, но новый снимок ещё не опубликован. Обновите раздел через несколько минут.', 'warn');
+    } catch (error) {
+      console.warn('[repricer.priceSync.poll]', error);
+      if (attempt + 1 < maxAttempts) {
+        pollRepricerPriceSnapshot(root, baselineStamp, attempt + 1);
+      } else {
+        setRepricerPriceSyncStatus(root, 'Не удалось прочитать результат синхронизации. Обновите страницу.', 'danger');
+      }
+    }
+  }, pollDelay);
+}
+
+async function requestRepricerPriceSync(button) {
+  if (!button || button.dataset.repricerPriceSyncBusy === '1') return;
+  const root = button.closest?.('#view-repricer') || document.getElementById('view-repricer');
+  const cfg = typeof currentConfig === 'function' ? currentConfig() : (window.APP_CONFIG || {});
+  const endpoint = String(
+    cfg.repricerPriceSyncEndpoint
+      || (cfg.supabase?.url ? `${String(cfg.supabase.url).replace(/\/+$/, '')}/functions/v1/repricer-price-sync` : '')
+  ).trim();
+  const token = repricerPriceSyncAuthToken();
+  if (!endpoint) {
+    setRepricerPriceSyncStatus(root, 'Не настроен защищённый server endpoint.', 'danger');
+    return;
+  }
+  if (!token) {
+    setRepricerPriceSyncStatus(root, 'Нужно войти в портал под рабочей учётной записью.', 'danger');
+    return;
+  }
+  const originalText = button.textContent;
+  button.dataset.repricerPriceSyncBusy = '1';
+  button.disabled = true;
+  button.setAttribute('aria-busy', 'true');
+  button.textContent = 'Запускаю…';
+  setRepricerPriceSyncStatus(root, 'Отправляю защищённый запрос на сервер…', 'info');
+  try {
+    const response = await fetch(endpoint, {
+      method: 'POST',
+      headers: {
+        Authorization: `Bearer ${token}`,
+        apikey: cfg.supabase?.anonKey || '',
+        'Content-Type': 'application/json'
+      },
+      body: JSON.stringify({
+        source: 'portal-repricer',
+        requestedAt: new Date().toISOString()
+      })
+    });
+    const payload = await response.json().catch(() => ({}));
+    if (!response.ok || payload?.ok === false) {
+      const failureMessage = response.status === 404
+        ? 'Серверная функция синхронизации ещё не опубликована (HTTP 404).'
+        : (payload?.detail || payload?.error || `HTTP ${response.status}`);
+      throw new Error(failureMessage);
+    }
+    const baselineStamp = Date.parse((state.repricerLivePrices || {}).generatedAt || '') || 0;
+    setRepricerPriceSyncStatus(root, 'Запуск принят. Собираю WB/Ozon, сопоставляю артикулы и пересчитываю репрайсер…', 'ok');
+    pollRepricerPriceSnapshot(root, baselineStamp);
+  } catch (error) {
+    console.error('[repricer.priceSync]', error);
+    setRepricerPriceSyncStatus(root, `Не удалось запустить синхронизацию: ${error?.message || error}`, 'danger');
+  } finally {
+    window.setTimeout(() => {
+      button.disabled = false;
+      button.removeAttribute('aria-busy');
+      delete button.dataset.repricerPriceSyncBusy;
+      button.textContent = originalText;
+    }, 900);
+  }
+}
+
+function renderRepricerPriceApplyCard() {
+  const plan = state.repricerPriceApplyPlan || {};
+  const receipt = state.repricerPriceApplyReceipt || {};
+  const verification = state.repricerPriceApplyVerification || {};
+  const cfg = typeof currentConfig === 'function' ? currentConfig() : (window.APP_CONFIG || {});
+  const endpoint = String(
+    cfg.repricerPriceApplyEndpoint
+      || (cfg.supabase?.url ? `${String(cfg.supabase.url).replace(/\/+$/, '')}/functions/v1/repricer-price-apply` : '')
+  ).trim();
+  const actions = numberOrZero(plan?.summary?.actions);
+  const applyAllowed = plan?.applyAllowed === true && plan?.status === 'ready' && actions > 0;
+  const blockers = Array.isArray(plan?.globalBlockers) ? plan.globalBlockers : [];
+  const verified = verification?.status === 'verified';
+  const submitted = receipt?.status === 'submitted_pending_verification';
+  const tone = verified ? 'ok' : (applyAllowed ? 'warn' : 'danger');
+  const headline = verified
+    ? `Проверено: ${fmt.int(verification?.summary?.matched || 0)} цен`
+    : (applyAllowed ? `Готов план: ${fmt.int(actions)} цен` : 'Загрузка цен заблокирована');
+  return `
+    <div class="repricer-operator-focus-card repricer-price-apply-card" style="margin-top:14px">
+      <div class="section-subhead">
+        <div>
+          <h3>Загрузка утверждённых цен</h3>
+          <p class="small muted">Сначала сервер строит неизменяемый план. Отправка доступна только для ready-строк с прямыми остатками, свежей API-ценой и пройденными шлюзами.</p>
+        </div>
+        ${badge(headline, tone)}
+      </div>
+      <div class="badge-stack" style="margin-top:10px">
+        ${badge(`WB ${fmt.int(plan?.summary?.wb || 0)}`, actions ? 'info' : 'warn')}
+        ${badge(`Ozon ${fmt.int(plan?.summary?.ozon || 0)}`, actions ? 'info' : 'warn')}
+        ${badge(`отклонено ${fmt.int(plan?.summary?.rejected || 0)}`, plan?.summary?.rejected ? 'warn' : 'ok')}
+        ${submitted ? badge('отправлено, ждём сверку', 'warn') : ''}
+        ${verified ? badge(`совпало ${fmt.int(verification?.summary?.matched || 0)}`, 'ok') : ''}
+      </div>
+      ${blockers.length ? `<div class="small muted" style="margin-top:8px">${escapeHtml(`Стоп: ${blockers.join(' · ')}`)}</div>` : ''}
+      <div class="quick-actions" style="margin-top:12px">
+        <button type="button" class="quick-chip" data-repricer-price-apply="plan" ${endpoint ? '' : 'disabled aria-disabled="true"'}>Сформировать план загрузки</button>
+        <button type="button" class="quick-chip repricer-price-apply-primary" data-repricer-price-apply="apply" ${endpoint && applyAllowed ? '' : 'disabled aria-disabled="true"'}>Отправить ${fmt.int(actions)} утверждённых цен</button>
+      </div>
+      <div class="small muted" style="margin-top:8px" data-repricer-price-apply-status>${endpoint ? 'Отправка потребует отдельного подтверждения и после API автоматически сверит фактические цены.' : 'Не настроен защищённый server endpoint применения цен.'}</div>
+    </div>
+  `;
+}
+
+function setRepricerPriceApplyStatus(root, message, tone = 'info') {
+  const target = root?.querySelector?.('[data-repricer-price-apply-status]');
+  if (!target) return;
+  target.className = `small muted repricer-price-apply-status ${tone || 'info'}`;
+  target.textContent = String(message || '');
+}
+
+function releaseRepricerPriceApplyBusy(root) {
+  root?.querySelectorAll?.('[data-repricer-price-apply][data-repricer-price-apply-busy="1"]').forEach((button) => {
+    button.disabled = false;
+    button.removeAttribute('aria-busy');
+    delete button.dataset.repricerPriceApplyBusy;
+    button.textContent = button.dataset.repricerPriceApplyOriginalText || button.textContent;
+    delete button.dataset.repricerPriceApplyOriginalText;
+  });
+}
+
+function pollRepricerPriceApplySnapshot(root, mode, baselineStamp, attempt = 0, expected = {}) {
+  const maxAttempts = 40;
+  const testPollDelay = Number(window.__ALTEA_REPRICER_PRICE_APPLY_TEST_POLL_MS__);
+  const pollDelay = Number.isFinite(testPollDelay) && testPollDelay >= 0 ? testPollDelay : (attempt === 0 ? 10000 : 15000);
+  window.setTimeout(async () => {
+    try {
+      if (typeof resetPortalSnapshotState === 'function') resetPortalSnapshotState();
+      const snapshots = typeof loadPortalSnapshotRows === 'function' ? await loadPortalSnapshotRows() : {};
+      const target = mode === 'apply'
+        ? snapshots?.repricer_price_apply_verification
+        : snapshots?.repricer_price_apply_plan;
+      const nextStamp = Date.parse(target?.generatedAt || '');
+      const requestedByMatches = !expected.requestedBy
+        || String(target?.requestedBy || '').trim().toLowerCase() === String(expected.requestedBy).trim().toLowerCase();
+      const confirmationMatches = mode !== 'apply'
+        || !expected.confirmationHash
+        || String(target?.confirmationHash || '').trim() === String(expected.confirmationHash).trim();
+      if (Number.isFinite(nextStamp) && nextStamp > baselineStamp && requestedByMatches && confirmationMatches) {
+        applyRepricerPriceSnapshotBundle(snapshots);
+        delete root.dataset.repricerRenderSignature;
+        renderRepricer();
+        const nextRoot = document.getElementById('view-repricer') || root;
+        const succeeded = mode === 'apply'
+          ? target?.status === 'verified'
+          : target?.status === 'ready';
+        setRepricerPriceApplyStatus(
+          nextRoot,
+          mode === 'apply'
+            ? (succeeded ? 'Готово: цены изменены и совпали с повторной API-выгрузкой.' : 'Сверка завершилась с расхождениями. Повторная отправка заблокирована.')
+            : (succeeded ? `План готов: ${fmt.int(target?.summary?.actions || 0)} цен. Проверьте и подтвердите отправку.` : 'План построен, но защитные шлюзы не позволяют отправку.'),
+          succeeded ? 'ok' : 'danger'
+        );
+        return;
+      }
+      if (attempt + 1 < maxAttempts) {
+        setRepricerPriceApplyStatus(root, `Сервер выполняет ${mode === 'apply' ? 'загрузку и сверку' : 'проверку плана'}… ${fmt.int(attempt + 1)}/${fmt.int(maxAttempts)}`, 'info');
+        pollRepricerPriceApplySnapshot(root, mode, baselineStamp, attempt + 1, expected);
+        return;
+      }
+      setRepricerPriceApplyStatus(root, 'Сервер не опубликовал результат в ожидаемое время. Проверьте workflow.', 'warn');
+      releaseRepricerPriceApplyBusy(root);
+    } catch (error) {
+      console.warn('[repricer.priceApply.poll]', error);
+      if (attempt + 1 < maxAttempts) {
+        pollRepricerPriceApplySnapshot(root, mode, baselineStamp, attempt + 1, expected);
+      } else {
+        setRepricerPriceApplyStatus(root, 'Не удалось прочитать результат загрузки цен.', 'danger');
+        releaseRepricerPriceApplyBusy(root);
+      }
+    }
+  }, pollDelay);
+}
+
+async function requestRepricerPriceApply(button) {
+  if (!button || button.dataset.repricerPriceApplyBusy === '1') return;
+  const mode = String(button.getAttribute('data-repricer-price-apply') || 'plan').trim().toLowerCase();
+  const root = button.closest?.('#view-repricer') || document.getElementById('view-repricer');
+  const cfg = typeof currentConfig === 'function' ? currentConfig() : (window.APP_CONFIG || {});
+  const endpoint = String(
+    cfg.repricerPriceApplyEndpoint
+      || (cfg.supabase?.url ? `${String(cfg.supabase.url).replace(/\/+$/, '')}/functions/v1/repricer-price-apply` : '')
+  ).trim();
+  const token = repricerPriceSyncAuthToken();
+  const plan = state.repricerPriceApplyPlan || {};
+  const confirmationHash = String(plan?.confirmationHash || '').trim();
+  if (!endpoint) {
+    setRepricerPriceApplyStatus(root, 'Не настроен защищённый server endpoint.', 'danger');
+    return;
+  }
+  if (!token) {
+    setRepricerPriceApplyStatus(root, 'Нужно войти в портал под рабочей учётной записью.', 'danger');
+    return;
+  }
+  if (mode === 'apply') {
+    if (!(plan?.applyAllowed === true && confirmationHash && numberOrZero(plan?.summary?.actions) > 0)) {
+      setRepricerPriceApplyStatus(root, 'Текущий план не разрешён к отправке.', 'danger');
+      return;
+    }
+    const confirmed = window.confirm(
+      `Отправить ${fmt.int(plan.summary.actions)} утверждённых цен на WB/Ozon?\n\n`
+      + 'После отправки сервер повторно выгрузит цены и потребует точного совпадения.'
+    );
+    if (!confirmed) return;
+  }
+  const baselineTarget = mode === 'apply' ? state.repricerPriceApplyVerification : state.repricerPriceApplyPlan;
+  const baselineStamp = Date.parse(baselineTarget?.generatedAt || '') || 0;
+  const originalText = button.textContent;
+  let queued = false;
+  button.dataset.repricerPriceApplyBusy = '1';
+  button.dataset.repricerPriceApplyOriginalText = originalText;
+  button.disabled = true;
+  button.setAttribute('aria-busy', 'true');
+  button.textContent = mode === 'apply' ? 'Отправляю…' : 'Строю план…';
+  setRepricerPriceApplyStatus(root, 'Отправляю защищённый запрос на сервер…', 'info');
+  try {
+    const response = await fetch(endpoint, {
+      method: 'POST',
+      headers: {
+        Authorization: `Bearer ${token}`,
+        apikey: cfg.supabase?.anonKey || '',
+        'Content-Type': 'application/json'
+      },
+      body: JSON.stringify({
+        mode,
+        confirmationHash: mode === 'apply' ? confirmationHash : ''
+      })
+    });
+    const payload = await response.json().catch(() => ({}));
+    if (!response.ok || payload?.ok === false) {
+      const failureMessage = response.status === 404
+        ? 'Серверная функция применения цен ещё не опубликована (HTTP 404).'
+        : (payload?.detail || payload?.error || `HTTP ${response.status}`);
+      throw new Error(failureMessage);
+    }
+    setRepricerPriceApplyStatus(
+      root,
+      mode === 'apply' ? 'Запуск принят. Загружаю цены и жду повторную API-сверку…' : 'Запуск принят. Проверяю все шлюзы и строю план…',
+      'ok'
+    );
+    queued = true;
+    pollRepricerPriceApplySnapshot(root, mode, baselineStamp, 0, {
+      requestedBy: String(payload?.requestedBy || '').trim(),
+      confirmationHash: mode === 'apply' ? confirmationHash : ''
+    });
+  } catch (error) {
+    console.error('[repricer.priceApply]', error);
+    setRepricerPriceApplyStatus(root, `Не удалось запустить: ${error?.message || error}`, 'danger');
+  } finally {
+    if (!queued) releaseRepricerPriceApplyBusy(root);
+  }
+}
+
 function repricerOperatorTaskPlan(health, stats = {}) {
   const metrics = health?.metrics || {};
   const tasks = [
+    {
+      title: 'Заполнить маржу SKU',
+      count: metrics.missing_required_margin || 0,
+      hint: 'Активные товары и новинки без собственной маржи не попадут в выгрузку.',
+      mode: 'blocked',
+      tone: 'danger',
+      source: 'SKU / маржа'
+    },
     {
       title: 'Проверить цены по приходу',
       count: stats.arrivalPriceCheckSides || 0,
@@ -6055,7 +7331,7 @@ function repricerOperatorTaskPlan(health, stats = {}) {
 }
 
 function repricerIssueBatchCounts(rows) {
-  const counts = { missing_min: 0, missing_cost: 0, below_min: 0, live_drift: 0 };
+  const counts = { missing_margin: 0, missing_min: 0, missing_cost: 0, below_min: 0, live_drift: 0 };
   repricerCollectSides(rows).forEach(({ side }) => {
     if (!side) return;
     const batch = repricerIssueBatch(side);
@@ -6068,7 +7344,8 @@ function repricerOperatorQueueRows(rows, limit = 6) {
   const scored = repricerCollectSides(rows).filter(({ side }) => side && !side.outOfSpec && (side.confidence !== 'green' || side.arrivalPriceSignal?.needsCheck))
     .map(({ row, side }) => {
       const flags = repricerIssueFlags(side);
-      const score = (flags.missingMin ? 120 : 0)
+      const score = (flags.missingMargin ? 150 : 0)
+        + (flags.missingMin ? 120 : 0)
         + (flags.belowMin ? 90 : 0)
         + (side.criticalGate === 'BLOCK' ? 70 : 0)
         + (side.marginRisk ? 55 : 0)
@@ -6126,6 +7403,9 @@ function runRepricerExport(button, task) {
 function runRepricerExportMode(button, mode) {
   runRepricerExport(button, () => {
     const rows = buildRepricerRows();
+    if (mode === 'margin:sku') {
+      return downloadRepricerSkuMarginExcel(rows);
+    }
     if (mode === 'template:wb') {
       return downloadRepricerTemplateExcel('wb', rows, repricerTemplateStats(rows, 'wb'));
     }
@@ -6161,55 +7441,25 @@ function repricerProductLifecycleEditorHtml(row = {}) {
   const articleKey = String(row.articleKey || row.article || row.sku || '').trim();
   if (!articleKey) return '';
   const lifecycle = row.productLifecycle || repricerProductLifecycleForRecord(row, row.status || '', articleKey);
-  const manualOverride = typeof productLifecycleOverrideForArticle === 'function'
-    ? productLifecycleOverrideForArticle(articleKey)
-    : null;
-  const options = typeof productLifecycleOptionsHtml === 'function'
-    ? productLifecycleOptionsHtml(lifecycle?.key || lifecycle?.label || row.status || 'active')
-    : '';
-
   return `
-    <form class="repricer-product-lifecycle-form" data-article-key="${escapeHtml(articleKey)}" style="grid-column:1 / -1;margin:10px 0 4px">
-      <div class="filters repricer-filters" style="grid-template-columns:minmax(180px,240px) minmax(220px,1fr);margin-bottom:8px">
-        <label>
-          <span class="muted small">Статус товара</span>
-          <select name="status">${options}</select>
-        </label>
-        <label>
-          <span class="muted small">Комментарий</span>
-          <input name="note" value="${escapeHtml(manualOverride?.note || '')}" placeholder="Почему меняем статус / до какой даты">
-        </label>
-      </div>
+    <div class="repricer-product-lifecycle-form" data-article-key="${escapeHtml(articleKey)}" style="grid-column:1 / -1;margin:10px 0 4px">
+      <div class="muted small">Статус товара: <strong>${escapeHtml(lifecycle?.label || lifecycle?.status || row.status || '—')}</strong>. Изменение создаётся в SKU Workspace и применяется только после подтверждения РОПа.</div>
       <div class="quick-actions">
-        <button type="submit" class="quick-chip">Сохранить статус</button>
-        <button type="button" class="quick-chip" data-repricer-product-lifecycle-reset data-article-key="${escapeHtml(articleKey)}">Авто-статус</button>
+        <button type="button" class="quick-chip" data-repricer-open-sku-workspace data-article-key="${escapeHtml(articleKey)}">Открыть SKU Workspace</button>
       </div>
-    </form>
+    </div>
   `;
 }
 
-async function saveRepricerProductLifecycleForm(form) {
-  const articleKey = String(form?.getAttribute('data-article-key') || '').trim();
-  if (!articleKey || typeof upsertProductLifecycleStatus !== 'function') return;
-  const formData = new FormData(form);
-  await upsertProductLifecycleStatus({
-    articleKey,
-    status: formData.get('status'),
-    note: formData.get('note')
-  });
-  if (typeof invalidateRepricerRowsCache === 'function') invalidateRepricerRowsCache();
-  renderRepricer();
-}
-
-async function resetRepricerProductLifecycle(articleKey) {
-  const normalizedArticleKey = String(articleKey || '').trim();
-  if (!normalizedArticleKey || typeof removeProductLifecycleStatus !== 'function') return;
-  await removeProductLifecycleStatus(normalizedArticleKey);
-  if (typeof invalidateRepricerRowsCache === 'function') invalidateRepricerRowsCache();
-  renderRepricer();
-}
-
 function attachRepricerEvents(root) {
+  root.querySelector('[data-repricer-price-sync]')?.addEventListener('click', async (event) => {
+    await requestRepricerPriceSync(event.currentTarget);
+  });
+  root.querySelectorAll('[data-repricer-price-apply]').forEach((button) => {
+    button.addEventListener('click', async (event) => {
+      await requestRepricerPriceApply(event.currentTarget);
+    });
+  });
   root.querySelectorAll('[data-repricer-layer-toggle]').forEach((button) => {
     button.addEventListener('click', () => {
       setRepricerOperatorLayer(button.getAttribute('data-repricer-layer-toggle') || 'simple');
@@ -6225,7 +7475,14 @@ function attachRepricerEvents(root) {
   const auditImportInput = root.querySelector('[data-repricer-audit-import]');
   root.querySelectorAll('[data-repricer-import="audit"]').forEach((button) => {
     button.addEventListener('click', () => {
-      setRepricerExportStatus(root, 'Выберите файл аудита, который скачали из портала и поправили в Excel.', 'info');
+      const importKind = button.getAttribute('data-repricer-import-kind') || 'audit';
+      setRepricerExportStatus(
+        root,
+        importKind === 'margin'
+          ? 'Выберите файл «Маржа SKU Excel», в котором заполнена колонка «Новая маржа SKU, %».'
+          : 'Выберите файл аудита, который скачали из портала и поправили в Excel.',
+        'info'
+      );
       auditImportInput?.click();
     });
   });
@@ -6331,15 +7588,11 @@ function attachRepricerEvents(root) {
       resetRepricerSkuProfile(button.getAttribute('data-article-key') || '');
     });
   });
-  root.querySelectorAll('.repricer-product-lifecycle-form').forEach((form) => {
-    form.addEventListener('submit', async (event) => {
-      event.preventDefault();
-      await saveRepricerProductLifecycleForm(event.currentTarget);
-    });
-  });
-  root.querySelectorAll('[data-repricer-product-lifecycle-reset]').forEach((button) => {
-    button.addEventListener('click', async () => {
-      await resetRepricerProductLifecycle(button.getAttribute('data-article-key') || '');
+  root.querySelectorAll('[data-repricer-open-sku-workspace]').forEach((button) => {
+    button.addEventListener('click', () => {
+      state.filters = state.filters || {};
+      state.filters.search = button.getAttribute('data-article-key') || '';
+      if (typeof setView === 'function') setView('sku-contour');
     });
   });
   root.querySelectorAll('.repricer-corridor-form').forEach((form) => {
@@ -6354,9 +7607,9 @@ function attachRepricerEvents(root) {
     });
   });
   root.querySelectorAll('.repricer-override-form').forEach((form) => {
-    form.addEventListener('submit', (event) => {
+    form.addEventListener('submit', async (event) => {
       event.preventDefault();
-      saveRepricerOverride(event.currentTarget);
+      await saveRepricerOverride(event.currentTarget);
     });
   });
   root.querySelectorAll('[data-repricer-reset]').forEach((button) => {
@@ -6365,8 +7618,8 @@ function attachRepricerEvents(root) {
     });
   });
   root.querySelectorAll('[data-repricer-adopt-offer]').forEach((button) => {
-    button.addEventListener('click', () => {
-      applyRepricerPromoOffer(button.getAttribute('data-article-key') || '', button.getAttribute('data-platform') || 'wb');
+    button.addEventListener('click', async () => {
+      await applyRepricerPromoOffer(button.getAttribute('data-article-key') || '', button.getAttribute('data-platform') || 'wb');
     });
   });
   if (root.dataset.repricerExportDelegate !== '20260516direct') {
@@ -6385,14 +7638,54 @@ function attachRepricerEvents(root) {
 function repricerRuntimeStatusBadges() {
   const readiness = state.portalFeatureReadiness?.features?.repricer || {};
   const runtime = state.portalRuntimeWiring || {};
-  const canonicalRows = Array.isArray(state.canonicalRepricer?.rows) ? state.canonicalRepricer.rows.length : 0;
+  const canonical = state.canonicalRepricer || {};
+  const canonicalRows = Array.isArray(canonical.rows) ? canonical.rows.length : 0;
+  const shadow = state.repricerShadowReport || {};
+  const shadowSummary = shadow.summary || {};
+  const gaps = state.repricerMarginMinMaxGaps || {};
+  const gapRows = Number(gaps?.summary?.blockedRows);
+  const shadowPresent = shadow.schema === 'repricer-shadow-report-v1';
   const badges = [];
-  if (canonicalRows) badges.push(badge(`canonical ${fmt.int(canonicalRows)}`, 'info'));
-  const status = String(readiness.status || state.canonicalRepricer?.feature_status || '').trim().toLowerCase();
+  if (shadowPresent) {
+    const cutoverAllowed = shadow.cutover_allowed === true;
+    const canonicalVisible = canonicalRepricerRowsAvailable();
+    badges.push(badge(
+      cutoverAllowed
+        ? 'CANONICAL ACTIVE'
+        : (canonicalVisible ? 'CANONICAL AUDIT' : 'LEGACY FALLBACK'),
+      cutoverAllowed ? 'ok' : 'warn'
+    ));
+    const readyRows = shadowSummary.canonical_ready_rows ?? canonical?.summary?.publishable_rows ?? 0;
+    badges.push(badge(`canonical ${fmt.int(readyRows)}/${fmt.int(canonicalRows)}`, 'info'));
+    if (Number.isFinite(gapRows)) {
+      badges.push(badge(
+        gapRows > 0 ? `маржа/MIN/MAX: ${fmt.int(gapRows)} стоп` : 'маржа/MIN/MAX: заполнено',
+        gapRows > 0 ? 'danger' : 'ok'
+      ));
+    }
+    const comparableRows = Number(shadowSummary.comparable_ready_rows) || 0;
+    const agreement = Number(shadowSummary.price_agreement);
+    if (comparableRows > 0 && Number.isFinite(agreement)) {
+      const threshold = Number(shadow?.thresholds?.min_price_agreement);
+      const parityOk = Number.isFinite(threshold) ? agreement >= threshold : agreement >= 0.95;
+      badges.push(badge(`паритет цен ${fmt.pct(agreement)}`, parityOk ? 'ok' : 'warn'));
+    }
+  } else if (canonicalRows) {
+    badges.push(badge(`canonical ${fmt.int(canonicalRows)} · shadow нет`, 'warn'));
+  }
+  const status = String(
+    shadowPresent
+      ? (canonical?.summary?.feature_status || canonical?.feature_status || '')
+      : (readiness.status || canonical?.feature_status || '')
+  ).trim().toLowerCase();
   if (status) {
     const tone = status === 'ok' ? 'ok' : (status === 'blocked' ? 'danger' : 'warn');
-    const publishable = readiness.publishable_rows ?? state.canonicalRepricer?.summary?.publishable_rows;
-    const eligible = readiness.eligible_rows ?? state.canonicalRepricer?.summary?.eligible_rows;
+    const publishable = shadowPresent
+      ? canonical?.summary?.publishable_rows
+      : (readiness.publishable_rows ?? canonical?.summary?.publishable_rows);
+    const eligible = shadowPresent
+      ? canonical?.summary?.eligible_rows
+      : (readiness.eligible_rows ?? canonical?.summary?.eligible_rows);
     const suffix = eligible != null ? ` ${fmt.int(publishable || 0)}/${fmt.int(eligible)}` : '';
     badges.push(badge(`repricer ${status}${suffix}`, tone));
   }
@@ -6410,12 +7703,20 @@ function renderRepricer() {
   if (root.dataset.repricerRenderSignature === renderSignature && root.children.length) return;
   const sourceRows = buildRepricerRows();
   if (!sourceRows.length) {
+    root.dataset.repricerDataSource = 'missing';
     root.dataset.repricerRenderSignature = renderSignature;
     root.innerHTML = `<div class="card"><div class="head"><div><h3>Репрайсер</h3><div class="muted small">Контур пока не получил smart price workbench.</div></div>${badge('нет данных', 'warn')}</div><div class="muted" style="margin-top:10px">Нужно дождаться загрузки снапшота цен, после этого вкладка начнет считать рекомендации и хранить override прямо в портале.</div></div>`;
     return;
   }
+  const canonicalDisplay = sourceRows.some((row) => row?.canonicalSource === true);
+  root.dataset.repricerDataSource = canonicalDisplay
+    ? (canonicalRepricerCutoverAllowed() ? 'canonical-active' : 'canonical-audit')
+    : 'legacy-fallback';
   const operatorSimple = operatorLayer !== 'advanced';
+  scheduleRepricerAutomaticSharpPriceApprovals(sourceRows);
   const health = repricerHealthcheck(sourceRows);
+  const livePriceSyncCard = renderRepricerLivePriceSyncCard();
+  const priceApplyCard = renderRepricerPriceApplyCard();
   const smokeTests = health.smokeTests;
   const sideRows = sourceRows.flatMap((row) => [row.wb, row.ozon].filter(Boolean));
   const arrivalSignalStats = repricerArrivalSignalStats(sourceRows);
@@ -6539,6 +7840,7 @@ function renderRepricer() {
   if (operatorSimple) {
     const batchCounts = repricerIssueBatchCounts(sourceRows);
     const batchButtons = [
+      ['missing_margin', 'нет маржи SKU', batchCounts.missing_margin, 'danger'],
       ['missing_min', 'нет MIN', batchCounts.missing_min, 'danger'],
       ['missing_cost', 'нет себестоимости', batchCounts.missing_cost, 'warn'],
       ['below_min', 'ниже MIN вручную', batchCounts.below_min, 'danger'],
@@ -6585,6 +7887,7 @@ function renderRepricer() {
     const wbCheckCount = safeCount(wbTemplate.yellow) + safeCount(wbTemplate.red);
     const ozonCheckCount = safeCount(ozonTemplate.yellow) + safeCount(ozonTemplate.red);
     const emptyExportReasons = [
+      ['нет маржи SKU', safeCount(wbTemplate.missingMargin) + safeCount(ozonTemplate.missingMargin), 'Заполнить утверждённую маржу через аудит'],
       ['нет MIN', safeCount(wbTemplate.missingMin) + safeCount(ozonTemplate.missingMin), 'Заполнить MIN/MAX в Ценах или через аудит'],
       ['ниже MIN вручную', safeCount(wbTemplate.belowMin) + safeCount(ozonTemplate.belowMin), 'Проверить цену и рабочий порог'],
       ['нет себестоимости', safeCount(wbTemplate.missingCost) + safeCount(ozonTemplate.missingCost), 'Добавить себестоимость или fee-контур'],
@@ -6640,7 +7943,10 @@ function renderRepricer() {
       </div>
 
       <div class="repricer-operator-panel repricer-human-panel repricer-game-panel" data-repricer-operator-panel data-repricer-native-panel="1">
+        <div class="badge-stack repricer-runtime-status" style="margin:0 0 12px">${summaryBadges}</div>
         ${repricerGameHeroHtml(readiness)}
+        ${livePriceSyncCard}
+        ${priceApplyCard}
         ${repricerMarketplaceHtml}
         ${arrivalSignalCard}
         ${noSafeExport ? `
@@ -6653,13 +7959,15 @@ function renderRepricer() {
           </div>
         ` : ''}
         <div class="repricer-human-actions">
+          <button type="button" class="quick-chip repricer-audit-primary" data-repricer-export="margin:sku">Скачать маржу SKU</button>
+          <button type="button" class="quick-chip" data-repricer-import="audit" data-repricer-import-kind="margin">Загрузить маржу SKU</button>
           <button type="button" class="quick-chip repricer-audit-primary" data-repricer-export="all">Аудит Excel</button>
           <button type="button" class="quick-chip" data-repricer-import="audit" title="Загрузить обратно файл аудита после правок в Excel">Загрузить аудит</button>
           <button type="button" class="quick-chip" data-repricer-export="stop:all">Стоп-лист</button>
           <button type="button" class="quick-chip" data-repricer-export="fix:proposals">Предложения</button>
           <button type="button" class="quick-chip repricer-advanced-toggle" data-repricer-layer-toggle="advanced">Полный режим</button>
         </div>
-        <div class="repricer-export-status" data-repricer-export-status>Нажмите WB или Ozon. После сохранения здесь появится имя файла и откроется папка Downloads.</div>
+        <div class="repricer-export-status" data-repricer-export-status>Для маржи: скачайте короткий файл, заполните «Новая маржа SKU, %» и загрузите его обратно.</div>
         <input id="repricerAuditImportInput" class="hidden" type="file" data-repricer-audit-import accept=".xls,.html,.htm,.csv,.tsv,.txt,text/html,text/csv,text/tab-separated-values,application/vnd.ms-excel">
       </div>
 
@@ -6776,6 +8084,8 @@ function renderRepricer() {
         <p>Здесь связываются три вещи: рабочие MIN/MAX из «Цен», рекомендация модели и ручные решения по конкретной площадке.</p>
       </div>
       <div class="quick-actions">
+        <button type="button" class="quick-chip repricer-audit-primary" data-repricer-export="margin:sku">Скачать маржу SKU</button>
+        <button type="button" class="quick-chip" data-repricer-import="audit" data-repricer-import-kind="margin">Загрузить маржу SKU</button>
         <button type="button" class="quick-chip" data-repricer-export="all">Аудит в Excel</button>
         <button type="button" class="quick-chip" data-repricer-import="audit" title="Загрузить обратно файл аудита после правок в Excel">Загрузить аудит Excel</button>
         <button type="button" class="quick-chip" data-repricer-export="stop:all">Стоп-лист</button>
@@ -6786,13 +8096,15 @@ function renderRepricer() {
         <button type="button" class="quick-chip" data-repricer-export="promo:ozon">Ozon промо</button>
         <button type="button" class="quick-chip" data-repricer-layer-toggle="simple">Простой режим</button>
       </div>
-      <div class="small muted repricer-export-status" data-repricer-export-status>После клика здесь появится статус файла.</div>
+      <div class="small muted repricer-export-status" data-repricer-export-status>Для маржи заполните только «Новая маржа SKU, %»: 25, 25% или 0,25. Пустая строка ничего не меняет.</div>
       <input id="repricerAuditImportInput" class="hidden" type="file" data-repricer-audit-import accept=".xls,.html,.htm,.csv,.tsv,.txt,text/html,text/csv,text/tab-separated-values,application/vnd.ms-excel">
     </div>
 
     <div class="badge-stack" style="margin-top:8px">${badge(`обновлено ${state.smartPriceWorkbench?.generatedAt ? fmt.date(state.smartPriceWorkbench.generatedAt) : '—'}`, 'info')}${badge(state.smartPriceWorkbench?.liveEnrichmentUsed ? 'слой: workbench + live' : 'слой: workbench', 'ok')}${state.smartPriceWorkbench?.liveEnrichmentAt ? badge(`live ${fmt.date(state.smartPriceWorkbench.liveEnrichmentAt)}`, 'info') : ''}${badge(hasRemoteStore() ? 'решения: команда' : 'решения: локально', hasRemoteStore() ? 'ok' : 'info')}</div>
     <div class="muted small" style="margin-top:8px">Проверка дублей в репрайсере сейчас идёт по совпадающим названиям карточек. Если названия похожи, дополнительно сверяйте артикул и площадку перед выгрузкой.</div>
 
+    ${livePriceSyncCard}
+    ${priceApplyCard}
     ${safetyCard}
     ${arrivalSignalCard}
     ${templateExplainCard}
@@ -6882,11 +8194,13 @@ function renderRepricer() {
     <div class="repricer-stack">
       ${visibleRows.map((row) => {
         const displayOwner = repricerOwnerForPlatform(row, state.repricerFilters.platform || 'all');
+        const profileMarginRatio = repricerMarginRatio(row.profile?.targetMarginPct);
+        const profileMarginPercent = profileMarginRatio > 0 ? repricerExportNumber(profileMarginRatio * 100, 1) : '';
         const duplicateEntry = duplicateNames.byArticle.get(String(row.articleKey || '').trim());
         const duplicatePeers = (duplicateEntry?.articles || [])
           .filter((article) => article !== String(row.article || row.articleKey || '').trim())
           .slice(0, 4);
-        return `<div class="card repricer-card"><div class="head"><div><strong>${linkToSku(row.articleKey, row.article || row.articleKey)}</strong><div class="muted small">${escapeHtml(row.name || 'Без названия')} · ${escapeHtml(displayOwner || 'Без owner')}</div>${duplicatePeers.length ? `<div class="muted small" style="margin-top:6px">Похожие карточки: ${escapeHtml(duplicatePeers.join(', '))}</div>` : ''}</div><div class="badge-stack">${row.brand ? badge(row.brand, 'info') : ''}${badge(row.status || 'Статус не указан')}${row.productLifecycle?.key && row.productLifecycle.key !== 'active' ? badge(`товар: ${row.productLifecycle.label || row.productLifecycle.status || row.productLifecycle.key}`, row.productLifecycle.tone || 'warn') : ''}${badge(`роль ${row.role || '—'}`, 'info')}${badge(row.launchReady === 'READY' ? 'готов к запуску' : 'hold до запуска', row.launchReady === 'READY' ? 'ok' : 'warn')}${row.segment ? badge(row.segment, 'info') : ''}${row.abc ? badge(`ABC ${row.abc}`) : ''}${row.hasManagedProfile ? badge('профиль SKU', 'ok') : ''}${row.hasCorridor ? badge('коридор', 'info') : ''}${row.hasManualOverride ? badge('ручное решение', 'warn') : ''}${duplicateEntry ? badge(`дубль названия x${fmt.int(duplicateEntry.count)}`, 'warn') : ''}</div></div>${repricerProductLifecycleEditorHtml(row)}<details style="margin:10px 0"><summary class="small muted" style="cursor:pointer">Настроить профиль SKU</summary><form class="repricer-sku-form" data-article-key="${escapeHtml(row.articleKey)}" style="margin-top:10px"><div class="filters repricer-filters"><select name="status">${statuses.map((status) => `<option value="${escapeHtml(status)}" ${row.status === status ? 'selected' : ''}>${escapeHtml(status)}</option>`).join('')}</select><select name="role">${roles.map((role) => `<option value="${escapeHtml(role)}" ${row.role === role ? 'selected' : ''}>${escapeHtml(role)}</option>`).join('')}</select><select name="launchReady"><option value="READY" ${row.launchReady === 'READY' ? 'selected' : ''}>READY</option><option value="HOLD" ${row.launchReady !== 'READY' ? 'selected' : ''}>HOLD</option></select></div><div class="quick-actions" style="margin-top:10px"><button type="submit" class="quick-chip">Сохранить профиль</button><button type="button" class="quick-chip" data-repricer-sku-reset data-article-key="${escapeHtml(row.articleKey)}">Сбросить профиль</button></div></form></details><div class="repricer-side-grid ${state.repricerFilters.platform !== 'all' ? 'single' : ''}">${state.repricerFilters.platform !== 'ozon' ? renderRepricerSide('WB', row.wb) : ''}${state.repricerFilters.platform !== 'wb' ? renderRepricerSide('Ozon', row.ozon) : ''}</div></div>`;
+        return `<div class="card repricer-card"><div class="head"><div><strong>${linkToSku(row.articleKey, row.article || row.articleKey)}</strong><div class="muted small">${escapeHtml(row.name || 'Без названия')} · ${escapeHtml(displayOwner || 'Без owner')}</div>${duplicatePeers.length ? `<div class="muted small" style="margin-top:6px">Похожие карточки: ${escapeHtml(duplicatePeers.join(', '))}</div>` : ''}</div><div class="badge-stack">${row.brand ? badge(row.brand, 'info') : ''}${badge(row.status || 'Статус не указан')}${row.productLifecycle?.key && row.productLifecycle.key !== 'active' ? badge(`товар: ${row.productLifecycle.label || row.productLifecycle.status || row.productLifecycle.key}`, row.productLifecycle.tone || 'warn') : ''}${badge(`роль ${row.role || '—'}`, 'info')}${badge(row.launchReady === 'READY' ? 'готов к запуску' : 'hold до запуска', row.launchReady === 'READY' ? 'ok' : 'warn')}${row.segment ? badge(row.segment, 'info') : ''}${row.abc ? badge(`ABC ${row.abc}`) : ''}${row.hasManagedProfile ? badge('профиль SKU', 'ok') : ''}${row.hasCorridor ? badge('коридор', 'info') : ''}${row.hasManualOverride ? badge('ручное решение', 'warn') : ''}${duplicateEntry ? badge(`дубль названия x${fmt.int(duplicateEntry.count)}`, 'warn') : ''}</div></div>${repricerProductLifecycleEditorHtml(row)}<details style="margin:10px 0"><summary class="small muted" style="cursor:pointer">Настроить профиль SKU</summary><form class="repricer-sku-form" data-article-key="${escapeHtml(row.articleKey)}" style="margin-top:10px"><div class="filters repricer-filters"><select name="status">${statuses.map((status) => `<option value="${escapeHtml(status)}" ${row.status === status ? 'selected' : ''}>${escapeHtml(status)}</option>`).join('')}</select><select name="role">${roles.map((role) => `<option value="${escapeHtml(role)}" ${row.role === role ? 'selected' : ''}>${escapeHtml(role)}</option>`).join('')}</select><select name="launchReady"><option value="READY" ${row.launchReady === 'READY' ? 'selected' : ''}>READY</option><option value="HOLD" ${row.launchReady !== 'READY' ? 'selected' : ''}>HOLD</option></select><input type="number" step="0.1" min="0.1" max="99.9" name="targetMarginPct" value="${escapeHtml(profileMarginPercent)}" placeholder="Маржа SKU, %"></div><div class="muted small" style="margin-top:8px">Маржа SKU — первое ограничение цены. Для актуального товара, новинки и перезапуска итог не может быть ниже этого порога; затем применяются MIN/MAX.</div><div class="quick-actions" style="margin-top:10px"><button type="submit" class="quick-chip">Сохранить профиль</button><button type="button" class="quick-chip" data-repricer-sku-reset data-article-key="${escapeHtml(row.articleKey)}">Сбросить профиль</button></div></form></details><div class="repricer-side-grid ${state.repricerFilters.platform !== 'all' ? 'single' : ''}">${state.repricerFilters.platform !== 'ozon' ? renderRepricerSide('WB', row.wb) : ''}${state.repricerFilters.platform !== 'wb' ? renderRepricerSide('Ozon', row.ozon) : ''}</div></div>`;
       }).join('') || '<div class="empty">По выбранным фильтрам репрайсер ничего не показал.</div>'}
     </div>
   `;
@@ -7451,4 +8765,3 @@ function orderProcurementBuildWarehouseMap() {
 
   return lookup;
 }
-

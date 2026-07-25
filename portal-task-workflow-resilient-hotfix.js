@@ -302,6 +302,9 @@
   window.submitTaskForRopApproval = async function submitTaskForRopApprovalResilient(taskId, report) {
     const text = String(report || '').trim();
     if (!text) throw new Error('Report is required.');
+    if (typeof window.markSkuDecisionWaitingRop === 'function') {
+      window.markSkuDecisionWaitingRop(taskId);
+    }
     return transitionTask(taskId, 'waiting_rop', [{
       kind: 'report',
       text: `\u0418\u0441\u043f\u043e\u043b\u043d\u0438\u0442\u0435\u043b\u044c \u0441\u0434\u0430\u043b \u0440\u0435\u0437\u0443\u043b\u044c\u0442\u0430\u0442 \u0438 \u043f\u0435\u0440\u0435\u0434\u0430\u043b \u0437\u0430\u0434\u0430\u0447\u0443 \u0420\u041e\u041f\u0443 \u043d\u0430 \u0441\u043e\u0433\u043b\u0430\u0441\u043e\u0432\u0430\u043d\u0438\u0435: ${text}`
@@ -310,6 +313,21 @@
 
   window.approveTaskByRop = async function approveTaskByRopResilient(taskId, comment) {
     const note = String(comment || '').trim();
+    const skuDecision = typeof window.skuDecisionForTask === 'function'
+      ? window.skuDecisionForTask(taskId)
+      : null;
+    if (skuDecision) {
+      if (typeof window.approveSkuDecisionForTask !== 'function') {
+        throw new Error('SKU decision approval module is unavailable.');
+      }
+      await window.approveSkuDecisionForTask(taskId, note);
+      return transitionTask(taskId, 'done', [{
+        kind: 'status',
+        text: note
+          ? `РОП подтвердил и применил решение: ${note}`
+          : 'РОП подтвердил решение; изменение применено автоматически.'
+      }]);
+    }
     return transitionTask(taskId, 'waiting_decision', [{
       kind: 'status',
       text: note
@@ -320,6 +338,9 @@
 
   window.returnTaskToWork = async function returnTaskToWorkResilient(taskId, comment) {
     const note = String(comment || '').trim();
+    if (typeof window.markSkuDecisionChangesRequested === 'function') {
+      window.markSkuDecisionChangesRequested(taskId, note);
+    }
     return transitionTask(taskId, 'in_progress', [{
       kind: 'comment',
       text: note

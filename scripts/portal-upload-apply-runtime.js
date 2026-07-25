@@ -5,9 +5,14 @@ const fs = require('fs');
 const os = require('os');
 const path = require('path');
 const crypto = require('crypto');
-const XLSX = require('xlsx');
 const { buildCanonicalRepricer } = require('./build-canonical-repricer');
 const { normalizeKey } = require('./smart-price-contour');
+
+let xlsxLibrary = null;
+function xlsx() {
+  if (!xlsxLibrary) xlsxLibrary = require('xlsx');
+  return xlsxLibrary;
+}
 
 const REPORTS = {
   e2e: 'portal_upload_apply_e2e.json',
@@ -30,6 +35,7 @@ const UNITS = new Set(['piece', 'pcs', 'unit', 'шт', 'штука']);
 const COLUMN_ALIASES = {
   articleKey: ['articlekey', 'article_key', 'article', 'sku', 'sku_code', 'артикул', 'номенклатура'],
   platform: ['platform', 'marketplace', 'площадка', 'маркетплейс'],
+  targetMarginPct: ['targetmarginpct', 'marginpct', 'margin', 'маржа', 'целеваямаржа', 'минимальнаямаржа', 'порогмаржи'],
   minPrice: ['minprice', 'min_price', 'min', 'minrub', 'min_rub', 'importminrub', 'новыйmin', 'minцена'],
   maxPrice: ['maxprice', 'max_price', 'max', 'maxrub', 'max_rub', 'importmaxrub', 'новыйmax', 'maxцена'],
   legalEntity: ['legalentity', 'legal_entity', 'юрлицо', 'юрлицо', 'юридическоелицо', 'юрлице'],
@@ -128,10 +134,18 @@ function numberOrNull(value) {
   return Number.isFinite(parsed) ? parsed : null;
 }
 
+function percentOrNull(value) {
+  const text = String(value ?? '').trim();
+  const parsed = numberOrNull(text.replace(/%/g, ''));
+  if (parsed === null) return null;
+  const normalized = text.includes('%') || parsed > 1 ? parsed / 100 : parsed;
+  return Number.isFinite(normalized) ? normalized : null;
+}
+
 function isoDate(value) {
   if (value instanceof Date && !Number.isNaN(value.getTime())) return value.toISOString().slice(0, 10);
   if (typeof value === 'number' && Number.isFinite(value)) {
-    const parsed = XLSX.SSF.parse_date_code(value);
+    const parsed = xlsx().SSF.parse_date_code(value);
     if (parsed) return `${String(parsed.y).padStart(4, '0')}-${String(parsed.m).padStart(2, '0')}-${String(parsed.d).padStart(2, '0')}`;
   }
   const text = String(value || '').trim();
@@ -164,13 +178,15 @@ function readUploadRows(filePath, dataset) {
   if (!['.xlsx', '.xls', '.csv', '.tsv'].includes(ext)) {
     return { rows: [], errors: [{ code: 'unsupported_format', message: `Unsupported upload format: ${ext}` }], workbookErrors: [] };
   }
-  const workbook = XLSX.readFile(filePath, { cellDates: true, cellFormula: true, raw: false });
+  const workbook = xlsx().readFile(filePath, { cellDates: true, cellFormula: true, raw: false });
   const formulaErrors = workbookErrors(workbook);
   const sheet = workbook.Sheets[workbook.SheetNames[0]];
-  const matrix = XLSX.utils.sheet_to_json(sheet, { header: 1, defval: '', raw: false, blankrows: false });
+  // Preserve typed dates and original CSV text. Formatting dates through
+  // SheetJS can shift an ISO date in negative UTC offsets before validation.
+  const matrix = xlsx().utils.sheet_to_json(sheet, { header: 1, defval: '', raw: true, blankrows: false });
   const needed = dataset === 'cost_price'
     ? ['articleKey', 'legalEntity', 'cost', 'currency', 'unit', 'effectiveFrom', 'reason']
-    : ['articleKey', 'platform', 'minPrice', 'maxPrice', 'effectiveFrom'];
+    : ['articleKey', 'platform', 'targetMarginPct', 'minPrice', 'maxPrice', 'effectiveFrom'];
   let headerIndex = -1;
   let columnMap = {};
   for (let index = 0; index < Math.min(matrix.length, 20); index += 1) {
@@ -256,6 +272,9 @@ function validateMinMaxRow(row, context) {
   if (context.skuCollisions.has(normalizeKey(articleInput))) errors.push('alias_collision');
   const platform = normalizePlatform(raw.platform);
   if (!PLATFORMS.has(platform)) errors.push('invalid_platform');
+  const targetMarginPct = percentOrNull(raw.targetMarginPct);
+  if (targetMarginPct === null) errors.push('missing_target_margin');
+  else if (targetMarginPct <= 0 || targetMarginPct >= 1) errors.push('invalid_target_margin');
   const minPrice = numberOrNull(raw.minPrice);
   const maxPrice = numberOrNull(raw.maxPrice);
   if (minPrice === null || minPrice <= 0) errors.push('invalid_min_price');
@@ -274,6 +293,7 @@ function validateMinMaxRow(row, context) {
     record: {
       articleKey: sku?.articleKey || articleInput,
       platform,
+      targetMarginPct,
       minPrice,
       maxPrice,
       effectiveFrom,
@@ -348,7 +368,12 @@ function validateRows(dataset, rows, options, source) {
       : `${normalizeKey(result.record.articleKey)}|${result.record.platform}`;
     const comparable = dataset === 'cost_price'
       ? stableStringify({ cost: result.record.cost, currency: result.record.currency, unit: result.record.unit, effectiveFrom: result.record.effectiveFrom })
-      : stableStringify({ minPrice: result.record.minPrice, maxPrice: result.record.maxPrice, effectiveFrom: result.record.effectiveFrom });
+      : stableStringify({
+        targetMarginPct: result.record.targetMarginPct,
+        minPrice: result.record.minPrice,
+        maxPrice: result.record.maxPrice,
+        effectiveFrom: result.record.effectiveFrom
+      });
     if (result.valid && seen.has(key) && seen.get(key) !== comparable) {
       result.valid = false;
       result.errors.push('conflicting_duplicate_row');
@@ -472,21 +497,23 @@ function writeAllReports(options, reports) {
 function generateTemplates(templateDir) {
   fs.mkdirSync(templateDir, { recursive: true });
   const minMaxRows = [
-    { articleKey: '', platform: 'wb', minPrice: '', maxPrice: '', effectiveFrom: '', author: '', role: '', reason: '' }
+    { 'Маржа, %': '', articleKey: '', platform: 'wb', minPrice: '', maxPrice: '', effectiveFrom: '', author: '', role: '', reason: '' }
   ];
   const costRows = [
     { articleKey: '', legalEntity: '', cost: '', currency: 'RUB', unit: 'piece', effectiveFrom: '', author: '', role: '', reason: '' }
   ];
   const build = (rows, instructions, dictionaryRows, fileName) => {
-    const workbook = XLSX.utils.book_new();
-    XLSX.utils.book_append_sheet(workbook, XLSX.utils.json_to_sheet(rows), SHEETS.fill);
-    XLSX.utils.book_append_sheet(workbook, XLSX.utils.aoa_to_sheet(instructions.map((line) => [line])), SHEETS.instruction);
-    XLSX.utils.book_append_sheet(workbook, XLSX.utils.json_to_sheet(dictionaryRows), SHEETS.dictionary);
-    XLSX.utils.book_append_sheet(workbook, XLSX.utils.json_to_sheet([{ rowNumber: '', articleKey: '', error: '' }]), SHEETS.previousErrors);
-    XLSX.writeFile(workbook, path.join(templateDir, fileName), { bookType: 'xlsx' });
+    const workbook = xlsx().utils.book_new();
+    xlsx().utils.book_append_sheet(workbook, xlsx().utils.json_to_sheet(rows), SHEETS.fill);
+    xlsx().utils.book_append_sheet(workbook, xlsx().utils.aoa_to_sheet(instructions.map((line) => [line])), SHEETS.instruction);
+    xlsx().utils.book_append_sheet(workbook, xlsx().utils.json_to_sheet(dictionaryRows), SHEETS.dictionary);
+    xlsx().utils.book_append_sheet(workbook, xlsx().utils.json_to_sheet([{ rowNumber: '', articleKey: '', error: '' }]), SHEETS.previousErrors);
+    xlsx().writeFile(workbook, path.join(templateDir, fileName), { bookType: 'xlsx' });
   };
   build(minMaxRows, [
-    'Required: articleKey, platform, minPrice, maxPrice, effectiveFrom.',
+    'Required: Маржа, %, articleKey, platform, minPrice, maxPrice, effectiveFrom.',
+    'Маржа задаётся для каждого SKU: 25%, 25 или 0.25 означают один и тот же порог 25%.',
+    'Для активных товаров, новинок и перезапусков маржинальный floor имеет приоритет перед MIN и MAX.',
     'Allowed platforms: wb, ozon, ym, all.',
     'Rows are applied only after server validation, approval, canonical rebuild, reconciliation, and runtime refetch.'
   ], [...PLATFORMS].sort().map((platform) => ({ type: 'platform', value: platform })), 'portal-min-max-template.xlsx');
@@ -518,6 +545,7 @@ function seedFixtureData(root) {
         rows: [
           {
             articleKey: 'sku-1',
+            status: 'Актуальный',
             currentPrice: 100,
             currentPriceDate: '2026-06-20',
             currentClientPrice: 95,
@@ -574,9 +602,9 @@ function seedFixtureData(root) {
 }
 
 function writeFixtureWorkbook(filePath, rows) {
-  const workbook = XLSX.utils.book_new();
-  XLSX.utils.book_append_sheet(workbook, XLSX.utils.json_to_sheet(rows), 'Upload');
-  XLSX.writeFile(workbook, filePath);
+  const workbook = xlsx().utils.book_new();
+  xlsx().utils.book_append_sheet(workbook, xlsx().utils.json_to_sheet(rows), 'Upload');
+  xlsx().writeFile(workbook, filePath);
   const stableDate = new Date('2026-06-20T00:00:00.000Z');
   fs.utimesSync(filePath, stableDate, stableDate);
   return filePath;
@@ -600,10 +628,10 @@ function aggregateFixtureReports(options) {
   };
 
   const validMinmax = writeFixtureWorkbook(path.join(uploadDir, 'minmax-ok.xlsx'), [
-    { articleKey: 'sku-1', platform: 'wb', minPrice: 90, maxPrice: 150, effectiveFrom: '2026-06-20', author: 'Codex', role: 'admin', reason: 'fixture accepted corridor' }
+    { articleKey: 'sku-1', platform: 'wb', 'Маржа, %': 25, minPrice: 90, maxPrice: 150, effectiveFrom: '2026-06-20', author: 'Codex', role: 'admin', reason: 'fixture accepted corridor' }
   ]);
   const invalidMinmax = writeFixtureWorkbook(path.join(uploadDir, 'minmax-bad.xlsx'), [
-    { articleKey: 'sku-1', platform: 'wb', minPrice: 200, maxPrice: 150, effectiveFrom: '2026-06-20', author: 'Codex', role: 'admin', reason: 'fixture rejected corridor' }
+    { articleKey: 'sku-1', platform: 'wb', 'Маржа, %': 25, minPrice: 200, maxPrice: 150, effectiveFrom: '2026-06-20', author: 'Codex', role: 'admin', reason: 'fixture rejected corridor' }
   ]);
   const validCost = writeFixtureWorkbook(path.join(uploadDir, 'cost-ok.xlsx'), [
     { articleKey: 'sku-1', legalEntity: 'Alisia LLC', cost: 55, currency: 'RUB', unit: 'piece', effectiveFrom: '2026-06-20', author: 'Codex', role: 'admin', reason: 'fixture verified cost' }
@@ -791,6 +819,8 @@ if (require.main === module) main();
 module.exports = {
   applyUpload,
   buildSkuIndex,
+  canonicalColumn,
+  normalizeHeader,
   parseArgs,
   readUploadRows,
   resolveOptions,

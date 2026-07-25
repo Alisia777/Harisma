@@ -147,6 +147,23 @@ function parseNumber(value) {
   return Number.isFinite(parsed) ? parsed : null;
 }
 
+function parseMarginPct(value) {
+  const text = normalizeText(value);
+  const parsed = parseNumber(value);
+  if (!Number.isFinite(parsed) || parsed <= 0) return null;
+  const ratio = text.includes('%') || parsed > 1 ? parsed / 100 : parsed;
+  return ratio > 0 && ratio < 1 ? roundMetric(ratio, 6) : null;
+}
+
+function findMatrixColumn(headers = [], aliases = [], fallback = null) {
+  const tokens = headers.map(normalizeToken);
+  for (const alias of aliases) {
+    const index = tokens.indexOf(normalizeToken(alias));
+    if (index >= 0) return index;
+  }
+  return fallback;
+}
+
 function positiveNumber(...values) {
   for (const value of values) {
     const parsed = parseNumber(value);
@@ -503,6 +520,7 @@ function sourceRowNumericIssues(row) {
   if (!(row.cost > 0)) issues.push('missing_cost');
   if (!(row.rawMinPrice > 0)) issues.push('missing_min_price');
   if (!(row.rawMaxPrice > 0)) issues.push('missing_max_price');
+  if (!(row.targetMarginPct > 0)) issues.push('missing_or_invalid_target_margin');
   if (row.rawMinPrice > 0 && row.rawMaxPrice > 0 && row.rawMinPrice > row.rawMaxPrice) issues.push('min_gt_max');
   return issues;
 }
@@ -517,35 +535,56 @@ function readSourceMatrix(inputPath) {
     raw: true,
     defval: ''
   });
+  const headers = matrix[0] || [];
+  const columns = {
+    platform: findMatrixColumn(headers, ['площадка', 'marketplace', 'platform'], 0),
+    article: findMatrixColumn(headers, ['артикул', 'article', 'article key', 'sku'], 1),
+    status: findMatrixColumn(headers, ['статус', 'status'], 2),
+    barcode: findMatrixColumn(headers, ['штрихкод', 'barcode'], 3),
+    owner: findMatrixColumn(headers, ['ответственный', 'owner'], 4),
+    cost: findMatrixColumn(headers, ['себестоимость', 'cost'], 5),
+    min: findMatrixColumn(headers, ['min', 'мин', 'min price', 'минимальная цена'], 6),
+    max: findMatrixColumn(headers, ['max', 'макс', 'max price', 'максимальная цена'], 7),
+    margin: findMatrixColumn(headers, ['маржа', 'маржа %', 'маржа, %', 'целевая маржа', 'target margin', 'target margin %'])
+  };
+  if (columns.margin === null) {
+    throw new Error(`В ${path.basename(inputPath)} отсутствует обязательная колонка «Маржа, %».`);
+  }
   const rows = [];
   const skipped = [];
+  const invalidMargins = [];
   matrix.slice(1).forEach((values, index) => {
     const sourceRow = index + 2;
-    const platform = normalizePlatform(values[0]);
-    const article = normalizeText(values[1]);
+    const platform = normalizePlatform(values[columns.platform]);
+    const article = normalizeText(values[columns.article]);
     const articleKey = normalizeArticleKey(article);
     if (!platform || !articleKey) {
-      skipped.push({ sourceRow, platform: normalizeText(values[0]), article, reason: 'missing_platform_or_article' });
+      skipped.push({ sourceRow, platform: normalizeText(values[columns.platform]), article, reason: 'missing_platform_or_article' });
       return;
     }
-    const rawCost = parseNumber(values[5]);
-    const rawMinPrice = parseNumber(values[6]);
-    const rawMaxPrice = parseNumber(values[7]);
+    const rawCost = parseNumber(values[columns.cost]);
+    const rawMinPrice = parseNumber(values[columns.min]);
+    const rawMaxPrice = parseNumber(values[columns.max]);
+    const targetMarginPct = parseMarginPct(values[columns.margin]);
+    if (targetMarginPct === null) {
+      invalidMargins.push({ sourceRow, articleKey, value: values[columns.margin] });
+    }
     const usableMinMax = rawMinPrice > 0 && rawMaxPrice > 0;
     const minPrice = usableMinMax ? Math.min(rawMinPrice, rawMaxPrice) : null;
     const maxPrice = usableMinMax ? Math.max(rawMinPrice, rawMaxPrice) : null;
     const row = {
       sourceRow,
       sourceSheet: sheetName,
-      marketplace: normalizeText(values[0]),
+      marketplace: normalizeText(values[columns.platform]),
       platform,
       article,
       articleKey,
       key: articleKey,
       compactKey: compactKey(articleKey),
-      status: normalizeText(values[2]),
-      barcode: normalizeText(values[3]),
-      owner: canonicalOwnerForPlatform(values[4], platform),
+      status: normalizeText(values[columns.status]),
+      barcode: normalizeText(values[columns.barcode]),
+      owner: canonicalOwnerForPlatform(values[columns.owner], platform),
+      targetMarginPct,
       rawCost,
       cost: rawCost > 0 ? rawCost : null,
       rawMinPrice,
@@ -560,7 +599,11 @@ function readSourceMatrix(inputPath) {
     row.numericIssues = sourceRowNumericIssues(row);
     rows.push(row);
   });
-  return { inputPath, sheetName, rows, skipped };
+  if (invalidMargins.length) {
+    const examples = invalidMargins.slice(0, 10).map((item) => `${item.articleKey} (строка ${item.sourceRow})`).join(', ');
+    throw new Error(`Маржа обязательна для каждого SKU. Исправьте ${invalidMargins.length} строк: ${examples}`);
+  }
+  return { inputPath, sheetName, columns, rows, skipped };
 }
 
 function bumpCounter(target, key) {
@@ -619,6 +662,7 @@ function groupSourceRows(rows = []) {
         status: row.status,
         owner: row.owner,
         cost: row.cost,
+        targetMarginPct: row.targetMarginPct,
         rawCost: row.rawCost,
         minPrice: row.minPrice,
         maxPrice: row.maxPrice,
@@ -639,11 +683,13 @@ function groupSourceRows(rows = []) {
     if (row.status && current.status && row.status !== current.status) conflicts.push({ platform: row.platform, key: row.key, field: 'status', left: current.status, right: row.status, sourceRow: row.sourceRow });
     if (row.owner && current.owner && row.owner !== current.owner) conflicts.push({ platform: row.platform, key: row.key, field: 'owner', left: current.owner, right: row.owner, sourceRow: row.sourceRow });
     if (row.usableCost && current.cost !== null && !sameNumber(row.cost, current.cost)) conflicts.push({ platform: row.platform, key: row.key, field: 'cost', left: current.cost, right: row.cost, sourceRow: row.sourceRow });
+    if (row.targetMarginPct !== null && current.targetMarginPct !== null && !sameNumber(row.targetMarginPct, current.targetMarginPct)) conflicts.push({ platform: row.platform, key: row.key, field: 'targetMarginPct', left: current.targetMarginPct, right: row.targetMarginPct, sourceRow: row.sourceRow });
     if (row.usableMinMax && current.minPrice !== null && !sameNumber(row.minPrice, current.minPrice)) conflicts.push({ platform: row.platform, key: row.key, field: 'minPrice', left: current.minPrice, right: row.minPrice, sourceRow: row.sourceRow });
     if (row.usableMinMax && current.maxPrice !== null && !sameNumber(row.maxPrice, current.maxPrice)) conflicts.push({ platform: row.platform, key: row.key, field: 'maxPrice', left: current.maxPrice, right: row.maxPrice, sourceRow: row.sourceRow });
     current.status = current.status || row.status;
     current.owner = current.owner || row.owner;
     if (current.cost === null && row.usableCost) current.cost = row.cost;
+    if (current.targetMarginPct === null && row.targetMarginPct !== null) current.targetMarginPct = row.targetMarginPct;
     if (current.minPrice === null && row.usableMinMax) current.minPrice = row.minPrice;
     if (current.maxPrice === null && row.usableMinMax) current.maxPrice = row.maxPrice;
     current.usableCost = current.usableCost || row.usableCost;
@@ -783,6 +829,10 @@ function applyMatrixRow(row, sourceRow, platform) {
   row.barcodes = Array.from(new Set([...(Array.isArray(row.barcodes) ? row.barcodes : []), ...sourceRow.barcodes].filter(Boolean)));
   row.sourceArticleKey = row.sourceArticleKey || sourceRow.articleKey;
   row.sourceMode = row.sourceMode || 'ksenia-minmax-matrix';
+  row.targetMarginPct = sourceRow.targetMarginPct;
+  row.manualMarginPct = sourceRow.targetMarginPct;
+  row.allowedMarginPct = sourceRow.targetMarginPct;
+  row.marginPolicySource = SOURCE_NOTE;
 
   if (sourceRow.usableMinMax) {
     if (priceFieldsChanged(row, sourceRow)) {
@@ -1000,6 +1050,7 @@ function buildArticleGroups(groupedRows = []) {
       statuses: [],
       owners: [],
       costs: [],
+      targetMargins: [],
       platforms: {},
       sourceRows: [],
       barcodes: []
@@ -1007,6 +1058,7 @@ function buildArticleGroups(groupedRows = []) {
     current.statuses.push(row.status);
     current.owners.push(row.owner);
     if (row.usableCost) current.costs.push(row.cost);
+    if (row.targetMarginPct > 0) current.targetMargins.push(row.targetMarginPct);
     current.platforms[row.platform] = row;
     current.sourceRows.push(...row.sourceRows);
     current.barcodes.push(...row.barcodes);
@@ -1016,6 +1068,7 @@ function buildArticleGroups(groupedRows = []) {
     group.status = chooseStatus(group.statuses);
     group.owner = chooseOwner(group.owners);
     group.cost = group.costs.find((value) => value > 0) ?? null;
+    group.targetMarginPct = group.targetMargins.length ? Math.max(...group.targetMargins) : null;
     group.barcodes = Array.from(new Set(group.barcodes.filter(Boolean)));
     group.sourceRows = Array.from(new Set(group.sourceRows)).sort((left, right) => left - right);
   });
@@ -1397,6 +1450,12 @@ function applySkuGroup(sku, group, planBackfill = null) {
   sku.matrixImportedAt = IMPORT_STAMP;
   sku.matrixSourceRows = group.sourceRows;
   sku.matrixBarcodes = group.barcodes;
+  if (group.targetMarginPct > 0) {
+    sku.targetMarginPct = group.targetMarginPct;
+    sku.manualMarginPct = group.targetMarginPct;
+    sku.allowedMarginPct = group.targetMarginPct;
+    sku.marginPolicySource = SOURCE_NOTE;
+  }
   const planResult = ensurePlanFact(sku, group, planBackfill);
   if (group.cost > 0) {
     sku.costPrice = group.cost;
@@ -1430,6 +1489,9 @@ function applySkuGroup(sku, group, planBackfill = null) {
       owner: platformOwner,
       minPrice: platformRow.minPrice,
       maxPrice: platformRow.maxPrice,
+      targetMarginPct: platformRow.targetMarginPct,
+      manualMarginPct: platformRow.targetMarginPct,
+      allowedMarginPct: platformRow.targetMarginPct,
       costPrice: platformRow.cost,
       barcodes: platformRow.barcodes,
       sourceRows: platformRow.sourceRows,
@@ -1442,6 +1504,10 @@ function applySkuGroup(sku, group, planBackfill = null) {
       sku[platform] = sku[platform] && typeof sku[platform] === 'object' ? sku[platform] : {};
       sku[platform].status = platformRow.status || sku[platform].status || '';
       sku[platform].owner = platformOwner || '';
+      sku[platform].targetMarginPct = platformRow.targetMarginPct;
+      sku[platform].manualMarginPct = platformRow.targetMarginPct;
+      sku[platform].allowedMarginPct = platformRow.targetMarginPct;
+      sku[platform].marginPolicySource = SOURCE_NOTE;
       if (platformRow.usableMinMax) {
         sku[platform].minPrice = platformRow.minPrice;
         sku[platform].maxPrice = platformRow.maxPrice;
@@ -1684,6 +1750,7 @@ module.exports = {
   isDisabledStatus,
   normalizeArticleKey,
   normalizePlatform,
+  parseMarginPct,
   parseArgs,
   readSourceMatrix,
   resolveOptions,

@@ -1,0 +1,109 @@
+{
+  "schema": "repricer-economics-policy-v1",
+  "version": "2026-07-24.4-live-signals",
+  "liveSignals": {
+    "requiredPlatforms": [
+      "wb",
+      "ozon"
+    ],
+    "advertisingWindowDays": 7,
+    "advertisingMaxAgeDays": 3,
+    "stockMaxAgeDays": 2,
+    "advertisingGuard": "max(iu_contract_pct, rolling_observed_spend/revenue)",
+    "oosGuard": "Block automatic price when fresh aggregate available stock and inbound are both zero."
+  },
+  "teamPreparation": {
+    "baselineMarginPct": 0.25,
+    "minimumMarginPct": 0.25,
+    "maximumMarginPct": {
+      "wb": 0.4,
+      "ozon": 0.35
+    },
+    "maxCorridorMultiplier": 1.1,
+    "sharpChangePct": 0.1,
+    "approval": "PENDING_ROP"
+  },
+  "enabledPlatforms": [
+    "wb",
+    "ozon"
+  ],
+  "priceFreshness": {
+    "maxAgeDays": 2
+  },
+  "approval": {
+    "sharpPriceChangePct": 10,
+    "extremePriceChangePct": 100
+  },
+  "safety": {
+    "minimumResidualContributionPct": 5,
+    "rule": "A target margin must leave at least five percentage points after commission, internal advertising and tax. A calculated move of 100% or more requires margin-policy rework, not ordinary price approval."
+  },
+  "platforms": {
+    "wb": {
+      "commissionPct": 32.03,
+      "commissionModel": "iu_fixed_rate",
+      "commissionContract": {
+        "fixedRatePct": 32.03,
+        "standardRatePct": 46.11,
+        "displayedDeltaPct": 14.08,
+        "validFrom": "2026-07-01",
+        "asOf": "2026-07-23",
+        "source": "WB Partners / Аналитика / Фиксированная ставка",
+        "guardRule": "Use the active IU fixed rate as commission; keep the standard rate and conditional difference as a separate risk scenario."
+      },
+      "platformCostsPerUnit": 90,
+      "internalAdvertisingPerUnit": 0,
+      "internalAdvertisingPct": 8.77,
+      "fixedCostsPerUnit": 90,
+      "logisticsPerUnit": 90,
+      "taxPct": 0,
+      "breakdown": {
+        "logisticsRub": 72,
+        "storageRub": 6,
+        "internalAdvertisingRub": 0,
+        "internalAdvertisingPct": 8.77,
+        "returnsRub": 12,
+        "otherRub": 0
+      },
+      "advertisingContract": {
+        "planPct": 8,
+        "factPct": 8.77,
+        "asOf": "2026-07-23",
+        "source": "WB Partners / Аналитика / Фиксированная ставка"
+      },
+      "source": "wb_iu_snapshot_2026-07-23"
+    },
+    "ozon": {
+      "commissionPct": 31.3499,
+      "commissionModel": "iu_contract_rate",
+      "commissionContract": {
+        "fixedRatePct": 31.3499,
+        "grossVariableRatePct": 56.2279,
+        "sppRatePct": 12.9312,
+        "validFrom": "2026-07-01",
+        "validTo": "2026-12-31",
+        "source": "Дашборд ИУ по Ozon / contractKpis",
+        "guardRule": "Commission and AdRev are separate variable costs; SPP is retained as a KPI and is not deducted again without a confirmed seller expense."
+      },
+      "platformCostsPerUnit": 83,
+      "internalAdvertisingPerUnit": 0,
+      "internalAdvertisingPct": 24.878,
+      "fixedCostsPerUnit": 83,
+      "logisticsPerUnit": 83,
+      "taxPct": 0,
+      "breakdown": {
+        "logisticsRub": 68,
+        "storageRub": 5,
+        "internalAdvertisingRub": 0,
+        "internalAdvertisingPct": 24.878,
+        "returnsRub": 10,
+        "otherRub": 0
+      },
+      "advertisingContract": {
+        "planPct": 24.878,
+        "source": "Дашборд ИУ по Ozon / AdRev KPI"
+      },
+      "source": "ozon_iu_contract_2026-h2"
+    }
+  }
+}

@@ -262,6 +262,7 @@ function verifyMatrixPayload(fileName, payload, sourceByPlatformRows, issues) {
       minMaxChecked: 0,
       costChecked: 0,
       marginChecked: 0,
+      targetMarginChecked: 0,
       ownerChecked: 0,
       oldActive: 0,
       minGtMax: 0
@@ -275,6 +276,17 @@ function verifyMatrixPayload(fileName, payload, sourceByPlatformRows, issues) {
         return;
       }
       platformSummary.present += 1;
+      platformSummary.targetMarginChecked += 1;
+      const actualTargetMargin = numberOrNull(row.targetMarginPct ?? row.manualMarginPct ?? row.allowedMarginPct);
+      if (!sameNumber(actualTargetMargin, sourceRow.targetMarginPct)) {
+        pushIssue(issues, 'critical', 'matrix_target_margin_mismatch', {
+          fileName,
+          platform,
+          articleKey: sourceRow.articleKey,
+          expectedTargetMarginPct: sourceRow.targetMarginPct,
+          actualTargetMarginPct: actualTargetMargin
+        });
+      }
       if (sourceRow.owner) {
         platformSummary.ownerChecked += 1;
         if (!sameOwnerName(ownerValue(row), sourceRow.owner)) {
@@ -371,6 +383,7 @@ function verifyPrices(prices, sourceByPlatformRows, issues) {
       minMaxChecked: 0,
       costChecked: 0,
       marginChecked: 0,
+      targetMarginChecked: 0,
       ownerChecked: 0,
       oldActive: 0,
       minGtMax: 0
@@ -383,6 +396,16 @@ function verifyPrices(prices, sourceByPlatformRows, issues) {
         return;
       }
       platformSummary.present += 1;
+      platformSummary.targetMarginChecked += 1;
+      const actualTargetMargin = numberOrNull(row.targetMarginPct ?? row.manualMarginPct ?? row.allowedMarginPct);
+      if (!sameNumber(actualTargetMargin, sourceRow.targetMarginPct)) {
+        pushIssue(issues, 'critical', 'prices_target_margin_mismatch', {
+          platform,
+          articleKey: sourceRow.articleKey,
+          expectedTargetMarginPct: sourceRow.targetMarginPct,
+          actualTargetMarginPct: actualTargetMargin
+        });
+      }
       if (sourceRow.owner) {
         platformSummary.ownerChecked += 1;
         if (!sameOwnerName(ownerValue(row), sourceRow.owner)) {
@@ -475,6 +498,7 @@ function verifyRepricer(repricer, sourceByPlatformRows, issues) {
     minGtMax: 0,
     oldActive: 0,
     costChecked: 0,
+    targetMarginChecked: 0,
     marginChecked: 0
   };
   ['wb', 'ozon'].forEach((platform) => {
@@ -487,6 +511,7 @@ function verifyRepricer(repricer, sourceByPlatformRows, issues) {
       minMaxChecked: 0,
       ownerChecked: 0,
       marginChecked: 0,
+      targetMarginChecked: 0,
       newMarginChecked: 0
     };
     sourceRows.forEach((sourceRow) => {
@@ -498,6 +523,17 @@ function verifyRepricer(repricer, sourceByPlatformRows, issues) {
         return;
       }
       platformSummary.present += 1;
+      platformSummary.targetMarginChecked += 1;
+      summary.targetMarginChecked += 1;
+      const actualTargetMargin = numberOrNull(side.targetMarginPct ?? side.manualMarginPct ?? side.allowedMarginPct ?? side.marginNoAdsMinPct);
+      if (!sameNumber(actualTargetMargin, sourceRow.targetMarginPct)) {
+        pushIssue(issues, 'critical', 'repricer_target_margin_mismatch', {
+          platform,
+          articleKey: sourceRow.articleKey,
+          expectedTargetMarginPct: sourceRow.targetMarginPct,
+          actualTargetMarginPct: actualTargetMargin
+        });
+      }
       if (sourceRow.owner) {
         platformSummary.ownerChecked += 1;
         const actualOwner = ownerPlatformValue(row, platform) || ownerValue(row);
@@ -512,14 +548,16 @@ function verifyRepricer(repricer, sourceByPlatformRows, issues) {
       }
       if (sourceRow.usableMinMax) {
         platformSummary.minMaxChecked += 1;
-        if (!sameNumber(side.minPrice, sourceRow.minPrice) || !sameNumber(side.workingZoneTo, sourceRow.maxPrice)) {
+        const actualMinMaxFloor = side.minMaxFloor ?? side.manualMinPrice ?? side.workingZoneFrom ?? side.minPrice;
+        const actualMinMaxCap = side.minMaxCap ?? side.manualMaxPrice ?? side.workingZoneTo;
+        if (!sameNumber(actualMinMaxFloor, sourceRow.minPrice) || !sameNumber(actualMinMaxCap, sourceRow.maxPrice)) {
           pushIssue(issues, 'critical', 'repricer_minmax_mismatch', {
             platform,
             articleKey: sourceRow.articleKey,
             expectedMinPrice: sourceRow.minPrice,
-            actualMinPrice: side.minPrice,
+            actualMinPrice: actualMinMaxFloor,
             expectedMaxPrice: sourceRow.maxPrice,
-            actualMaxPrice: side.workingZoneTo
+            actualMaxPrice: actualMinMaxCap
           });
         }
       }
@@ -563,7 +601,7 @@ function verifyRepricer(repricer, sourceByPlatformRows, issues) {
         }
       }
       const min = numberOrNull(side.minPrice);
-      const max = numberOrNull(side.workingZoneTo || side.upperCap);
+      const max = numberOrNull(side.upperCap || side.workingZoneTo);
       if (min !== null && max !== null && min > max) {
         summary.minGtMax += 1;
         pushIssue(issues, 'critical', 'repricer_min_gt_max', { platform, articleKey: sourceRow.articleKey, minPrice: min, maxPrice: max });
@@ -619,6 +657,7 @@ function verifySkus(skus, articleGroups, issues) {
     missing: 0,
     oldActive: 0,
     costChecked: 0,
+    targetMarginChecked: 0,
     ownerChecked: 0,
     planAssigned: 0,
     planNeedsAssignment: 0,
@@ -644,6 +683,24 @@ function verifySkus(skus, articleGroups, issues) {
       }
     }
     Object.entries(group.platforms || {}).forEach(([platform, platformRow]) => {
+      summary.targetMarginChecked += 1;
+      const skuPlatform = sku.platformMatrix?.[platform] || sku?.[platform] || {};
+      const actualTargetMargin = numberOrNull(
+        skuPlatform.targetMarginPct
+          ?? skuPlatform.manualMarginPct
+          ?? skuPlatform.allowedMarginPct
+          ?? sku.targetMarginPct
+          ?? sku.manualMarginPct
+          ?? sku.allowedMarginPct
+      );
+      if (!sameNumber(actualTargetMargin, platformRow.targetMarginPct)) {
+        pushIssue(issues, 'critical', 'sku_target_margin_mismatch', {
+          platform,
+          articleKey: group.articleKey,
+          expectedTargetMarginPct: platformRow.targetMarginPct,
+          actualTargetMarginPct: actualTargetMargin
+        });
+      }
       if (!platformRow.owner) return;
       summary.ownerChecked += 1;
       const actualOwner = ownerPlatformValue(sku, platform) || ownerValue(sku);

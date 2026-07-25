@@ -1,22 +1,23 @@
 {
   "schema": "portal-repricing-reconciliation-v1",
-  "generatedAt": "2026-07-17T06:32:10.422Z",
-  "snapshot_id": "repricer:2a2cd4cf1eb9d58a",
-  "status": "warning",
+  "generatedAt": "2026-07-25T00:48:50.043Z",
+  "freshness_reference_date": "2026-07-25",
+  "snapshot_id": "repricer:ed790b8989c95802",
+  "status": "ok",
   "publish_allowed": true,
-  "feature_publish_allowed": false,
-  "feature_status": "blocked",
-  "business_fingerprint": "3e453375ff0e58f3fa5006624c5fdeb48c6e4c1abb7ef9e2b372ef20ffaf15b9",
+  "feature_publish_allowed": true,
+  "feature_status": "ok",
+  "business_fingerprint": "2c222600cbd94c42a1c05618e605d3e3ae0b495830e04c28535bbf9a614984ed",
   "summary": {
-    "rows": 805,
-    "eligible_rows": 805,
-    "publishable_rows": 0,
-    "blocked_rows": 805,
-    "publishable_coverage": 0,
+    "rows": 391,
+    "eligible_rows": 391,
+    "publishable_rows": 37,
+    "blocked_rows": 354,
+    "publishable_coverage": 0.094629,
     "required_publishable_coverage": 0.01,
-    "feature_status": "blocked",
-    "publishable_recommendations": 0,
-    "blocked_recommendations": 805,
+    "feature_status": "ok",
+    "publishable_recommendations": 37,
+    "blocked_recommendations": 354,
     "duplicate_platform_keys": 0,
     "normalized_article_collisions": 1,
     "deduped_exact_duplicates": 2
@@ -24,8 +25,7 @@
   "blockingReasons": [],
   "warnings": [
     "normalized article collisions deduped for review: 1",
-    "repricer feature blocked: 0/805 publishable recommendations",
-    "805 repricer rows are present but not publishable because required facts/economics/policy are incomplete",
+    "354 repricer rows are present but not publishable because required facts/economics/policy are incomplete",
     "2 exact duplicate source rows were deterministically deduped"
   ],
   "duplicatePlatformKeys": [],
@@ -64,18 +64,16 @@
     },
     {
       "id": "repricer:feature-readiness",
-      "status": "warning",
+      "status": "ok",
       "blockingReasons": [],
-      "warnings": [
-        "repricer feature blocked: 0/805 publishable recommendations"
-      ],
+      "warnings": [],
       "details": {
-        "eligible_rows": 805,
-        "publishable_rows": 0,
-        "blocked_rows": 805,
-        "publishable_coverage": 0,
+        "eligible_rows": 391,
+        "publishable_rows": 37,
+        "blocked_rows": 354,
+        "publishable_coverage": 0.094629,
         "required_publishable_coverage": 0.01,
-        "feature_status": "blocked"
+        "feature_status": "ok"
       }
     },
     {

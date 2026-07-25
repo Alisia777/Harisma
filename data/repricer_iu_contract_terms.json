@@ -1,0 +1,41 @@
+{
+  "schema": "repricer-iu-contract-terms-v1",
+  "version": "2026-07-24.1",
+  "platforms": {
+    "wb": {
+      "accountScope": "ООО СМАРТ-СЭ…",
+      "period": {
+        "from": "2026-07-17",
+        "to": "2026-07-23"
+      },
+      "targetRevenue": 67192258,
+      "actualRevenue": 77267578,
+      "revenueCompletionPct": 114.99,
+      "fixedCommissionPct": 32.03,
+      "standardCommissionPct": 46.11,
+      "displayedDifferencePct": -14.08,
+      "displayedAdjustmentRub": 10881207,
+      "marketingPlanRub": 6181406,
+      "marketingPlanPct": 8,
+      "marketingFactPct": 8.77,
+      "marketingCompletionPct": 109.69,
+      "source": "WB Partners screenshot / Аналитика / Фиксированная ставка",
+      "capturedAt": "2026-07-24"
+    },
+    "ozon": {
+      "contractPeriod": "2026-H2",
+      "commissionPct": 31.3499,
+      "adRevPct": 24.878,
+      "grossVariableRatePct": 56.2279,
+      "sppPct": 12.9312,
+      "source": "data/last_good/iu_drr_summary.json :: ozonPlan.contractKpis",
+      "sourceGeneratedAt": "2026-06-18T08:26:12.627Z"
+    }
+  },
+  "rules": {
+    "variableCostFormula": "commissionPct + internalAdvertisingPct",
+    "fixedCostFormula": "cost + logistics + storage + returns + other",
+    "sppTreatment": "Informational KPI until a confirmed seller-funded expense is available; never double-count automatically.",
+    "scopeRule": "Contract terms are account-specific. Do not mix WB accounts or copy WB rates to Ozon."
+  }
+}

@@ -33,6 +33,7 @@
   documents: { groups: [] },
   repricer: { generatedAt: '', summary: {}, rows: [] },
   repricerLive: { generatedAt: '', rows: [] },
+  repricerLivePrices: { generatedAt: '', asOfDate: '', summary: {}, platforms: {}, unresolved: [] },
   storage: {
     comments: [],
     tasks: [],
@@ -41,6 +42,8 @@
     resourceLinks: [],
     resourceFolders: [],
     productLifecycleOverrides: [],
+    productLifecycleOverrideDeletes: [],
+    skuDecisionApprovals: [],
     taskAttachments: [],
     autoTaskSnapshot: { generatedAt: '', active: [] },
     autoTaskHistory: [],
@@ -376,6 +379,7 @@ const DEFAULT_APP_CONFIG = {
   brand: 'Алтея',
   teamMode: 'local',
   teamMember: { name: '', role: 'Команда' },
+  repricerPriceSyncEndpoint: '',
   supabase: { url: '', anonKey: '', auth: 'email_password' }
 };
 
@@ -437,6 +441,16 @@ const PORTAL_SNAPSHOT_PATH_MAP = {
   'data/auto_task_signals.json': 'auto_task_signals',
   'data/predictive_risk_outcome_audit.json': 'predictive_risk_outcome_audit',
   'data/warehouse_stock_overlay.json': 'warehouse_stock_overlay',
+  'data/repricer_live_signals.json': 'repricer_live_signals',
+  'data/repricer_live_prices.json': 'repricer_live_prices',
+  'data/canonical_repricer.json': 'canonical_repricer',
+  'data/portal_repricing_reconciliation.json': 'portal_repricing_reconciliation',
+  'data/repricer_team_policy_proposals.json': 'repricer_team_policy_proposals',
+  'data/repricer_shadow_report.json': 'repricer_shadow_report',
+  'data/repricer_margin_minmax_gaps.json': 'repricer_margin_minmax_gaps',
+  'data/repricer_price_apply_plan.json': 'repricer_price_apply_plan',
+  'data/repricer_price_apply_receipt.json': 'repricer_price_apply_receipt',
+  'data/repricer_price_apply_verification.json': 'repricer_price_apply_verification',
   'data/portal_data_quality.json': 'portal_data_quality',
   'data/portal_data_quarantine.json': 'portal_data_quarantine',
   'data/sku_aliases.json': 'sku_aliases',
@@ -1605,6 +1619,8 @@ function defaultStorage() {
     resourceLinks: [],
     resourceFolders: [],
     productLifecycleOverrides: [],
+    productLifecycleOverrideDeletes: [],
+    skuDecisionApprovals: [],
     taskAttachments: [],
     autoTaskSnapshot: { generatedAt: '', active: [] },
     autoTaskHistory: [],
@@ -1707,10 +1723,17 @@ const PRODUCT_LIFECYCLE_STATUS_META = {
     repricerMode: 'off',
     taskPolicy: 'archive',
     description: 'Товар выведен из активного контура.'
+  },
+  not_listed: {
+    label: 'Нет на площадке',
+    tone: '',
+    repricerMode: 'off',
+    taskPolicy: 'archive',
+    description: 'Для этой площадки нет подтверждённой карточки, статуса или API-идентификатора.'
   }
 };
 
-const PRODUCT_LIFECYCLE_STATUS_ORDER = ['active', 'new', 'relaunch', 'watch', 'question', 'paused', 'exit', 'archived'];
+const PRODUCT_LIFECYCLE_STATUS_ORDER = ['active', 'new', 'relaunch', 'watch', 'question', 'paused', 'exit', 'archived', 'not_listed'];
 
 function productLifecycleLookupText(value = '') {
   return String(value || '')
@@ -1730,6 +1753,7 @@ function normalizeProductLifecycleKey(value = '') {
   if (['question', 'review', 'под вопросом', 'перерабатываем', 'нет в спецификации'].includes(raw) || /вопрос|перераб|review|специф/.test(raw)) return 'question';
   if (['paused', 'pause', 'freeze', 'hold', 'пауза', 'заморозка', 'стоп'].includes(raw) || /пауза|замороз|freeze|hold/.test(raw)) return 'paused';
   if (['archived', 'removed', 'выведен', 'выведено'].includes(raw) || /вывед|archiv|removed/.test(raw)) return 'archived';
+  if (['not_listed', 'not listed', 'нет на площадке', 'не представлен'].includes(raw) || /нет на площадке|не представлен|not.?listed|absent/.test(raw)) return 'not_listed';
   if (['exit', 'вывод', 'выводится', 'снимаем', 'снятие'].includes(raw) || /вывод|снимаем|снятие|exit|discontinu|sell.?out|clearance/.test(raw)) return 'exit';
   return '';
 }
@@ -2094,9 +2118,9 @@ function defaultRepricerSettings() {
       Freeze: { targetDays: 30, minLiftPct: 0, stretchMultiplier: 1, allowVolumePush: false, elasticityDefault: -0.8 }
     },
     feeRules: {
-      wb: { commissionPct: 19, logisticsRub: 72, storageRub: 6, adRub: 35, returnsRub: 12, otherRub: 0 },
-      ozon: { commissionPct: 18, logisticsRub: 68, storageRub: 5, adRub: 30, returnsRub: 10, otherRub: 0 },
-      yandex: { commissionPct: 17, logisticsRub: 75, storageRub: 6, adRub: 28, returnsRub: 11, otherRub: 0 }
+      wb: { commissionPct: 32.03, logisticsRub: 72, storageRub: 6, adPct: 8.77, adRub: 0, returnsRub: 12, otherRub: 0 },
+      ozon: { commissionPct: 31.3499, logisticsRub: 68, storageRub: 5, adPct: 24.878, adRub: 0, returnsRub: 10, otherRub: 0 },
+      yandex: { commissionPct: 17, logisticsRub: 75, storageRub: 6, adPct: 0, adRub: 28, returnsRub: 11, otherRub: 0 }
     }
   };
 }
@@ -2197,13 +2221,21 @@ function normalizeRepricerBrandRule(item = {}, fallback = {}) {
 function normalizeRepricerFeeRule(item = {}, fallback = {}) {
   const source = item || {};
   const base = fallback || {};
+  const legacyBrowserFallback = (
+    (Number(source.commissionPct) === 19 && Number(source.adRub) === 35 && Number(base.commissionPct) === 32.03)
+    || (Number(source.commissionPct) === 18 && Number(source.adRub) === 30 && Number(base.commissionPct) === 31.3499)
+  );
+  const effectiveSource = legacyBrowserFallback
+    ? { ...source, commissionPct: base.commissionPct, adPct: base.adPct, adRub: base.adRub }
+    : source;
   const next = {
-    commissionPct: Number(source.commissionPct ?? base.commissionPct),
-    logisticsRub: Number(source.logisticsRub ?? base.logisticsRub),
-    storageRub: Number(source.storageRub ?? base.storageRub),
-    adRub: Number(source.adRub ?? base.adRub),
-    returnsRub: Number(source.returnsRub ?? base.returnsRub),
-    otherRub: Number(source.otherRub ?? base.otherRub)
+    commissionPct: Number(effectiveSource.commissionPct ?? base.commissionPct),
+    logisticsRub: Number(effectiveSource.logisticsRub ?? base.logisticsRub),
+    storageRub: Number(effectiveSource.storageRub ?? base.storageRub),
+    adPct: Number(effectiveSource.adPct ?? effectiveSource.internalAdvertisingPct ?? base.adPct),
+    adRub: Number(effectiveSource.adRub ?? base.adRub),
+    returnsRub: Number(effectiveSource.returnsRub ?? base.returnsRub),
+    otherRub: Number(effectiveSource.otherRub ?? base.otherRub)
   };
   Object.keys(next).forEach((key) => {
     if (!Number.isFinite(next[key])) next[key] = Number(base[key]) || 0;
@@ -2298,7 +2330,20 @@ function normalizeRepricerOverride(item = {}) {
     disableAlignment: Boolean(item.disableAlignment || item.noAlignment),
     note: String(item.note || '').trim(),
     updatedAt: item.updatedAt || new Date().toISOString(),
-    updatedBy: String(item.updatedBy || item.updatedByName || state.team.member.name || 'Команда').trim() || 'Команда'
+    updatedBy: String(item.updatedBy || item.updatedByName || state.team.member.name || 'Команда').trim() || 'Команда',
+    approvalStatus: String(item.approvalStatus || item.approval_status || '').trim(),
+    sourceStore: String(item.sourceStore || item.source_store || item.source || 'local_storage_draft_only').trim() || 'local_storage_draft_only',
+    author: String(item.author || item.createdBy || item.created_by || '').trim(),
+    role: String(item.role || item.authorRole || item.author_role || '').trim(),
+    reason: String(item.reason || item.note || '').trim(),
+    createdAt: String(item.createdAt || item.created_at || item.updatedAt || '').trim(),
+    approvedBy: String(item.approvedBy || item.approved_by || '').trim(),
+    approvedAt: String(item.approvedAt || item.approved_at || '').trim(),
+    expiresAt: String(item.expiresAt || item.expires_at || '').trim(),
+    batchId: String(item.batchId || item.batch_id || '').trim(),
+    sourceFile: String(item.sourceFile || item.source_file || '').trim(),
+    sourceChecksum: String(item.sourceChecksum || item.source_checksum || '').trim(),
+    supersedesId: String(item.supersedesId || item.supersedes_id || '').trim()
   };
 }
 
@@ -2310,6 +2355,7 @@ function normalizeRepricerSkuProfile(item = {}) {
     status: String(item.status || item.statusSku || '').trim(),
     role: String(item.role || item.roleSku || '').trim(),
     launchReady: normalizeRepricerLaunchReady(item.launchReady || item.launch_status || item.launchState),
+    targetMarginPct: repricerNumberOrBlank(item.targetMarginPct ?? item.marginPct ?? item.allowedMarginPct),
     updatedAt: item.updatedAt || new Date().toISOString(),
     updatedBy: String(item.updatedBy || item.updatedByName || state.team.member.name || 'Команда').trim() || 'Команда'
   };
@@ -2761,6 +2807,7 @@ function registerPriceFreshnessWarning(payloads = {}) {
   const freshest = latestPriceLayerSnapshot([
     { source: 'smart_price_workbench', generatedAt: payloads.smartPriceWorkbench?.generatedAt },
     { source: 'smart_price_overlay', generatedAt: payloads.smartPriceOverlay?.generatedAt },
+    { source: 'repricer_live_prices', generatedAt: payloads.repricerLivePrices?.generatedAt },
     { source: 'tmp-smart_price_workbench-live', generatedAt: payloads.smartPriceWorkbenchLive?.generatedAt },
     { source: 'tmp-live-repricer', generatedAt: payloads.repricerLive?.generatedAt },
     { source: 'prices', generatedAt: payloads.prices?.generatedAt }
@@ -3122,23 +3169,60 @@ const LAZY_DATA_LOADERS = {
     state.documents = documents || { groups: [] };
   },
   repricer: async () => {
-    const [repricer, smartPriceWorkbench, smartPriceWorkbenchLive, smartPriceOverlay, repricerLive, prices, priceWorkbenchSupport, orderProcurementWb, orderProcurementOzon, warehouseStockOverlay] = await Promise.all([
+    const [
+      repricer,
+      smartPriceWorkbench,
+      smartPriceWorkbenchLive,
+      repricerLivePrices,
+      smartPriceOverlay,
+      repricerLive,
+      prices,
+      priceWorkbenchSupport,
+      orderProcurementWb,
+      orderProcurementOzon,
+      warehouseStockOverlay,
+      repricerLiveSignals,
+      canonicalRepricer,
+      portalRuntimeWiring,
+      portalFeatureReadiness,
+      repricerShadowReport,
+      repricerMarginMinMaxGaps,
+      repricerPriceApplyPlan,
+      repricerPriceApplyReceipt,
+      repricerPriceApplyVerification
+    ] = await Promise.all([
       loadJsonOrFallback('data/repricer.json', { generatedAt: '', summary: {}, rows: [] }, 'Репрайсер'),
       loadJsonOrFallback('data/smart_price_workbench.json', { generatedAt: '', platforms: {} }, 'Ценовой контур'),
       optionalLoadJson('tmp-smart_price_workbench-live.json'),
+      loadJsonOrFallback('data/repricer_live_prices.json', { generatedAt: '', asOfDate: '', summary: {}, platforms: {}, unresolved: [] }, 'Актуальные цены WB/Ozon'),
       loadJsonOrFallback('data/smart_price_overlay.json', { generatedAt: '', platforms: {} }, 'Overlay цен'),
       optionalLoadJson('tmp-live-repricer.json'),
       loadJsonOrFallback('data/prices.json', { generatedAt: '', platforms: {} }, 'Цены'),
       loadJsonOrFallback('data/price_workbench_support.json', { generatedAt: '', platforms: {} }, 'Поддержка ценового контура'),
       loadJsonOrFallback('data/order_procurement_wb.json', { generatedAt: '', rows: [] }, 'Отгрузки WB'),
       loadJsonOrFallback('data/order_procurement_ozon.json', { generatedAt: '', rows: [] }, 'Отгрузки Ozon'),
-      loadJsonOrFallback('data/warehouse_stock_overlay.json', { generatedAt: '', rows: [] }, 'Склад/отгрузки')
+      loadJsonOrFallback('data/warehouse_stock_overlay.json', { generatedAt: '', rows: [] }, 'Склад/отгрузки'),
+      loadJsonOrFallback('data/repricer_live_signals.json', { generatedAt: '', platforms: {}, rows: [] }, 'Реклама и OOS репрайсера'),
+      loadJsonOrFallback('data/canonical_repricer.json', { generatedAt: '', summary: {}, rows: [] }, 'Canonical репрайсер'),
+      loadJsonOrFallback('data/portal_runtime_wiring_reconciliation.json', { generatedAt: '', status: '', artifacts: [] }, 'Runtime репрайсера'),
+      loadJsonOrFallback('data/portal_feature_readiness.json', { generatedAt: '', features: {} }, 'Готовность репрайсера'),
+      loadJsonOrFallback('data/repricer_shadow_report.json', { generatedAt: '', summary: {}, cutover_allowed: false }, 'Shadow-сверка репрайсера'),
+      loadJsonOrFallback('data/repricer_margin_minmax_gaps.json', { generatedAt: '', summary: {}, rows: [] }, 'Пробелы маржа/MIN/MAX'),
+      loadJsonOrFallback('data/repricer_price_apply_plan.json', { generatedAt: '', status: 'missing', applyAllowed: false, summary: {}, actions: [], globalBlockers: [] }, 'План загрузки цен'),
+      loadJsonOrFallback('data/repricer_price_apply_receipt.json', { generatedAt: '', status: 'missing', actions: [] }, 'Квитанция загрузки цен'),
+      loadJsonOrFallback('data/repricer_price_apply_verification.json', { generatedAt: '', status: 'missing', summary: {}, rows: [] }, 'Сверка загруженных цен')
     ]);
     state.repricer = repricer || { generatedAt: '', summary: {}, rows: [] };
     state.repricerLive = repricerLive || { generatedAt: '', rows: [] };
     state.prices = prices || { generatedAt: '', platforms: {} };
     state.priceWorkbenchSupport = priceWorkbenchSupport || { generatedAt: '', platforms: {} };
-    state.smartPriceWorkbenchLive = smartPriceWorkbenchLive || { generatedAt: '', platforms: {} };
+    state.repricerLivePrices = repricerLivePrices || { generatedAt: '', asOfDate: '', summary: {}, platforms: {}, unresolved: [] };
+    state.repricer_live_prices = state.repricerLivePrices;
+    state.smartPriceWorkbenchLive = (
+      parseFreshStamp(state.repricerLivePrices?.generatedAt) >= parseFreshStamp(smartPriceWorkbenchLive?.generatedAt)
+        ? state.repricerLivePrices
+        : smartPriceWorkbenchLive
+    ) || { generatedAt: '', platforms: {} };
     state.smartPriceOverlay = smartPriceOverlay || { generatedAt: '', platforms: {} };
     state.orderProcurementWb = orderProcurementWb || { generatedAt: '', rows: [] };
     state.order_procurement_wb = state.orderProcurementWb;
@@ -3146,6 +3230,16 @@ const LAZY_DATA_LOADERS = {
     state.order_procurement_ozon = state.orderProcurementOzon;
     state.warehouseStockOverlay = warehouseStockOverlay || { generatedAt: '', rows: [] };
     state.warehouse_stock_overlay = state.warehouseStockOverlay;
+    state.repricerLiveSignals = repricerLiveSignals || { generatedAt: '', platforms: {}, rows: [] };
+    state.repricer_live_signals = state.repricerLiveSignals;
+    state.canonicalRepricer = canonicalRepricer || { generatedAt: '', summary: {}, rows: [] };
+    state.portalRuntimeWiring = portalRuntimeWiring || { generatedAt: '', status: '', artifacts: [] };
+    state.portalFeatureReadiness = portalFeatureReadiness || { generatedAt: '', features: {} };
+    state.repricerShadowReport = repricerShadowReport || { generatedAt: '', summary: {}, cutover_allowed: false };
+    state.repricerMarginMinMaxGaps = repricerMarginMinMaxGaps || { generatedAt: '', summary: {}, rows: [] };
+    state.repricerPriceApplyPlan = repricerPriceApplyPlan || { generatedAt: '', status: 'missing', applyAllowed: false, summary: {}, actions: [], globalBlockers: [] };
+    state.repricerPriceApplyReceipt = repricerPriceApplyReceipt || { generatedAt: '', status: 'missing', actions: [] };
+    state.repricerPriceApplyVerification = repricerPriceApplyVerification || { generatedAt: '', status: 'missing', summary: {}, rows: [] };
     state.smartPriceWorkbenchBase = mergeSmartWorkbenchPayload(
       smartPriceWorkbench || { generatedAt: '', platforms: {} },
       smartPriceWorkbenchLive || null
@@ -3158,6 +3252,7 @@ const LAZY_DATA_LOADERS = {
       smartPriceWorkbench: state.smartPriceWorkbench,
       smartPriceOverlay: state.smartPriceOverlay,
       smartPriceWorkbenchLive: state.smartPriceWorkbenchLive,
+      repricerLivePrices: state.repricerLivePrices,
       repricerLive: state.repricerLive,
       prices: state.prices,
       priceWorkbenchSupport: state.priceWorkbenchSupport

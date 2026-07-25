@@ -7,11 +7,15 @@ on:
       - 'scripts/**'
       - 'app-core-*.js'
       - 'portal-*.js'
+      - 'config.js'
       - 'index.html'
       - 'package.json'
+      - 'supabase/functions/repricer-price-apply/**'
       - 'docs/PORTAL_DAILY_CLOSE_RUNBOOK.md'
       - '.github/workflows/portal-data-truth.yml'
       - '.github/workflows/portal-daily-close.yml'
+      - '.github/workflows/portal-repricer-prices.yml'
+      - '.github/workflows/portal-repricer-price-apply.yml'
       - '.github/workflows/portal-designers-membership-sync.yml'
       - '.github/workflows/portal-designers-bootstrap.yml'
   push:
@@ -21,11 +25,15 @@ on:
       - 'scripts/**'
       - 'app-core-*.js'
       - 'portal-*.js'
+      - 'config.js'
       - 'index.html'
       - 'package.json'
+      - 'supabase/functions/repricer-price-apply/**'
       - 'docs/PORTAL_DAILY_CLOSE_RUNBOOK.md'
       - '.github/workflows/portal-data-truth.yml'
       - '.github/workflows/portal-daily-close.yml'
+      - '.github/workflows/portal-repricer-prices.yml'
+      - '.github/workflows/portal-repricer-price-apply.yml'
       - '.github/workflows/portal-designers-membership-sync.yml'
       - '.github/workflows/portal-designers-bootstrap.yml'
   schedule:
@@ -65,9 +73,25 @@ jobs:
       - name: Syntax and negative-path self-test
         run: |
           mkdir -p .portal-truth-output
+          node scripts/portal-repricer-live-prices-sync.selftest.js
+          node scripts/portal-repricer-live-signals-sync.selftest.js
+          node scripts/repricer-live-oos-guard.selftest.js
+          node scripts/repricer-margin-cost-components.selftest.js
+          node scripts/repricer-shared-product-cost.selftest.js
+          node scripts/repricer-iu-price-correctness.selftest.js
+          node scripts/repricer-live-price-logic.selftest.js
+          node scripts/build-repricer-team-policy.selftest.js
+          node scripts/build-canonical-repricer-freshness.selftest.js
           node scripts/portal-daily-layer-guard.selftest.js
           node scripts/audit-repricer-dashboard-plan.selftest.js
           node scripts/portal-upload-apply-runtime.selftest.js
+          node scripts/repricer-loader-export-roundtrip.selftest.js
+          node scripts/repricer-price-sync-button.selftest.js
+          node scripts/sku-rop-approval-workflow.selftest.js
+          node scripts/portal-repricer-price-apply.selftest.js
+          node scripts/repricer-margin-guard.selftest.js
+          node scripts/migrate-repricer-margin-minmax-registry.selftest.js
+          node scripts/build-repricer-shadow-report.selftest.js
           node scripts/portal-runtime-promote.selftest.js
           node scripts/portal-atomic-snapshot-finalize.selftest.js
           node scripts/portal-api-max-sync.selftest.js
@@ -136,6 +160,7 @@ jobs:
           node scripts/portal-upload-apply-runtime.js --fixture-e2e --output-dir .portal-truth-output
           node scripts/audit-source-workbooks.js --manifest data/portal_source_registry.json --output-dir .portal-truth-output
           node scripts/build-canonical-repricer.js --input-dir data --output-dir .portal-truth-output
+          node scripts/build-repricer-shadow-report.js --input-dir data --output-dir .portal-truth-output
           node scripts/build-portal-dashboard-metrics.js --input-dir data --output-dir .portal-truth-output
           node scripts/build-product-leaderboard-history.js
           node scripts/audit-repricer-dashboard-plan.js --input-dir .portal-truth-output --base-data-dir data --output-dir .portal-truth-output --relax-missing-platform-facts

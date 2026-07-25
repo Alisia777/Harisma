@@ -13,7 +13,7 @@ assert.match(appCore, /const overrideIdentityMap = launchOverrideIdentityMap\(\[
 assert.match(appCore, /findLaunchOverrideForItem\(item, overrideMap, overrideIdentityMap, usedOverrideIds\)/);
 assert.match(appCore, /usedOverrideIds\.has\(launchId\)/);
 
-assert.match(launchView, /const VERSION = '20260702launch-identity-persist-v1'/);
+assert.match(launchView, /const VERSION = '20260724sku-rop-approval-v1'/);
 assert.match(launchView, /if \(!keys\.length\) return true;/);
 assert.match(launchView, /draft\[key\] = value;/);
 

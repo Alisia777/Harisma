@@ -236,8 +236,20 @@ jobs:
           node scripts/portal-yandex-market-stock-sync.js sync
           node scripts/portal-warehouse-stock-sync.js sync
 
+      - name: Materialize approved repricer decisions
+        env:
+          ALTEA_SUPABASE_URL: ${{ secrets.SUPABASE_URL || vars.SUPABASE_URL || 'https://iyckwryrucqrxwlowxow.supabase.co' }}
+          ALTEA_SUPABASE_KEY: ${{ secrets.SUPABASE_SERVICE_ROLE_KEY || secrets.ALTEA_SUPABASE_SERVICE_ROLE_KEY }}
+        run: >-
+          node scripts/materialize-repricer-approved-decisions.js
+          --remote --strict
+          --input-dir data
+          --output-dir data
+
       - name: Build canonical portal layers
         env:
+          ALTEA_WB_API_TOKEN: ${{ secrets.ALTEA_WB_API_TOKEN }}
+          ALTEA_WB_PROMOTION_TOKEN: ${{ secrets.ALTEA_WB_PROMOTION_TOKEN }}
           ALTEA_OZON_CLIENT_ID: ${{ secrets.ALTEA_OZON_CLIENT_ID }}
           ALTEA_OZON_API_KEY: ${{ secrets.ALTEA_OZON_API_KEY }}
           ALTEA_SMART_PRICE_SHEET_URL: ${{ secrets.ALTEA_SMART_PRICE_SHEET_URL || vars.ALTEA_SMART_PRICE_SHEET_URL }}
@@ -272,13 +284,17 @@ jobs:
           node scripts/build-sku-registry-meta.js --input-dir data --output-dir data --run-date '${{ steps.cutoff.outputs.run_date }}'
           node scripts/build-logistics-from-warehouse-overlay.js --input-dir data --output-dir data --run-date '${{ steps.cutoff.outputs.run_date }}'
           node scripts/portal-smart-price-overlay-sync.js sync --output-dir .portal-truth-output/price-sync "${SMART_PRICE_INPUT_ARGS[@]}"
+          node scripts/portal-repricer-live-prices-sync.js sync --input-dir data --output data/repricer_live_prices.json --as-of-date '${{ steps.cutoff.outputs.run_date }}' --strict
           node scripts/build-order-procurement-layer.js
           node scripts/build-oos-control-layer.js --input-dir data --base-data-dir data --output-dir data
+          node scripts/portal-repricer-live-signals-sync.js sync --input-dir data --output data/repricer_live_signals.json --as-of-date '${{ steps.cutoff.outputs.run_date }}' --strict
           node scripts/build-wb-owner-audit-from-skus.js --input-dir data --base-data-dir data --output-dir data --run-date '${{ steps.cutoff.outputs.run_date }}'
           node scripts/build-portal-data-quality-report.js --input-dir data --base-data-dir data --output-dir data --run-date '${{ steps.cutoff.outputs.run_date }}'
           node scripts/portal-sync-health.js --input-dir data --base-data-dir data --output-dir data --quarantine-only
           node scripts/build-sku-matrix-layer.js --input-dir data --base-data-dir data --output-dir data
           node scripts/build-canonical-repricer.js --input-dir data --output-dir data
+          node scripts/build-repricer-team-policy.js --input-dir data --output data/repricer_team_policy_proposals.json
+          node scripts/build-repricer-shadow-report.js --input-dir data --output-dir data
           node scripts/build-wb-fixed-rate-report.js --output data/wb_fixed_rate_reports.json --optional
           node scripts/build-wb-iu-logic-rules.js --report data/wb_fixed_rate_reports.json --output data/wb_iu_logic_rules.json
           node scripts/build-iu-drr-summary.js --input-dir data --base-data-dir data --output-dir data --from '${{ steps.cutoff.outputs.revision_from }}' --to '${{ steps.cutoff.outputs.value }}'

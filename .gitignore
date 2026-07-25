@@ -10,3 +10,7 @@ data/external_sources/*.download
 data/.api_max_tmp/
 .supabase-admin.env
 *.local.env
+.DS_Store
+node_modules/
+tmp/
+outputs/

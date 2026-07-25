@@ -1,0 +1,207 @@
+name: Repricer approved price apply
+
+on:
+  workflow_dispatch:
+    inputs:
+      mode:
+        description: Build a plan or apply the exact confirmed plan
+        required: true
+        default: plan
+        type: choice
+        options:
+          - plan
+          - apply
+      confirmation_hash:
+        description: Required for apply; copy from a successful plan run
+        required: false
+        type: string
+      requested_by:
+        description: Portal user who requested the plan or apply
+        required: false
+        type: string
+
+concurrency:
+  group: portal-repricer-price-apply
+  cancel-in-progress: false
+
+permissions:
+  contents: read
+
+env:
+  TZ: Europe/Moscow
+
+jobs:
+  price-apply:
+    runs-on: ubuntu-latest
+    timeout-minutes: 20
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '20'
+
+      - name: Install dependencies
+        run: npm ci
+
+      - name: Resolve run date
+        id: run_date
+        shell: bash
+        run: echo "value=$(date +%F)" >> "$GITHUB_OUTPUT"
+
+      - name: Check protected credentials
+        env:
+          ALTEA_WB_API_TOKEN: ${{ secrets.ALTEA_WB_API_TOKEN }}
+          ALTEA_OZON_CLIENT_ID: ${{ secrets.ALTEA_OZON_CLIENT_ID }}
+          ALTEA_OZON_API_KEY: ${{ secrets.ALTEA_OZON_API_KEY }}
+          SUPABASE_SERVICE_ROLE_KEY: ${{ secrets.SUPABASE_SERVICE_ROLE_KEY || secrets.ALTEA_SUPABASE_SERVICE_ROLE_KEY }}
+        shell: bash
+        run: |
+          for name in ALTEA_WB_API_TOKEN ALTEA_OZON_CLIENT_ID ALTEA_OZON_API_KEY SUPABASE_SERVICE_ROLE_KEY; do
+            if [ -z "${!name:-}" ]; then
+              echo "::error::$name is missing"
+              exit 1
+            fi
+          done
+
+      - name: Collect fresh prices and direct stock
+        env:
+          ALTEA_WB_API_TOKEN: ${{ secrets.ALTEA_WB_API_TOKEN }}
+          ALTEA_WB_PROMOTION_TOKEN: ${{ secrets.ALTEA_WB_PROMOTION_TOKEN }}
+          ALTEA_OZON_CLIENT_ID: ${{ secrets.ALTEA_OZON_CLIENT_ID }}
+          ALTEA_OZON_API_KEY: ${{ secrets.ALTEA_OZON_API_KEY }}
+        run: |
+          node scripts/portal-repricer-live-prices-sync.js sync \
+            --input-dir data \
+            --output data/repricer_live_prices.json \
+            --as-of-date '${{ steps.run_date.outputs.value }}' \
+            --strict
+          node scripts/portal-repricer-live-signals-sync.js sync \
+            --input-dir data \
+            --output data/repricer_live_signals.json \
+            --as-of-date '${{ steps.run_date.outputs.value }}' \
+            --strict
+
+      - name: Materialize approved portal decisions
+        env:
+          ALTEA_SUPABASE_URL: ${{ secrets.SUPABASE_URL || vars.SUPABASE_URL || 'https://iyckwryrucqrxwlowxow.supabase.co' }}
+          ALTEA_SUPABASE_KEY: ${{ secrets.SUPABASE_SERVICE_ROLE_KEY || secrets.ALTEA_SUPABASE_SERVICE_ROLE_KEY }}
+        run: >-
+          node scripts/materialize-repricer-approved-decisions.js
+          --remote --strict
+          --input-dir data
+          --output-dir data
+
+      - name: Build canonical decision and shadow gates
+        run: |
+          node scripts/build-canonical-repricer.js \
+            --input-dir data \
+            --output-dir data \
+            --as-of-date '${{ steps.run_date.outputs.value }}'
+          node scripts/build-repricer-team-policy.js \
+            --input-dir data \
+            --output data/repricer_team_policy_proposals.json
+          node scripts/build-repricer-shadow-report.js \
+            --input-dir data \
+            --output-dir data
+
+      - name: Build immutable price plan
+        env:
+          REQUESTED_BY: ${{ inputs.requested_by }}
+        run: >-
+          node scripts/portal-repricer-price-apply.js plan
+          --input-dir data
+          --output-dir data
+          --requested-by "$REQUESTED_BY"
+
+      - name: Publish plan for portal review
+        if: inputs.mode == 'plan'
+        env:
+          ALTEA_SUPABASE_URL: ${{ secrets.SUPABASE_URL || vars.SUPABASE_URL || 'https://iyckwryrucqrxwlowxow.supabase.co' }}
+          ALTEA_SUPABASE_KEY: ${{ secrets.SUPABASE_SERVICE_ROLE_KEY || secrets.ALTEA_SUPABASE_SERVICE_ROLE_KEY }}
+          ALTEA_SNAPSHOT_SOURCE: repricer-price-plan
+        run: >-
+          node scripts/portal-google-sheet-upload.js
+          --input-dir data
+          --snapshot repricer_live_prices,repricer_live_signals,canonical_repricer,portal_repricing_reconciliation,repricer_team_policy_proposals,repricer_shadow_report,repricer_price_apply_plan
+          --source repricer-price-plan
+
+      - name: Apply exact confirmed plan
+        if: inputs.mode == 'apply'
+        env:
+          ALTEA_REPRICER_PRICE_APPLY_ENABLED: ${{ vars.ALTEA_REPRICER_PRICE_APPLY_ENABLED }}
+          ALTEA_WB_API_TOKEN: ${{ secrets.ALTEA_WB_API_TOKEN }}
+          ALTEA_OZON_CLIENT_ID: ${{ secrets.ALTEA_OZON_CLIENT_ID }}
+          ALTEA_OZON_API_KEY: ${{ secrets.ALTEA_OZON_API_KEY }}
+          CONFIRMATION_HASH: ${{ inputs.confirmation_hash }}
+          REQUESTED_BY: ${{ inputs.requested_by }}
+        run: >-
+          node scripts/portal-repricer-price-apply.js apply
+          --input-dir data
+          --output-dir data
+          --confirmation "$CONFIRMATION_HASH"
+          --requested-by "$REQUESTED_BY"
+
+      - name: Refresh and verify marketplace prices
+        if: inputs.mode == 'apply'
+        env:
+          ALTEA_WB_API_TOKEN: ${{ secrets.ALTEA_WB_API_TOKEN }}
+          ALTEA_OZON_CLIENT_ID: ${{ secrets.ALTEA_OZON_CLIENT_ID }}
+          ALTEA_OZON_API_KEY: ${{ secrets.ALTEA_OZON_API_KEY }}
+        shell: bash
+        run: |
+          for attempt in 1 2 3 4 5 6 7 8 9 10; do
+            sleep 30
+            node scripts/portal-repricer-live-prices-sync.js sync \
+              --input-dir data \
+              --output data/repricer_live_prices.json \
+              --as-of-date '${{ steps.run_date.outputs.value }}' \
+              --strict
+            if node scripts/portal-repricer-price-apply.js verify \
+              --input-dir data \
+              --output-dir data; then
+              exit 0
+            fi
+            echo "Price verification attempt $attempt/10 is not complete"
+          done
+          echo "::error::Marketplace prices did not match the approved plan"
+          exit 1
+
+      - name: Rebuild snapshots after verified apply
+        if: inputs.mode == 'apply'
+        run: |
+          node scripts/build-canonical-repricer.js \
+            --input-dir data \
+            --output-dir data \
+            --as-of-date '${{ steps.run_date.outputs.value }}'
+          node scripts/build-repricer-shadow-report.js \
+            --input-dir data \
+            --output-dir data
+
+      - name: Publish verified result
+        if: inputs.mode == 'apply'
+        env:
+          ALTEA_SUPABASE_URL: ${{ secrets.SUPABASE_URL || vars.SUPABASE_URL || 'https://iyckwryrucqrxwlowxow.supabase.co' }}
+          ALTEA_SUPABASE_KEY: ${{ secrets.SUPABASE_SERVICE_ROLE_KEY || secrets.ALTEA_SUPABASE_SERVICE_ROLE_KEY }}
+          ALTEA_SNAPSHOT_SOURCE: repricer-price-apply
+        run: >-
+          node scripts/portal-google-sheet-upload.js
+          --input-dir data
+          --snapshot repricer_live_prices,repricer_live_signals,canonical_repricer,portal_repricing_reconciliation,repricer_team_policy_proposals,repricer_shadow_report,repricer_price_apply_plan,repricer_price_apply_receipt,repricer_price_apply_verification
+          --source repricer-price-apply
+
+      - uses: actions/upload-artifact@v4
+        if: always()
+        with:
+          name: repricer-price-${{ inputs.mode }}-${{ github.run_id }}
+          path: |
+            data/repricer_live_prices.json
+            data/repricer_live_signals.json
+            data/canonical_repricer.json
+            data/portal_repricing_reconciliation.json
+            data/repricer_shadow_report.json
+            data/repricer_price_apply_plan.json
+            data/repricer_price_apply_receipt.json
+            data/repricer_price_apply_verification.json
+          if-no-files-found: warn
+          retention-days: 30

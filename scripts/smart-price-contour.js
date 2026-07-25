@@ -142,8 +142,9 @@ function applyLiveCurrentSellerPrice(target = {}, liveRow = {}, liveGeneratedAt 
   }
   target.currentFillPrice = liveSellerPrice;
   target.currentPrice = liveSellerPrice;
-  target.currentSellerPriceSource = 'live';
-  target.currentPriceSource = 'live';
+  target.currentSellerPriceSource = liveRow?.currentSellerPriceSource || liveRow?.currentPriceSource || 'live';
+  target.currentPriceSource = liveRow?.currentPriceSource || liveRow?.currentSellerPriceSource || 'live';
+  target.currentSellerPriceFile = liveRow?.currentSellerPriceFile || 'repricer_live_prices.json';
   if (livePriceDate) target.currentPriceDate = livePriceDate;
   return true;
 }
@@ -190,7 +191,7 @@ function mergeWorkbenchRow(primaryRow = {}, liveRow = {}, platform = '', options
   return next;
 }
 
-function mergeWorkbenchPayload(primaryPayload = {}, livePayload = {}) {
+function mergeWorkbenchPayload(primaryPayload = {}, livePayload = {}, options = {}) {
   const primary = primaryPayload && typeof primaryPayload === 'object'
     ? clone(primaryPayload)
     : { generatedAt: '', platforms: {} };
@@ -232,7 +233,7 @@ function mergeWorkbenchPayload(primaryPayload = {}, livePayload = {}) {
     });
 
     liveRows.forEach((row) => {
-      if (!useFullLive) return;
+      if (!useFullLive || options.includeLiveOnlyRows === false) return;
       const key = normalizeKey(row?.articleKey || row?.article);
       if (!key || used.has(key)) return;
       mergedRows.push(mergeWorkbenchRow({}, row, platform, {
@@ -381,7 +382,11 @@ function mergeWorkbenchOverlayRow(primaryRow = {}, overlayRow = {}, platform = '
     'sourceMode'
   ].forEach((key) => mergeWorkbenchField(next, key, overlay[key], true));
 
-  const keepLiveSellerPrice = String(next.currentSellerPriceSource || next.currentPriceSource || '').trim().toLowerCase() === 'live'
+  const keepLiveSellerPrice = (
+    String(next.currentSellerPriceSource || next.currentPriceSource || '').trim().toLowerCase() === 'live'
+    || /prices-api/i.test(String(next.currentSellerPriceSource || next.currentPriceSource || ''))
+    || String(next.currentSellerPriceFile || '').trim() === 'repricer_live_prices.json'
+  )
     && !overlayFlagEnabled(overlay?.clearCurrentFillPrice)
     && !overlayFlagEnabled(overlay?.clearCurrentPrice)
     && firstPositive(next.currentFillPrice, next.currentPrice) !== null
@@ -485,9 +490,9 @@ function mergeWorkbenchOverlay(primaryPayload = {}, overlayPayload = {}) {
   return merged;
 }
 
-function mergeSmartPriceContour(workbenchPayload = {}, overlayPayload = {}, livePayload = {}) {
-  const baseWorkbench = mergeWorkbenchPayload(workbenchPayload || {}, livePayload || null);
-  return mergeWorkbenchOverlay(baseWorkbench, overlayPayload || null);
+function mergeSmartPriceContour(workbenchPayload = {}, overlayPayload = {}, livePayload = {}, options = {}) {
+  const baseWorkbench = mergeWorkbenchOverlay(workbenchPayload || {}, overlayPayload || null);
+  return mergeWorkbenchPayload(baseWorkbench, livePayload || null, options);
 }
 
 function rowIndex(payload = {}) {

@@ -24,9 +24,11 @@ const INPUTS = [
     articleColumn: 0,
     minColumn: 1,
     maxColumn: 2,
+    marginColumn: 3,
     articleHeaders: ['vendorcode', 'артикул', 'sku'],
     minHeaders: ['цена мин', 'мин', 'min'],
     maxHeaders: ['цена макс', 'макс', 'max'],
+    marginHeaders: ['маржа', 'маржа, %', 'маржа %', 'целевая маржа', 'target margin', 'target margin %'],
     sellerMinColumn: 1,
     sellerMaxColumn: 2
   },
@@ -39,11 +41,13 @@ const INPUTS = [
     minColumn: 2,
     clientMaxColumn: 3,
     maxColumn: 4,
+    marginColumn: 5,
     articleHeaders: ['артикул', 'vendorcode', 'sku'],
     clientMinHeaders: ['min c спп', 'min с спп', 'min спп'],
     minHeaders: ['min лк', 'min', 'мин'],
     clientMaxHeaders: ['max c спп', 'max с спп', 'max спп'],
     maxHeaders: ['max лк', 'max', 'макс'],
+    marginHeaders: ['маржа', 'маржа, %', 'маржа %', 'целевая маржа', 'target margin', 'target margin %'],
     sellerMinColumn: 2,
     sellerMaxColumn: 4
   },
@@ -55,9 +59,11 @@ const INPUTS = [
     articleColumn: 0,
     minColumn: 1,
     maxColumn: 2,
+    marginColumn: 3,
     articleHeaders: ['артикул', 'vendorcode', 'sku'],
     minHeaders: ['мин', 'min', 'цена мин'],
     maxHeaders: ['макс', 'max', 'цена макс'],
+    marginHeaders: ['маржа', 'маржа, %', 'маржа %', 'целевая маржа', 'target margin', 'target margin %'],
     sellerMinColumn: 1,
     sellerMaxColumn: 2
   }
@@ -101,6 +107,15 @@ function parseNumber(value) {
   if (!raw) return null;
   const parsed = Number(raw);
   return Number.isFinite(parsed) ? parsed : null;
+}
+
+function parseMarginPct(value) {
+  if (value === null || value === undefined || value === '') return null;
+  const text = String(value).trim();
+  const parsed = parseNumber(value);
+  if (!Number.isFinite(parsed) || parsed <= 0) return null;
+  const ratio = text.includes('%') || parsed > 1 ? parsed / 100 : parsed;
+  return ratio > 0 && ratio < 1 ? Number(ratio.toFixed(6)) : null;
 }
 
 function readJson(filePath) {
@@ -178,6 +193,7 @@ function resolveColumns(headers, source) {
     articleColumn: findHeaderIndex(headers, source.articleHeaders, source.articleColumn),
     minColumn: findHeaderIndex(headers, source.minHeaders, source.minColumn),
     maxColumn: findHeaderIndex(headers, source.maxHeaders, source.maxColumn),
+    marginColumn: findHeaderIndex(headers, source.marginHeaders, source.marginColumn),
     sellerMinColumn: findHeaderIndex(headers, source.sellerMinHeaders || source.minHeaders, source.sellerMinColumn),
     sellerMaxColumn: findHeaderIndex(headers, source.sellerMaxHeaders || source.maxHeaders, source.sellerMaxColumn),
     clientMinColumn: findHeaderIndex(headers, source.clientMinHeaders, source.clientMinColumn),
@@ -201,6 +217,7 @@ function readInputRows(inputDir, source) {
   const columns = resolveColumns(matrix[0] || [], source);
   const rows = [];
   const duplicates = [];
+  const invalidMargins = [];
   const seen = new Set();
   matrix.slice(1).forEach((row, index) => {
     const article = String(row[columns.articleColumn] || '').trim();
@@ -209,6 +226,11 @@ function readInputRows(inputDir, source) {
     const minPrice = parseNumber(row[columns.minColumn]);
     const maxPrice = parseNumber(row[columns.maxColumn]);
     if (!articleKey || minPrice === null || maxPrice === null) return;
+    const targetMarginPct = parseMarginPct(row[columns.marginColumn]);
+    if (targetMarginPct === null) {
+      invalidMargins.push({ articleKey, sourceRow: index + 2, value: row[columns.marginColumn] });
+      return;
+    }
     if (seen.has(key)) duplicates.push(articleKey);
     seen.add(key);
     rows.push({
@@ -221,18 +243,24 @@ function readInputRows(inputDir, source) {
       key,
       minPrice,
       maxPrice,
+      targetMarginPct,
       sellerMinPrice: parseNumber(row[columns.sellerMinColumn]),
       sellerMaxPrice: parseNumber(row[columns.sellerMaxColumn]),
       clientMinPrice: parseNumber(row[columns.clientMinColumn]),
       clientMaxPrice: parseNumber(row[columns.clientMaxColumn])
     });
   });
+  if (invalidMargins.length) {
+    const examples = invalidMargins.slice(0, 10).map((item) => `${item.articleKey} (строка ${item.sourceRow})`).join(', ');
+    throw new Error(`Маржа обязательна для каждого SKU в ${sourceFileName}. Исправьте ${invalidMargins.length} строк: ${examples}`);
+  }
   return {
     filePath,
     sourceFileName,
     columns,
     rows,
-    duplicates
+    duplicates,
+    invalidMargins
   };
 }
 
@@ -268,7 +296,8 @@ function updateRow(row, minMaxRow, fileName) {
     minPrice: row.minPrice ?? null,
     maxPrice: row.maxPrice ?? null,
     workingZoneFrom: row.workingZoneFrom ?? null,
-    workingZoneTo: row.workingZoneTo ?? null
+    workingZoneTo: row.workingZoneTo ?? null,
+    targetMarginPct: row.targetMarginPct ?? row.manualMarginPct ?? row.allowedMarginPct ?? null
   };
   row.articleKey = row.articleKey || minMaxRow.articleKey;
   row.article = row.article || minMaxRow.articleKey;
@@ -278,9 +307,13 @@ function updateRow(row, minMaxRow, fileName) {
   row.workingZoneTo = minMaxRow.maxPrice;
   row.manualMinPrice = minMaxRow.minPrice;
   row.manualMaxPrice = minMaxRow.maxPrice;
+  row.targetMarginPct = minMaxRow.targetMarginPct;
+  row.manualMarginPct = minMaxRow.targetMarginPct;
+  row.allowedMarginPct = minMaxRow.targetMarginPct;
   if (minMaxRow.clientMinPrice !== null) row.manualClientMinPrice = minMaxRow.clientMinPrice;
   if (minMaxRow.clientMaxPrice !== null) row.manualClientMaxPrice = minMaxRow.clientMaxPrice;
   row.minMaxSource = minMaxRow.sourceFile;
+  row.marginSource = minMaxRow.sourceFile;
   row.minMaxImportedAt = new Date().toISOString();
   row.minMaxPrevious = previous;
 
@@ -429,3 +462,12 @@ function main() {
 if (require.main === module) {
   main();
 }
+
+module.exports = {
+  INPUTS,
+  parseNumber,
+  parseMarginPct,
+  resolveColumns,
+  readInputRows,
+  updateRow
+};

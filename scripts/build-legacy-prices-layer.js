@@ -183,6 +183,18 @@ function supportCurrentExportPrice(row = {}) {
   );
 }
 
+function hasDirectCurrentPrice(row = {}) {
+  const source = [
+    row?.sourceMode,
+    row?.currentPriceSource,
+    row?.currentSellerPriceSource,
+    row?.currentSellerPriceFile
+  ].map((value) => String(value || '').trim().toLowerCase()).join(' ');
+  return source.includes('cabinet-current-snapshot')
+    || source.includes('prices-api')
+    || source.includes('repricer_live_prices.json');
+}
+
 function buildSkuLookup(skus = []) {
   const lookup = new Map();
   (Array.isArray(skus) ? skus : []).forEach((sku) => {
@@ -219,11 +231,18 @@ function buildLegacyRow(row = {}, platform = '', supportRow = null, ownerOverrid
   const lastTurnover = lastSeriesValue(series, 'turnoverDays');
   const lastSpp = lastSeriesSpp(series);
   const latestFactDate = asIsoDate(row?.valueDate || row?.historyFreshnessDate || latestSeriesDate(row) || '');
-  const exportCurrentPrice = platform === 'ozon' ? supportCurrentExportPrice(supportRow) : null;
-  const currentPrice = firstPositive(exportCurrentPrice, row?.currentFillPrice, row?.currentPrice, lastPrice.value);
+  const directCurrentPrice = hasDirectCurrentPrice(row);
+  const exportCurrentPrice = platform === 'ozon' && !directCurrentPrice
+    ? supportCurrentExportPrice(supportRow)
+    : null;
+  const currentPrice = directCurrentPrice
+    ? firstPositive(row?.currentFillPrice, row?.currentPrice, lastPrice.value)
+    : firstPositive(exportCurrentPrice, row?.currentFillPrice, row?.currentPrice, lastPrice.value);
   const currentClientPrice = flagEnabled(row?.clearCurrentClientPrice)
     ? null
-    : firstPositive(exportCurrentPrice, row?.currentClientPrice, lastClientPrice.value);
+    : (directCurrentPrice
+        ? firstPositive(row?.currentClientPrice, lastClientPrice.value)
+        : firstPositive(exportCurrentPrice, row?.currentClientPrice, lastClientPrice.value));
   const currentTurnoverDays = firstNumber(row?.currentTurnoverDays, row?.turnoverCurrentDays, lastTurnover.value);
   const currentSppPct = flagEnabled(row?.clearCurrentSppPct)
     ? null
@@ -274,7 +293,9 @@ function buildLegacyRow(row = {}, platform = '', supportRow = null, ownerOverrid
     currentPrice,
     currentClientPrice,
     clearCurrentClientPrice: flagEnabled(row?.clearCurrentClientPrice),
-    currentPriceSource: exportCurrentPrice ? 'price_workbench_support_current_export' : (row?.currentPriceSource || row?.currentSellerPriceSource || ''),
+    currentPriceSource: directCurrentPrice
+      ? (row?.currentPriceSource || row?.currentSellerPriceSource || row?.sourceMode || '')
+      : (exportCurrentPrice ? 'price_workbench_support_current_export' : (row?.currentPriceSource || row?.currentSellerPriceSource || '')),
     currentSppPct,
     clearCurrentSppPct: flagEnabled(row?.clearCurrentSppPct),
     currentPriceDate,

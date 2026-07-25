@@ -1,60 +1,56 @@
 {
   "schema": "portal-runtime-wiring-reconciliation-v1",
-  "status": "warning",
-  "warnings": [
-    "canonical repricer retained as diagnostic snapshot; feature activation is blocked"
-  ],
+  "generatedAt": "2026-07-25T19:12:08.830Z",
+  "status": "ok",
+  "publish_allowed": true,
+  "writeMode": "runtime",
+  "business_fingerprint": "de598837600657deb361a0b663471b050225f3532bdc9b3e525f574b47994ab9",
   "artifacts": [
     {
       "id": "canonical_repricer",
-      "errors": [],
-      "source": "diagnostic_only",
-      "status": "warning",
-      "checksum": "eb9019c89367796c02206c8fb528b86bb9bdd2bb2224cc6f21c3f0d152be7f5d",
+      "status": "ok",
+      "promoted": true,
       "fallback": false,
-      "promoted": false,
-      "rowCount": 339,
-      "warnings": [
-        "canonical repricer retained as diagnostic snapshot; feature activation is blocked"
-      ],
-      "writeMode": "runtime",
+      "diagnosticOnly": false,
+      "activationAllowed": true,
+      "source": "current",
       "sourcePath": ".portal-truth-output/canonical_repricer.json",
       "runtimePath": "data/canonical_repricer.json",
       "lastGoodPath": "data/last_good/canonical_repricer.json",
-      "diagnosticOnly": true,
-      "activationAllowed": false,
-      "reconciliationStatus": "warning",
-      "featurePublishAllowed": false,
-      "reconciliationPublishAllowed": true
+      "checksum": "05b8ceed2c17f3fe25612fa1006927629b2919a7316299203a5a7ce0149c4b3f",
+      "rowCount": 414,
+      "reconciliationStatus": "ok",
+      "reconciliationPublishAllowed": true,
+      "featurePublishAllowed": true,
+      "writeMode": "runtime",
+      "errors": [],
+      "warnings": []
     },
     {
       "id": "portal_dashboard_metrics",
-      "errors": [],
-      "source": "current",
       "status": "ok",
-      "checksum": "e20d12921155507bb76f8728c6a09ca012ee4d9aec54de35a7fe6d674ab4448d",
-      "fallback": false,
       "promoted": true,
-      "rowCount": 9,
-      "warnings": [],
-      "writeMode": "runtime",
+      "fallback": false,
+      "diagnosticOnly": false,
+      "activationAllowed": true,
+      "source": "current",
       "sourcePath": ".portal-truth-output/portal_dashboard_metrics.json",
       "runtimePath": "data/portal_dashboard_metrics.json",
       "lastGoodPath": "data/last_good/portal_dashboard_metrics.json",
-      "diagnosticOnly": false,
-      "activationAllowed": true,
-      "reconciliationStatus": "ok",
-      "reconciliationPublishAllowed": true
+      "checksum": "8cb206d12d5359b0a42b068e5f007f7a7bc92c3d9b4a447b640e23fb29c062cd",
+      "rowCount": 14,
+      "reconciliationStatus": "warning",
+      "reconciliationPublishAllowed": true,
+      "writeMode": "runtime",
+      "errors": [],
+      "warnings": []
     }
   ],
-  "writeMode": "runtime",
-  "generatedAt": "2026-06-20T22:42:01.960Z",
   "blockingReasons": [],
-  "publish_allowed": true,
+  "warnings": [],
   "runtime_sources": {
-    "last_good_dir": "data/last_good",
     "canonical_repricer": "data/canonical_repricer.json",
-    "portal_dashboard_metrics": "data/portal_dashboard_metrics.json"
-  },
-  "business_fingerprint": "4f0d9fee2b2a2cbba7b86cb64ff41fb47e175ec12ae043a8a398152a5dc53de4"
+    "portal_dashboard_metrics": "data/portal_dashboard_metrics.json",
+    "last_good_dir": "data/last_good"
+  }
 }

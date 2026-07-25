@@ -1,45 +1,46 @@
 {
   "schema": "portal-feature-readiness-v1",
-  "status": "warning",
+  "generatedAt": "2026-07-25T19:12:08.833Z",
+  "status": "ok",
+  "technical_publish_allowed": true,
+  "feature_activation_allowed": true,
+  "diagnostic_publish_allowed": true,
   "features": {
-    "uploads": {
-      "status": "warning",
-      "warnings": [
-        "fixture includes an expected rejected row; upload validation path is non-vacuous"
-      ],
-      "cost_status": "ok",
-      "minmax_status": "warning",
-      "publish_allowed": true,
-      "activation_allowed": true
-    },
     "repricer": {
-      "status": "blocked",
-      "checksum": "eb9019c89367796c02206c8fb528b86bb9bdd2bb2224cc6f21c3f0d152be7f5d",
-      "warnings": [
-        "repricer feature blocked: 0/339 publishable recommendations"
-      ],
-      "blocked_rows": 339,
-      "runtime_path": "data/canonical_repricer.json",
-      "eligible_rows": 339,
-      "report_status": "warning",
-      "publish_allowed": false,
-      "publishable_rows": 0,
-      "activation_allowed": false,
+      "status": "ok",
+      "publish_allowed": true,
+      "activation_allowed": true,
       "diagnostic_available": true,
-      "publishable_coverage": 0
+      "report_status": "ok",
+      "runtime_path": "data/canonical_repricer.json",
+      "checksum": "05b8ceed2c17f3fe25612fa1006927629b2919a7316299203a5a7ce0149c4b3f",
+      "eligible_rows": 414,
+      "publishable_rows": 37,
+      "blocked_rows": 377,
+      "publishable_coverage": 0.089372,
+      "warnings": []
     },
     "dashboard": {
-      "status": "ok",
-      "checksum": "e20d12921155507bb76f8728c6a09ca012ee4d9aec54de35a7fe6d674ab4448d",
-      "warnings": [],
-      "metricCount": 9,
-      "runtime_path": "data/portal_dashboard_metrics.json",
+      "status": "warning",
       "publish_allowed": true,
-      "activation_allowed": true
+      "activation_allowed": true,
+      "runtime_path": "data/portal_dashboard_metrics.json",
+      "checksum": "8cb206d12d5359b0a42b068e5f007f7a7bc92c3d9b4a447b640e23fb29c062cd",
+      "metricCount": 14,
+      "warnings": [
+        "1 platform raw fact metrics are missing before daily sync",
+        "4 extra marketplace raw fact metrics are behind the core cutoff date"
+      ]
+    },
+    "uploads": {
+      "status": "warning",
+      "publish_allowed": true,
+      "activation_allowed": true,
+      "minmax_status": "warning",
+      "cost_status": "ok",
+      "warnings": [
+        "fixture includes an expected rejected row; upload validation path is non-vacuous"
+      ]
     }
-  },
-  "generatedAt": "2026-06-20T22:42:01.960Z",
-  "technical_publish_allowed": true,
-  "diagnostic_publish_allowed": true,
-  "feature_activation_allowed": false
+  }
 }

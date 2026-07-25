@@ -245,6 +245,17 @@ function marginGuardRequired(lifecycleKey = '') {
   return ['active', 'new', 'relaunch'].includes(String(lifecycleKey || '').toLowerCase());
 }
 
+function alignedPriceGenerationForRepricer(prices = {}, overlay = {}) {
+  const pricesGeneration = prices?.priceGeneration;
+  const pricesGenerationId = textValue(pricesGeneration?.id);
+  const overlayGenerationId = textValue(overlay?.priceGeneration?.id);
+  if (!pricesGenerationId || pricesGenerationId !== overlayGenerationId) return null;
+  return {
+    ...pricesGeneration,
+    artifact: 'repricer'
+  };
+}
+
 function inferStrategy(currentPrice, recPrice, stock, minPrice) {
   if ((stock || 0) <= 0) return 'OOS';
   if (currentPrice > 0 && minPrice > 0 && currentPrice + 0.001 < minPrice) return 'FLOOR';
@@ -773,6 +784,7 @@ function buildLegacyRepricerLayer(options = {}) {
   const procurementOzon = safeReadJson(options.procurementOzonPath, { generatedAt: '', rows: [] });
   const economicsPolicy = safeReadJson(options.economicsPolicyPath, { platforms: {} });
   const liveRepricer = safeReadLooseJson(options.liveRepricerPath, { generatedAt: '', rows: [] });
+  const priceGeneration = alignedPriceGenerationForRepricer(prices, overlay);
 
   const merged = mergeSmartPriceContour(workbench || {}, overlay || {}, liveWorkbench || {});
   const liveRepricerFreshness = liveSourceStatus(
@@ -907,6 +919,7 @@ function buildLegacyRepricerLayer(options = {}) {
 
   const payload = {
     generatedAt: merged?.generatedAt || new Date().toISOString(),
+    ...(priceGeneration ? { priceGeneration } : {}),
     note: 'Legacy repricer fallback rebuilt from merged smart-price contour, support rows and local live repricer hints. Used for coldstart, price bridge and compatibility until managed repricer finishes hydration.',
     sourceFreshness: {
       workbench: workbench?.generatedAt || '',
@@ -946,6 +959,7 @@ if (require.main === module) {
 }
 
 module.exports = {
+  alignedPriceGenerationForRepricer,
   buildSide,
   buildLegacyRepricerLayer,
   marginGuardRequired,

@@ -1,5 +1,18 @@
 {
   "generatedAt": "2026-07-23T21:55:56.585Z",
+  "priceGeneration": {
+    "id": "prices-540cd1db900338665698",
+    "builtAt": "2026-07-24T21:16:55.528Z",
+    "asOfDate": "2026-07-23",
+    "sourceKind": "local",
+    "sourceMtime": "2026-07-23T21:55:56.585Z",
+    "artifactFingerprints": {
+      "overlay": "9035507339d59c8cdba0af3144de83c1dc7217d153c69900f28918baf2786831",
+      "prices": "b47b3e6e32e4617ae2e7dd82eaf71885df6240f1e6ea2fbdb938fc766b071bc7",
+      "repricer": "8de5f2d5633159134f0217979aa1a87b191c7eb603d5d7516cbe0baa763ced28"
+    },
+    "artifact": "repricer"
+  },
   "note": "Legacy repricer fallback rebuilt from merged smart-price contour, support rows and local live repricer hints. Used for coldstart, price bridge and compatibility until managed repricer finishes hydration.",
   "sourceFreshness": {
     "workbench": "2026-07-06T06:17:17.001Z",

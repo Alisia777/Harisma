@@ -20,6 +20,7 @@ const {
   marginGuardRequired
 } = require('./build-canonical-repricer');
 const {
+  alignedPriceGenerationForRepricer,
   buildSide
 } = require('./build-legacy-repricer-layer');
 
@@ -30,6 +31,21 @@ function writeWorkbook(filePath, rows) {
 }
 
 function run() {
+  assert.deepStrictEqual(
+    alignedPriceGenerationForRepricer(
+      { priceGeneration: { id: 'prices-test', builtAt: '2026-07-24T00:00:00.000Z', artifact: 'prices' } },
+      { priceGeneration: { id: 'prices-test', artifact: 'overlay' } }
+    ),
+    { id: 'prices-test', builtAt: '2026-07-24T00:00:00.000Z', artifact: 'repricer' }
+  );
+  assert.strictEqual(
+    alignedPriceGenerationForRepricer(
+      { priceGeneration: { id: 'prices-a' } },
+      { priceGeneration: { id: 'prices-b' } }
+    ),
+    null
+  );
+
   assert.strictEqual(parseMarginPct('25%'), 0.25);
   assert.strictEqual(parseMarginPct(25), 0.25);
   assert.strictEqual(parseMarginPct('0,25'), 0.25);

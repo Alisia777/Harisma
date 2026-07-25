@@ -188,6 +188,32 @@ async function yandexRequest(options, apiPath, query = {}) {
   return payload;
 }
 
+function campaignIdsFromPayload(payload) {
+  const campaigns = Array.isArray(payload?.result?.campaigns)
+    ? payload.result.campaigns
+    : Array.isArray(payload?.campaigns)
+      ? payload.campaigns
+      : [];
+  return [...new Set(
+    campaigns
+      .map((campaign) => normalizeText(campaign?.id || campaign?.campaignId))
+      .filter(Boolean)
+  )];
+}
+
+async function discoverCampaignIds(options) {
+  if (options.campaignIds.length) return options.campaignIds;
+  const payload = await yandexRequest(options, '/v2/campaigns');
+  const campaignIds = campaignIdsFromPayload(payload);
+  if (!campaignIds.length) {
+    throw new Error(
+      'Yandex Market price refresh could not discover campaigns through /v2/campaigns. '
+      + 'Set ALTEA_YM_CAMPAIGN_ID only when automatic discovery is unavailable.'
+    );
+  }
+  return campaignIds;
+}
+
 async function fetchCampaignPrices(options, campaignId) {
   const offers = [];
   const seenPageTokens = new Set();
@@ -310,10 +336,10 @@ function buildPayload(options, offers = [], skus = [], skuAliases = {}) {
 async function main() {
   const options = resolveOptions(parseArgs(process.argv));
   if (!options.apiKey) throw new Error('ALTEA_YM_API_KEY is required for Yandex Market price refresh.');
-  if (!options.campaignIds.length) throw new Error('ALTEA_YM_CAMPAIGN_ID is required for Yandex Market price refresh.');
+  const campaignIds = await discoverCampaignIds(options);
 
   const offers = [];
-  for (const campaignId of options.campaignIds) {
+  for (const campaignId of campaignIds) {
     offers.push(...await fetchCampaignPrices(options, campaignId));
   }
   const skus = readJson(options.skusPath, []);
@@ -338,6 +364,8 @@ module.exports = {
   activeAliasRows,
   buildPayload,
   buildSkuLookup,
+  campaignIdsFromPayload,
+  discoverCampaignIds,
   fetchCampaignPrices,
   normalizeKey,
   parseArgs,

@@ -10,6 +10,8 @@ const OZON_API_BASE_URL = 'https://api-seller.ozon.ru';
 const DEFAULT_AD_WINDOW_DAYS = 7;
 const DEFAULT_AD_MAX_AGE_DAYS = 3;
 const DEFAULT_STOCK_MAX_AGE_DAYS = 2;
+const WB_STOCK_PAGE_LIMIT = 250000;
+const MARKETPLACE_FILTER_LIMIT = 1000;
 
 function parseArgs(argv) {
   const args = {};
@@ -161,6 +163,7 @@ function advertisingSnapshot({
 function skuIndexes(skus, livePrices = {}) {
   const byArticle = new Map();
   const byWbNmId = new Map();
+  const byOzonOfferId = new Map();
   const addArticleAlias = (value, articleKey) => {
     const key = normalizeKey(value);
     if (key && articleKey && !byArticle.has(key)) byArticle.set(key, articleKey);
@@ -169,19 +172,26 @@ function skuIndexes(skus, livePrices = {}) {
     const nmId = String(value || '').trim().replace(/^wb-nm-/i, '').replace(/\.0$/, '');
     if (/^\d+$/.test(nmId) && articleKey && !byWbNmId.has(nmId)) byWbNmId.set(nmId, articleKey);
   };
+  const addOzonOfferId = (value, articleKey) => {
+    const offerId = String(value || '').trim();
+    if (!offerId || !articleKey) return;
+    addArticleAlias(offerId, articleKey);
+    if (!byOzonOfferId.has(offerId)) byOzonOfferId.set(offerId, articleKey);
+  };
   for (const sku of Array.isArray(skus) ? skus : []) {
     const articleKey = String(sku?.articleKey || sku?.article || sku?.sku || '').trim();
     addArticleAlias(articleKey, articleKey);
+    addOzonOfferId(articleKey, articleKey);
     addWbNmId(sku?.nmId || sku?.wb?.nmId || sku?.wbNmId, articleKey);
     for (const alias of Array.isArray(sku?.platformAliases?.ozon) ? sku.platformAliases.ozon : []) {
-      addArticleAlias(alias, articleKey);
+      addOzonOfferId(alias, articleKey);
     }
     for (const alias of Array.isArray(sku?.platformAliases?.wb) ? sku.platformAliases.wb : []) {
       addWbNmId(alias, articleKey);
     }
     for (const alias of Array.isArray(sku?.aliases) ? sku.aliases : []) {
       const platform = String(alias?.platform || '').trim().toLowerCase();
-      if (platform === 'ozon') addArticleAlias(alias?.value, articleKey);
+      if (platform === 'ozon') addOzonOfferId(alias?.value, articleKey);
       if (platform === 'wb') addWbNmId(alias?.value, articleKey);
     }
   }
@@ -191,9 +201,9 @@ function skuIndexes(skus, livePrices = {}) {
   }
   for (const row of Array.isArray(livePrices?.platforms?.ozon?.rows) ? livePrices.platforms.ozon.rows : []) {
     const articleKey = String(row?.articleKey || row?.mapping?.articleKey || '').trim();
-    addArticleAlias(row?.offerId || row?.offer_id, articleKey);
+    addOzonOfferId(row?.offerId || row?.offer_id, articleKey);
   }
-  return { byArticle, byWbNmId };
+  return { byArticle, byWbNmId, byOzonOfferId };
 }
 
 function stockRow(articleKey, platform, values = {}) {
@@ -283,17 +293,34 @@ async function requestJson(url, options, label) {
 }
 
 async function fetchWbStocks(token, indexes, asOfDate) {
-  const payload = await requestJson(WB_STOCK_API_URL, {
-    method: 'POST',
-    headers: {
-      Authorization: token,
-      'Content-Type': 'application/json'
-    },
-    body: JSON.stringify({ nmIds: [] })
-  }, 'WB stocks API');
-  const items = Array.isArray(payload?.data?.items)
-    ? payload.data.items
-    : (Array.isArray(payload?.items) ? payload.items : []);
+  const requested = [...(indexes?.byWbNmId || new Map()).entries()]
+    .filter(([nmId, articleKey]) => /^\d+$/.test(String(nmId || '')) && String(articleKey || '').trim());
+  const items = [];
+  for (let chunkIndex = 0; chunkIndex < requested.length; chunkIndex += MARKETPLACE_FILTER_LIMIT) {
+    const chunk = requested.slice(chunkIndex, chunkIndex + MARKETPLACE_FILTER_LIMIT);
+    let offset = 0;
+    for (let page = 0; page < 100; page += 1) {
+      const payload = await requestJson(WB_STOCK_API_URL, {
+        method: 'POST',
+        headers: {
+          Authorization: token,
+          'Content-Type': 'application/json'
+        },
+        body: JSON.stringify({
+          nmIds: chunk.map(([nmId]) => Number(nmId)),
+          chrtIds: [],
+          limit: WB_STOCK_PAGE_LIMIT,
+          offset
+        })
+      }, 'WB stocks API');
+      const batch = Array.isArray(payload?.data?.items)
+        ? payload.data.items
+        : (Array.isArray(payload?.items) ? payload.items : []);
+      items.push(...batch);
+      if (batch.length < WB_STOCK_PAGE_LIMIT) break;
+      offset += batch.length;
+    }
+  }
   const grouped = new Map();
   let unmatched = 0;
   for (const item of items) {
@@ -322,6 +349,19 @@ async function fetchWbStocks(token, indexes, asOfDate) {
     if (quantity <= 0) row.zeroStockPlaceCount += 1;
     grouped.set(normalizedArticle, row);
   }
+  for (const [, articleKey] of requested) {
+    const normalizedArticle = normalizeKey(articleKey);
+    if (!normalizedArticle || grouped.has(normalizedArticle)) continue;
+    grouped.set(normalizedArticle, {
+      articleKey,
+      present: 0,
+      reserved: 0,
+      available: 0,
+      inbound: 0,
+      placeCount: 0,
+      zeroStockPlaceCount: 0
+    });
+  }
   return {
     status: 'trusted_direct',
     source: 'WB Seller Analytics API /api/analytics/v1/stocks-report/wb-warehouses',
@@ -330,6 +370,7 @@ async function fetchWbStocks(token, indexes, asOfDate) {
     ageDays: 0,
     maxAgeDays: DEFAULT_STOCK_MAX_AGE_DAYS,
     sourceRows: items.length,
+    requestedRows: requested.length,
     unmatchedRows: unmatched,
     rows: [...grouped.values()].map((row) => stockRow(row.articleKey, 'wb', {
       ...row,
@@ -350,45 +391,55 @@ function ozonCursor(payload) {
   return String(payload?.cursor || payload?.result?.cursor || payload?.result?.last_id || payload?.last_id || '').trim();
 }
 
-async function fetchOzonStockPages(baseUrl, clientId, apiKey, version = 'v4') {
+async function fetchOzonStockPages(baseUrl, clientId, apiKey, version = 'v4', offerIds = []) {
   const items = [];
-  let cursor = '';
-  const seenCursors = new Set();
-  for (let page = 0; page < 100; page += 1) {
-    const body = version === 'v4'
-      ? {
-        cursor,
-        filter: {
-          visibility: 'ALL',
-          with_quant: { created: true, exists: true }
-        },
-        limit: 1000
-      }
-      : {
-        filter: { visibility: 'ALL' },
-        last_id: cursor,
-        limit: 1000
+  const filters = offerIds.length
+    ? Array.from({ length: Math.ceil(offerIds.length / MARKETPLACE_FILTER_LIMIT) }, (_, index) => (
+      offerIds.slice(index * MARKETPLACE_FILTER_LIMIT, (index + 1) * MARKETPLACE_FILTER_LIMIT)
+    ))
+    : [[]];
+  for (const offerIdFilter of filters) {
+    let cursor = '';
+    const seenCursors = new Set();
+    for (let page = 0; page < 100; page += 1) {
+      const filter = {
+        visibility: 'ALL',
+        ...(offerIdFilter.length ? { offer_id: offerIdFilter } : {})
       };
-    const payload = await requestJson(`${baseUrl}/${version}/product/info/stocks`, {
-      method: 'POST',
-      headers: {
-        'Client-Id': clientId,
-        'Api-Key': apiKey,
-        'Content-Type': 'application/json'
-      },
-      body: JSON.stringify(body)
-    }, `Ozon ${version} stocks API`);
-    const batch = ozonItems(payload);
-    items.push(...batch);
-    const nextCursor = ozonCursor(payload);
-    if (!batch.length || !nextCursor || nextCursor === cursor || seenCursors.has(nextCursor) || batch.length < 1000) break;
-    seenCursors.add(nextCursor);
-    cursor = nextCursor;
+      const body = version === 'v4'
+        ? { cursor, filter, limit: MARKETPLACE_FILTER_LIMIT }
+        : { filter, last_id: cursor, limit: MARKETPLACE_FILTER_LIMIT };
+      const payload = await requestJson(`${baseUrl}/${version}/product/info/stocks`, {
+        method: 'POST',
+        headers: {
+          'Client-Id': clientId,
+          'Api-Key': apiKey,
+          'Content-Type': 'application/json'
+        },
+        body: JSON.stringify(body)
+      }, `Ozon ${version} stocks API`);
+      const batch = ozonItems(payload);
+      items.push(...batch);
+      const nextCursor = ozonCursor(payload);
+      if (!batch.length || !nextCursor || nextCursor === cursor || seenCursors.has(nextCursor) || batch.length < MARKETPLACE_FILTER_LIMIT) break;
+      seenCursors.add(nextCursor);
+      cursor = nextCursor;
+    }
   }
   return items;
 }
 
-function normalizeOzonStocks(items, indexes, asOfDate, version) {
+function ozonStockBuckets(item = {}) {
+  if (Array.isArray(item?.stocks)) return item.stocks;
+  if (!item?.stocks || typeof item.stocks !== 'object') return [];
+  return Object.entries(item.stocks).flatMap(([type, value]) => {
+    if (Array.isArray(value)) return value.map((row) => ({ ...row, type: row?.type || type }));
+    if (value && typeof value === 'object') return [{ ...value, type: value.type || type }];
+    return [];
+  });
+}
+
+function normalizeOzonStocks(items, indexes, asOfDate, version, expectedOffers = new Map()) {
   const grouped = new Map();
   let unmatched = 0;
   for (const item of items) {
@@ -409,9 +460,7 @@ function normalizeOzonStocks(items, indexes, asOfDate, version) {
       placeCount: 0,
       zeroStockPlaceCount: 0
     };
-    const stocks = Array.isArray(item?.stocks)
-      ? item.stocks
-      : (Array.isArray(item?.stocks?.stocks) ? item.stocks.stocks : []);
+    const stocks = ozonStockBuckets(item);
     if (!stocks.length) {
       const present = Math.max(0, numberOrZero(item?.present ?? item?.stock ?? item?.quantity));
       const reserved = Math.max(0, numberOrZero(item?.reserved));
@@ -427,11 +476,26 @@ function normalizeOzonStocks(items, indexes, asOfDate, version) {
         row.present += present;
         row.reserved += reserved;
         row.available += Math.max(0, present - reserved);
+        row.inbound += Math.max(0, numberOrZero(stock?.inbound ?? stock?.in_way_to_warehouse));
         row.placeCount += 1;
         if (present - reserved <= 0) row.zeroStockPlaceCount += 1;
       }
     }
     grouped.set(normalizedArticle, row);
+  }
+  for (const [offerId, expectedArticleKey] of expectedOffers.entries()) {
+    const articleKey = String(expectedArticleKey || indexes.byArticle.get(normalizeKey(offerId)) || offerId).trim();
+    const normalizedArticle = normalizeKey(articleKey);
+    if (!normalizedArticle || grouped.has(normalizedArticle)) continue;
+    grouped.set(normalizedArticle, {
+      articleKey,
+      present: 0,
+      reserved: 0,
+      available: 0,
+      inbound: 0,
+      placeCount: 0,
+      zeroStockPlaceCount: 0
+    });
   }
   return {
     status: 'trusted_direct',
@@ -441,6 +505,7 @@ function normalizeOzonStocks(items, indexes, asOfDate, version) {
     ageDays: 0,
     maxAgeDays: DEFAULT_STOCK_MAX_AGE_DAYS,
     sourceRows: items.length,
+    requestedRows: expectedOffers.size,
     unmatchedRows: unmatched,
     rows: [...grouped.values()].map((row) => stockRow(row.articleKey, 'ozon', {
       ...row,
@@ -452,13 +517,15 @@ function normalizeOzonStocks(items, indexes, asOfDate, version) {
 }
 
 async function fetchOzonStocks(options, indexes, asOfDate) {
+  const expectedOffers = indexes?.byOzonOfferId instanceof Map ? indexes.byOzonOfferId : new Map();
+  const offerIds = [...expectedOffers.keys()];
   try {
-    const items = await fetchOzonStockPages(options.ozonApiBaseUrl, options.ozonClientId, options.ozonApiKey, 'v4');
-    return normalizeOzonStocks(items, indexes, asOfDate, 'v4');
+    const items = await fetchOzonStockPages(options.ozonApiBaseUrl, options.ozonClientId, options.ozonApiKey, 'v4', offerIds);
+    return normalizeOzonStocks(items, indexes, asOfDate, 'v4', expectedOffers);
   } catch (error) {
     if (![400, 404, 405, 409].includes(Number(error?.status || 0))) throw error;
-    const items = await fetchOzonStockPages(options.ozonApiBaseUrl, options.ozonClientId, options.ozonApiKey, 'v3');
-    const result = normalizeOzonStocks(items, indexes, asOfDate, 'v3');
+    const items = await fetchOzonStockPages(options.ozonApiBaseUrl, options.ozonClientId, options.ozonApiKey, 'v3', offerIds);
+    const result = normalizeOzonStocks(items, indexes, asOfDate, 'v3', expectedOffers);
     result.warnings = [`v4 unavailable: ${error.message}`];
     return result;
   }
@@ -486,7 +553,7 @@ function directSnapshotUsable(direct) {
   return Boolean(
     direct
     && direct.status === 'trusted_direct'
-    && numberOrZero(direct.sourceRows) > 0
+    && (numberOrZero(direct.sourceRows) > 0 || numberOrZero(direct.requestedRows) > 0)
     && Array.isArray(direct.rows)
     && direct.rows.length > 0
   );
@@ -658,8 +725,10 @@ module.exports = {
   buildLiveSignals,
   directSnapshotUsable,
   fallbackStocks,
+  fetchWbStocks,
   mergeDirectWithFallback,
   normalizeOzonStocks,
+  ozonStockBuckets,
   resolveOptions,
   skuIndexes,
   stockRow

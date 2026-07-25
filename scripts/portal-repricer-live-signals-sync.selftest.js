@@ -9,6 +9,7 @@ const {
   advertisingSnapshot,
   buildLiveSignals,
   directSnapshotUsable,
+  fetchWbStocks,
   mergeDirectWithFallback,
   normalizeOzonStocks,
   resolveOptions,
@@ -114,6 +115,31 @@ async function run() {
     assert.strictEqual(directSnapshotUsable(normalized), true);
     assert.strictEqual(directSnapshotUsable({ status: 'trusted_direct', sourceRows: 0, rows: [] }), false);
 
+    const normalizedV4 = normalizeOzonStocks([{
+      offer_id: 'sku-a',
+      stocks: {
+        fbo: { type: 'fbo', present: 9, reserved: 2, warehouse_ids: [1] },
+        fbs: { type: 'fbs', present: 4, reserved: 1, warehouse_ids: [2] }
+      }
+    }], indexes, '2026-07-24', 'v4');
+    assert.strictEqual(normalizedV4.rows[0].present, 13);
+    assert.strictEqual(normalizedV4.rows[0].reserved, 3);
+    assert.strictEqual(normalizedV4.rows[0].available, 10);
+    assert.strictEqual(normalizedV4.rows[0].placeCount, 2);
+
+    const expectedZero = normalizeOzonStocks(
+      [],
+      indexes,
+      '2026-07-24',
+      'v4',
+      new Map([['sku-a', 'sku-a']])
+    );
+    assert.strictEqual(expectedZero.sourceRows, 0);
+    assert.strictEqual(expectedZero.requestedRows, 1);
+    assert.strictEqual(expectedZero.rows[0].available, 0);
+    assert.strictEqual(expectedZero.rows[0].oos, true);
+    assert.strictEqual(directSnapshotUsable(expectedZero), true);
+
     const enrichedIndexes = skuIndexes([{
       articleKey: 'sku-alias',
       platformAliases: { wb: ['wb-nm-777'], ozon: ['ozon-offer-alias'] }
@@ -127,6 +153,47 @@ async function run() {
     assert.strictEqual(enrichedIndexes.byWbNmId.get('888'), 'sku-live');
     assert.strictEqual(enrichedIndexes.byArticle.get(normalizeKey('ozon-offer-alias')), 'sku-alias');
     assert.strictEqual(enrichedIndexes.byArticle.get(normalizeKey('ozon-live-offer')), 'sku-live');
+    assert.strictEqual(enrichedIndexes.byOzonOfferId.get('ozon-offer-alias'), 'sku-alias');
+    assert.strictEqual(enrichedIndexes.byOzonOfferId.get('ozon-live-offer'), 'sku-live');
+
+    const originalFetch = global.fetch;
+    const wbBodies = [];
+    try {
+      global.fetch = async (_url, request = {}) => {
+        wbBodies.push(JSON.parse(request.body));
+        return {
+          ok: true,
+          status: 200,
+          text: async () => JSON.stringify({
+            data: {
+              items: [{
+                nmId: 101,
+                quantity: 7,
+                inWayToClient: 2,
+                inWayFromClient: 1
+              }]
+            }
+          })
+        };
+      };
+      const wbDirect = await fetchWbStocks('test-token', skuIndexes([
+        { articleKey: 'sku-a', nmId: 101 },
+        { articleKey: 'sku-b', nmId: 102 }
+      ]), '2026-07-24');
+      assert.deepStrictEqual(wbBodies[0], {
+        nmIds: [101, 102],
+        chrtIds: [],
+        limit: 250000,
+        offset: 0
+      });
+      assert.strictEqual(wbDirect.sourceRows, 1);
+      assert.strictEqual(wbDirect.requestedRows, 2);
+      assert.strictEqual(wbDirect.rows.find((row) => row.articleKey === 'sku-a').available, 7);
+      assert.strictEqual(wbDirect.rows.find((row) => row.articleKey === 'sku-b').oos, true);
+      assert.strictEqual(directSnapshotUsable(wbDirect), true);
+    } finally {
+      global.fetch = originalFetch;
+    }
 
     const mixed = mergeDirectWithFallback(normalized, {
       rows: [

@@ -139,10 +139,12 @@
     root.dataset.theme = theme.id;
     root.dataset.themeMode = theme.mode || 'dark';
     root.dataset.themeMotif = theme.motif || 'none';
+    root.dataset.portalTheme = legacy;
     if (document.body) {
       document.body.dataset.theme = theme.id;
-      document.body.dataset.portalTheme = theme.id;
+      document.body.dataset.portalTheme = legacy;
       document.body.dataset.portalThemeLegacy = legacy;
+      document.body.dataset.shellTheme = theme.id;
       document.body.classList.add('altea-premium-shell');
     }
     var meta = qs('meta[name="theme-color"]');

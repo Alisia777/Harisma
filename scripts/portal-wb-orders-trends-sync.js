@@ -287,7 +287,7 @@ async function wbAnalyticsRequest(options, apiPath, requestOptions = {}) {
   const response = await fetch(url, {
     method: requestOptions.method || 'GET',
     headers: {
-      Authorization: options.token,
+      Authorization: options.analyticsToken || options.token,
       'Content-Type': 'application/json; charset=utf-8'
     },
     body: requestOptions.body === undefined ? undefined : JSON.stringify(requestOptions.body)
@@ -363,14 +363,30 @@ function resolveOptions(args) {
   const autoLagDays = new Date().getHours() < settlementHour ? 2 : 1;
   const to = explicitTo || localDateKey(-autoLagDays);
   const from = isoDate(args.from || args['date-from'] || `${to.slice(0, 7)}-01`);
+  const genericToken =
+    args.token
+    || process.env.ALTEA_WB_API_TOKEN
+    || process.env.ALTEA_WB_PROMOTION_TOKEN
+    || '';
+  const financeToken =
+    args['finance-token']
+    || process.env.ALTEA_WB_FINANCE_TOKEN
+    || genericToken;
+  const analyticsToken =
+    args['analytics-token']
+    || process.env.ALTEA_WB_ANALYTICS_TOKEN
+    || genericToken
+    || financeToken;
+  const statisticsToken =
+    args['statistics-token']
+    || process.env.ALTEA_WB_STATISTICS_TOKEN
+    || genericToken
+    || financeToken;
   return {
-    token:
-      args['finance-token']
-      || process.env.ALTEA_WB_FINANCE_TOKEN
-      || args.token
-      || process.env.ALTEA_WB_API_TOKEN
-      || process.env.ALTEA_WB_PROMOTION_TOKEN
-      || '',
+    token: genericToken || financeToken || statisticsToken || analyticsToken,
+    analyticsToken,
+    financeToken,
+    statisticsToken,
     financeApiBaseUrl: String(args['finance-api-base-url'] || FINANCE_API_BASE_URL).replace(/\/+$/, ''),
     financeMinIntervalMs,
     financeLastRequestAt: 0,
@@ -746,7 +762,7 @@ async function wbRequest(options, query) {
       response = await fetch(url, {
         method: 'GET',
         headers: {
-          Authorization: options.token,
+          Authorization: options.statisticsToken || options.token,
           Accept: 'application/json'
         }
       });
@@ -810,7 +826,7 @@ async function wbFinanceRequest(options, endpoint, body) {
       response = await fetch(url, {
         method: 'POST',
         headers: {
-          Authorization: options.token,
+          Authorization: options.financeToken || options.token,
           'Content-Type': 'application/json',
           Accept: 'application/json'
         },
@@ -1481,7 +1497,9 @@ function mergeWbArticles(baseArticles, freshArticles) {
 
 async function main() {
   const options = resolveOptions(parseArgs(process.argv));
-  if (!options.token) throw new Error('ALTEA_WB_API_TOKEN / ALTEA_WB_PROMOTION_TOKEN is not set');
+  if (!options.token) {
+    throw new Error('ALTEA_WB_API_TOKEN / ALTEA_WB_FINANCE_TOKEN / ALTEA_WB_PROMOTION_TOKEN is not set');
+  }
 
   const skus = readJson(options.skusPath, []);
   const existing = readJson(options.inputPath, { platforms: [] });

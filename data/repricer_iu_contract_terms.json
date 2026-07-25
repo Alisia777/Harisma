@@ -28,7 +28,7 @@
       "adRevPct": 24.878,
       "grossVariableRatePct": 56.2279,
       "sppPct": 12.9312,
-      "source": "data/last_good/iu_drr_summary.json :: ozonPlan.contractKpis",
+      "source": "Ozon contract KPI snapshot :: ozonPlan.contractKpis",
       "sourceGeneratedAt": "2026-06-18T08:26:12.627Z"
     }
   },

@@ -15,7 +15,7 @@
     "to": "2026-07-22"
   },
   "notes": [
-    "WB cabinet fixed-rate report. Used as cabinet-comparable factual turnover and factual marketing spend for IU/DRR reconciliation.",
+    "WB cabinet fixed-rate report. Used as cabinet-comparable factual turnover and factual marketing spend for repricer economics reconciliation.",
     "Rows are parsed from the WB fixed-rate workbook and validated against the workbook delta/rate columns before publication.",
     "When the cabinet export misses a day that is visible in a separate WB reconciliation, the missing date is filled from data/wb_fixed_rate_reconciliation.json and marked at row source level.",
     "IU history exports are account-scoped by master_id. Reconciliation rows from another or unspecified account are never mixed into that history."

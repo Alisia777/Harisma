@@ -115,6 +115,10 @@ function firstNumber(...values) {
   return 0;
 }
 
+function isAuthScopeError(error) {
+  return /HTTP (401|403)\b/i.test(String(error?.message || error || ''));
+}
+
 function sleep(ms) {
   return new Promise((resolve) => setTimeout(resolve, ms));
 }
@@ -783,6 +787,10 @@ async function wbRequest(options, query) {
       continue;
     }
 
+    if (response.status === 401 || response.status === 403) {
+      throw new Error(`WB orders API ${ORDERS_PATH} failed: HTTP ${response.status} ${text.slice(0, 500)}`);
+    }
+
     if (attempt === 6) {
       throw new Error(`WB orders API ${ORDERS_PATH} failed: HTTP ${response.status} ${text.slice(0, 500)}`);
     }
@@ -844,6 +852,10 @@ async function wbFinanceRequest(options, endpoint, body) {
       }
       await sleep(waitMs);
       continue;
+    }
+
+    if (response.status === 401 || response.status === 403) {
+      throw new Error(`WB finance API ${endpoint} failed: HTTP ${response.status} ${text.slice(0, 500)}`);
     }
 
     if (attempt === 6) {
@@ -917,6 +929,22 @@ async function fetchWbRows(options) {
       pageCount,
       fetchedRows: rows.length,
       warnings
+    }
+  };
+}
+
+async function fetchWbRowsForDate(options, date) {
+  const result = await wbRequest(options, {
+    dateFrom: date,
+    flag: 1
+  });
+  const rows = Array.isArray(result.rows) ? result.rows : [];
+  return {
+    rows,
+    diagnostics: {
+      pageCount: rows.length > 0 ? 1 : 0,
+      fetchedRows: rows.length,
+      warnings: []
     }
   };
 }
@@ -1241,6 +1269,20 @@ async function fetchWbFinanceReferenceMap(options, skus = []) {
     summaryDiagnostics = result.diagnostics;
   } catch (error) {
     warnings.push(error?.message || String(error));
+    if (isAuthScopeError(error)) {
+      warnings.push('WB finance detailed request skipped because the configured token has no Finance scope.');
+      return {
+        referenceMap: new Map(),
+        articleLayer: buildFinanceArticles([], skus),
+        diagnostics: {
+          listPageCount: 0,
+          listFetchedRows: 0,
+          detailedPageCount: 0,
+          detailedFetchedRows: 0,
+          warnings
+        }
+      };
+    }
   }
 
   try {
@@ -1334,6 +1376,109 @@ function buildWbSeries(rows, skus, options) {
   };
 }
 
+function wbOrderRevenue(row) {
+  const discountedTotal = numberOrZero(row?.totalPrice) * Math.max(
+    0,
+    1 - (numberOrZero(row?.discountPercent) / 100)
+  );
+  return firstPositiveNumber(
+    row?.finishedPrice,
+    row?.priceWithDisc,
+    discountedTotal,
+    row?.totalPrice
+  );
+}
+
+function normalizeWbOrderRows(rows) {
+  return (Array.isArray(rows) ? rows : []).flatMap((row) => {
+    const cancelFlag = normalizeKey(row?.isCancel);
+    if (row?.isCancel === true || ['1', 'true', 'да', 'yes'].includes(cancelFlag)) return [];
+    const date = isoDate(row?.date);
+    const revenue = wbOrderRevenue(row);
+    if (!date || !(revenue > 0)) return [];
+    return [{
+      dt: date,
+      ordersSumRub: revenue,
+      ordersCount: 1,
+      supplierArticle: row?.supplierArticle || '',
+      nmID: row?.nmId || row?.nmID || 0,
+      barcode: row?.barcode || '',
+      source: 'statistics-api:/api/v1/supplier/orders'
+    }];
+  });
+}
+
+function buildWbOrderSeries(rows, skus, options) {
+  const normalizedRows = normalizeWbOrderRows(rows);
+  const result = buildWbSeries(normalizedRows, skus, options);
+  return {
+    ...result,
+    diagnostics: {
+      ...result.diagnostics,
+      sourceEndpoint: 'statistics-api:/api/v1/supplier/orders',
+      revenueField: 'finishedPrice / priceWithDisc',
+      revenueSource: 'statistics-api:/api/v1/supplier/orders',
+      fetchedRows: Array.isArray(rows) ? rows.length : 0
+    }
+  };
+}
+
+function mergeSeriesPoints(baseSeries, freshSeries) {
+  const byDate = new Map();
+  for (const point of Array.isArray(baseSeries) ? baseSeries : []) {
+    const date = isoDate(point?.label || point?.date);
+    if (date) byDate.set(date, { ...point, label: date });
+  }
+  for (const point of Array.isArray(freshSeries) ? freshSeries : []) {
+    const date = isoDate(point?.label || point?.date);
+    if (!date || !(numberOrZero(point?.revenue) > 0 || numberOrZero(point?.units) > 0)) continue;
+    byDate.set(date, { ...point, label: date });
+  }
+  const points = Array.from(byDate.values())
+    .sort((left, right) => String(left.label || '').localeCompare(String(right.label || '')));
+  const latestIndex = points.length - 1;
+  return points.map((point, index) => ({
+    ...point,
+    dayOffset: latestIndex - index
+  }));
+}
+
+function mergeWbArticles(baseArticles, freshArticles) {
+  const byKey = new Map((Array.isArray(baseArticles) ? baseArticles : [])
+    .map((article) => [String(article?.articleKey || article?.article || ''), JSON.parse(JSON.stringify(article))])
+    .filter(([key]) => key));
+  for (const fresh of Array.isArray(freshArticles) ? freshArticles : []) {
+    const key = String(fresh?.articleKey || fresh?.article || '');
+    if (!key) continue;
+    const previous = byKey.get(key) || {};
+    const dailyByDate = new Map((Array.isArray(previous.daily) ? previous.daily : [])
+      .map((point) => [isoDate(point?.date || point?.label), point])
+      .filter(([date]) => date));
+    for (const point of Array.isArray(fresh.daily) ? fresh.daily : []) {
+      const date = isoDate(point?.date || point?.label);
+      if (date) dailyByDate.set(date, { ...point, date });
+    }
+    const daily = Array.from(dailyByDate.values())
+      .sort((left, right) => String(left.date || '').localeCompare(String(right.date || '')));
+    const latestIndex = daily.length - 1;
+    const normalizedDaily = daily.map((point, index) => ({ ...point, dayOffset: latestIndex - index }));
+    const latest = normalizedDaily[normalizedDaily.length - 1] || {};
+    const currentPrice = numberOrZero(latest.price);
+    byKey.set(key, {
+      ...previous,
+      ...fresh,
+      currentPrice,
+      currentClientPrice: currentPrice,
+      currentFillPrice: currentPrice,
+      sourceMode: 'wb-statistics-orders-fallback',
+      daily: normalizedDaily
+    });
+  }
+  return Array.from(byKey.values())
+    .filter((article) => Array.isArray(article.daily) && article.daily.length)
+    .sort((left, right) => String(left.articleKey || '').localeCompare(String(right.articleKey || ''), 'ru'));
+}
+
 async function main() {
   const options = resolveOptions(parseArgs(process.argv));
   if (!options.token) throw new Error('ALTEA_WB_API_TOKEN / ALTEA_WB_PROMOTION_TOKEN is not set');
@@ -1342,11 +1487,24 @@ async function main() {
   const existing = readJson(options.inputPath, { platforms: [] });
   const stagedExisting = readJson(path.join(process.cwd(), '.altea-google-sheet-sync-output', 'platform_trends.json'), { platforms: [] });
   const wbReport = await fetchWbAnalyticsRows(options);
-  const wb = buildWbSeries(wbReport.rows, skus, options);
+  const wbAnalytics = buildWbSeries(wbReport.rows, skus, options);
   const platforms = platformMap(existing);
   const existingWbPlatform = platforms.get('wb') || null;
   const stagedWbPlatform = platformMap(stagedExisting).get('wb') || null;
   const financeReference = await fetchWbFinanceReferenceMap(options, skus);
+  let wbOrders = buildWbOrderSeries([], skus, options);
+  const orderWarnings = [];
+  if (
+    wbAnalytics.diagnostics.positiveRows === 0
+    && !financeReference.referenceMap.has(options.to)
+  ) {
+    try {
+      const orderResult = await fetchWbRowsForDate(options, options.to);
+      wbOrders = buildWbOrderSeries(orderResult.rows, skus, options);
+    } catch (error) {
+      orderWarnings.push(error?.message || String(error));
+    }
+  }
   const wbReferenceMap = new Map([
     ...wbSellerSummaryReferenceMap(existing, stagedExisting),
     ...financeReference.referenceMap
@@ -1354,12 +1512,15 @@ async function main() {
   const marginFallbackSeries = seriesHasPositiveMargin(existingWbPlatform?.series)
     ? existingWbPlatform.series
     : (stagedWbPlatform?.series || existingWbPlatform?.series || []);
-  const hasFreshWbData = wb.diagnostics.positiveRows > 0;
-  const freshWbSeries = hasFreshWbData && wb.series.length
-    ? wb.series
+  const hasFreshWbData = wbAnalytics.diagnostics.positiveRows > 0;
+  const hasOrderFallback = wbOrders.diagnostics.positiveRows > 0;
+  const freshWbSeries = hasFreshWbData && wbAnalytics.series.length
+    ? wbAnalytics.series
+    : hasOrderFallback
+      ? mergeSeriesPoints(existingWbPlatform?.series, wbOrders.series)
     : Array.isArray(existingWbPlatform?.series) && existingWbPlatform.series.length
       ? existingWbPlatform.series
-      : wb.series;
+      : wbAnalytics.series;
   const fallbackByDate = new Map((Array.isArray(existingWbPlatform?.series) ? existingWbPlatform.series : [])
     .map((point) => [isoDate(point?.label || point?.date), point])
     .filter(([date]) => date));
@@ -1375,7 +1536,8 @@ async function main() {
       date: fallback.date || date
     };
   });
-  const wbSeriesWithMargin = wb.diagnostics.matchedRows === 0 && marginFallbackSeries.length
+  const selectedWbDiagnostics = hasFreshWbData ? wbAnalytics.diagnostics : wbOrders.diagnostics;
+  const wbSeriesWithMargin = selectedWbDiagnostics.matchedRows === 0 && marginFallbackSeries.length
     ? mergeEstimatedMarginFallback(wbSeries, marginFallbackSeries)
     : wbSeries;
   const wbSeriesFinal = applyWbSellerSummaryReference(wbSeriesWithMargin, wbReferenceMap);
@@ -1401,30 +1563,53 @@ async function main() {
     .find((item) => numberOrZero(item?.revenue) > 0 || numberOrZero(item?.units) > 0)?.label
     || '';
   const latestMarketplaceDate = latestDateFromPlatforms(platforms) || wbLatestMarketplaceDate || existing.latestMarketplaceDate || '';
-  const hasFinanceSkuLayer = Boolean(financeReference.articleLayer?.articles?.length);
-  const wbSourceArticles = hasFinanceSkuLayer ? financeReference.articleLayer.articles : wb.articles;
-  const wbSourceSeries = hasFinanceSkuLayer
-    ? Array.from(financeReference.referenceMap.entries()).map(([date, item]) => ({
-      label: date,
-      revenue: numberOrZero(item?.salesRevenue ?? item?.financeTurnover),
-      units: 0
-    }))
-    : wb.series;
-  const wbArticles = scaleArticlesToSeries(wbSourceArticles, wbSourceSeries, wbSeriesFinal);
   const existingExtraMarketplace = existing?.extraMarketplace && typeof existing.extraMarketplace === 'object'
     ? existing.extraMarketplace
     : {};
   const existingExtraPlatforms = existingExtraMarketplace?.platforms && typeof existingExtraMarketplace.platforms === 'object'
     ? existingExtraMarketplace.platforms
     : {};
+  const hasFinanceSkuLayer = Boolean(financeReference.articleLayer?.articles?.length);
+  const wbSourceArticles = hasFinanceSkuLayer
+    ? financeReference.articleLayer.articles
+    : hasFreshWbData
+      ? wbAnalytics.articles
+      : wbOrders.articles;
+  const wbSourceSeries = hasFinanceSkuLayer
+    ? Array.from(financeReference.referenceMap.entries()).map(([date, item]) => ({
+      label: date,
+      revenue: numberOrZero(item?.salesRevenue ?? item?.financeTurnover),
+      units: 0
+    }))
+    : hasFreshWbData
+      ? wbAnalytics.series
+      : wbOrders.series;
+  const scaledWbArticles = scaleArticlesToSeries(wbSourceArticles, wbSourceSeries, wbSeriesFinal);
+  const wbArticles = hasOrderFallback
+    ? mergeWbArticles(existingExtraPlatforms?.wb?.articles, scaledWbArticles)
+    : scaledWbArticles;
+  const sourceName = hasFinanceSkuLayer
+    ? 'wb-finance-api:sales-reports/detailed'
+    : hasFreshWbData
+      ? 'seller-analytics-api:GROUPED_HISTORY_REPORT'
+      : hasOrderFallback
+        ? 'statistics-api:/api/v1/supplier/orders'
+        : 'preserved-platform-trends';
+  const sourceMode = hasFinanceSkuLayer
+    ? 'wb-finance-api-direct-sku'
+    : hasFreshWbData
+      ? 'wb-analytics-direct-sku'
+      : hasOrderFallback
+        ? 'wb-statistics-orders-fallback'
+        : 'preserved';
   const payload = {
     ...existing,
     generatedAt: new Date().toISOString(),
     latestMarketplaceDate,
     platforms: ordered,
     wbApiDirect: {
-      source: 'seller-analytics-api:GROUPED_HISTORY_REPORT',
-      reportType: 'GROUPED_HISTORY_REPORT',
+      source: sourceName,
+      reportType: hasOrderFallback ? 'STATISTICS_ORDERS_DAILY_FALLBACK' : 'GROUPED_HISTORY_REPORT',
       from: options.from,
       to: options.to,
       financePageCount: financeReference.diagnostics.listPageCount,
@@ -1443,9 +1628,11 @@ async function main() {
       },
       pageCount: wbReport.diagnostics.pageCount,
       fetchedRows: wbReport.diagnostics.fetchedRows,
-      revenueField: 'ordersSumRub',
-      revenueSource: 'seller-analytics-api:GROUPED_HISTORY_REPORT',
-      ...wb.diagnostics
+      orderFallbackFetchedRows: wbOrders.diagnostics.fetchedRows || 0,
+      orderFallbackPositiveRows: wbOrders.diagnostics.positiveRows || 0,
+      revenueField: selectedWbDiagnostics.revenueField,
+      revenueSource: selectedWbDiagnostics.revenueSource,
+      ...selectedWbDiagnostics
     },
     wbSellerSummaryReference: existing.wbSellerSummaryReference || stagedExisting.wbSellerSummaryReference || undefined,
     extraMarketplace: {
@@ -1458,8 +1645,8 @@ async function main() {
           key: 'wb',
           label: PLATFORM_LABELS.wb,
           supportKey: 'wb',
-          source: hasFinanceSkuLayer ? 'wb-finance-api:sales-reports/detailed' : 'seller-analytics-api:GROUPED_HISTORY_REPORT',
-          sourceMode: hasFinanceSkuLayer ? 'wb-finance-api-direct-sku' : 'all',
+          source: sourceName,
+          sourceMode,
           from: options.from,
           to: options.to,
           articles: wbArticles
@@ -1468,9 +1655,12 @@ async function main() {
     }
   };
 
-  if (wbReferenceMap.size > 0) {
+  if (wbReferenceMap.size > 0 && hasFreshWbData) {
     payload.wbApiDirect.revenueField = 'ordersSumRub / seller-summary-reference';
     payload.wbApiDirect.revenueSource = 'seller-analytics-api:GROUPED_HISTORY_REPORT + wb seller summary reconciliation';
+    payload.wbApiDirect.referenceDaysApplied = wbReferenceMap.size;
+    payload.wbApiDirect.financeReferenceDaysApplied = financeReference.referenceMap.size;
+  } else if (wbReferenceMap.size > 0) {
     payload.wbApiDirect.referenceDaysApplied = wbReferenceMap.size;
     payload.wbApiDirect.financeReferenceDaysApplied = financeReference.referenceMap.size;
   }
@@ -1478,7 +1668,9 @@ async function main() {
   if (!hasFreshWbData && wbReport.diagnostics.fetchedRows === 0) {
     payload.wbApiDirect.warnings = [
       ...(payload.wbApiDirect.warnings || []),
-      'WB analytics CSV API returned no rows for the requested date range; existing WB series was preserved.'
+      hasOrderFallback
+        ? `WB analytics CSV API returned no rows; Statistics Orders API filled ${options.to}.`
+        : 'WB analytics CSV API returned no rows for the requested date range; existing WB series was preserved.'
     ];
   }
 
@@ -1503,14 +1695,21 @@ async function main() {
     ];
   }
 
+  if (orderWarnings.length) {
+    payload.wbApiDirect.warnings = [
+      ...(payload.wbApiDirect.warnings || []),
+      ...orderWarnings
+    ];
+  }
+
   writeJson(options.outputPath, payload);
   console.log(JSON.stringify({
     outputPath: options.outputPath,
     generatedAt: payload.generatedAt,
     latestMarketplaceDate,
-    wbPoints: wb.series.length,
+    wbPoints: wbSeriesFinal.length,
     wbArticleRows: wbArticles.length,
-    wbArticleSource: hasFinanceSkuLayer ? 'wb-finance-api-direct-sku' : 'seller-analytics-api:GROUPED_HISTORY_REPORT',
+    wbArticleSource: sourceMode,
     ...payload.wbApiDirect
   }, null, 2));
 }
@@ -1523,8 +1722,13 @@ if (require.main === module) {
 }
 
 module.exports = {
+  buildWbOrderSeries,
   financeRetryDelayMs,
+  mergeSeriesPoints,
+  mergeWbArticles,
+  normalizeWbOrderRows,
   resolveOptions,
   retryHeaderDelayMs,
+  wbOrderRevenue,
   waitForFinanceRequestWindow
 };

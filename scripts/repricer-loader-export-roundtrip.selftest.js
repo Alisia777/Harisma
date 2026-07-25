@@ -163,7 +163,12 @@ async function captureExport(page, mode, targetPath) {
   const button = page.locator(`[data-repricer-export="${mode}"]`).first();
   await button.waitFor({ state: 'visible', timeout: 30000 });
   const downloadPromise = page.waitForEvent('download', { timeout: 30000 });
-  await button.click();
+  // The repricer refreshes its counters while live inputs settle. A regular
+  // Playwright click waits for layout stability and can consume the whole
+  // download timeout even though the export handler itself is synchronous.
+  // Invoke the same DOM click handler after visibility is proven so this test
+  // measures the loader/export contract instead of animation timing.
+  await button.evaluate((element) => element.click());
   const download = await downloadPromise;
   await download.saveAs(targetPath);
   const failure = await download.failure();

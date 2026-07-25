@@ -14,8 +14,15 @@ assert.match(daria, /id:\s*publish/);
 assert.match(daria, /BASE_SHA=\$\(git rev-parse HEAD\)/);
 assert.match(daria, /changed=true/);
 assert.match(daria, /if:\s*steps\.publish\.outputs\.changed == 'true'/);
+assert.match(daria, /git diff --cached --quiet -- "\$\{PRICE_FILES\[@\]\}"/);
+assert.match(daria, /git restore -- exports\/daria-prices\.summary\.json/);
 assert.match(daria, /portal-data-truth\.yml\/dispatches/);
 assert.match(daria, /inputs\[base-ref\]=\$BASE_SHA/);
+assert.match(daria, /TRUTH_RUN_ID/);
+assert.match(daria, /gh run watch "\$TRUTH_RUN_ID" --exit-status/);
+assert.match(daria, /LATEST_MAIN_SHA/);
+assert.match(daria, /AUTO_CLOSE_RUN_ID/);
+assert.match(daria, /portal-daily-close\.yml\/dispatches/);
 
 const truth = read('.github/workflows/portal-data-truth.yml');
 assert.match(truth, /daria-prices\*\.csv/);

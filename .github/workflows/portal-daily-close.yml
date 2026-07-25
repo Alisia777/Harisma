@@ -6,6 +6,7 @@ on:
   workflow_run:
     workflows: ['Portal data truth']
     types: [completed]
+    branches: [main]
   workflow_dispatch:
     inputs:
       cutoff-date:

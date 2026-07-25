@@ -39,6 +39,9 @@ if (inventory.protectedScopeExcluded !== false || !paths.includes('data/iu_drr_s
 if (!workflow.includes("workflows: ['Portal data truth']") || !workflow.includes('types: [completed]')) {
   fail('daily close must auto-run after the Portal data truth workflow completes');
 }
+if (!workflow.includes('branches: [main]')) {
+  fail('daily close workflow_run trigger must not instantiate production close runs for feature branches');
+}
 if (
   !workflow.includes(
     "github.event_name != 'workflow_run' || (github.event.workflow_run.conclusion == 'success' && github.event.workflow_run.head_branch == 'main')"

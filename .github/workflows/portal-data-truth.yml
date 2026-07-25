@@ -115,6 +115,7 @@ jobs:
           node scripts/portal-smart-price-overlay-sync.selftest.js
           node scripts/portal-yandex-market-price-sync.selftest.js
           node scripts/portal-wb-finance-rate-limit.selftest.js
+          node scripts/portal-wb-orders-fallback.selftest.js
           node scripts/portal-sku-alias-integrity.selftest.js
           node scripts/portal-order-lifecycle.selftest.js
           node scripts/portal-sync-health-quarantine.selftest.js

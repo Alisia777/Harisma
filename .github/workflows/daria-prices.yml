@@ -11,6 +11,7 @@ concurrency:
 
 permissions:
   contents: write
+  actions: write
 
 jobs:
   build-prices:
@@ -82,14 +83,35 @@ jobs:
           NODE
 
       - name: Commit CSV changes
+        id: publish
         shell: bash
         run: |
           git config user.name "github-actions[bot]"
           git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          BASE_SHA=$(git rev-parse HEAD)
           git add daria-prices.csv daria-prices-clean.csv daria-prices-google-import.csv daria-prices-google.tsv daria-prices-google.csv daria-prices-google-ru.csv daria-prices-google-ru.tsv exports/daria-prices.summary.json
           if git diff --cached --quiet; then
             echo "Daria prices CSV is unchanged."
+            echo "changed=false" >> "$GITHUB_OUTPUT"
+            echo "base_sha=$BASE_SHA" >> "$GITHUB_OUTPUT"
+            echo "head_sha=$BASE_SHA" >> "$GITHUB_OUTPUT"
             exit 0
           fi
           git commit -m "Update Daria prices CSV"
           git push
+          echo "changed=true" >> "$GITHUB_OUTPUT"
+          echo "base_sha=$BASE_SHA" >> "$GITHUB_OUTPUT"
+          echo "head_sha=$(git rev-parse HEAD)" >> "$GITHUB_OUTPUT"
+
+      - name: Start portal truth refresh for published prices
+        if: steps.publish.outputs.changed == 'true'
+        env:
+          GH_TOKEN: ${{ github.token }}
+          BASE_SHA: ${{ steps.publish.outputs.base_sha }}
+        shell: bash
+        run: |
+          gh api \
+            --method POST \
+            "repos/${GITHUB_REPOSITORY}/actions/workflows/portal-data-truth.yml/dispatches" \
+            -f ref=main \
+            -f "inputs[base-ref]=$BASE_SHA"

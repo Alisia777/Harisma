@@ -12,6 +12,7 @@ const FINANCE_DETAILED_PATH = '/api/finance/v1/sales-reports/detailed';
 const SALES_API_BASE_URL = 'https://statistics-api.wildberries.ru';
 const ORDERS_PATH = '/api/v1/supplier/orders';
 const WB_ANALYTICS_API_BASE_URL = 'https://seller-analytics-api.wildberries.ru';
+const FINANCE_MIN_INTERVAL_MS = 61_000;
 const WB_ANALYTICS_BRAND = 'Алтея';
 const PLATFORM_LABELS = {
   wb: 'WB',
@@ -116,6 +117,48 @@ function firstNumber(...values) {
 
 function sleep(ms) {
   return new Promise((resolve) => setTimeout(resolve, ms));
+}
+
+function headerValue(headers, name) {
+  if (!headers) return '';
+  if (typeof headers.get === 'function') return headers.get(name) || '';
+  return headers[name] || headers[name.toLowerCase()] || '';
+}
+
+function retryHeaderDelayMs(value, nowMs = Date.now()) {
+  const raw = String(value ?? '').trim();
+  if (!raw) return 0;
+  const numeric = Number(raw);
+  if (Number.isFinite(numeric) && numeric > 0) {
+    if (numeric > 1e12) return Math.max(0, numeric - nowMs) + 1000;
+    if (numeric > 1e9) return Math.max(0, (numeric * 1000) - nowMs) + 1000;
+    return (numeric + 1) * 1000;
+  }
+  const timestamp = Date.parse(raw);
+  return Number.isFinite(timestamp) ? Math.max(0, timestamp - nowMs) + 1000 : 0;
+}
+
+function financeRetryDelayMs(headers, attempt, minIntervalMs = FINANCE_MIN_INTERVAL_MS, nowMs = Date.now()) {
+  const serverDelay = [
+    headerValue(headers, 'retry-after'),
+    headerValue(headers, 'x-ratelimit-retry'),
+    headerValue(headers, 'x-ratelimit-reset')
+  ].reduce((max, value) => Math.max(max, retryHeaderDelayMs(value, nowMs)), 0);
+  return Math.max(
+    Math.max(0, Number(minIntervalMs) || FINANCE_MIN_INTERVAL_MS),
+    serverDelay,
+    Math.max(1, Number(attempt) || 1) * 1000
+  );
+}
+
+async function waitForFinanceRequestWindow(options, now = Date.now, sleeper = sleep) {
+  const minIntervalMs = Math.max(0, Number(options.financeMinIntervalMs) || FINANCE_MIN_INTERVAL_MS);
+  const lastRequestAt = Number(options.financeLastRequestAt) || 0;
+  const current = now();
+  const waitMs = lastRequestAt > 0 ? Math.max(0, minIntervalMs - (current - lastRequestAt)) : 0;
+  if (waitMs > 0) await sleeper(waitMs);
+  options.financeLastRequestAt = now();
+  return waitMs;
 }
 
 function parseCsv(text) {
@@ -308,6 +351,10 @@ async function createAndDownloadWbFunnelReport(options, startDate, endDate) {
 function resolveOptions(args) {
   const root = process.cwd();
   const settlementHour = Math.max(0, Math.min(23, Math.trunc(numberOrZero(args['settlement-hour'] || process.env.ALTEA_WB_SETTLEMENT_HOUR || 10))));
+  const financeMinIntervalMs = Math.max(
+    1000,
+    Math.trunc(numberOrZero(args['finance-min-interval-ms'] || process.env.ALTEA_WB_FINANCE_MIN_INTERVAL_MS || FINANCE_MIN_INTERVAL_MS))
+  );
   const explicitTo = isoDate(args.to || args['date-to']);
   const autoLagDays = new Date().getHours() < settlementHour ? 2 : 1;
   const to = explicitTo || localDateKey(-autoLagDays);
@@ -321,6 +368,8 @@ function resolveOptions(args) {
       || process.env.ALTEA_WB_PROMOTION_TOKEN
       || '',
     financeApiBaseUrl: String(args['finance-api-base-url'] || FINANCE_API_BASE_URL).replace(/\/+$/, ''),
+    financeMinIntervalMs,
+    financeLastRequestAt: 0,
     apiBaseUrl: String(args['api-base-url'] || SALES_API_BASE_URL).replace(/\/+$/, ''),
     skusPath: path.resolve(args['skus-file'] || path.join(root, 'data', 'skus.json')),
     inputPath: path.resolve(args['input-file'] || path.join(root, 'data', 'platform_trends.json')),
@@ -747,6 +796,7 @@ async function wbFinanceRequest(options, endpoint, body) {
   const url = new URL(`${options.financeApiBaseUrl}${endpoint}`);
 
   for (let attempt = 1; attempt <= 6; attempt += 1) {
+    await waitForFinanceRequestWindow(options);
     let response;
     try {
       response = await fetch(url, {
@@ -784,10 +834,11 @@ async function wbFinanceRequest(options, endpoint, body) {
     }
 
     if (response.status === 429) {
-      const waitSeconds = Number(response.headers.get('retry-after') || response.headers.get('x-ratelimit-retry') || response.headers.get('x-ratelimit-reset') || 60);
-      const waitMs = Number.isFinite(waitSeconds) && waitSeconds > 0
-        ? (waitSeconds + 1) * 1000
-        : attempt * 60000;
+      const waitMs = financeRetryDelayMs(
+        response.headers,
+        attempt,
+        options.financeMinIntervalMs
+      );
       if (attempt === 6) {
         throw new Error(`WB finance API ${endpoint} rate-limited after retries: HTTP 429 ${text.slice(0, 500)}`);
       }
@@ -1464,7 +1515,16 @@ async function main() {
   }, null, 2));
 }
 
-main().catch((error) => {
-  console.error(error?.stack || String(error));
-  process.exitCode = 1;
-});
+if (require.main === module) {
+  main().catch((error) => {
+    console.error(error?.stack || String(error));
+    process.exitCode = 1;
+  });
+}
+
+module.exports = {
+  financeRetryDelayMs,
+  resolveOptions,
+  retryHeaderDelayMs,
+  waitForFinanceRequestWindow
+};

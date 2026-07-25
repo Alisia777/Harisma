@@ -1330,5 +1330,7 @@ if (require.main === module) {
 }
 
 module.exports = {
+  normalizeKey,
+  skuMaps,
   unzipArchive
 };

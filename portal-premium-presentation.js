@@ -2257,7 +2257,7 @@
       '<div class="altea-premium-top-spacer"></div>',
       marketplaceSelectorHtml('altea-global-marketplace--premium', 'premium'),
       '<button type="button" class="altea-premium-shell-action altea-premium-sync" data-premium-proxy="syncStatusBadge">Командная база синхронизируется</button>',
-      '<button type="button" class="altea-premium-shell-action" data-premium-proxy="pullRemoteBtn">Обновить данные</button>',
+      '<button type="button" class="altea-premium-shell-action" data-premium-primary-action data-premium-proxy="pullRemoteBtn">Обновить данные</button>',
       '<button type="button" class="altea-premium-shell-action" data-premium-proxy="pushRemoteBtn">Синхронизировать</button>',
       '<span class="altea-premium-shell-action" data-premium-user>user</span>',
       '<button type="button" class="altea-premium-shell-action" data-premium-proxy="portalAuthSignOutBtn">Выйти</button>',
@@ -2344,6 +2344,19 @@
 
   function proxyClick(targetId) {
     if (targetId === 'syncStatusBadge') return;
+    if (targetId === 'repricerPriceSync') {
+      var priceSyncButton = document.querySelector('#altea-premium-stage-repricer [data-repricer-price-sync], #view-repricer [data-repricer-price-sync]');
+      if (priceSyncButton && !priceSyncButton.disabled) {
+        priceSyncButton.click();
+        return;
+      }
+      scheduleRender(0);
+      window.setTimeout(function () {
+        var retryButton = document.querySelector('#altea-premium-stage-repricer [data-repricer-price-sync], #view-repricer [data-repricer-price-sync]');
+        if (retryButton && !retryButton.disabled) retryButton.click();
+      }, 250);
+      return;
+    }
     if (targetId === 'pullRemoteBtn' && runPortalAction('pullRemoteState', [true])) return;
     if (targetId === 'pushRemoteBtn' && runPortalAction('pushStateToRemote')) return;
     if (targetId === 'portalAuthSignOutBtn') {
@@ -2389,6 +2402,15 @@
     var syncSource = document.getElementById('syncStatusBadge');
     var syncTarget = shell.querySelector('[data-premium-proxy="syncStatusBadge"]');
     if (syncSource && syncTarget) syncTarget.textContent = syncSource.textContent || 'Командная база синхронизирована';
+    var primaryAction = shell.querySelector('[data-premium-primary-action]');
+    if (primaryAction) {
+      var repricerActive = activeId === 'repricer';
+      primaryAction.setAttribute('data-premium-proxy', repricerActive ? 'repricerPriceSync' : 'pullRemoteBtn');
+      primaryAction.textContent = repricerActive ? 'Получить актуальные цены' : 'Обновить данные';
+      primaryAction.title = repricerActive
+        ? 'Запустить защищённое обновление цен и остатков WB/Ozon'
+        : 'Загрузить свежие командные данные';
+    }
     var userSource = document.querySelector('.portal-auth-user');
     var userTarget = shell.querySelector('[data-premium-user]');
     if (userTarget) userTarget.textContent = userSource ? (userSource.textContent || '').replace(/\s*Выйти\s*$/i, '').trim() : 'user';

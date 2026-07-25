@@ -269,7 +269,19 @@ async function run() {
     });
     assert(Date.parse(generatedAt) > baselineStamp, 'fixture snapshot must be newer than the current snapshot');
 
-    await page.locator('[data-repricer-price-sync]').click();
+    const topbarPriceAction = page.locator('[data-premium-primary-action]');
+    await topbarPriceAction.waitFor({ state: 'visible', timeout: 30000 });
+    assert.strictEqual(
+      (await topbarPriceAction.innerText()).trim(),
+      'Получить актуальные цены',
+      'repricer topbar must expose the real WB/Ozon refresh action'
+    );
+    assert.strictEqual(
+      await topbarPriceAction.getAttribute('data-premium-proxy'),
+      'repricerPriceSync',
+      'repricer topbar action must proxy to the protected price refresh'
+    );
+    await topbarPriceAction.click();
     await page.waitForTimeout(1000);
     const dispatchDiagnostic = await page.evaluate(() => ({
       status: document.querySelector('[data-repricer-price-sync-status]')?.textContent || '',
@@ -368,7 +380,7 @@ async function run() {
     ));
     assert.strictEqual(unexpectedErrors.length, 0, `browser errors: ${unexpectedErrors.join(' | ')}`);
     console.log(
-      `[repricer-price-sync-button-selftest] OK: price refresh, explicit HTTP 404 diagnostic, immutable apply plan and verified price submission`
+      `[repricer-price-sync-button-selftest] OK: visible topbar price refresh, explicit HTTP 404 diagnostic, immutable apply plan and verified price submission`
     );
   } finally {
     await browser.close();

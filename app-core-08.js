@@ -4990,6 +4990,99 @@ function repricerReadFileAsText(file) {
   });
 }
 
+function repricerReadFileAsArrayBuffer(file) {
+  return new Promise((resolve, reject) => {
+    const reader = new FileReader();
+    reader.onload = () => resolve(reader.result);
+    reader.onerror = () => reject(reader.error || new Error('Не удалось прочитать Excel-файл.'));
+    reader.readAsArrayBuffer(file);
+  });
+}
+
+function repricerRowsFromMatrix(matrix = []) {
+  const filledRows = (Array.isArray(matrix) ? matrix : [])
+    .map((row) => (Array.isArray(row) ? row : []).map((cell) => String(cell ?? '').trim()))
+    .filter((row) => row.some((cell) => cell));
+  if (filledRows.length < 2) return [];
+  const headerIndex = filledRows.findIndex((row) => {
+    const keys = row.map(repricerImportKey);
+    const hasArticle = keys.some((key) => ['articlekey', 'article_key', 'артикул', 'skucode', 'sku'].includes(key));
+    const hasInput = keys.some((key) => (
+      key.includes('маржа')
+      || key.includes('margin')
+      || key.includes('minprice')
+      || key.includes('maxprice')
+      || key.includes('команда')
+    ));
+    return hasArticle && hasInput;
+  });
+  const resolvedHeaderIndex = headerIndex >= 0 ? headerIndex : 0;
+  const headers = filledRows[resolvedHeaderIndex].map((header) => String(header || '').trim());
+  return filledRows.slice(resolvedHeaderIndex + 1).map((values) => {
+    const item = {};
+    const normalized = {};
+    headers.forEach((header, index) => {
+      item[header] = String(values[index] ?? '').trim();
+      normalized[repricerImportKey(header)] = item[header];
+    });
+    item.__normalized = normalized;
+    return item;
+  });
+}
+
+function repricerParseXlsxArrayBuffer(arrayBuffer) {
+  if (!window.XLSX?.read || !window.XLSX?.utils?.sheet_to_json) {
+    throw new Error('Модуль чтения XLSX не загрузился. Обновите страницу и повторите импорт.');
+  }
+  const workbook = window.XLSX.read(arrayBuffer, {
+    type: 'array',
+    cellDates: true,
+    cellFormula: true,
+    cellNF: true
+  });
+  const preferredNames = ['Импорт в портал', 'Маржа SKU', 'Аудит', 'Согласование РОП'];
+  const sheetNames = [
+    ...preferredNames.filter((name) => workbook.SheetNames.includes(name)),
+    ...workbook.SheetNames.filter((name) => !preferredNames.includes(name))
+  ];
+  let best = { rows: [], sheetName: '', score: -1 };
+  sheetNames.forEach((sheetName) => {
+    const sheet = workbook.Sheets[sheetName];
+    if (!sheet) return;
+    const matrix = window.XLSX.utils.sheet_to_json(sheet, {
+      header: 1,
+      raw: false,
+      defval: '',
+      blankrows: false
+    });
+    const rows = repricerRowsFromMatrix(matrix);
+    const actionable = rows.filter((row) => {
+      const draft = repricerImportDraft(row, sheetName);
+      return Boolean(draft.articleKey && draft.hasImportFields);
+    }).length;
+    const statusCounts = rows.reduce((acc, row) => {
+      const status = repricerImportValue(row, ['Контроль', 'Решение РОП']);
+      const normalized = String(status || '').trim().toUpperCase();
+      if (/ОЖИДАЕТ РОП|НА СОГЛАСОВАНИИ/.test(normalized)) acc.awaitingRop += 1;
+      if (/СТОП|ОТКЛОН/.test(normalized)) acc.blocked += 1;
+      if (/ГОТОВО К ИМПОРТУ|СОГЛАСОВАНО|УТВЕРЖДЕНО/.test(normalized)) acc.approved += 1;
+      return acc;
+    }, { awaitingRop: 0, blocked: 0, approved: 0 });
+    const preferredBonus = preferredNames.includes(sheetName) ? 1000 - preferredNames.indexOf(sheetName) * 100 : 0;
+    const score = preferredBonus + actionable * 10 + rows.length;
+    if (score > best.score) best = { rows, sheetName, score, ...statusCounts };
+  });
+  if (best.rows.length) {
+    best.rows.__workbookMeta = {
+      sheetName: best.sheetName,
+      awaitingRop: best.awaitingRop || 0,
+      blocked: best.blocked || 0,
+      approved: best.approved || 0
+    };
+  }
+  return best.rows;
+}
+
 function repricerExactStorageItem(bucket, articleKey, platform = 'all') {
   return (state.storage?.[bucket] || []).find((item) => String(item.articleKey || '').trim() === articleKey
     && String(item.platform || 'all').trim().toLowerCase() === platform) || null;
@@ -5890,18 +5983,16 @@ async function repricerApplyAuditImportRows(rows, fileName = '') {
 
 async function importRepricerAuditFile(file) {
   if (!file) return;
-  if (/\.xlsx$/i.test(file.name || '')) {
-    throw new Error('Нужен файл аудита в формате .xls из портала или CSV. Если Excel пересохранил его как .xlsx, сохраните как "Excel 97-2003 (*.xls)" или CSV.');
-  }
-  const text = await repricerReadFileAsText(file);
-  if (/^\s*PK/.test(text)) {
-    throw new Error('Это настоящий .xlsx-файл. Браузерный импорт читает .xls/CSV из портала; сохраните файл как "Excel 97-2003 (*.xls)" или CSV.');
-  }
-  const rows = repricerParseAuditImportText(text);
+  const isXlsx = /\.xlsx$/i.test(file.name || '')
+    || String(file.type || '').includes('openxmlformats-officedocument.spreadsheetml.sheet');
+  const rows = isXlsx
+    ? repricerParseXlsxArrayBuffer(await repricerReadFileAsArrayBuffer(file))
+    : repricerParseAuditImportText(await repricerReadFileAsText(file));
   if (!rows.length) {
-    window.alert('Не удалось прочитать таблицу. Используйте файл аудита .xls, скачанный из портала, или CSV.');
+    window.alert('Не удалось прочитать таблицу. Используйте XLSX/XLS/CSV, скачанный из репрайсера.');
     return;
   }
+  const workbookMeta = rows.__workbookMeta || {};
   const validation = validateRepricerAuditImportRows(rows, file.name || '');
   state.storage.repricerLastImportValidation = {
     fileName: file.name || '',
@@ -5911,9 +6002,21 @@ async function importRepricerAuditFile(file) {
     skipped: validation.skipped,
     errors: validation.errors,
     warnings: validation.warnings,
-    canApply: validation.canApply
+    canApply: validation.canApply,
+    sheetName: workbookMeta.sheetName || '',
+    awaitingRop: numberOrZero(workbookMeta.awaitingRop),
+    blockedByWorkbook: numberOrZero(workbookMeta.blocked),
+    approvedByWorkbook: numberOrZero(workbookMeta.approved)
   };
   saveLocalStorage();
+  if (!validation.actionable && numberOrZero(workbookMeta.awaitingRop) > 0) {
+    renderRepricer();
+    window.alert(
+      `Файл прочитан: ${fmt.int(workbookMeta.awaitingRop)} строк заполнены, но ждут решения РОП.\n\n`
+      + 'На листе «Согласование РОП» выберите «Согласовано» для разрешённых строк, сохраните XLSX и загрузите его повторно. До этого маржа и MIN/MAX не применяются.'
+    );
+    return;
+  }
   if (validation.resultRows.length && (validation.errors || validation.warnings)) {
     repricerDownloadHtmlTable(repricerImportResultColumns(), validation.resultRows, `repricer-import-validation-${new Date().toISOString().slice(0, 10)}.xls`);
   }
@@ -6714,7 +6817,11 @@ function renderRepricerRepairStatusCard() {
     ? `Автопочин: ${fmt.date(lastFix.appliedAt)} · обработано ${fmt.int(lastFix.touched)}`
     : 'Автопочин еще не запускали';
   const validationText = lastValidation?.validatedAt
-    ? `Проверка Excel: ${fmt.date(lastValidation.validatedAt)} · ошибок ${fmt.int(lastValidation.errors)} · предупреждений ${fmt.int(lastValidation.warnings)}`
+    ? (
+      numberOrZero(lastValidation.awaitingRop) > 0
+        ? `Excel прочитан: ${fmt.int(lastValidation.awaitingRop)} строк ждут РОП · рабочие правила ещё не изменены`
+        : `Проверка Excel: ${fmt.date(lastValidation.validatedAt)} · ошибок ${fmt.int(lastValidation.errors)} · предупреждений ${fmt.int(lastValidation.warnings)}`
+    )
     : 'Excel ещё не проверяли';
   const reconcileText = lastReconcile?.checkedAt
     ? `Сверка API: ${fmt.date(lastReconcile.checkedAt)} · принято ${fmt.int(lastReconcile.accepted)} · ждёт источника ${fmt.int(lastReconcile.waiting)} · ошибок ${fmt.int(lastReconcile.error)}`
@@ -7902,6 +8009,8 @@ function renderRepricer() {
       </div>
     `).join('');
     const noSafeExport = safeWbRows + safeOzonRows <= 0;
+    const lastImportValidation = state.storage?.repricerLastImportValidation || null;
+    const awaitingRopFromImport = numberOrZero(lastImportValidation?.awaitingRop);
     const readiness = repricerGameReadinessModel(health, templateStats, {
       safeWbRows,
       safeOzonRows,
@@ -7958,6 +8067,21 @@ function renderRepricer() {
             <div class="repricer-empty-reasons">${emptyExportReasonMarkup || '<div class="repricer-empty-reason"><strong>нет причин</strong><span>0</span><em>Проверьте свежесть данных.</em></div>'}</div>
           </div>
         ` : ''}
+        ${awaitingRopFromImport ? `
+          <div class="repricer-empty-explain repricer-awaiting-rop-explain">
+            <div>
+              <strong>Excel принят, но ещё не согласован</strong>
+              <p>${fmt.int(awaitingRopFromImport)} строк заполнены и ожидают решения РОП. До выбора «Согласовано» маржа и MIN/MAX не становятся рабочими правилами.</p>
+            </div>
+            <div class="repricer-empty-reasons">
+              <div class="repricer-empty-reason">
+                <strong>ожидает РОП</strong>
+                <span>${fmt.int(awaitingRopFromImport)}</span>
+                <em>Согласовать строки в Excel и загрузить XLSX повторно</em>
+              </div>
+            </div>
+          </div>
+        ` : ''}
         <div class="repricer-human-actions">
           <button type="button" class="quick-chip repricer-audit-primary" data-repricer-export="margin:sku">Скачать маржу SKU</button>
           <button type="button" class="quick-chip" data-repricer-import="audit" data-repricer-import-kind="margin">Загрузить маржу SKU</button>
@@ -7968,7 +8092,7 @@ function renderRepricer() {
           <button type="button" class="quick-chip repricer-advanced-toggle" data-repricer-layer-toggle="advanced">Полный режим</button>
         </div>
         <div class="repricer-export-status" data-repricer-export-status>Для маржи: скачайте короткий файл, заполните «Новая маржа SKU, %» и загрузите его обратно.</div>
-        <input id="repricerAuditImportInput" class="hidden" type="file" data-repricer-audit-import accept=".xls,.html,.htm,.csv,.tsv,.txt,text/html,text/csv,text/tab-separated-values,application/vnd.ms-excel">
+        <input id="repricerAuditImportInput" class="hidden" type="file" data-repricer-audit-import accept=".xlsx,.xls,.html,.htm,.csv,.tsv,.txt,application/vnd.openxmlformats-officedocument.spreadsheetml.sheet,text/html,text/csv,text/tab-separated-values,application/vnd.ms-excel">
       </div>
 
       <div class="repricer-operator-focus-card" style="margin-top:14px">
@@ -8097,7 +8221,7 @@ function renderRepricer() {
         <button type="button" class="quick-chip" data-repricer-layer-toggle="simple">Простой режим</button>
       </div>
       <div class="small muted repricer-export-status" data-repricer-export-status>Для маржи заполните только «Новая маржа SKU, %»: 25, 25% или 0,25. Пустая строка ничего не меняет.</div>
-      <input id="repricerAuditImportInput" class="hidden" type="file" data-repricer-audit-import accept=".xls,.html,.htm,.csv,.tsv,.txt,text/html,text/csv,text/tab-separated-values,application/vnd.ms-excel">
+      <input id="repricerAuditImportInput" class="hidden" type="file" data-repricer-audit-import accept=".xlsx,.xls,.html,.htm,.csv,.tsv,.txt,application/vnd.openxmlformats-officedocument.spreadsheetml.sheet,text/html,text/csv,text/tab-separated-values,application/vnd.ms-excel">
     </div>
 
     <div class="badge-stack" style="margin-top:8px">${badge(`обновлено ${state.smartPriceWorkbench?.generatedAt ? fmt.date(state.smartPriceWorkbench.generatedAt) : '—'}`, 'info')}${badge(state.smartPriceWorkbench?.liveEnrichmentUsed ? 'слой: workbench + live' : 'слой: workbench', 'ok')}${state.smartPriceWorkbench?.liveEnrichmentAt ? badge(`live ${fmt.date(state.smartPriceWorkbench.liveEnrichmentAt)}`, 'info') : ''}${badge(hasRemoteStore() ? 'решения: команда' : 'решения: локально', hasRemoteStore() ? 'ok' : 'info')}</div>

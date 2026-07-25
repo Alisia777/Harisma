@@ -7,6 +7,7 @@ const http = require('http');
 const os = require('os');
 const path = require('path');
 const { chromium } = require('playwright');
+const XLSX = require('xlsx');
 
 const ROOT = process.cwd();
 
@@ -137,6 +138,37 @@ function writeEditedTsv(filePath, headers, sourceRow) {
     return sourceRow[index] ?? '';
   });
   fs.writeFileSync(filePath, `\uFEFF${headers.map(clean).join('\t')}\n${values.map(clean).join('\t')}\n`, 'utf8');
+}
+
+function writeEditedXlsx(filePath, headers, sourceRow, margin = '37%') {
+  const values = headers.map((header, index) => {
+    if (header === 'Команда') return 'FIX';
+    if (header === 'Новая маржа SKU, %') return margin;
+    if (header === 'Комментарий для импорта') return 'round-trip XLSX browser selftest';
+    return sourceRow[index] ?? '';
+  });
+  const sheet = XLSX.utils.aoa_to_sheet([
+    ['ИМПОРТ В ПОРТАЛ'],
+    ['Заголовок расположен ниже служебной строки'],
+    [],
+    headers,
+    values
+  ]);
+  const workbook = XLSX.utils.book_new();
+  XLSX.utils.book_append_sheet(workbook, sheet, 'Импорт в портал');
+  XLSX.writeFile(workbook, filePath);
+}
+
+function writePendingRopXlsx(filePath) {
+  const sheet = XLSX.utils.aoa_to_sheet([
+    ['ИМПОРТ В ПОРТАЛ'],
+    [],
+    ['Маржа, %', 'articleKey', 'platform', 'minPrice', 'maxPrice', 'Контроль'],
+    ['', '', '', '', '', 'ОЖИДАЕТ РОП']
+  ]);
+  const workbook = XLSX.utils.book_new();
+  XLSX.utils.book_append_sheet(workbook, sheet, 'Импорт в портал');
+  XLSX.writeFile(workbook, filePath);
 }
 
 function writeEditedPriceCsv(filePath, headers, sourceRow, price) {
@@ -531,6 +563,40 @@ async function main() {
     assert(tsvApplied.task, 'edited TSV margin import must update the margin API task');
     assert(Math.abs(Number(tsvApplied.task.targetMarginPct ?? tsvApplied.task.value) - 0.36) < 0.0001);
 
+    const pendingRopXlsxPath = path.join(tempDir, 'repricer-rop-pending.xlsx');
+    writePendingRopXlsx(pendingRopXlsxPath);
+    await page.locator('[data-repricer-audit-import]').first().setInputFiles(pendingRopXlsxPath);
+    await page.waitForFunction(
+      (fileName) => window.__alteaAppState?.storage?.repricerLastImportValidation?.fileName === fileName,
+      path.basename(pendingRopXlsxPath),
+      { timeout: 30000 }
+    );
+    const pendingRopValidation = await page.evaluate(() => window.__alteaAppState.storage.repricerLastImportValidation);
+    assert.strictEqual(pendingRopValidation.actionable, 0);
+    assert.strictEqual(pendingRopValidation.awaitingRop, 1);
+    assert.strictEqual(pendingRopValidation.sheetName, 'Импорт в портал');
+
+    const editedXlsxPath = path.join(tempDir, 'repricer-audit-edited.xlsx');
+    writeEditedXlsx(editedXlsxPath, auditHeaders, firstDataRow);
+    approveNextImport = true;
+    await page.locator('[data-repricer-audit-import]').first().setInputFiles(editedXlsxPath);
+    await page.waitForFunction(
+      (fileName) => window.__alteaAppState?.storage?.repricerLastAuditImport?.fileName === fileName,
+      path.basename(editedXlsxPath),
+      { timeout: 30000 }
+    );
+    const xlsxApplied = await page.evaluate((articleKey) => {
+      const storage = window.__alteaAppState.storage;
+      const profile = (storage.repricerSkuProfiles || []).find((item) => String(item.articleKey || '') === articleKey);
+      const task = (storage.repricerPendingApiTasks || []).find((item) => String(item.articleKey || '') === articleKey && String(item.type || item.action || '') === 'UPDATE_SKU_MARGIN');
+      return { summary: storage.repricerLastAuditImport, profile, task };
+    }, article);
+    assert.strictEqual(xlsxApplied.summary.errors, 0);
+    assert.strictEqual(xlsxApplied.summary.applied, 1);
+    assert(xlsxApplied.profile, 'edited XLSX margin import must update the SKU profile');
+    assert(Math.abs(Number(xlsxApplied.profile.targetMarginPct) - 0.37) < 0.0001);
+    assert(xlsxApplied.task, 'edited XLSX margin import must update the margin API task');
+
     const currentStatusKey = await page.evaluate((articleKey) => {
       const sku = window.__alteaAppState.skus.find((item) => item.articleKey === articleKey);
       return window.productLifecycleForSku(sku || { articleKey }, articleKey)?.key || 'active';
@@ -718,6 +784,12 @@ async function main() {
         errors: tsvApplied.summary.errors,
         targetMarginPct: tsvApplied.profile.targetMarginPct
       },
+      xlsx: {
+        pendingRop: pendingRopValidation.awaitingRop,
+        applied: xlsxApplied.summary.applied,
+        errors: xlsxApplied.summary.errors,
+        targetMarginPct: xlsxApplied.profile.targetMarginPct
+      },
       status: {
         approvalStatus: approvedStatus.decision?.status,
         lifecycleKey: approvedStatus.override?.key
@@ -735,7 +807,7 @@ async function main() {
       dialogs: dialogs.length,
       pageErrors: pageErrors.length
     }, null, 2));
-    console.log('[repricer-file-roundtrip-selftest] OK: browser audit export, CSV/TSV imports, sharp-price ROP task, approved price, and WB/Ozon templates passed');
+    console.log('[repricer-file-roundtrip-selftest] OK: browser audit export, CSV/TSV/XLSX imports, pending ROP guard, sharp-price ROP task, approved price, and WB/Ozon templates passed');
   } finally {
     await browser.close();
     await new Promise((resolve) => server.close(resolve));

@@ -6,6 +6,7 @@ const fs = require('fs');
 const os = require('os');
 const path = require('path');
 const {
+  fetchRemoteControls,
   materializeApprovedDecisions,
   run
 } = require('./materialize-repricer-approved-decisions');
@@ -142,6 +143,88 @@ async function main() {
     'exit',
     'canonical builder must accept the materialized lifecycle approval'
   );
+
+  const retrySleeps = [];
+  let retryCalls = 0;
+  const remotePayload = { overrides: [], skuDecisionApprovals: [] };
+  const remoteResult = await fetchRemoteControls({
+    brand: 'Алтея',
+    supabaseUrl: 'https://example.supabase.co',
+    supabaseKey: 'service-role-test',
+    remoteMaxAttempts: 3,
+    remoteRetryDelayMs: 1,
+    remoteRetryMaxDelayMs: 1,
+    sleep: async (delayMs) => retrySleeps.push(delayMs),
+    fetchImpl: async () => {
+      retryCalls += 1;
+      if (retryCalls === 1) {
+        return {
+          ok: false,
+          status: 521,
+          headers: { get: () => null },
+          text: async () => JSON.stringify({ retryable: true })
+        };
+      }
+      return {
+        ok: true,
+        status: 200,
+        json: async () => [{ payload: remotePayload }]
+      };
+    }
+  });
+  assert.deepStrictEqual(remoteResult, remotePayload, 'retry must return the recovered Supabase payload');
+  assert.strictEqual(retryCalls, 2, 'retryable Supabase 5xx must be retried');
+  assert.deepStrictEqual(retrySleeps, [1], 'retry delay must be bounded by configuration');
+
+  let nonRetryCalls = 0;
+  await assert.rejects(
+    () => fetchRemoteControls({
+      brand: 'Алтея',
+      supabaseUrl: 'https://example.supabase.co',
+      supabaseKey: 'service-role-test',
+      remoteMaxAttempts: 3,
+      remoteRetryDelayMs: 1,
+      remoteRetryMaxDelayMs: 1,
+      sleep: async () => {},
+      fetchImpl: async () => {
+        nonRetryCalls += 1;
+        return {
+          ok: false,
+          status: 400,
+          headers: { get: () => null },
+          text: async () => '{"error":"invalid request"}'
+        };
+      }
+    }),
+    /HTTP 400/,
+    'non-retryable 4xx must fail immediately'
+  );
+  assert.strictEqual(nonRetryCalls, 1, 'logical 4xx must not be retried');
+
+  let explicitNoRetryCalls = 0;
+  await assert.rejects(
+    () => fetchRemoteControls({
+      brand: 'Алтея',
+      supabaseUrl: 'https://example.supabase.co',
+      supabaseKey: 'service-role-test',
+      remoteMaxAttempts: 3,
+      remoteRetryDelayMs: 1,
+      remoteRetryMaxDelayMs: 1,
+      sleep: async () => {},
+      fetchImpl: async () => {
+        explicitNoRetryCalls += 1;
+        return {
+          ok: false,
+          status: 525,
+          headers: { get: () => null },
+          text: async () => '{"retryable":false,"error_name":"ssl_handshake_failed"}'
+        };
+      }
+    }),
+    /HTTP 525/,
+    'an upstream response explicitly marked non-retryable must fail immediately'
+  );
+  assert.strictEqual(explicitNoRetryCalls, 1, 'explicit non-retryable 5xx must not be retried');
 
   console.log('[materialize-repricer-approved-decisions-selftest] OK: only fully approved price and lifecycle decisions reach canonical inputs');
 }

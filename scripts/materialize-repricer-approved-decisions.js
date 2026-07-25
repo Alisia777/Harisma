@@ -10,6 +10,9 @@ const SNAPSHOT_TABLE = 'portal_data_snapshots';
 const CONTROLS_SNAPSHOT_KEY = 'repricer_controls';
 const PRICE_OUTPUT_FILE = 'repricer_approved_overrides.json';
 const LIFECYCLE_OUTPUT_FILE = 'product_lifecycle_approved.json';
+const DEFAULT_REMOTE_MAX_ATTEMPTS = 4;
+const DEFAULT_REMOTE_RETRY_DELAY_MS = 5000;
+const DEFAULT_REMOTE_RETRY_MAX_DELAY_MS = 120000;
 
 function parseArgs(argv) {
   const args = {};
@@ -36,6 +39,21 @@ function parseArgs(argv) {
 function resolveOptions(args = {}) {
   const inputDir = path.resolve(args['input-dir'] || path.join(process.cwd(), 'data'));
   const outputDir = path.resolve(args['output-dir'] || inputDir);
+  const remoteMaxAttempts = Math.max(
+    1,
+    Math.trunc(Number(args['remote-attempts'] || process.env.ALTEA_REPRICER_REMOTE_ATTEMPTS))
+      || DEFAULT_REMOTE_MAX_ATTEMPTS
+  );
+  const remoteRetryDelayMs = Math.max(
+    0,
+    Math.trunc(Number(args['remote-retry-delay-ms'] || process.env.ALTEA_REPRICER_REMOTE_RETRY_DELAY_MS))
+      || DEFAULT_REMOTE_RETRY_DELAY_MS
+  );
+  const remoteRetryMaxDelayMs = Math.max(
+    remoteRetryDelayMs,
+    Math.trunc(Number(args['remote-retry-max-delay-ms'] || process.env.ALTEA_REPRICER_REMOTE_RETRY_MAX_DELAY_MS))
+      || DEFAULT_REMOTE_RETRY_MAX_DELAY_MS
+  );
   return {
     inputDir,
     outputDir,
@@ -58,7 +76,10 @@ function resolveOptions(args = {}) {
       || process.env.ALTEA_SUPABASE_SERVICE_ROLE_KEY
       || process.env.SUPABASE_SERVICE_ROLE_KEY
       || ''
-    ).trim()
+    ).trim(),
+    remoteMaxAttempts,
+    remoteRetryDelayMs,
+    remoteRetryMaxDelayMs
   };
 }
 
@@ -328,6 +349,41 @@ function materializeApprovedDecisions(controls = {}, options = {}) {
   };
 }
 
+function retryableRemoteStatus(status, body = '') {
+  try {
+    if (JSON.parse(body || '{}')?.retryable === false) return false;
+  } catch {
+    // Non-JSON proxy responses are classified by HTTP status below.
+  }
+  return status === 408 || status === 425 || status === 429 || status >= 500;
+}
+
+function remoteRetryDelayMs(response, body, attempt, options) {
+  const header = String(response?.headers?.get?.('retry-after') || '').trim();
+  const headerSeconds = Number(header);
+  const headerDate = Date.parse(header);
+  let bodySeconds = 0;
+  try {
+    bodySeconds = Number(JSON.parse(body || '{}')?.retry_after) || 0;
+  } catch {
+    bodySeconds = 0;
+  }
+  const requestedDelay = Number.isFinite(headerSeconds) && headerSeconds > 0
+    ? headerSeconds * 1000
+    : Number.isFinite(headerDate)
+      ? Math.max(0, headerDate - Date.now())
+      : bodySeconds > 0
+        ? bodySeconds * 1000
+        : 0;
+  const baseDelay = Math.max(0, Number(options.remoteRetryDelayMs) || DEFAULT_REMOTE_RETRY_DELAY_MS);
+  const maxDelay = Math.max(
+    baseDelay,
+    Number(options.remoteRetryMaxDelayMs) || DEFAULT_REMOTE_RETRY_MAX_DELAY_MS
+  );
+  const exponentialDelay = baseDelay * (2 ** Math.max(0, attempt - 1));
+  return Math.min(maxDelay, Math.max(requestedDelay, exponentialDelay));
+}
+
 async function fetchRemoteControls(options) {
   if (!options.supabaseKey) {
     throw new Error('Supabase service key is required for --remote materialization.');
@@ -338,19 +394,52 @@ async function fetchRemoteControls(options) {
   url.searchParams.set('snapshot_key', `eq.${CONTROLS_SNAPSHOT_KEY}`);
   url.searchParams.set('order', 'updated_at.desc');
   url.searchParams.set('limit', '1');
-  const response = await fetch(url, {
-    cache: 'no-store',
-    headers: {
-      apikey: options.supabaseKey,
-      Authorization: `Bearer ${options.supabaseKey}`,
-      Accept: 'application/json'
+  const request = typeof options.fetchImpl === 'function' ? options.fetchImpl : fetch;
+  const sleep = typeof options.sleep === 'function'
+    ? options.sleep
+    : (delayMs) => new Promise((resolve) => setTimeout(resolve, delayMs));
+  const maxAttempts = Math.max(
+    1,
+    Math.trunc(Number(options.remoteMaxAttempts)) || DEFAULT_REMOTE_MAX_ATTEMPTS
+  );
+  let lastError = null;
+  for (let attempt = 1; attempt <= maxAttempts; attempt += 1) {
+    let response;
+    try {
+      response = await request(url, {
+        cache: 'no-store',
+        headers: {
+          apikey: options.supabaseKey,
+          Authorization: `Bearer ${options.supabaseKey}`,
+          Accept: 'application/json'
+        }
+      });
+    } catch (error) {
+      lastError = error;
+      if (attempt >= maxAttempts) break;
+      const delayMs = remoteRetryDelayMs(null, '', attempt, options);
+      console.warn(
+        `[repricer-controls] network error, retry ${attempt + 1}/${maxAttempts} in ${delayMs}ms`
+      );
+      await sleep(delayMs);
+      continue;
     }
-  });
-  if (!response.ok) {
-    throw new Error(`Cannot load ${CONTROLS_SNAPSHOT_KEY}: HTTP ${response.status} ${await response.text()}`);
+    if (response.ok) {
+      const rows = await response.json();
+      return rows?.[0]?.payload || null;
+    }
+    const body = await response.text();
+    lastError = new Error(
+      `Cannot load ${CONTROLS_SNAPSHOT_KEY}: HTTP ${response.status} ${body}`
+    );
+    if (!retryableRemoteStatus(response.status, body) || attempt >= maxAttempts) break;
+    const delayMs = remoteRetryDelayMs(response, body, attempt, options);
+    console.warn(
+      `[repricer-controls] HTTP ${response.status}, retry ${attempt + 1}/${maxAttempts} in ${delayMs}ms`
+    );
+    await sleep(delayMs);
   }
-  const rows = await response.json();
-  return rows?.[0]?.payload || null;
+  throw lastError || new Error(`Cannot load ${CONTROLS_SNAPSHOT_KEY}: remote request failed`);
 }
 
 async function run(options) {
@@ -391,8 +480,11 @@ if (require.main === module) {
 
 module.exports = {
   approvedOverride,
+  fetchRemoteControls,
   lifecycleKey,
   materializeApprovedDecisions,
+  remoteRetryDelayMs,
+  retryableRemoteStatus,
   resolveOptions,
   run
 };

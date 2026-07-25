@@ -2742,7 +2742,7 @@
       "api_sku": "fbs_arterol",
       "status": "active",
       "note": "Я.Маркет FBS alias",
-      "updatedAt": "2026-07-25T04:50:51.000Z"
+      "updatedAt": "2026-07-24T18:53:42.000Z"
     },
     {
       "target_sku": "okospas",
@@ -2750,7 +2750,7 @@
       "api_sku": "fbs_okospas",
       "status": "active",
       "note": "Я.Маркет FBS alias",
-      "updatedAt": "2026-07-25T04:50:51.000Z"
+      "updatedAt": "2026-07-24T18:53:42.000Z"
     },
     {
       "target_sku": "trezax",
@@ -2758,7 +2758,7 @@
       "api_sku": "fbs_trezax",
       "status": "active",
       "note": "Я.Маркет FBS alias",
-      "updatedAt": "2026-07-25T04:50:51.000Z"
+      "updatedAt": "2026-07-24T18:53:42.000Z"
     },
     {
       "target_sku": "yagodniy_spas",
@@ -2766,7 +2766,7 @@
       "api_sku": "fbs_yagodniy_spas",
       "status": "active",
       "note": "Я.Маркет FBS alias",
-      "updatedAt": "2026-07-25T04:50:51.000Z"
+      "updatedAt": "2026-07-24T18:53:42.000Z"
     },
     {
       "target_sku": "penka_kudryavii_metod_150ml",
@@ -2776,5 +2776,5 @@
       "note": "Quick action from SKU workspace 2026-06-29"
     }
   ],
-  "updatedAt": "2026-07-25T04:50:51.000Z"
+  "updatedAt": "2026-07-24T18:53:42.000Z"
 }

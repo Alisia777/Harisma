@@ -9,6 +9,8 @@ const {
   letualBusinessDate,
   numberOrZero,
   parseRetailWorkbook,
+  resolveOptions,
+  resolveWorkbookSource,
   updatePayload
 } = require('./portal-retail-network-daily-sync');
 
@@ -91,12 +93,21 @@ const base = {
     { key: 'all', label: 'Все площадки', series: [] }
   ]
 };
-const updated = updatePayload(base, parsed, { to: '2026-07-20', sourceId: 'test' });
+const updated = updatePayload(base, parsed, {
+  to: '2026-07-20',
+  sourceId: 'test',
+  resolvedSource: 'workbook-fallback:data/external_sources/retail_network_sales.xlsx',
+  sourceWarning: 'service account unavailable'
+});
 const zyaPoint = updated.payload.platforms.find((platform) => platform.key === 'goldapple').series[0];
 assert.strictEqual(zyaPoint.units, 3, 'Actual ZYA daily fact must replace the synthetic point');
 assert.strictEqual(zyaPoint.deliveredUnits, 2, 'Delivered units must stay distinct from orders');
 assert.strictEqual(updated.status.platforms.goldapple.status, 'fresh');
 assert.strictEqual(updated.status.platforms.samokat.status, 'missing');
+assert.strictEqual(updated.status.source, 'workbook-fallback:data/external_sources/retail_network_sales.xlsx');
+assert.strictEqual(updated.status.sourceWarning, 'service account unavailable');
+assert.strictEqual(updated.payload.extraMarketplace.source, 'retail-workbook-daily');
+assert.strictEqual(updated.payload.extraMarketplace.workbook, 'workbook-fallback:data/external_sources/retail_network_sales.xlsx');
 const updatedLetu = updated.payload.platforms.find((platform) => platform.key === 'letu');
 assert.deepStrictEqual(updatedLetu.articles.map((article) => article.articleKey), ['cream_1', 'legacy_1']);
 assert.deepStrictEqual(updatedLetu.articles.find((article) => article.articleKey === 'cream_1').daily.map((point) => point.date), ['2026-07-19', '2026-07-20']);
@@ -163,4 +174,22 @@ assert.strictEqual(numberOrZero('1 234,56'), 1234.56);
 assert.strictEqual(letualBusinessDate('2026-07-21', '2026-06-07-2026-06-07'), '2026-06-07');
 assert.strictEqual(letualBusinessDate('2026-07-21', '2026-07-01-2026-07-20'), '');
 
-console.log('portal-retail-network-daily-sync self-test passed');
+const previousFallbackWorkbook = process.env.ALTEA_RETAIL_NETWORK_SALES_XLSX;
+process.env.ALTEA_RETAIL_NETWORK_SALES_XLSX = __filename;
+const fallbackOptions = resolveOptions({});
+if (previousFallbackWorkbook === undefined) delete process.env.ALTEA_RETAIL_NETWORK_SALES_XLSX;
+else process.env.ALTEA_RETAIL_NETWORK_SALES_XLSX = previousFallbackWorkbook;
+assert.strictEqual(fallbackOptions.fallbackWorkbookPath, __filename);
+
+resolveWorkbookSource(
+  { workbookPath: '', fallbackWorkbookPath: __filename, sourceId: 'test' },
+  async () => { throw new Error('service account unavailable'); }
+).then((source) => {
+  assert.strictEqual(source.workbookPath, __filename);
+  assert.strictEqual(source.source, 'workbook-fallback:scripts/portal-retail-network-daily-sync.selftest.js');
+  assert.strictEqual(source.sourceWarning, 'service account unavailable');
+  console.log('portal-retail-network-daily-sync self-test passed');
+}).catch((error) => {
+  console.error(error?.stack || String(error));
+  process.exitCode = 1;
+});

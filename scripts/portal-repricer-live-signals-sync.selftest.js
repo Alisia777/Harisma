@@ -13,6 +13,7 @@ const {
   fetchWbStocksWithTokens,
   mergeDirectWithFallback,
   normalizeOzonStocks,
+  requestJson,
   resolveOptions,
   skuIndexes
 } = require('./portal-repricer-live-signals-sync');
@@ -192,6 +193,38 @@ async function run() {
       assert.strictEqual(wbDirect.rows.find((row) => row.articleKey === 'sku-a').available, 7);
       assert.strictEqual(wbDirect.rows.find((row) => row.articleKey === 'sku-b').oos, true);
       assert.strictEqual(directSnapshotUsable(wbDirect), true);
+    } finally {
+      global.fetch = originalFetch;
+    }
+
+    let wbRateAttempts = 0;
+    const wbRetryDelays = [];
+    try {
+      global.fetch = async () => {
+        wbRateAttempts += 1;
+        if (wbRateAttempts < 3) {
+          return {
+            ok: false,
+            status: 429,
+            headers: { get: () => '0.001' },
+            text: async () => JSON.stringify({ title: 'too many requests' })
+          };
+        }
+        return {
+          ok: true,
+          status: 200,
+          headers: { get: () => null },
+          text: async () => JSON.stringify({ data: { items: [] } })
+        };
+      };
+      const retriedPayload = await requestJson('https://example.test/wb-stocks', {}, 'WB stocks API', {
+        maxAttempts: 4,
+        minimumDelayMs: 5,
+        sleep: async (milliseconds) => wbRetryDelays.push(milliseconds)
+      });
+      assert.deepStrictEqual(retriedPayload, { data: { items: [] } });
+      assert.strictEqual(wbRateAttempts, 3);
+      assert.deepStrictEqual(wbRetryDelays, [5, 5]);
     } finally {
       global.fetch = originalFetch;
     }

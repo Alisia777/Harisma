@@ -49,6 +49,9 @@ if (
 ) {
   fail('daily close workflow_run trigger must only publish after successful Portal data truth runs on main');
 }
+if (!workflow.includes('ref: ${{ github.event.workflow_run.head_sha || github.sha }}')) {
+  fail('daily close must check out the exact revision that passed the Portal data truth gate');
+}
 
 const scriptRefs = new Set();
 for (const match of workflow.matchAll(/\b(?:node|python)\s+(scripts\/[^\s\\]+?)(?=\s|$)/g)) {

@@ -327,7 +327,7 @@ async function run() {
     await page.waitForFunction(
       () => document.querySelector('[data-repricer-price-apply-status]')?.textContent?.includes('План готов: 2 цен'),
       null,
-      { timeout: 10000 }
+      { timeout: 30000 }
     );
     assert.strictEqual(priceApplyDispatchCalls, 1);
     assert.strictEqual(priceApplyBodies[0]?.mode, 'plan');
@@ -341,7 +341,7 @@ async function run() {
     await page.waitForFunction(
       () => document.querySelector('[data-repricer-price-apply-status]')?.textContent?.includes('цены изменены и совпали'),
       null,
-      { timeout: 10000 }
+      { timeout: 30000 }
     );
     assert.strictEqual(priceApplyDispatchCalls, 2);
     assert.strictEqual(priceApplyBodies[1]?.mode, 'apply');

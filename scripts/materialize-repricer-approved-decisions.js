@@ -10,9 +10,10 @@ const SNAPSHOT_TABLE = 'portal_data_snapshots';
 const CONTROLS_SNAPSHOT_KEY = 'repricer_controls';
 const PRICE_OUTPUT_FILE = 'repricer_approved_overrides.json';
 const LIFECYCLE_OUTPUT_FILE = 'product_lifecycle_approved.json';
-const DEFAULT_REMOTE_MAX_ATTEMPTS = 4;
+const DEFAULT_REMOTE_MAX_ATTEMPTS = 6;
 const DEFAULT_REMOTE_RETRY_DELAY_MS = 5000;
 const DEFAULT_REMOTE_RETRY_MAX_DELAY_MS = 120000;
+const DEFAULT_REMOTE_REQUEST_TIMEOUT_MS = 45000;
 
 function parseArgs(argv) {
   const args = {};
@@ -54,6 +55,11 @@ function resolveOptions(args = {}) {
     Math.trunc(Number(args['remote-retry-max-delay-ms'] || process.env.ALTEA_REPRICER_REMOTE_RETRY_MAX_DELAY_MS))
       || DEFAULT_REMOTE_RETRY_MAX_DELAY_MS
   );
+  const remoteRequestTimeoutMs = Math.max(
+    1000,
+    Math.trunc(Number(args['remote-request-timeout-ms'] || process.env.ALTEA_REPRICER_REMOTE_REQUEST_TIMEOUT_MS))
+      || DEFAULT_REMOTE_REQUEST_TIMEOUT_MS
+  );
   return {
     inputDir,
     outputDir,
@@ -79,7 +85,8 @@ function resolveOptions(args = {}) {
     ).trim(),
     remoteMaxAttempts,
     remoteRetryDelayMs,
-    remoteRetryMaxDelayMs
+    remoteRetryMaxDelayMs,
+    remoteRequestTimeoutMs
   };
 }
 
@@ -389,10 +396,9 @@ async function fetchRemoteControls(options) {
     throw new Error('Supabase service key is required for --remote materialization.');
   }
   const url = new URL(`${options.supabaseUrl}/${'rest/v1'}/${SNAPSHOT_TABLE}`);
-  url.searchParams.set('select', 'payload,generated_at,updated_at');
+  url.searchParams.set('select', 'payload');
   url.searchParams.set('brand', `eq.${options.brand}`);
   url.searchParams.set('snapshot_key', `eq.${CONTROLS_SNAPSHOT_KEY}`);
-  url.searchParams.set('order', 'updated_at.desc');
   url.searchParams.set('limit', '1');
   const request = typeof options.fetchImpl === 'function' ? options.fetchImpl : fetch;
   const sleep = typeof options.sleep === 'function'
@@ -402,37 +408,53 @@ async function fetchRemoteControls(options) {
     1,
     Math.trunc(Number(options.remoteMaxAttempts)) || DEFAULT_REMOTE_MAX_ATTEMPTS
   );
+  const requestTimeoutMs = Math.max(
+    1,
+    Math.trunc(Number(options.remoteRequestTimeoutMs)) || DEFAULT_REMOTE_REQUEST_TIMEOUT_MS
+  );
   let lastError = null;
   for (let attempt = 1; attempt <= maxAttempts; attempt += 1) {
+    const controller = new AbortController();
+    const timeout = setTimeout(() => controller.abort(), requestTimeoutMs);
     let response;
+    let body = '';
     try {
       response = await request(url, {
         cache: 'no-store',
+        signal: controller.signal,
         headers: {
           apikey: options.supabaseKey,
           Authorization: `Bearer ${options.supabaseKey}`,
           Accept: 'application/json'
         }
       });
+      if (response.ok) {
+        const rows = await response.json();
+        clearTimeout(timeout);
+        return rows?.[0]?.payload || null;
+      }
+      body = await response.text();
+      clearTimeout(timeout);
+      lastError = new Error(
+        `Cannot load ${CONTROLS_SNAPSHOT_KEY}: HTTP ${response.status} ${body}`
+      );
+      if (!retryableRemoteStatus(response.status, body) || attempt >= maxAttempts) break;
     } catch (error) {
-      lastError = error;
+      clearTimeout(timeout);
+      lastError = controller.signal.aborted
+        ? new Error(
+          `Cannot load ${CONTROLS_SNAPSHOT_KEY}: request timed out after ${requestTimeoutMs}ms`
+        )
+        : error;
       if (attempt >= maxAttempts) break;
       const delayMs = remoteRetryDelayMs(null, '', attempt, options);
       console.warn(
-        `[repricer-controls] network error, retry ${attempt + 1}/${maxAttempts} in ${delayMs}ms`
+        `[repricer-controls] ${controller.signal.aborted ? 'request timeout' : 'network error'}, `
+        + `retry ${attempt + 1}/${maxAttempts} in ${delayMs}ms`
       );
       await sleep(delayMs);
       continue;
     }
-    if (response.ok) {
-      const rows = await response.json();
-      return rows?.[0]?.payload || null;
-    }
-    const body = await response.text();
-    lastError = new Error(
-      `Cannot load ${CONTROLS_SNAPSHOT_KEY}: HTTP ${response.status} ${body}`
-    );
-    if (!retryableRemoteStatus(response.status, body) || attempt >= maxAttempts) break;
     const delayMs = remoteRetryDelayMs(response, body, attempt, options);
     console.warn(
       `[repricer-controls] HTTP ${response.status}, retry ${attempt + 1}/${maxAttempts} in ${delayMs}ms`

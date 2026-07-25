@@ -120,6 +120,7 @@ jobs:
           node scripts/portal-unified-daily-intake.js --contract-only --no-write
           node scripts/portal-smart-price-overlay-sync.selftest.js
           node scripts/portal-yandex-market-price-sync.selftest.js
+          node scripts/portal-repricer-live-prices-merge.selftest.js
           node scripts/portal-wb-finance-rate-limit.selftest.js
           node scripts/portal-wb-orders-fallback.selftest.js
           node scripts/portal-sku-alias-integrity.selftest.js

@@ -54,10 +54,11 @@ jobs:
           ALTEA_WB_API_TOKEN: ${{ secrets.ALTEA_WB_API_TOKEN }}
           ALTEA_OZON_CLIENT_ID: ${{ secrets.ALTEA_OZON_CLIENT_ID }}
           ALTEA_OZON_API_KEY: ${{ secrets.ALTEA_OZON_API_KEY }}
+          ALTEA_YM_API_KEY: ${{ secrets.ALTEA_YM_API_KEY }}
           SUPABASE_SERVICE_ROLE_KEY: ${{ secrets.SUPABASE_SERVICE_ROLE_KEY || secrets.ALTEA_SUPABASE_SERVICE_ROLE_KEY }}
         shell: bash
         run: |
-          for name in ALTEA_WB_API_TOKEN ALTEA_OZON_CLIENT_ID ALTEA_OZON_API_KEY SUPABASE_SERVICE_ROLE_KEY; do
+          for name in ALTEA_WB_API_TOKEN ALTEA_OZON_CLIENT_ID ALTEA_OZON_API_KEY ALTEA_YM_API_KEY SUPABASE_SERVICE_ROLE_KEY; do
             if [ -z "${!name:-}" ]; then
               echo "::error::$name is missing"
               exit 1
@@ -70,11 +71,26 @@ jobs:
           ALTEA_WB_PROMOTION_TOKEN: ${{ secrets.ALTEA_WB_PROMOTION_TOKEN }}
           ALTEA_OZON_CLIENT_ID: ${{ secrets.ALTEA_OZON_CLIENT_ID }}
           ALTEA_OZON_API_KEY: ${{ secrets.ALTEA_OZON_API_KEY }}
+          ALTEA_YM_API_KEY: ${{ secrets.ALTEA_YM_API_KEY }}
+          ALTEA_YM_CAMPAIGN_ID: ${{ secrets.ALTEA_YM_CAMPAIGN_ID }}
         run: |
+          mkdir -p .portal-truth-output/repricer-price
+          node scripts/portal-yandex-market-price-sync.js \
+            --output-file .portal-truth-output/repricer-price/yandex-market-prices.json \
+            --as-of-date '${{ steps.run_date.outputs.value }}' \
+            --min-mapped-rows 100 \
+            --min-mapped-ratio 0.95
           node scripts/portal-repricer-live-prices-sync.js sync \
             --input-dir data \
             --output data/repricer_live_prices.json \
             --as-of-date '${{ steps.run_date.outputs.value }}' \
+            --strict
+          node scripts/portal-repricer-live-prices-merge.js \
+            --base data/repricer_live_prices.json \
+            --additional-price-file .portal-truth-output/repricer-price/yandex-market-prices.json \
+            --output data/repricer_live_prices.json \
+            --as-of-date '${{ steps.run_date.outputs.value }}' \
+            --required-platform ym \
             --strict
           node scripts/portal-repricer-live-signals-sync.js sync \
             --input-dir data \
@@ -148,6 +164,7 @@ jobs:
           ALTEA_WB_API_TOKEN: ${{ secrets.ALTEA_WB_API_TOKEN }}
           ALTEA_OZON_CLIENT_ID: ${{ secrets.ALTEA_OZON_CLIENT_ID }}
           ALTEA_OZON_API_KEY: ${{ secrets.ALTEA_OZON_API_KEY }}
+          ALTEA_YM_API_KEY: ${{ secrets.ALTEA_YM_API_KEY }}
         shell: bash
         run: |
           for attempt in 1 2 3 4 5 6 7 8 9 10; do
@@ -156,6 +173,13 @@ jobs:
               --input-dir data \
               --output data/repricer_live_prices.json \
               --as-of-date '${{ steps.run_date.outputs.value }}' \
+              --strict
+            node scripts/portal-repricer-live-prices-merge.js \
+              --base data/repricer_live_prices.json \
+              --additional-price-file .portal-truth-output/repricer-price/yandex-market-prices.json \
+              --output data/repricer_live_prices.json \
+              --as-of-date '${{ steps.run_date.outputs.value }}' \
+              --required-platform ym \
               --strict
             if node scripts/portal-repricer-price-apply.js verify \
               --input-dir data \
@@ -195,6 +219,7 @@ jobs:
         with:
           name: repricer-price-${{ inputs.mode }}-${{ github.run_id }}
           path: |
+            .portal-truth-output/repricer-price/yandex-market-prices.json
             data/repricer_live_prices.json
             data/repricer_live_signals.json
             data/canonical_repricer.json

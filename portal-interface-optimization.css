@@ -533,6 +533,365 @@ html[data-theme] body.v87-imperial.altea-premium-shell
   color: var(--text) !important;
 }
 
+/* IU / DRR and Plan-Fact are late-mounted, table-heavy routes. Their original
+ * component styles assume a wide dark canvas and are injected after this
+ * stylesheet. These route-scoped rules deliberately carry enough specificity
+ * to keep theme colors and layout stable on a MacBook, at browser zoom, and on
+ * touch widths. */
+html[data-theme] body.v87-imperial.altea-premium-shell #view-iu-drr :is(
+  .iu-drr-v3-shell,
+  .iu-drr-v3-head,
+  .iu-drr-v3-toolbar,
+  .iu-drr-v3-datebar,
+  .iu-drr-v3-tabs,
+  .iu-drr-v3-kpis,
+  .iu-drr-v3-panel,
+  .iu-drr-v3-section,
+  .iu-drr-v3-collapsible,
+  .iu-drr-v3-table-host,
+  .iu-drr-v3-table-filter,
+  .iu-drr-v3-matrix-wrap
+) {
+  width: 100%;
+  min-width: 0;
+  max-width: 100%;
+}
+
+html[data-theme] body.v87-imperial.altea-premium-shell
+  #view-iu-drr .iu-drr-v3-shell {
+  --line: var(--shell-line) !important;
+  --line2: var(--shell-line2) !important;
+  --surface: var(--shell-surface) !important;
+  --surface2: var(--shell-surface2) !important;
+  --champ: var(--shell-accent) !important;
+  --muted: var(--shell-muted) !important;
+  --faint: var(--shell-faint) !important;
+  color: var(--text) !important;
+}
+
+html[data-theme] body.v87-imperial.altea-premium-shell
+  #view-iu-drr .iu-drr-v3-head {
+  align-items: flex-start !important;
+  flex-wrap: wrap;
+}
+
+html[data-theme] body.v87-imperial.altea-premium-shell
+  #view-iu-drr .iu-drr-v3-head > :first-child {
+  flex: 1 1 540px;
+  min-width: min(100%, 360px);
+}
+
+html[data-theme] body.v87-imperial.altea-premium-shell
+  #view-iu-drr .iu-drr-v3-badges {
+  flex: 1 1 320px;
+  min-width: 0;
+}
+
+html[data-theme] body.v87-imperial.altea-premium-shell
+  #view-iu-drr .iu-drr-v3-toolbar {
+  position: static !important;
+  inset: auto !important;
+  z-index: 1 !important;
+  grid-template-columns: minmax(0, 1fr) minmax(250px, .7fr) !important;
+  align-items: end !important;
+  overflow: hidden;
+  background: var(--portal-theme-surface) !important;
+  border-color: var(--line) !important;
+  color: var(--text) !important;
+  box-shadow: none !important;
+  backdrop-filter: none !important;
+}
+
+html[data-theme] body.v87-imperial.altea-premium-shell
+  #view-iu-drr .iu-drr-v3-datebar {
+  grid-column: 1 / -1;
+  grid-template-columns:
+    minmax(130px, .72fr)
+    minmax(145px, .72fr)
+    minmax(260px, 1.56fr) !important;
+}
+
+html[data-theme] body.v87-imperial.altea-premium-shell
+  #view-iu-drr .iu-drr-v3-tabs {
+  grid-column: 1 / -1 !important;
+  display: grid !important;
+  grid-template-columns: repeat(auto-fit, minmax(140px, 1fr));
+  overflow: hidden !important;
+}
+
+html[data-theme] body.v87-imperial.altea-premium-shell
+  #view-iu-drr .iu-drr-v3-tab {
+  width: 100%;
+  height: auto !important;
+  min-width: 0 !important;
+  min-height: 32px;
+  padding-block: 6px !important;
+  line-height: 1.2;
+  white-space: normal !important;
+  overflow-wrap: anywhere;
+}
+
+html[data-theme] body.v87-imperial.altea-premium-shell
+  #view-iu-drr .iu-drr-v3-search {
+  grid-column: 1;
+}
+
+html[data-theme] body.v87-imperial.altea-premium-shell
+  #view-iu-drr .iu-drr-v3-lock {
+  grid-column: 2;
+  min-width: 0;
+  text-align: left !important;
+  overflow-wrap: anywhere;
+}
+
+html[data-theme] body.v87-imperial.altea-premium-shell
+  #view-iu-drr .iu-drr-v3-kpis {
+  grid-template-columns: repeat(auto-fit, minmax(185px, 1fr)) !important;
+}
+
+html[data-theme] body.v87-imperial.altea-premium-shell
+  #view-iu-drr .iu-drr-v3-table-filter {
+  grid-template-columns: repeat(auto-fit, minmax(150px, 1fr)) !important;
+  background: color-mix(in srgb, var(--surface2) 88%, transparent) !important;
+  border-color: var(--line) !important;
+}
+
+html[data-theme] body.v87-imperial.altea-premium-shell
+  #view-iu-drr .iu-drr-v3-matrix-wrap {
+  max-height: none !important;
+  overflow-x: auto !important;
+  overflow-y: hidden !important;
+  overscroll-behavior-inline: contain;
+}
+
+html[data-theme] body.v87-imperial.altea-premium-shell
+  #view-iu-drr .iu-drr-v3-table :is(th, td) {
+  border-color: var(--line) !important;
+  background: var(--surface) !important;
+  color: var(--text) !important;
+  text-shadow: none !important;
+}
+
+html[data-theme] body.v87-imperial.altea-premium-shell
+  #view-iu-drr .iu-drr-v3-table thead th {
+  background: var(--portal-theme-control) !important;
+  color: var(--muted) !important;
+  box-shadow: 0 1px 0 var(--line) !important;
+}
+
+html[data-theme] body.v87-imperial.altea-premium-shell
+  #view-iu-drr .iu-drr-v3-table :is(th:first-child, td:first-child) {
+  width: 310px;
+  min-width: 310px;
+  max-width: 310px;
+  background: color-mix(in srgb, var(--surface2) 90%, var(--surface)) !important;
+  color: var(--text) !important;
+  white-space: normal !important;
+  overflow-wrap: anywhere;
+  box-shadow: 1px 0 0 var(--line) !important;
+}
+
+html[data-theme] body.v87-imperial.altea-premium-shell
+  #view-iu-drr .iu-drr-v3-table .iu-drr-v3-empty-row td {
+  background: var(--surface2) !important;
+  color: var(--muted) !important;
+}
+
+html[data-theme] body.v87-imperial.altea-premium-shell
+  #view-iu-drr :is(
+    .iu-drr-v3-progress,
+    .iu-drr-v3-filter-count
+  ) {
+  border-color: var(--line) !important;
+  background: color-mix(in srgb, var(--accent) 10%, var(--surface)) !important;
+}
+
+html[data-theme] body.v87-imperial.altea-premium-shell
+  #view-sku-plan-fact :is(
+    .sku-plan-fact-v1,
+    .pf-v4,
+    .pf-v4-head,
+    .pf-v4-filter-panel,
+    .pf-v4-integrity,
+    .pf-v4-kpis,
+    .pf-v4-platform-grid,
+    .pf-v4-owner-grid,
+    .pf-v4-lfl-tiles,
+    .pf-v4-split,
+    .pf-v4-chart-grid,
+    .pf-v1-table-card,
+    .pf-v1-table-wrap
+  ) {
+  min-width: 0;
+  max-width: 100%;
+}
+
+html[data-theme] body.v87-imperial.altea-premium-shell
+  #view-sku-plan-fact .pf-v4-head {
+  align-items: flex-start !important;
+  flex-wrap: wrap;
+}
+
+html[data-theme] body.v87-imperial.altea-premium-shell
+  #view-sku-plan-fact .pf-v4-head > :first-child {
+  flex: 1 1 420px;
+  min-width: min(100%, 320px);
+}
+
+html[data-theme] body.v87-imperial.altea-premium-shell
+  #view-sku-plan-fact .pf-v4-tabs {
+  flex: 0 1 auto;
+  min-width: 0;
+  max-width: 100%;
+  flex-wrap: wrap;
+  justify-content: flex-start;
+  border-radius: 14px !important;
+}
+
+html[data-theme] body.v87-imperial.altea-premium-shell
+  #view-sku-plan-fact .pf-v4-tabs button {
+  min-width: 0;
+  border-color: var(--line) !important;
+  background: var(--portal-theme-control) !important;
+  color: var(--text) !important;
+}
+
+html[data-theme] body.v87-imperial.altea-premium-shell
+  #view-sku-plan-fact .pf-v4-tabs button[aria-selected="true"] {
+  border-color: color-mix(in srgb, var(--accent) 58%, var(--line)) !important;
+  background: var(--portal-theme-primary) !important;
+  color: var(--portal-theme-primary-text) !important;
+}
+
+html[data-theme] body.v87-imperial.altea-premium-shell
+  #view-sku-plan-fact .pf-v4-filter-panel {
+  grid-template-columns: repeat(auto-fit, minmax(150px, 1fr)) !important;
+  align-items: end !important;
+}
+
+html[data-theme] body.v87-imperial.altea-premium-shell
+  #view-sku-plan-fact .pf-v4-filter-search {
+  grid-column: span 2;
+}
+
+html[data-theme] body.v87-imperial.altea-premium-shell
+  #view-sku-plan-fact .pf-v4-filter-actions {
+  grid-column: span 2;
+  min-width: 0 !important;
+  max-width: 100%;
+  flex-wrap: wrap;
+  justify-content: flex-start !important;
+}
+
+html[data-theme] body.v87-imperial.altea-premium-shell
+  #view-sku-plan-fact :is(
+    .pf-v4-filter-actions button,
+    .pf-v4-chart-tabs button,
+    .pf-v4-team-table button,
+    .pf-v4-driver,
+    .pf-v4-waterfall-item,
+    .pf-v4-margin-side,
+    .pf-v4-svg-shell,
+    .pf-v4-margin-chart
+  ) {
+  border-color: var(--line) !important;
+  background: var(--portal-theme-control) !important;
+  color: var(--text) !important;
+  text-shadow: none !important;
+  box-shadow: none !important;
+}
+
+html[data-theme] body.v87-imperial.altea-premium-shell
+  #view-sku-plan-fact :is(
+    .pf-v1-table-wrap,
+    .pf-v4-history-wrap,
+    .pf-v4-daily-table
+  ) {
+  max-height: none !important;
+  overflow-x: auto !important;
+  overflow-y: hidden !important;
+  overscroll-behavior-inline: contain;
+}
+
+html[data-theme] body.v87-imperial.altea-premium-shell
+  #view-sku-plan-fact .pf-v1-table :is(th, td) {
+  border-color: var(--line) !important;
+  background: var(--surface) !important;
+  color: var(--text) !important;
+  text-shadow: none !important;
+}
+
+html[data-theme] body.v87-imperial.altea-premium-shell
+  #view-sku-plan-fact .pf-v1-table thead th {
+  background: var(--portal-theme-control) !important;
+  color: var(--muted) !important;
+  box-shadow: 0 1px 0 var(--line) !important;
+  white-space: normal !important;
+  overflow: hidden;
+  overflow-wrap: anywhere;
+}
+
+html[data-theme] body.v87-imperial.altea-premium-shell
+  #view-sku-plan-fact .pf-v1-table thead .table-sort-btn {
+  min-width: 0;
+  max-width: 100%;
+  white-space: normal;
+  overflow: hidden;
+  overflow-wrap: anywhere;
+}
+
+html[data-theme] body.v87-imperial.altea-premium-shell
+  #view-sku-plan-fact .pf-v1-table tbody tr:hover td {
+  background: color-mix(in srgb, var(--accent) 8%, var(--surface)) !important;
+}
+
+html[data-theme] body.v87-imperial.altea-premium-shell
+  #view-sku-plan-fact .pf-v1-table :is(
+    thead tr:nth-child(2) th:nth-child(1),
+    thead tr:nth-child(2) th:nth-child(2),
+    thead tr:nth-child(2) th:nth-child(3),
+    tbody td:nth-child(1),
+    tbody td:nth-child(2),
+    tbody td:nth-child(3)
+  ) {
+  background: color-mix(in srgb, var(--surface2) 90%, var(--surface)) !important;
+  color: var(--text) !important;
+}
+
+html[data-theme] body.v87-imperial.altea-premium-shell
+  #view-sku-plan-fact :is(
+    .pf-v4-history-table thead th,
+    .pf-v4-history-table .pf-v4-history-article,
+    .pf-v4-history-cell,
+    .pf-v4-daily-table th,
+    .pf-v4-daily-table td
+  ) {
+  border-color: var(--line) !important;
+  background: var(--surface) !important;
+  color: var(--text) !important;
+}
+
+html[data-theme] body.v87-imperial.altea-premium-shell
+  #view-sku-plan-fact :is(
+    .pf-v4-history-article button,
+    .pf-v4-history-cell strong,
+    .pf-v4-history-cell em,
+    .pf-v4-margin-side strong
+  ) {
+  color: var(--text) !important;
+}
+
+html[data-theme] body.v87-imperial.altea-premium-shell
+  #view-sku-plan-fact :is(
+    .pf-v4-history-article span,
+    .pf-v4-history-article em,
+    .pf-v4-history-cell small,
+    .pf-v4-history-cell span,
+    .pf-v4-margin-side em
+  ) {
+  color: var(--muted) !important;
+}
+
 /* Prices V1 is injected after the base theme and otherwise keeps its
  * hard-coded night palette. */
 html[data-theme] body.v87-imperial.altea-premium-shell
@@ -1371,6 +1730,109 @@ html[data-theme] body.v87-imperial.altea-premium-shell :is(
 
   body.v87-imperial.altea-premium-shell #view-sku-plan-fact .pf-v4-filter-actions {
     grid-template-columns: minmax(0, 1fr) !important;
+  }
+}
+
+@media (max-width: 860px) {
+  html[data-theme] body.v87-imperial.altea-premium-shell
+    #view-iu-drr .iu-drr-v3-toolbar {
+    grid-template-columns: minmax(0, 1fr) !important;
+  }
+
+  html[data-theme] body.v87-imperial.altea-premium-shell
+    #view-iu-drr .iu-drr-v3-head > :first-child,
+  html[data-theme] body.v87-imperial.altea-premium-shell
+    #view-iu-drr .iu-drr-v3-badges {
+    flex: 0 1 auto;
+    width: 100%;
+  }
+
+  html[data-theme] body.v87-imperial.altea-premium-shell
+    #view-iu-drr :is(
+      .iu-drr-v3-datebar,
+      .iu-drr-v3-tabs,
+      .iu-drr-v3-search,
+      .iu-drr-v3-lock
+    ) {
+    grid-column: 1 / -1 !important;
+  }
+
+  html[data-theme] body.v87-imperial.altea-premium-shell
+    #view-iu-drr .iu-drr-v3-datebar {
+    grid-template-columns: repeat(2, minmax(0, 1fr)) !important;
+  }
+
+  html[data-theme] body.v87-imperial.altea-premium-shell
+    #view-iu-drr .iu-drr-v3-periods {
+    grid-column: 1 / -1;
+  }
+
+  html[data-theme] body.v87-imperial.altea-premium-shell
+    #view-iu-drr .iu-drr-v3-kpis {
+    grid-template-columns: repeat(2, minmax(0, 1fr)) !important;
+  }
+
+  html[data-theme] body.v87-imperial.altea-premium-shell
+    #view-iu-drr .iu-drr-v3-table :is(th:first-child, td:first-child) {
+    width: 225px;
+    min-width: 225px;
+    max-width: 225px;
+  }
+
+  html[data-theme] body.v87-imperial.altea-premium-shell
+    #view-sku-plan-fact .pf-v4-filter-search,
+  html[data-theme] body.v87-imperial.altea-premium-shell
+    #view-sku-plan-fact .pf-v4-filter-actions {
+    grid-column: 1 / -1;
+  }
+
+  html[data-theme] body.v87-imperial.altea-premium-shell
+    #view-sku-plan-fact .pf-v1-table :is(
+      thead tr:nth-child(2) th:nth-child(2),
+      thead tr:nth-child(2) th:nth-child(3),
+      tbody td:nth-child(2),
+      tbody td:nth-child(3)
+    ) {
+    position: static !important;
+    left: auto !important;
+  }
+
+  html[data-theme] body.v87-imperial.altea-premium-shell
+    #view-sku-plan-fact .pf-v1-table :is(
+      thead tr:nth-child(2) th:nth-child(1),
+      tbody td:nth-child(1)
+    ) {
+    width: 240px;
+    min-width: 240px;
+    max-width: 240px;
+    white-space: normal;
+    overflow-wrap: anywhere;
+  }
+}
+
+@media (max-width: 560px) {
+  html[data-theme] body.v87-imperial.altea-premium-shell
+    #view-iu-drr .iu-drr-v3-datebar,
+  html[data-theme] body.v87-imperial.altea-premium-shell
+    #view-iu-drr .iu-drr-v3-kpis,
+  html[data-theme] body.v87-imperial.altea-premium-shell
+    #view-iu-drr .iu-drr-v3-table-filter,
+  html[data-theme] body.v87-imperial.altea-premium-shell
+    #view-sku-plan-fact .pf-v4-filter-panel {
+    grid-template-columns: minmax(0, 1fr) !important;
+  }
+
+  html[data-theme] body.v87-imperial.altea-premium-shell
+    #view-iu-drr .iu-drr-v3-tabs {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+
+  html[data-theme] body.v87-imperial.altea-premium-shell
+    #view-sku-plan-fact :is(
+      .pf-v4-filter-search,
+      .pf-v4-filter-actions
+    ) {
+    grid-column: 1 !important;
   }
 }
 

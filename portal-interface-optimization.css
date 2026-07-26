@@ -460,6 +460,98 @@ html[data-theme] body.v87-imperial.altea-premium-shell
   box-shadow: none !important;
 }
 
+/* The live dashboard drill-down is moved from #view-dashboard to <body>.
+ * Keep its surfaces and every text tier on the active shell palette too. */
+html[data-theme] body.v87-imperial.altea-premium-shell
+  .ceo-motion-v1.ceo-drawer-back .ceo-drawer {
+  border-color: var(--shell-line2) !important;
+  background: var(--portal-theme-surface-strong) !important;
+  color: var(--shell-text) !important;
+  box-shadow: 0 26px 90px color-mix(in srgb, var(--shell-text) 24%, transparent) !important;
+}
+
+html[data-theme] body.v87-imperial.altea-premium-shell
+  .ceo-motion-v1.ceo-drawer-back :is(
+    .ceo-drawer h2,
+    .ceo-drawer-metric strong,
+    .ceo-drawer-row b
+  ) {
+  color: var(--shell-text) !important;
+  text-shadow: none !important;
+}
+
+html[data-theme] body.v87-imperial.altea-premium-shell
+  .ceo-motion-v1.ceo-drawer-back :is(
+    .ceo-drawer p,
+    .ceo-drawer-row span
+  ) {
+  color: var(--shell-muted) !important;
+  text-shadow: none !important;
+}
+
+html[data-theme] body.v87-imperial.altea-premium-shell
+  .ceo-motion-v1.ceo-drawer-back :is(
+    .ceo-drawer-metric small,
+    .ceo-drawer-search span,
+    .ceo-drawer-row small
+  ) {
+  color: var(--shell-faint) !important;
+  text-shadow: none !important;
+}
+
+html[data-theme] body.v87-imperial.altea-premium-shell
+  .ceo-motion-v1.ceo-drawer-back .ceo-drawer-metric {
+  border-color: var(--shell-line) !important;
+  background: color-mix(in srgb, var(--shell-surface2) 88%, var(--shell-surface)) !important;
+  color: var(--shell-text) !important;
+}
+
+html[data-theme] body.v87-imperial.altea-premium-shell
+  .ceo-motion-v1.ceo-drawer-back .ceo-drawer-search input {
+  border-color: var(--shell-line) !important;
+  background: var(--portal-theme-control) !important;
+  color: var(--shell-text) !important;
+  box-shadow: none !important;
+}
+
+html[data-theme] body.v87-imperial.altea-premium-shell
+  .ceo-motion-v1.ceo-drawer-back .ceo-drawer-search input::placeholder {
+  color: var(--shell-faint) !important;
+  opacity: 1;
+}
+
+html[data-theme] body.v87-imperial.altea-premium-shell
+  .ceo-motion-v1.ceo-drawer-back :is(
+    .ceo-drawer-list,
+    .ceo-drawer-row
+  ) {
+  border-color: var(--shell-line) !important;
+}
+
+html[data-theme] body.v87-imperial.altea-premium-shell
+  .ceo-motion-v1.ceo-drawer-back .ceo-drawer-row {
+  background: transparent !important;
+  color: var(--shell-text) !important;
+}
+
+html[data-theme] body.v87-imperial.altea-premium-shell
+  .ceo-motion-v1.ceo-drawer-back .ceo-drawer-row:hover {
+  background: color-mix(in srgb, var(--shell-accent) 10%, transparent) !important;
+  color: var(--shell-text) !important;
+}
+
+html[data-theme] body.v87-imperial.altea-premium-shell
+  .ceo-motion-v1.ceo-drawer-back .ceo-drawer-row em {
+  color: var(--shell-accent) !important;
+}
+
+html[data-theme] body.v87-imperial.altea-premium-shell
+  .ceo-motion-v1.ceo-drawer-back .ceo-period.active {
+  border-color: var(--shell-accent) !important;
+  background: var(--portal-theme-primary) !important;
+  color: var(--portal-theme-primary-text) !important;
+}
+
 html[data-theme] body.v87-imperial.altea-premium-shell
   #view-dashboard :is(.ceo-kpi, .ceo-panel, .ceo-verdict-card) {
   border-color: var(--line) !important;

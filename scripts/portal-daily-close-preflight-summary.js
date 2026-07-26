@@ -47,6 +47,12 @@ function renderReport(report = {}) {
     lines.push('');
   }
 
+  if (Array.isArray(report.sourceWarnings) && report.sourceWarnings.length) {
+    lines.push('### Non-blocking Source Warnings', '');
+    report.sourceWarnings.forEach((warning) => lines.push(`- ${warning}`));
+    lines.push('');
+  }
+
   const priceSource = report.priceWorkbookSource || {};
   if (priceSource.present === false) {
     lines.push('### Smart Price Source', '');
@@ -57,10 +63,18 @@ function renderReport(report = {}) {
 
   const missingExtra = (report.extraMarketplaceSources || []).filter((item) => item && item.present === false);
   if (missingExtra.length) {
-    lines.push('### Extra Marketplace Sources', '');
+    lines.push('### Missing Extra Marketplace Sources', '');
     missingExtra.forEach((item) => {
-      lines.push(`- ${item.platform}: ${list((item.requiredAnyOf || []).map((name) => `\`${name}\``))}`);
+      lines.push(`- ${item.platform} (${item.requiredForPublish ? 'blocking' : 'preserved with stale marker'}): ${list((item.requiredAnyOf || []).map((name) => `\`${name}\``))}`);
     });
+    lines.push('');
+  }
+
+  const wbSubstitutionSource = report.wbSubstitutionSource || {};
+  if (wbSubstitutionSource.present === false) {
+    lines.push('### WB Substitution Traffic Source', '');
+    lines.push('The last verified workbook is preserved. Configure one of:');
+    (wbSubstitutionSource.requiredAnyOf || []).forEach((name) => lines.push(`- \`${name}\``));
     lines.push('');
   }
 

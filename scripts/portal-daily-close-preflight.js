@@ -29,55 +29,107 @@ const PRICE_WORKBOOK_SOURCE_ENV = [
   'GOOGLE_APPLICATION_CREDENTIALS_JSON',
   'GOOGLE_APPLICATION_CREDENTIALS'
 ];
+const WB_SUBSTITUTION_SOURCE_ENV = [
+  'ALTEA_WB_SUBSTITUTION_TRAFFIC_XLSX',
+  'ALTEA_WB_SUBSTITUTION_TRAFFIC_XLSX_URL',
+  'ALTEA_WB_SUBSTITUTION_TRAFFIC_XLSX_B64',
+  'ALTEA_WB_SUBSTITUTION_TRAFFIC_XLSX_GZIP_B64'
+];
 const EXTRA_MARKETPLACE_SOURCE_GROUPS = [
   {
     platform: 'goldapple',
-    requiredAnyOf: [
-      'ALTEA_ZYA_API_TOKEN',
-      'ALTEA_ZYA_API_KEY',
-      'ALTEA_GOLDAPPLE_API_TOKEN',
-      'ALTEA_GOLDAPPLE_API_KEY',
-      'ALTEA_ZYA_SALES_XLSX',
-      'ALTEA_ZYA_SALES_ZIP',
-      'ALTEA_RETAIL_NETWORK_SALES_XLSX'
+    requiredForPublish: false,
+    sourceOptions: [
+      {
+        kind: 'workbook',
+        requirements: [[
+          'ALTEA_ZYA_SALES_XLSX',
+          'ALTEA_ZYA_SALES_ZIP',
+          'ALTEA_RETAIL_NETWORK_SALES_XLSX'
+        ]]
+      },
+      {
+        kind: 'api',
+        requirements: [
+          ['ALTEA_ZYA_API_TOKEN', 'ALTEA_ZYA_API_KEY', 'ALTEA_GOLDAPPLE_API_TOKEN', 'ALTEA_GOLDAPPLE_API_KEY'],
+          ['ALTEA_ZYA_API_BASE_URL', 'ALTEA_GOLDAPPLE_API_BASE_URL'],
+          ['ALTEA_ZYA_SALES_PATH', 'ALTEA_GOLDAPPLE_SALES_PATH']
+        ]
+      }
     ]
   },
   {
     platform: 'letu',
-    requiredAnyOf: [
-      'ALTEA_LETUAL_API_TOKEN',
-      'ALTEA_LETUAL_LOCAL_EXPORT_XLSX',
-      'ALTEA_RETAIL_NETWORK_SALES_XLSX'
+    requiredForPublish: false,
+    sourceOptions: [
+      {
+        kind: 'workbook',
+        requirements: [['ALTEA_LETUAL_LOCAL_EXPORT_XLSX', 'ALTEA_RETAIL_NETWORK_SALES_XLSX']]
+      },
+      {
+        kind: 'api',
+        requirements: [
+          ['ALTEA_LETUAL_API_TOKEN'],
+          ['ALTEA_LETUAL_API_BASE_URL'],
+          ['ALTEA_LETUAL_SALES_PATH']
+        ]
+      }
     ]
   },
   {
     platform: 'megamarket',
-    requiredAnyOf: [
-      'ALTEA_MEGAMARKET_API_TOKEN',
-      'ALTEA_MEGAMARKET_API_KEY',
-      'ALTEA_RETAIL_NETWORK_SALES_XLSX'
+    requiredForPublish: false,
+    sourceOptions: [
+      {
+        kind: 'workbook',
+        requirements: [['ALTEA_RETAIL_NETWORK_SALES_XLSX']]
+      },
+      {
+        kind: 'api',
+        requirements: [
+          ['ALTEA_MEGAMARKET_API_TOKEN', 'ALTEA_MEGAMARKET_API_KEY'],
+          ['ALTEA_MEGAMARKET_API_BASE_URL'],
+          ['ALTEA_MEGAMARKET_SALES_PATH']
+        ]
+      }
     ]
   },
   {
     platform: 'samokat',
-    requiredAnyOf: [
-      'ALTEA_SAMOKAT_API_TOKEN',
-      'ALTEA_SAMOKAT_API_KEY',
-      'ALTEA_RETAIL_NETWORK_SALES_XLSX'
+    requiredForPublish: false,
+    sourceOptions: [
+      {
+        kind: 'api',
+        requirements: [
+          ['ALTEA_SAMOKAT_API_TOKEN', 'ALTEA_SAMOKAT_API_KEY'],
+          ['ALTEA_SAMOKAT_API_BASE_URL'],
+          ['ALTEA_SAMOKAT_SALES_PATH']
+        ]
+      }
     ]
   },
   {
     platform: 'magnit',
-    requiredAnyOf: [
-      'ALTEA_MAGNIT_API_TOKEN',
-      'ALTEA_MAGNIT_API_KEY',
-      'ALTEA_MAGNIT_MARKET_API_TOKEN',
-      'ALTEA_MAGNIT_MARKET_API_KEY',
-      'ALTEA_MAGNIT_SALES_XLSX',
-      'ALTEA_MAGNIT_SALES_XLS',
-      'ALTEA_MAGNIT_SALES_WORKBOOK',
-      'ALTEA_MAGNIT_SALES_CSV',
-      'ALTEA_RETAIL_NETWORK_SALES_XLSX'
+    requiredForPublish: false,
+    sourceOptions: [
+      {
+        kind: 'workbook',
+        requirements: [[
+          'ALTEA_MAGNIT_SALES_XLSX',
+          'ALTEA_MAGNIT_SALES_XLS',
+          'ALTEA_MAGNIT_SALES_WORKBOOK',
+          'ALTEA_MAGNIT_SALES_CSV',
+          'ALTEA_RETAIL_NETWORK_SALES_XLSX'
+        ]]
+      },
+      {
+        kind: 'api',
+        requirements: [
+          ['ALTEA_MAGNIT_API_TOKEN', 'ALTEA_MAGNIT_API_KEY', 'ALTEA_MAGNIT_MARKET_API_TOKEN', 'ALTEA_MAGNIT_MARKET_API_KEY'],
+          ['ALTEA_MAGNIT_API_BASE_URL', 'ALTEA_MAGNIT_MARKET_API_BASE_URL'],
+          ['ALTEA_MAGNIT_SALES_PATH', 'ALTEA_MAGNIT_MARKET_SALES_PATH']
+        ]
+      }
     ]
   }
 ];
@@ -138,17 +190,51 @@ function buildPriceWorkbookSourceState(env = {}) {
   };
 }
 
-function buildExtraMarketplaceSourceStates(env = {}) {
-  return EXTRA_MARKETPLACE_SOURCE_GROUPS.map((group) => {
-    const presentSources = group.requiredAnyOf.filter((name) => secretPresent(env, name));
+function buildSourceOptionState(option = {}, env = {}) {
+  const requirements = Array.isArray(option.requirements) ? option.requirements : [];
+  const requirementStates = requirements.map((requiredAnyOf) => {
+    const presentSources = requiredAnyOf.filter((name) => secretPresent(env, name));
     return {
-      platform: group.platform,
-      requiredAnyOf: group.requiredAnyOf,
+      requiredAnyOf,
       present: presentSources.length > 0,
       presentSources,
-      missingAnyOf: presentSources.length ? [] : group.requiredAnyOf
+      missingAnyOf: presentSources.length ? [] : requiredAnyOf
     };
   });
+  return {
+    kind: option.kind || 'source',
+    present: requirementStates.length > 0 && requirementStates.every((item) => item.present),
+    requirements: requirementStates
+  };
+}
+
+function buildExtraMarketplaceSourceStates(env = {}) {
+  return EXTRA_MARKETPLACE_SOURCE_GROUPS.map((group) => {
+    const optionStates = group.sourceOptions.map((option) => buildSourceOptionState(option, env));
+    const requiredAnyOf = [...new Set(group.sourceOptions.flatMap((option) => option.requirements.flat()))];
+    const presentSources = requiredAnyOf.filter((name) => secretPresent(env, name));
+    return {
+      platform: group.platform,
+      requiredForPublish: group.requiredForPublish === true,
+      requiredAnyOf,
+      sourceOptions: optionStates,
+      present: optionStates.some((item) => item.present),
+      presentSources,
+      presentOptionKinds: optionStates.filter((item) => item.present).map((item) => item.kind),
+      missingAnyOf: optionStates.some((item) => item.present) ? [] : requiredAnyOf
+    };
+  });
+}
+
+function buildWbSubstitutionSourceState(env = {}) {
+  const presentSources = WB_SUBSTITUTION_SOURCE_ENV.filter((name) => secretPresent(env, name));
+  return {
+    requiredForPublish: false,
+    requiredAnyOf: WB_SUBSTITUTION_SOURCE_ENV,
+    present: presentSources.length > 0,
+    presentSources,
+    missingAnyOf: presentSources.length ? [] : WB_SUBSTITUTION_SOURCE_ENV
+  };
 }
 
 function buildReport({ env = process.env, cutoffDate = '', revisionFrom = '', generatedAt = utcNowIso() } = {}) {
@@ -171,22 +257,33 @@ function buildReport({ env = process.env, cutoffDate = '', revisionFrom = '', ge
   const priceWorkbookSource = buildPriceWorkbookSourceState(env);
   const extraMarketplaceSources = buildExtraMarketplaceSourceStates(env);
   const missingExtraMarketplaceSources = extraMarketplaceSources.filter((item) => !item.present).map((item) => item.platform);
-  const status = missingSecrets.length || missingConfig.length || !priceWorkbookSource.present || missingExtraMarketplaceSources.length ? 'blocked' : 'ok';
+  const blockingExtraMarketplaceSources = extraMarketplaceSources
+    .filter((item) => !item.present && item.requiredForPublish)
+    .map((item) => item.platform);
+  const wbSubstitutionSource = buildWbSubstitutionSourceState(env);
   const blockingReasons = [];
   if (missingSecrets.length) blockingReasons.push(`Missing required daily close secrets: ${missingSecrets.join(', ')}`);
   if (missingConfig.length) blockingReasons.push(`Missing required daily close config: ${missingConfig.join(', ')}`);
   if (!priceWorkbookSource.present) {
     blockingReasons.push(`Missing smart price workbook CI source: configure one of ${PRICE_WORKBOOK_SOURCE_ENV.join(', ')}`);
   }
-  extraMarketplaceSources.filter((item) => !item.present).forEach((item) => {
+  extraMarketplaceSources.filter((item) => !item.present && item.requiredForPublish).forEach((item) => {
     blockingReasons.push(`Missing ${item.platform} daily source: configure one of ${item.requiredAnyOf.join(', ')}`);
   });
+  const sourceWarnings = extraMarketplaceSources
+    .filter((item) => !item.present && !item.requiredForPublish)
+    .map((item) => `Missing ${item.platform} daily source; existing facts will be preserved and marked stale until a complete source is configured`);
+  if (!wbSubstitutionSource.present) {
+    sourceWarnings.push('Missing WB substitution traffic refresh source; the last verified workbook will be preserved and freshness will remain visible');
+  }
+  const publishAllowed = blockingReasons.length === 0;
+  const status = publishAllowed ? (sourceWarnings.length ? 'warning' : 'ok') : 'blocked';
   return {
-    schema: 'portal-daily-close-preflight-v1',
+    schema: 'portal-daily-close-preflight-v2',
     generatedAt,
     status,
     publish: {
-      allowed: missingSecrets.length === 0 && missingConfig.length === 0 && priceWorkbookSource.present && missingExtraMarketplaceSources.length === 0,
+      allowed: publishAllowed,
       blockingReasons
     },
     cutoffDate,
@@ -202,14 +299,22 @@ function buildReport({ env = process.env, cutoffDate = '', revisionFrom = '', ge
     priceWorkbookSource,
     extraMarketplaceSources,
     missingExtraMarketplaceSources,
+    blockingExtraMarketplaceSources,
+    wbSubstitutionSource,
+    sourceWarnings,
     resolvedSources: {
       secrets: Object.fromEntries(secretStates.map((item) => [item.name, item.source])),
       config: Object.fromEntries(configStates.map((item) => [item.name, item.source])),
       optionalSecrets: Object.fromEntries(optionalSecretStates.map((item) => [item.name, item.source]))
     },
-    notes: optionalMissingSecrets.length
-      ? ['Yandex Market campaign/business ids are optional: runtime discovers campaigns through ALTEA_YM_API_KEY when explicit ids are absent.']
-      : []
+    notes: [
+      ...(optionalMissingSecrets.length
+        ? ['Yandex Market campaign/business ids are optional: runtime discovers campaigns through ALTEA_YM_API_KEY when explicit ids are absent.']
+        : []),
+      ...(missingExtraMarketplaceSources.length
+        ? ['Optional external marketplaces never borrow another platform source: missing channels preserve their last verified facts and remain explicitly stale.']
+        : [])
+    ]
   };
 }
 
@@ -234,7 +339,7 @@ function printBlockedReport(report, reportPath) {
     report.priceWorkbookSource.requiredAnyOf.forEach((name) => console.error(`- ${name}`));
   }
   if (report.missingExtraMarketplaceSources.length) {
-    console.error('Missing extra marketplace CI sources:');
+    console.error('Missing extra marketplace sources:');
     report.extraMarketplaceSources.filter((item) => !item.present).forEach((item) => {
       console.error(`- ${item.platform}: ${item.requiredAnyOf.join(', ')}`);
     });
@@ -258,6 +363,10 @@ function main(argv = process.argv.slice(2), env = process.env) {
     return 1;
   }
 
+  if (report.sourceWarnings.length) {
+    console.warn('Daily close preflight passed with non-blocking source warnings:');
+    report.sourceWarnings.forEach((warning) => console.warn(`- ${warning}`));
+  }
   console.log(`Daily close secret preflight passed. Report: ${reportPath}`);
   return 0;
 }
@@ -267,12 +376,15 @@ module.exports = {
   OPTIONAL_SECRETS,
   EXTRA_MARKETPLACE_SOURCE_GROUPS,
   PRICE_WORKBOOK_SOURCE_ENV,
+  WB_SUBSTITUTION_SOURCE_ENV,
   REQUIRED_CONFIG,
   REPORT_NAME,
   REQUIRED_SECRETS,
   buildExtraMarketplaceSourceStates,
   buildPriceWorkbookSourceState,
+  buildSourceOptionState,
   buildReport,
+  buildWbSubstitutionSourceState,
   main,
   parseArgs,
   printBlockedReport

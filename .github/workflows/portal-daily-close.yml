@@ -74,6 +74,10 @@ jobs:
         env:
           ALTEA_WB_API_TOKEN: ${{ secrets.ALTEA_WB_API_TOKEN }}
           ALTEA_WB_PROMOTION_TOKEN: ${{ secrets.ALTEA_WB_PROMOTION_TOKEN }}
+          ALTEA_WB_SUBSTITUTION_TRAFFIC_XLSX: ${{ secrets.ALTEA_WB_SUBSTITUTION_TRAFFIC_XLSX || vars.ALTEA_WB_SUBSTITUTION_TRAFFIC_XLSX }}
+          ALTEA_WB_SUBSTITUTION_TRAFFIC_XLSX_URL: ${{ secrets.ALTEA_WB_SUBSTITUTION_TRAFFIC_XLSX_URL || vars.ALTEA_WB_SUBSTITUTION_TRAFFIC_XLSX_URL }}
+          ALTEA_WB_SUBSTITUTION_TRAFFIC_XLSX_B64: ${{ secrets.ALTEA_WB_SUBSTITUTION_TRAFFIC_XLSX_B64 }}
+          ALTEA_WB_SUBSTITUTION_TRAFFIC_XLSX_GZIP_B64: ${{ secrets.ALTEA_WB_SUBSTITUTION_TRAFFIC_XLSX_GZIP_B64 }}
           ALTEA_OZON_CLIENT_ID: ${{ secrets.ALTEA_OZON_CLIENT_ID }}
           ALTEA_OZON_API_KEY: ${{ secrets.ALTEA_OZON_API_KEY }}
           ALTEA_YM_API_KEY: ${{ secrets.ALTEA_YM_API_KEY }}
@@ -238,6 +242,25 @@ jobs:
             --to '${{ steps.cutoff.outputs.value }}' \
             --strict --optional-source --max-lag-days 1 \
             --allow-stale-platforms goldapple,letu,megamarket
+
+      - name: Refresh WB substitution traffic
+        env:
+          ALTEA_WB_SUBSTITUTION_TRAFFIC_XLSX: ${{ secrets.ALTEA_WB_SUBSTITUTION_TRAFFIC_XLSX || vars.ALTEA_WB_SUBSTITUTION_TRAFFIC_XLSX }}
+          ALTEA_WB_SUBSTITUTION_TRAFFIC_XLSX_URL: ${{ secrets.ALTEA_WB_SUBSTITUTION_TRAFFIC_XLSX_URL || vars.ALTEA_WB_SUBSTITUTION_TRAFFIC_XLSX_URL }}
+          ALTEA_WB_SUBSTITUTION_TRAFFIC_XLSX_B64: ${{ secrets.ALTEA_WB_SUBSTITUTION_TRAFFIC_XLSX_B64 }}
+          ALTEA_WB_SUBSTITUTION_TRAFFIC_XLSX_GZIP_B64: ${{ secrets.ALTEA_WB_SUBSTITUTION_TRAFFIC_XLSX_GZIP_B64 }}
+          ALTEA_WB_SUBSTITUTION_TRAFFIC_SOURCE_MTIME: ${{ secrets.ALTEA_WB_SUBSTITUTION_TRAFFIC_SOURCE_MTIME || vars.ALTEA_WB_SUBSTITUTION_TRAFFIC_SOURCE_MTIME }}
+          ALTEA_WB_SUBSTITUTION_TRAFFIC_HTTP_AUTH_BEARER: ${{ secrets.ALTEA_WB_SUBSTITUTION_TRAFFIC_HTTP_AUTH_BEARER }}
+          ALTEA_WB_SUBSTITUTION_TRAFFIC_HTTP_AUTH_HEADER: ${{ secrets.ALTEA_WB_SUBSTITUTION_TRAFFIC_HTTP_AUTH_HEADER }}
+        run: >-
+          node scripts/import-wb-substitution-traffic.js
+          --optional
+          --base-data-dir data
+          --output-dir data
+          --min-rows 100
+          --min-mapped-articles 40
+          --min-mapped-ratio 0.95
+          --status-file .portal-truth-output/wb_substitution_refresh.json
 
       - name: Refresh advertising and stock
         env:

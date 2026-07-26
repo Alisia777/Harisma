@@ -94,7 +94,7 @@ function activeAlias(alias) {
   return !['disabled', 'inactive', 'ignored', 'deleted', 'remove'].includes(status);
 }
 
-function buildSkuIndexes(skus = [], aliasesPayload = {}, skuMatrix = {}) {
+function buildSkuIndexes(skus = [], aliasesPayload = {}, skuMatrix = {}, canonicalRepricer = {}) {
   const indexes = {
     wb: new Map(),
     ozon: new Map()
@@ -144,6 +144,13 @@ function buildSkuIndexes(skus = [], aliasesPayload = {}, skuMatrix = {}) {
         for (const platform of ['wb', 'ozon']) addIndexValue(indexes[platform], alias, target, 'sku_matrix.json');
       }
     }
+  }
+
+  for (const row of Array.isArray(canonicalRepricer?.rows) ? canonicalRepricer.rows : []) {
+    const platform = String(row?.platform || '').trim().toLowerCase();
+    const articleKey = String(row?.article_key || row?.articleKey || '').trim();
+    if (!indexes[platform] || !articleKey) continue;
+    addIndexValue(indexes[platform], articleKey, articleKey, 'canonical_repricer.article_key');
   }
   return indexes;
 }
@@ -550,7 +557,8 @@ async function buildLivePrices(options, dependencies = {}) {
   const skus = readJson(path.join(options.inputDir, 'skus.json'), []);
   const aliases = readJson(path.join(options.inputDir, 'sku_aliases.json'), { aliases: [] });
   const skuMatrix = readJson(path.join(options.inputDir, 'sku_matrix.json'), {});
-  const indexes = buildSkuIndexes(skus, aliases, skuMatrix);
+  const canonicalRepricer = readJson(path.join(options.inputDir, 'canonical_repricer.json'), { rows: [] });
+  const indexes = buildSkuIndexes(skus, aliases, skuMatrix, canonicalRepricer);
   const protectedKeys = protectedKeysByPlatform(options.inputDir);
   const fetchImpl = dependencies.fetchImpl || fetch;
   const [wbResult, ozonResult] = await Promise.allSettled([

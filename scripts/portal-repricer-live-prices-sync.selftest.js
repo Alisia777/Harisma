@@ -40,10 +40,29 @@ async function main() {
     aliases: [
       { platform: 'ozon', api_sku: 'OZ-CREAM-ALIAS', target_sku: 'cream_50ml', status: 'active' }
     ]
+  }, {}, {
+    rows: [
+      { platform: 'ozon', article_key: 'new_ozon_launch' }
+    ]
   });
 
   assert.strictEqual(resolveArticle(indexes.wb, [{ type: 'nmID', value: 101 }]).articleKey, 'serum_30ml');
   assert.strictEqual(resolveArticle(indexes.ozon, [{ type: 'offer_id', value: 'oz-cream-alias' }]).articleKey, 'cream_50ml');
+  assert.strictEqual(
+    resolveArticle(indexes.ozon, [{ type: 'offer_id', value: 'new_ozon_launch' }]).articleKey,
+    'new_ozon_launch',
+    'canonical repricer must cover exact new-product offer IDs before the registry catches up'
+  );
+  const conflictingIndexes = buildSkuIndexes([
+    { articleKey: 'existing_sku', platformAliases: { ozon: ['new_ozon_launch'] } }
+  ], {}, {}, {
+    rows: [{ platform: 'ozon', article_key: 'new_ozon_launch' }]
+  });
+  assert.strictEqual(
+    resolveArticle(conflictingIndexes.ozon, [{ type: 'offer_id', value: 'new_ozon_launch' }]).status,
+    'ambiguous',
+    'canonical fallback must stay blocked when an existing registry alias points elsewhere'
+  );
 
   const wbNormalized = normalizeWbPrices([
     {
@@ -100,7 +119,8 @@ async function main() {
       { platform: 'wb', article_key: 'gel_75ml', policy: { margin_guard_required: true } },
       { platform: 'ozon', article_key: 'serum_30ml', policy: { margin_guard_required: true } },
       { platform: 'ozon', article_key: 'cream_50ml', policy: { margin_guard_required: true } },
-      { platform: 'ozon', article_key: 'gel_75ml', policy: { margin_guard_required: true } }
+      { platform: 'ozon', article_key: 'gel_75ml', policy: { margin_guard_required: true } },
+      { platform: 'ozon', article_key: 'new_ozon_launch', policy: { margin_guard_required: true } }
     ]
   }));
 
@@ -123,7 +143,8 @@ async function main() {
       return jsonResponse({
         items: [
           { offer_id: 'OZ-SERUM', product_id: 201, price: { marketing_seller_price: '710', marketing_price: '690' } },
-          { offer_id: 'OZ-CREAM', product_id: 202, price: { marketing_seller_price: '810', marketing_price: '790' } }
+          { offer_id: 'OZ-CREAM', product_id: 202, price: { marketing_seller_price: '810', marketing_price: '790' } },
+          { offer_id: 'new_ozon_launch', product_id: 204, price: { marketing_seller_price: '1010', marketing_price: '990' } }
         ],
         cursor: 'next'
       });
@@ -151,14 +172,15 @@ async function main() {
   }, { fetchImpl: mockFetch });
 
   assert.strictEqual(payload.status, 'ok');
-  assert.strictEqual(payload.summary.sourceRows, 7);
-  assert.strictEqual(payload.summary.mappedRows, 6);
+  assert.strictEqual(payload.summary.sourceRows, 8);
+  assert.strictEqual(payload.summary.mappedRows, 7);
   assert.strictEqual(payload.summary.unresolvedRows, 1);
   assert.strictEqual(payload.summary.platforms.wb.duplicateNonPrimaryRows, 1);
   assert.strictEqual(payload.summary.platforms.wb.protectedCoverage, 1);
   assert.strictEqual(payload.platforms.wb.rows.length, 3);
   assert.strictEqual(payload.platforms.wb.rows.find((row) => row.articleKey === 'serum_30ml').currentSellerPrice, 700);
-  assert.strictEqual(payload.platforms.ozon.rows.length, 3);
+  assert.strictEqual(payload.platforms.ozon.rows.length, 4);
+  assert.strictEqual(payload.platforms.ozon.rows.find((row) => row.articleKey === 'new_ozon_launch').currentSellerPrice, 1010);
   assert.strictEqual(calls.filter((call) => call.url.includes('wildberries.test')).length, 2);
   assert.strictEqual(calls.filter((call) => call.url.includes('ozon.test')).length, 2);
   assert(!JSON.stringify(payload).includes('SECRET_'), 'secrets must never be persisted');

@@ -15,6 +15,9 @@ assert.match(css, /:is\(#view-launches, #view-sku-contour\) :is\(\.sl-v1-filter-
 assert.match(css, /:is\([\s\S]*?\.altea-filter-popover,[\s\S]*?\.altea-cell-detail-popover[\s\S]*?\)[\s\S]*?background:\s*var\(--portal-theme-surface-strong\) !important/);
 assert.match(css, /\.altea-cell-detail-popover__grid dd\.altea-cell-detail-popover__value\s*\{[\s\S]*?color:\s*var\(--ok, var\(--shell-accent\)\) !important/);
 assert.match(css, /\.altea-filter-popover__actions\s*\{[\s\S]*?var\(--shell-surface\) 34%/);
+assert.match(css, /\.ceo-motion-v1\.ceo-drawer-back \.ceo-drawer\s*\{[\s\S]*?background:\s*var\(--portal-theme-surface-strong\) !important/);
+assert.match(css, /\.ceo-motion-v1\.ceo-drawer-back :is\([\s\S]*?\.ceo-drawer h2,[\s\S]*?\.ceo-drawer-metric strong,[\s\S]*?\.ceo-drawer-row b[\s\S]*?color:\s*var\(--shell-text\) !important/);
+assert.match(css, /\.ceo-motion-v1\.ceo-drawer-back \.ceo-drawer-search input\s*\{[\s\S]*?background:\s*var\(--portal-theme-control\) !important/);
 assert.match(css, /@media \(prefers-reduced-motion: reduce\)[\s\S]*?transition:\s*none !important/);
 assert.match(css, /\.altea-premium-route-stage\.is-route-entering[\s\S]*?alteaInterfaceRouteIn 280ms/);
 assert.match(css, /\.altea-premium-route-stage--legacy > \.view\.active\s*\{[\s\S]*?height:\s*auto !important;[\s\S]*?min-height:\s*0 !important;[\s\S]*?overflow:\s*visible !important/);
@@ -30,7 +33,7 @@ assert.doesNotMatch(presentation, /void\s+stage\.offsetWidth/);
 
 for (const file of ['index.html', 'live-index.html', 'docs/index.html']) {
   const html = fs.readFileSync(path.join(root, file), 'utf8');
-  assert.match(html, /portal-interface-optimization\.css\?v=20260726layout9/);
+  assert.match(html, /portal-interface-optimization\.css\?v=20260726layout10/);
   assert.match(html, /portal-premium-presentation\.js\?v=20260725repricerchrome1/);
   assert.match(html, /portal-shell-customizer-v2\.js\?v=20260725chrome1/);
 }

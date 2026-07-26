@@ -232,7 +232,7 @@ jobs:
             --from "$RETAIL_FROM" \
             --to '${{ steps.cutoff.outputs.value }}' \
             --strict --optional-source --max-lag-days 1 \
-            --allow-stale-platforms letu
+            --allow-stale-platforms goldapple,letu,megamarket
 
       - name: Refresh advertising and stock
         env:

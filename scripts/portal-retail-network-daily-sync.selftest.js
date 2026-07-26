@@ -168,6 +168,26 @@ assert.deepStrictEqual(
   ['goldapple', 'megamarket'],
   'An explicit exception must stay scoped to the named platform'
 );
+const preservedWithAllOptionalRetailExceptions = buildPreservedSourceStatus(
+  currentAt20,
+  {
+    inputFile: 'data/platform_trends.json',
+    to: '2026-07-22',
+    maxLagDays: 1,
+    allowStalePlatforms: new Set(['goldapple', 'letu', 'megamarket'])
+  },
+  new Error('service account unavailable')
+);
+assert.deepStrictEqual(
+  preservedWithAllOptionalRetailExceptions.stale,
+  ['goldapple', 'letu', 'megamarket'],
+  'Explicit publication exceptions must not hide stale retail-network diagnostics'
+);
+assert.deepStrictEqual(
+  preservedWithAllOptionalRetailExceptions.blocking,
+  [],
+  'Optional stale retail-network files must not block fresh marketplace D-1 publication'
+);
 
 assert.strictEqual(isoDate(46218), '2026-07-15');
 assert.strictEqual(numberOrZero('1 234,56'), 1234.56);

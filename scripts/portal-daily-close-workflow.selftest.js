@@ -326,6 +326,9 @@ if (!workflow.includes("--expected-run-date '${{ steps.cutoff.outputs.run_date }
 });
 
 const iuBuildCommand = 'node scripts/build-iu-drr-summary.js --input-dir data --base-data-dir data --output-dir data';
+const qualityBuildCommand = 'node scripts/build-portal-data-quality-report.js --input-dir data --base-data-dir data --output-dir data';
+const skuMatrixBuildCommand = 'node scripts/build-sku-matrix-layer.js --input-dir data --base-data-dir data --output-dir data';
+const dashboardBuildCommand = 'node scripts/build-portal-dashboard.js --input-dir data --output-dir data';
 const fullHealthCommand = 'node scripts/portal-sync-health.js --input-dir data --base-data-dir data --output-dir data --expected-date';
 const unifiedIntakeCommand = 'node scripts/portal-unified-daily-intake.js';
 const snapshotFinalizeCommand = 'node scripts/portal-atomic-snapshot-finalize.js';
@@ -334,6 +337,17 @@ if (workflow.indexOf(iuBuildCommand) < workflow.indexOf('node scripts/portal-wb-
 }
 if (workflow.indexOf(fullHealthCommand) < workflow.indexOf(iuBuildCommand)) {
   fail('daily close must calculate full sync health after rebuilding IU/DRR');
+}
+if (workflow.lastIndexOf(qualityBuildCommand) < workflow.indexOf(iuBuildCommand)
+  || workflow.lastIndexOf(qualityBuildCommand) < workflow.indexOf(dashboardBuildCommand)) {
+  fail('daily close must rebuild data quality after the final IU/DRR and dashboard snapshots');
+}
+if (workflow.lastIndexOf(skuMatrixBuildCommand) < workflow.lastIndexOf(qualityBuildCommand)) {
+  fail('daily close must realign the SKU matrix after the final data-quality report');
+}
+if (workflow.indexOf(fullHealthCommand) < workflow.lastIndexOf(qualityBuildCommand)
+  || workflow.indexOf(fullHealthCommand) < workflow.lastIndexOf(skuMatrixBuildCommand)) {
+  fail('daily close must calculate full sync health after the final quality and SKU-matrix rebuild');
 }
 if (workflow.indexOf(fullHealthCommand) > workflow.indexOf(snapshotFinalizeCommand)) {
   fail('daily close must calculate full sync health before snapshot finalization');

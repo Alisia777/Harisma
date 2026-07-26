@@ -21,9 +21,12 @@ assert(markdown.includes('publish.allowed: `false`'));
 assert(markdown.includes('Missing required daily close secrets'));
 assert(markdown.includes('ALTEA_WB_API_TOKEN'));
 assert(markdown.includes('Smart Price Source'));
-assert(markdown.includes('Extra Marketplace Sources'));
+assert(markdown.includes('Non-blocking Source Warnings'));
+assert(markdown.includes('Missing Extra Marketplace Sources'));
 assert(markdown.includes('goldapple'));
 assert(markdown.includes('magnit'));
+assert(markdown.includes('WB Substitution Traffic Source'));
+assert(markdown.includes('preserved with stale marker'));
 assert(!markdown.includes('secret-value'));
 
 const tmp = fs.mkdtempSync(path.join(os.tmpdir(), 'portal-preflight-summary-'));

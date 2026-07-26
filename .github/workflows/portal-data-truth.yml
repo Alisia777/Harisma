@@ -113,6 +113,7 @@ jobs:
           node scripts/build-wb-fixed-rate-report.selftest.js
           node scripts/portal-daily-close-preflight.selftest.js
           node scripts/portal-daily-close-preflight-summary.selftest.js
+          node scripts/import-wb-substitution-traffic.selftest.js
           node scripts/portal-daily-close-workflow.selftest.js
           node scripts/build-retail-network-fallback.selftest.js
           node scripts/portal-retail-network-daily-sync.selftest.js

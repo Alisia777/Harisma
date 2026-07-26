@@ -108,6 +108,24 @@ if (!workflow.includes('--status-file data/retail_network_source_status.json')) 
 if (!workflow.includes('--allow-stale-platforms goldapple,letu,megamarket')) {
   fail('daily close must keep the explicit optional retail-network stale-source exceptions visible and scoped');
 }
+if (!workflow.includes('Refresh WB substitution traffic')) {
+  fail('daily close must attempt to refresh WB substitution traffic on every production close');
+}
+if (!workflow.includes('node scripts/import-wb-substitution-traffic.js')) {
+  fail('daily close must invoke the guarded WB substitution workbook importer');
+}
+if (!workflow.includes('--status-file .portal-truth-output/wb_substitution_refresh.json')) {
+  fail('daily close must retain a structured WB substitution refresh status in truth artifacts');
+}
+if (!workflow.includes('--min-rows 100') || !workflow.includes('--min-mapped-articles 40') || !workflow.includes('--min-mapped-ratio 0.95')) {
+  fail('daily close must reject empty, partial or poorly mapped WB substitution workbook replacements');
+}
+if (!workflow.includes('--optional')) {
+  fail('a missing optional WB substitution source must preserve the last verified snapshot without blocking core D-1 facts');
+}
+if (workflow.indexOf('Refresh WB substitution traffic') > workflow.indexOf('Refresh advertising and stock')) {
+  fail('WB substitution traffic must refresh before advertising layers consume it');
+}
 if (workflow.indexOf('node scripts/portal-retail-network-daily-sync.js sync') < workflow.indexOf('node scripts/portal-api-max-sync.js sync')) {
   fail('retail-network daily facts must override the monthly API-workbook fallback');
 }
@@ -174,7 +192,10 @@ if (workflow.indexOf('Preflight production secrets') > workflow.indexOf('Refresh
   'ALTEA_MEGAMARKET_API_TOKEN',
   'ALTEA_SAMOKAT_API_TOKEN',
   'ALTEA_MAGNIT_API_TOKEN',
-  'ALTEA_RETAIL_NETWORK_SALES_XLSX'
+  'ALTEA_RETAIL_NETWORK_SALES_XLSX',
+  'ALTEA_WB_SUBSTITUTION_TRAFFIC_XLSX_URL',
+  'ALTEA_WB_SUBSTITUTION_TRAFFIC_XLSX_B64',
+  'ALTEA_WB_SUBSTITUTION_TRAFFIC_XLSX_GZIP_B64'
 ].forEach((sourceName) => {
   if (!workflow.includes(sourceName)) {
     fail(`daily close must pass extra marketplace source env ${sourceName}`);
@@ -221,6 +242,9 @@ if (!workflow.includes('SMART_PRICE_INPUT_ARGS=(--input-xlsx .portal-truth-outpu
 });
 if (!dataTruthWorkflow.includes('node scripts/build-sku-registry-meta.js --input-dir data --output-dir data --run-date "$RUN_DATE"')) {
   fail('data truth workflow must build sku_registry_meta.json before the current snapshot guard');
+}
+if (!dataTruthWorkflow.includes('node scripts/import-wb-substitution-traffic.selftest.js')) {
+  fail('data truth workflow must guard the WB substitution refresh and preservation contract');
 }
 if (dataTruthWorkflow.indexOf('node scripts/build-sku-registry-meta.js') > dataTruthWorkflow.indexOf('node scripts/portal-daily-layer-guard.js')) {
   fail('data truth workflow must build sku_registry_meta.json before portal-daily-layer-guard');

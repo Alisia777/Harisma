@@ -1,12 +1,15 @@
 #!/usr/bin/env node
 
 const fs = require('fs');
+const os = require('os');
 const path = require('path');
+const zlib = require('zlib');
 const xlsx = require('xlsx');
 
 const OUTPUT_NAME = 'wb_substitution_traffic';
 const HISTORY_OUTPUT_NAME = 'wb_substitution_traffic_history';
 const WB_SUBSTITUTION_SCHEMA = 'portal-wb-substitution-traffic-v1';
+const WB_SUBSTITUTION_REFRESH_SCHEMA = 'portal-wb-substitution-refresh-v1';
 const DEFAULT_HISTORY_LIMIT = 24;
 
 function parseArgs(argv) {
@@ -29,8 +32,8 @@ function parseArgs(argv) {
   return args;
 }
 
-function resolveLatestAnsWorkbook() {
-  const downloads = process.env.USERPROFILE ? path.join(process.env.USERPROFILE, 'Downloads') : '';
+function resolveLatestAnsWorkbook(env = process.env) {
+  const downloads = env.USERPROFILE ? path.join(env.USERPROFILE, 'Downloads') : '';
   if (!downloads || !fs.existsSync(downloads)) return '';
   const files = fs.readdirSync(downloads)
     .filter((name) => /^ANS-.*\.xlsx$/i.test(name))
@@ -42,17 +45,33 @@ function resolveLatestAnsWorkbook() {
   return files[0]?.filePath || '';
 }
 
-function resolveOptions(args) {
+function resolveOptions(args, env = process.env) {
   const root = process.cwd();
-  const inputXlsx = [
+  const configuredInputXlsx = [
     args['input-xlsx'],
-    process.env.ALTEA_WB_SUBSTITUTION_TRAFFIC_XLSX,
-    resolveLatestAnsWorkbook()
-  ].filter(Boolean).find((candidate) => fs.existsSync(candidate)) || '';
+    env.ALTEA_WB_SUBSTITUTION_TRAFFIC_XLSX
+  ].filter(Boolean)[0] || '';
+  const discoveredInputXlsx = resolveLatestAnsWorkbook(env);
+  const inputXlsx = [configuredInputXlsx, discoveredInputXlsx]
+    .filter(Boolean)
+    .find((candidate) => fs.existsSync(candidate)) || '';
   return {
     inputXlsx,
+    configuredInputXlsx,
+    sourceUrl: String(args['input-url'] || env.ALTEA_WB_SUBSTITUTION_TRAFFIC_XLSX_URL || '').trim(),
+    sourceXlsxBase64: String(env.ALTEA_WB_SUBSTITUTION_TRAFFIC_XLSX_B64 || '').trim(),
+    sourceXlsxGzipBase64: String(env.ALTEA_WB_SUBSTITUTION_TRAFFIC_XLSX_GZIP_B64 || '').trim(),
+    sourceMtime: String(args['source-mtime'] || env.ALTEA_WB_SUBSTITUTION_TRAFFIC_SOURCE_MTIME || '').trim(),
+    httpAuthBearer: String(env.ALTEA_WB_SUBSTITUTION_TRAFFIC_HTTP_AUTH_BEARER || '').trim(),
+    httpAuthHeader: String(env.ALTEA_WB_SUBSTITUTION_TRAFFIC_HTTP_AUTH_HEADER || '').trim(),
+    optional: args.optional === true || String(args.optional || '').toLowerCase() === 'true',
+    historyLimit: Math.max(1, Number(env.ALTEA_WB_SUBSTITUTION_TRAFFIC_HISTORY_LIMIT || DEFAULT_HISTORY_LIMIT) || DEFAULT_HISTORY_LIMIT),
+    minRows: Math.max(1, Number(args['min-rows'] || 1) || 1),
+    minMappedArticles: Math.max(1, Number(args['min-mapped-articles'] || 1) || 1),
+    minMappedRatio: Math.max(0, Math.min(1, Number(args['min-mapped-ratio'] || 0) || 0)),
     baseDataDir: path.resolve(args['base-data-dir'] || path.join(root, 'data')),
-    outputDir: path.resolve(args['output-dir'] || path.join(root, 'data'))
+    outputDir: path.resolve(args['output-dir'] || path.join(root, 'data')),
+    statusFile: args['status-file'] ? path.resolve(String(args['status-file'])) : ''
   };
 }
 
@@ -135,6 +154,198 @@ function sourceTimestampFromFile(filePath = '') {
   if (!match) return '';
   const [, date, hour, minute, second, ms = '000'] = match;
   return `${date}T${hour}:${minute}:${second}.${ms.padEnd(3, '0').slice(0, 3)}Z`;
+}
+
+function validIsoTimestamp(value = '') {
+  const parsed = Date.parse(String(value || '').trim());
+  return Number.isFinite(parsed) ? new Date(parsed).toISOString() : '';
+}
+
+function parseHeaderLine(line = '') {
+  const index = String(line).indexOf(':');
+  if (index <= 0) return null;
+  const name = line.slice(0, index).trim();
+  const value = line.slice(index + 1).trim();
+  return name && value ? [name, value] : null;
+}
+
+function isGitHubReleaseAssetApiUrl(url = '') {
+  return /^https:\/\/api\.github\.com\/repos\/[^/]+\/[^/]+\/releases\/assets\/\d+/i.test(String(url || '').trim());
+}
+
+function buildRequestHeaders(options, url = '') {
+  const headers = {
+    'User-Agent': 'harisma-portal-wb-substitution-sync/1.0'
+  };
+  if (isGitHubReleaseAssetApiUrl(url)) headers.Accept = 'application/octet-stream';
+  if (options.httpAuthBearer) headers.Authorization = `Bearer ${options.httpAuthBearer}`;
+  const configuredHeader = parseHeaderLine(options.httpAuthHeader);
+  if (configuredHeader) headers[configuredHeader[0]] = configuredHeader[1];
+  return headers;
+}
+
+function sleepMs(ms) {
+  return new Promise((resolve) => setTimeout(resolve, ms));
+}
+
+async function fetchWithRetries(url, init, attempts = 3) {
+  let lastError = null;
+  for (let attempt = 1; attempt <= attempts; attempt += 1) {
+    try {
+      return await fetch(url, init);
+    } catch (error) {
+      lastError = error;
+      if (attempt < attempts) await sleepMs(1000 * attempt);
+    }
+  }
+  throw new Error(`WB substitution workbook request failed: ${lastError?.message || lastError || 'unknown network error'}`);
+}
+
+function workbookFileNameFromResponse(response, sourceUrl = '') {
+  const disposition = String(response.headers.get('content-disposition') || '');
+  const encodedMatch = disposition.match(/filename\*=UTF-8''([^;]+)/i);
+  if (encodedMatch) {
+    try {
+      return path.basename(decodeURIComponent(encodedMatch[1].trim()));
+    } catch {
+      return path.basename(encodedMatch[1].trim());
+    }
+  }
+  const plainMatch = disposition.match(/filename="?([^";]+)"?/i);
+  if (plainMatch) return path.basename(plainMatch[1].trim());
+  try {
+    return path.basename(decodeURIComponent(new URL(sourceUrl).pathname)) || 'wb-substitution-traffic.xlsx';
+  } catch {
+    return 'wb-substitution-traffic.xlsx';
+  }
+}
+
+function validateWorkbookBuffer(buffer, sourceLabel = 'configured source') {
+  if (!Buffer.isBuffer(buffer) || buffer.length < 128) {
+    throw new Error(`WB substitution workbook is empty or invalid: ${sourceLabel}`);
+  }
+  let workbook;
+  try {
+    workbook = xlsx.read(buffer, { type: 'buffer' });
+  } catch {
+    throw new Error(`WB substitution workbook cannot be parsed: ${sourceLabel}`);
+  }
+  const sheetName = workbook.SheetNames[0];
+  if (!sheetName) throw new Error(`WB substitution workbook has no sheets: ${sourceLabel}`);
+  const rows = xlsx.utils.sheet_to_json(workbook.Sheets[sheetName], {
+    defval: '',
+    raw: false,
+    blankrows: false,
+    range: 0
+  });
+  const keys = new Set(Object.keys(rows[0] || {}));
+  const requiredColumns = ['Seller Article', 'Substitution Article', 'Viewed', 'Orders'];
+  const missingColumns = requiredColumns.filter((column) => !keys.has(column));
+  if (missingColumns.length) {
+    throw new Error(`WB substitution workbook schema mismatch (${missingColumns.join(', ')}): ${sourceLabel}`);
+  }
+}
+
+function configuredSourcePresent(options) {
+  return Boolean(
+    options.configuredInputXlsx
+    || options.sourceUrl
+    || options.sourceXlsxBase64
+    || options.sourceXlsxGzipBase64
+  );
+}
+
+function sourceTimestamp({ explicit = '', fileName = '', fallback = '' } = {}) {
+  return validIsoTimestamp(explicit)
+    || sourceTimestampFromFile(fileName)
+    || validIsoTimestamp(fallback);
+}
+
+async function materializeInputWorkbook(options) {
+  const configuredFileMissing = options.configuredInputXlsx && !fs.existsSync(options.configuredInputXlsx);
+  const hasAlternativeSource = Boolean(
+    options.inputXlsx
+    || options.sourceUrl
+    || options.sourceXlsxBase64
+    || options.sourceXlsxGzipBase64
+  );
+  if (configuredFileMissing && !hasAlternativeSource) {
+    throw new Error('Configured WB substitution workbook file does not exist');
+  }
+
+  if (options.inputXlsx) {
+    const fileName = path.basename(options.inputXlsx);
+    const stat = fs.statSync(options.inputXlsx);
+    return {
+      inputXlsx: options.inputXlsx,
+      sourceFileName: fileName,
+      sourceKind: options.configuredInputXlsx ? 'configured-file' : 'discovered-file',
+      sourceGeneratedAt: sourceTimestamp({
+        explicit: options.sourceMtime,
+        fileName,
+        fallback: stat.mtime.toISOString()
+      }),
+      cleanupDir: ''
+    };
+  }
+
+  let buffer = null;
+  let sourceFileName = 'wb-substitution-traffic.xlsx';
+  let sourceKind = '';
+  let responseTimestamp = '';
+
+  if (options.sourceUrl) {
+    const headers = buildRequestHeaders(options, options.sourceUrl);
+    let response = await fetchWithRetries(options.sourceUrl, {
+      redirect: isGitHubReleaseAssetApiUrl(options.sourceUrl) ? 'manual' : 'follow',
+      headers
+    });
+    if (isGitHubReleaseAssetApiUrl(options.sourceUrl) && response.status >= 300 && response.status < 400) {
+      const location = response.headers.get('location');
+      if (!location) throw new Error(`WB substitution GitHub asset redirect is invalid: HTTP ${response.status}`);
+      response = await fetchWithRetries(location, {
+        redirect: 'follow',
+        headers: { 'User-Agent': headers['User-Agent'] }
+      });
+    }
+    if (!response.ok) throw new Error(`WB substitution workbook download failed: HTTP ${response.status}`);
+    sourceFileName = workbookFileNameFromResponse(response, options.sourceUrl);
+    responseTimestamp = response.headers.get('last-modified') || '';
+    buffer = Buffer.from(await response.arrayBuffer());
+    sourceKind = 'url';
+  } else if (options.sourceXlsxGzipBase64) {
+    try {
+      buffer = zlib.gunzipSync(Buffer.from(options.sourceXlsxGzipBase64, 'base64'));
+    } catch {
+      throw new Error('WB substitution gzip-base64 workbook cannot be decoded');
+    }
+    sourceKind = 'env-gzip-base64';
+  } else if (options.sourceXlsxBase64) {
+    buffer = Buffer.from(options.sourceXlsxBase64, 'base64');
+    sourceKind = 'env-base64';
+  } else {
+    return null;
+  }
+
+  validateWorkbookBuffer(buffer, sourceKind);
+  const sourceGeneratedAt = sourceTimestamp({
+    explicit: options.sourceMtime,
+    fileName: sourceFileName,
+    fallback: responseTimestamp
+  });
+  if (!sourceGeneratedAt) {
+    throw new Error('WB substitution source timestamp is unavailable; set ALTEA_WB_SUBSTITUTION_TRAFFIC_SOURCE_MTIME');
+  }
+  const cleanupDir = fs.mkdtempSync(path.join(os.tmpdir(), 'harisma-wb-substitution-'));
+  const inputXlsx = path.join(cleanupDir, 'wb-substitution-traffic.xlsx');
+  fs.writeFileSync(inputXlsx, buffer);
+  return {
+    inputXlsx,
+    sourceFileName,
+    sourceKind,
+    sourceGeneratedAt,
+    cleanupDir
+  };
 }
 
 function addGroupedMetric(map, key, label, metric) {
@@ -373,14 +584,17 @@ function buildPayload(options) {
   summary.cartRate = ratio(summary.carts, summary.views);
   summary.orderRate = ratio(summary.orders, summary.views);
 
-  const sourceGeneratedAt = sourceTimestampFromFile(options.inputXlsx);
+  const sourceGeneratedAt = options.sourceGeneratedAt
+    || sourceTimestampFromFile(options.sourceFileName || options.inputXlsx)
+    || validIsoTimestamp(fs.statSync(options.inputXlsx).mtime.toISOString());
   return {
     schema: WB_SUBSTITUTION_SCHEMA,
     generatedAt: new Date().toISOString(),
     asOfDate: sourceGeneratedAt ? sourceGeneratedAt.slice(0, 10) : new Date().toISOString().slice(0, 10),
     source: {
-      file: path.basename(options.inputXlsx),
-      fileName: path.basename(options.inputXlsx),
+      file: options.sourceFileName || path.basename(options.inputXlsx),
+      fileName: options.sourceFileName || path.basename(options.inputXlsx),
+      kind: options.sourceKind || 'file',
       sheetName: workbook.sheetName,
       sourceGeneratedAt
     },
@@ -407,7 +621,6 @@ function writeHistoryPayload(options, payload) {
   fs.mkdirSync(options.outputDir, { recursive: true });
   const historyPath = path.join(options.outputDir, `${HISTORY_OUTPUT_NAME}.json`);
   const previous = readJsonIfExists(historyPath, []);
-  const historyLimit = Math.max(1, Number(process.env.ALTEA_WB_SUBSTITUTION_TRAFFIC_HISTORY_LIMIT || DEFAULT_HISTORY_LIMIT) || DEFAULT_HISTORY_LIMIT);
   const seen = new Set();
   const history = [payload, ...(Array.isArray(previous) ? previous : [])]
     .filter((item) => item && typeof item === 'object')
@@ -422,22 +635,149 @@ function writeHistoryPayload(options, payload) {
       Date.parse(right.source?.sourceGeneratedAt || right.generatedAt || right.asOfDate || '') -
       Date.parse(left.source?.sourceGeneratedAt || left.generatedAt || left.asOfDate || '')
     ))
-    .slice(0, historyLimit);
+    .slice(0, options.historyLimit || DEFAULT_HISTORY_LIMIT);
   fs.writeFileSync(historyPath, `${JSON.stringify(history, null, 2)}\n`, 'utf8');
   return historyPath;
 }
 
-function main() {
-  const options = resolveOptions(parseArgs(process.argv));
-  const payload = buildPayload(options);
-  const outputPath = writePayload(options, payload);
-  const historyPath = writeHistoryPayload(options, payload);
-  console.log(JSON.stringify({
-    inputXlsx: options.inputXlsx,
-    outputPath,
-    historyPath,
-    summary: payload.summary
-  }, null, 2));
+function existingArtifactState(options) {
+  const payload = readJsonIfExists(path.join(options.outputDir, `${OUTPUT_NAME}.json`), {});
+  return {
+    asOfDate: payload?.asOfDate || '',
+    generatedAt: payload?.generatedAt || '',
+    sourceFileName: payload?.source?.fileName || payload?.source?.file || '',
+    sourceGeneratedAt: payload?.source?.sourceGeneratedAt || ''
+  };
 }
 
-main();
+function assertPayloadQuality(options, payload, preserved = {}) {
+  const summary = payload?.summary || {};
+  const rowCount = Number(summary.rowCount || 0);
+  const mappedRowCount = Number(summary.mappedRowCount || 0);
+  const matchedArticleCount = Number(summary.matchedArticleCount || 0);
+  const mappedRatio = rowCount > 0 ? mappedRowCount / rowCount : 0;
+  if (rowCount < options.minRows) {
+    throw new Error(`WB substitution workbook has ${rowCount} rows; minimum is ${options.minRows}`);
+  }
+  if (matchedArticleCount < options.minMappedArticles) {
+    throw new Error(`WB substitution workbook has ${matchedArticleCount} mapped articles; minimum is ${options.minMappedArticles}`);
+  }
+  if (mappedRatio < options.minMappedRatio) {
+    throw new Error(`WB substitution workbook mapped ratio ${mappedRatio.toFixed(4)} is below ${options.minMappedRatio.toFixed(4)}`);
+  }
+  const incomingStamp = Date.parse(payload?.source?.sourceGeneratedAt || payload?.asOfDate || '');
+  const preservedStamp = Date.parse(preserved.sourceGeneratedAt || preserved.asOfDate || '');
+  if (Number.isFinite(incomingStamp) && Number.isFinite(preservedStamp) && incomingStamp < preservedStamp) {
+    throw new Error(`WB substitution workbook is older than the preserved verified snapshot (${payload.asOfDate} < ${preserved.asOfDate})`);
+  }
+  const maxFutureStamp = Date.now() + 36 * 60 * 60 * 1000;
+  if (Number.isFinite(incomingStamp) && incomingStamp > maxFutureStamp) {
+    throw new Error('WB substitution workbook source timestamp is implausibly in the future');
+  }
+}
+
+function writeRefreshStatus(options, payload) {
+  if (!options.statusFile) return '';
+  fs.mkdirSync(path.dirname(options.statusFile), { recursive: true });
+  fs.writeFileSync(options.statusFile, `${JSON.stringify({
+    schema: WB_SUBSTITUTION_REFRESH_SCHEMA,
+    generatedAt: new Date().toISOString(),
+    ...payload
+  }, null, 2)}\n`, 'utf8');
+  return options.statusFile;
+}
+
+async function main(argv = process.argv, env = process.env) {
+  const options = resolveOptions(parseArgs(argv), env);
+  const preserved = existingArtifactState(options);
+  let materialized = null;
+  try {
+    materialized = await materializeInputWorkbook(options);
+    if (!materialized) {
+      if (!options.optional) {
+        throw new Error('WB substitution traffic workbook not found. Pass --input-xlsx, --input-url or configure ALTEA_WB_SUBSTITUTION_TRAFFIC_XLSX(_URL/_B64).');
+      }
+      const statusPath = writeRefreshStatus(options, {
+        status: 'warning',
+        updated: false,
+        reason: 'source_not_configured',
+        preserved
+      });
+      console.warn(JSON.stringify({
+        status: 'preserved',
+        reason: 'source_not_configured',
+        statusPath,
+        preserved
+      }, null, 2));
+      return 0;
+    }
+
+    const payload = buildPayload({ ...options, ...materialized });
+    assertPayloadQuality(options, payload, preserved);
+    const outputPath = writePayload(options, payload);
+    const historyPath = writeHistoryPayload(options, payload);
+    const statusPath = writeRefreshStatus(options, {
+      status: 'ok',
+      updated: true,
+      sourceKind: materialized.sourceKind,
+      sourceGeneratedAt: materialized.sourceGeneratedAt,
+      asOfDate: payload.asOfDate,
+      summary: payload.summary
+    });
+    console.log(JSON.stringify({
+      status: 'updated',
+      sourceKind: materialized.sourceKind,
+      sourceGeneratedAt: materialized.sourceGeneratedAt,
+      outputPath,
+      historyPath,
+      statusPath,
+      summary: payload.summary
+    }, null, 2));
+    return 0;
+  } catch (error) {
+    const statusPath = writeRefreshStatus(options, {
+      status: 'warning',
+      updated: false,
+      reason: configuredSourcePresent(options) ? 'configured_source_failed' : 'source_not_configured',
+      error: error.message,
+      preserved
+    });
+    if (options.optional) {
+      console.warn(JSON.stringify({
+        status: 'preserved',
+        reason: configuredSourcePresent(options) ? 'configured_source_failed' : 'source_not_configured',
+        error: error.message,
+        statusPath,
+        preserved
+      }, null, 2));
+      return 0;
+    }
+    console.error(error.message);
+    return 1;
+  } finally {
+    if (materialized?.cleanupDir) {
+      fs.rmSync(materialized.cleanupDir, { recursive: true, force: true });
+    }
+  }
+}
+
+module.exports = {
+  WB_SUBSTITUTION_REFRESH_SCHEMA,
+  WB_SUBSTITUTION_SCHEMA,
+  buildPayload,
+  buildRequestHeaders,
+  assertPayloadQuality,
+  configuredSourcePresent,
+  main,
+  materializeInputWorkbook,
+  parseArgs,
+  resolveOptions,
+  sourceTimestampFromFile,
+  validateWorkbookBuffer
+};
+
+if (require.main === module) {
+  main().then((code) => {
+    process.exitCode = code;
+  });
+}

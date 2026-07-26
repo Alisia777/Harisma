@@ -14,6 +14,7 @@ const {
   OPTIONAL_SECRETS,
   EXTRA_MARKETPLACE_SOURCE_GROUPS,
   PRICE_WORKBOOK_SOURCE_ENV,
+  WB_SUBSTITUTION_SOURCE_ENV,
   buildReport
 } = require(scriptPath);
 
@@ -31,6 +32,9 @@ assert.deepStrictEqual(blockedReport.optionalMissingSecrets, OPTIONAL_SECRETS);
 assert.strictEqual(blockedReport.priceWorkbookSource.present, false);
 assert.deepStrictEqual(blockedReport.priceWorkbookSource.missingAnyOf, PRICE_WORKBOOK_SOURCE_ENV);
 assert.deepStrictEqual(blockedReport.missingExtraMarketplaceSources, EXTRA_MARKETPLACE_SOURCE_GROUPS.map((group) => group.platform));
+assert.strictEqual(blockedReport.wbSubstitutionSource.present, false);
+assert.deepStrictEqual(blockedReport.wbSubstitutionSource.missingAnyOf, WB_SUBSTITUTION_SOURCE_ENV);
+assert.strictEqual(blockedReport.sourceWarnings.length, EXTRA_MARKETPLACE_SOURCE_GROUPS.length + 1);
 assert.strictEqual(blockedReport.presentSecretCount, 0);
 assert.strictEqual(blockedReport.presentConfigCount, REQUIRED_CONFIG.length);
 assert.strictEqual(blockedReport.resolvedSources.config.SUPABASE_URL, 'default');
@@ -38,10 +42,31 @@ assert.strictEqual(blockedReport.cutoffDate, '2026-06-20');
 assert.strictEqual(blockedReport.revisionFrom, '2026-05-22');
 assert(!JSON.stringify(blockedReport).includes('secret-value'));
 
-const okEnv = {
+const fallbackEnv = {
   ...Object.fromEntries(REQUIRED_SECRETS.map((name) => [name, `${name}-secret-value`])),
   ALTEA_SMART_PRICE_XLSX_URL: 'https://example.com/private/smart-price-workbook.xlsx?token=secret-value',
   ALTEA_RETAIL_NETWORK_SALES_XLSX: 'https://example.com/private/retail-network-sales.xlsx?token=secret-value'
+};
+const fallbackReport = buildReport({ env: fallbackEnv, generatedAt: '2026-06-21T00:00:00Z' });
+assert.strictEqual(fallbackReport.status, 'warning');
+assert.strictEqual(fallbackReport.publish.allowed, true);
+assert.deepStrictEqual(fallbackReport.missingExtraMarketplaceSources, ['samokat']);
+assert.strictEqual(fallbackReport.extraMarketplaceSources.find((item) => item.platform === 'samokat').present, false);
+assert.strictEqual(fallbackReport.extraMarketplaceSources.find((item) => item.platform === 'magnit').present, true);
+assert.strictEqual(fallbackReport.wbSubstitutionSource.present, false);
+
+const tokenOnlySamokatReport = buildReport({
+  env: { ...fallbackEnv, ALTEA_SAMOKAT_API_TOKEN: 'token-without-endpoint' },
+  generatedAt: '2026-06-21T00:00:00Z'
+});
+assert.deepStrictEqual(tokenOnlySamokatReport.missingExtraMarketplaceSources, ['samokat']);
+
+const okEnv = {
+  ...fallbackEnv,
+  ALTEA_SAMOKAT_API_TOKEN: 'samokat-secret-value',
+  ALTEA_SAMOKAT_API_BASE_URL: 'https://example.com',
+  ALTEA_SAMOKAT_SALES_PATH: '/sales',
+  ALTEA_WB_SUBSTITUTION_TRAFFIC_XLSX_URL: 'https://example.com/private/wb-substitution.xlsx'
 };
 const okReport = buildReport({ env: okEnv, generatedAt: '2026-06-21T00:00:00Z' });
 assert.strictEqual(okReport.status, 'ok');
@@ -52,6 +77,8 @@ assert.strictEqual(okReport.priceWorkbookSource.present, true);
 assert.deepStrictEqual(okReport.priceWorkbookSource.presentSources, ['ALTEA_SMART_PRICE_XLSX_URL']);
 assert.deepStrictEqual(okReport.missingExtraMarketplaceSources, []);
 assert.strictEqual(okReport.extraMarketplaceSources.every((item) => item.present), true);
+assert.strictEqual(okReport.wbSubstitutionSource.present, true);
+assert.deepStrictEqual(okReport.sourceWarnings, []);
 assert.strictEqual(okReport.presentSecretCount, REQUIRED_SECRETS.length);
 assert.strictEqual(okReport.presentConfigCount, REQUIRED_CONFIG.length);
 assert.deepStrictEqual(okReport.optionalMissingSecrets, OPTIONAL_SECRETS);
@@ -62,7 +89,11 @@ const aliasReport = buildReport({
     ALTEA_SUPABASE_SERVICE_ROLE_KEY: 'supabase-alias-secret-value',
     ALTEA_SUPABASE_URL: 'https://example.supabase.co',
     ALTEA_GOOGLE_SERVICE_ACCOUNT_JSON: '{"client_email":"price-ci@example.iam.gserviceaccount.com","private_key":"secret-value"}',
-    ALTEA_RETAIL_NETWORK_SALES_XLSX: 'retail-source.xlsx'
+    ALTEA_RETAIL_NETWORK_SALES_XLSX: 'retail-source.xlsx',
+    ALTEA_SAMOKAT_API_TOKEN: 'samokat-secret-value',
+    ALTEA_SAMOKAT_API_BASE_URL: 'https://example.com',
+    ALTEA_SAMOKAT_SALES_PATH: '/sales',
+    ALTEA_WB_SUBSTITUTION_TRAFFIC_XLSX: 'wb-substitution.xlsx'
   },
   generatedAt: '2026-06-21T00:00:00Z'
 });
@@ -83,7 +114,7 @@ try {
   assert(missingRun.stderr.includes('Missing required daily close secrets:'));
   assert(missingRun.stderr.includes('ALTEA_WB_API_TOKEN'));
   assert(missingRun.stderr.includes('Missing smart price workbook CI source.'));
-  assert(missingRun.stderr.includes('Missing extra marketplace CI sources:'));
+  assert(missingRun.stderr.includes('Missing extra marketplace sources:'));
   assert(missingRun.stderr.includes('goldapple:'));
   assert(missingRun.stderr.includes('letu:'));
   assert(missingRun.stderr.includes('megamarket:'));

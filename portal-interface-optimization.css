@@ -54,6 +54,21 @@ body.v87-imperial.altea-premium-shell[data-theme] .view.active :is(
   overflow-y: auto !important;
 }
 
+/* The premium shell already owns the route's vertical scroll. The legacy
+ * theme layer gives every active view a viewport height plus overflow:auto,
+ * which creates a second, mostly blank scroller inside the shell on every
+ * route. Let the active view grow with its data and keep a single vertical
+ * scroll owner at .altea-premium-shell-content. */
+html[data-theme] body.v87-imperial.altea-premium-shell
+  .altea-premium-route-stage--legacy > .view.active {
+  width: 100%;
+  max-width: 100%;
+  height: auto !important;
+  min-height: 0 !important;
+  overflow: visible !important;
+  scrollbar-gutter: auto !important;
+}
+
 body.v87-imperial.altea-premium-shell :is(button, input, select, textarea) {
   min-width: 0;
   max-width: 100%;

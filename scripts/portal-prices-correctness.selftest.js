@@ -16,6 +16,23 @@ const MIME = {
 };
 
 function buildTestCabinetLivePayload() {
+  const liveFixtureArgIndex = process.argv.indexOf('--live-fixture');
+  const liveFixturePath = String(
+    process.env.PORTAL_PRICES_LIVE_FIXTURE
+      || (liveFixtureArgIndex >= 0 ? process.argv[liveFixtureArgIndex + 1] : '')
+      || ''
+  ).trim();
+  if (liveFixturePath) {
+    const resolvedFixturePath = path.resolve(liveFixturePath);
+    const fixture = JSON.parse(fs.readFileSync(resolvedFixturePath, 'utf8'));
+    assert.ok(
+      fixture?.platforms?.wb?.rows?.length > 0
+        && fixture?.platforms?.ozon?.rows?.length > 0
+        && fixture?.platforms?.ym?.rows?.length > 0,
+      `Production cabinet fixture must contain WB, Ozon and Yandex Market rows: ${resolvedFixturePath}`
+    );
+    return fixture;
+  }
   const live = JSON.parse(fs.readFileSync(path.join(ROOT, 'data', 'repricer_live_prices.json'), 'utf8'));
   const prices = JSON.parse(fs.readFileSync(path.join(ROOT, 'data', 'prices.json'), 'utf8'));
   const ymRows = (prices?.platforms?.ym?.rows || [])

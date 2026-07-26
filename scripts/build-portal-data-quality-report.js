@@ -7,12 +7,15 @@ const DEFAULT_ISSUE_LIMIT = 250;
 const API_SKU_UNMAPPED_WARNING_REVENUE = 10000;
 const API_SKU_UNMAPPED_CRITICAL_REVENUE = 100000;
 const EXTERNAL_WAREHOUSE_KEY_PREFIXES = ['qeep', 'zarli', 'harly', 'harley'];
+const OUT_OF_SCOPE_BRAND_TOKENS = ['qeep', 'qip', 'harly', 'harley', 'квип', 'харли'];
 const PLATFORM_LABELS = {
   wb: 'WB',
   ozon: 'Ozon',
   ya: 'Я.Маркет',
   goldapple: 'ЗЯ',
   letu: 'Лэтуаль',
+  megamarket: 'Мегамаркет',
+  samokat: 'Самокат',
   magnit: 'Магнит Маркет'
 };
 
@@ -79,6 +82,29 @@ function apiSkuUnmappedSeverity(fact = {}) {
 function isExternalWarehouseKey(value = '') {
   const token = normalizeToken(value);
   return EXTERNAL_WAREHOUSE_KEY_PREFIXES.some((prefix) => token.startsWith(prefix));
+}
+
+function isOutOfScopeBrandText(value = '') {
+  const token = normalizeToken(value);
+  return Boolean(token) && OUT_OF_SCOPE_BRAND_TOKENS.some((brand) => token.includes(normalizeToken(brand)));
+}
+
+function isOutOfScopeBrandRow(row = {}) {
+  return [
+    row.brand,
+    row.brandName,
+    row.brand_name,
+    row.articleKey,
+    row.article,
+    row.sourceArticleKey,
+    row.sku,
+    row.offerId,
+    row.offer_id,
+    row.externalId,
+    row.vendorCode,
+    row.name,
+    row.productName
+  ].some(isOutOfScopeBrandText);
 }
 
 function dateKey(value) {
@@ -360,6 +386,9 @@ function buildApiSkuQuality(platformTrends = {}, skus = [], monthKey = '', maxDa
     let knownOutsideRegistryRevenue = 0;
     let knownOutsideRegistryUnits = 0;
     let knownOutsideRegistryCount = 0;
+    let outOfScopeRevenue = 0;
+    let outOfScopeUnits = 0;
+    let outOfScopeCount = 0;
 
     rows.forEach((row) => {
       const articleKey = String(row?.articleKey || row?.article || row?.sku || '').trim();
@@ -367,6 +396,12 @@ function buildApiSkuQuality(platformTrends = {}, skus = [], monthKey = '', maxDa
       if (!token) return;
       const fact = rowMonthFact(row, monthKey, maxDate);
       if (fact.revenue <= 0 && fact.units <= 0) return;
+      if (isOutOfScopeBrandRow(row)) {
+        outOfScopeCount += 1;
+        outOfScopeRevenue += fact.revenue;
+        outOfScopeUnits += fact.units;
+        return;
+      }
       directRevenue += fact.revenue;
       directUnits += fact.units;
       if (!known.has(token)) {
@@ -446,7 +481,10 @@ function buildApiSkuQuality(platformTrends = {}, skus = [], monthKey = '', maxDa
       ignoredUnits: Math.round(ignoredUnits),
       knownOutsideRegistryCount,
       knownOutsideRegistryRevenue: Math.round(knownOutsideRegistryRevenue),
-      knownOutsideRegistryUnits: Math.round(knownOutsideRegistryUnits)
+      knownOutsideRegistryUnits: Math.round(knownOutsideRegistryUnits),
+      outOfScopeCount,
+      outOfScopeRevenue: Math.round(outOfScopeRevenue),
+      outOfScopeUnits: Math.round(outOfScopeUnits)
     };
   });
 
@@ -869,6 +907,8 @@ function buildReport(options) {
     apiKnownOutsideRegistryUniqueSku: new Set(apiKnownOutsideRegistryIssues.map((issue) => normalizeToken(issue.articleKey))).size,
     apiKnownOutsideRegistryRevenue: Math.round(apiKnownOutsideRegistryIssues.reduce((acc, issue) => acc + numberOrZero(issue.revenue), 0)),
     apiIgnoredPlatformRows: Object.values(apiQuality.platformSummary || {}).reduce((acc, row) => acc + numberOrZero(row.ignoredCount), 0),
+    apiOutOfScopePlatformRows: Object.values(apiQuality.platformSummary || {}).reduce((acc, row) => acc + numberOrZero(row.outOfScopeCount), 0),
+    apiOutOfScopeRevenue: Math.round(Object.values(apiQuality.platformSummary || {}).reduce((acc, row) => acc + numberOrZero(row.outOfScopeRevenue), 0)),
     apiSumAboveAggregateCount: apiSumAboveAggregateIssues.length,
     apiSumAboveAggregateOverage: Math.round(apiSumAboveAggregateIssues.reduce((acc, issue) => acc + numberOrZero(issue.overage), 0)),
     skuAliasCount: activeSkuAliasRows(files.skuAliases).length,
@@ -939,6 +979,8 @@ function main() {
 if (require.main === module) main();
 
 module.exports = {
+  buildApiSkuQuality,
   buildOrderQuality,
+  isOutOfScopeBrandRow,
   isDisabledSkuStatus
 };

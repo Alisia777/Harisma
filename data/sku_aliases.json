@@ -2790,7 +2790,31 @@
       "api_sku": "penka_kudryavii_meto",
       "status": "active",
       "note": "Quick action from SKU workspace 2026-06-29"
+    },
+    {
+      "target_sku": "balzam_kudryavii_metod_500ml",
+      "platform": "goldapple",
+      "api_sku": "99000177794",
+      "status": "active",
+      "note": "ЗЯ номенклатура; подтверждено дневным отчётом и мастер-реестром",
+      "updatedAt": "2026-07-26T12:00:00.000Z"
+    },
+    {
+      "target_sku": "krem_dlya_lica_pdrn_50_ml",
+      "platform": "goldapple",
+      "api_sku": "99000184675",
+      "status": "active",
+      "note": "ЗЯ номенклатура; подтверждено дневным отчётом и мастер-реестром",
+      "updatedAt": "2026-07-26T12:00:00.000Z"
+    },
+    {
+      "target_sku": "shampun_kudryavii_metod_500ml",
+      "platform": "goldapple",
+      "api_sku": "99000179424",
+      "status": "active",
+      "note": "ЗЯ номенклатура; подтверждено дневным отчётом и мастер-реестром",
+      "updatedAt": "2026-07-26T12:00:00.000Z"
     }
   ],
-  "updatedAt": "2026-07-24T20:57:04.000Z"
+  "updatedAt": "2026-07-26T12:00:00.000Z"
 }

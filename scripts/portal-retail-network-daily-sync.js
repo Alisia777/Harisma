@@ -15,6 +15,14 @@ const PLATFORM_META = {
   megamarket: { label: 'Мегамаркет', supportKey: 'mega' },
   samokat: { label: 'Самокат', supportKey: 'samokat' }
 };
+const OUT_OF_SCOPE_BRAND_TOKENS = [
+  'qeep',
+  'qip',
+  'harly',
+  'harley',
+  'квип',
+  'харли'
+];
 
 function parseArgs(argv) {
   const args = {};
@@ -46,6 +54,207 @@ function normalizeText(value) {
 
 function normalizeKey(value) {
   return normalizeText(value).toLowerCase().replace(/[ё]/g, 'е').replace(/[^a-zа-я0-9]+/gi, '');
+}
+
+function isOutOfScopeBrandText(value) {
+  const compact = normalizeKey(value);
+  return Boolean(compact) && OUT_OF_SCOPE_BRAND_TOKENS.some((token) => compact.includes(normalizeKey(token)));
+}
+
+function isOutOfScopeBrandRow(row = {}) {
+  return [
+    row.brand,
+    row.brandName,
+    row.brand_name,
+    row.articleKey,
+    row.article,
+    row.sourceArticleKey,
+    row.sku,
+    row.offerId,
+    row.offer_id,
+    row.externalId,
+    row.vendorCode,
+    row.name,
+    row.productName
+  ].some(isOutOfScopeBrandText);
+}
+
+function isInvalidRetailHeaderRow(row = {}) {
+  const placeholders = new Set([
+    'артикул',
+    'категориятовара',
+    'sellerskuid',
+    'наименование',
+    'штрихкод'
+  ]);
+  const looksLikeHeader = [
+    row.articleKey,
+    row.article,
+    row.sourceArticleKey,
+    row.externalId,
+    row.name
+  ].some((value) => placeholders.has(normalizeKey(value)));
+  if (!looksLikeHeader) return false;
+  const factFields = [
+    'units',
+    'revenue',
+    'ordersUnits',
+    'ordersRevenue',
+    'deliveredUnits',
+    'deliveredRevenue',
+    'buyoutUnits',
+    'buyoutRevenue',
+    'transitUnits',
+    'transitRevenue',
+    'stock'
+  ];
+  const hasFact = factFields.some((field) => numberOrZero(row?.[field]) !== 0)
+    || [...(Array.isArray(row.daily) ? row.daily : []), ...(Array.isArray(row.monthly) ? row.monthly : [])]
+      .some((point) => factFields.some((field) => numberOrZero(point?.[field]) !== 0));
+  return !hasFact;
+}
+
+function filterInScopeRecords(records = []) {
+  const sourceRows = Array.isArray(records) ? records : [];
+  const filtered = sourceRows.filter((row) => (
+    row?.coverageOnly || (!isOutOfScopeBrandRow(row) && !isInvalidRetailHeaderRow(row))
+  ));
+  const excludedOutOfScopeRows = numberOrZero(sourceRows.excludedOutOfScopeRows)
+    + sourceRows.filter((row) => !row?.coverageOnly && isOutOfScopeBrandRow(row)).length;
+  const excludedInvalidRows = numberOrZero(sourceRows.excludedInvalidRows)
+    + sourceRows.filter((row) => !row?.coverageOnly && !isOutOfScopeBrandRow(row) && isInvalidRetailHeaderRow(row)).length;
+  Object.defineProperty(filtered, 'duplicateRows', {
+    value: numberOrZero(sourceRows.duplicateRows),
+    enumerable: false
+  });
+  Object.defineProperty(filtered, 'excludedOutOfScopeRows', {
+    value: excludedOutOfScopeRows,
+    enumerable: false
+  });
+  Object.defineProperty(filtered, 'excludedInvalidRows', {
+    value: excludedInvalidRows,
+    enumerable: false
+  });
+  return filtered;
+}
+
+function canonicalRetailPlatform(value) {
+  const key = normalizeKey(value);
+  if (['ga', 'goldapple', 'зя', 'золотоеяблоко'].includes(key)) return 'goldapple';
+  if (['letu', 'letual', 'летуаль', 'лэтуаль'].includes(key)) return 'letu';
+  if (['megamarket', 'mega', 'sbermegamarket', 'мегамаркет'].includes(key)) return 'megamarket';
+  if (['mm', 'magnit', 'magnitmarket', 'магнитмаркет'].includes(key)) return 'magnit';
+  return key;
+}
+
+function skuAliasRows(payload = {}) {
+  if (Array.isArray(payload)) return payload;
+  return Array.isArray(payload.aliases) ? payload.aliases : [];
+}
+
+function buildRetailSkuResolver(skus = [], skuAliases = {}) {
+  const canonicalByToken = new Map();
+  const aliasByPlatform = new Map();
+  const addCanonical = (value, sku) => {
+    const token = normalizeKey(value);
+    if (token && !canonicalByToken.has(token)) canonicalByToken.set(token, sku);
+  };
+  const addAlias = (platform, value, sku) => {
+    const token = normalizeKey(value);
+    if (!token || !sku) return;
+    const key = `${canonicalRetailPlatform(platform) || 'all'}|${token}`;
+    if (!aliasByPlatform.has(key)) aliasByPlatform.set(key, sku);
+  };
+
+  for (const sku of Array.isArray(skus) ? skus : []) {
+    [
+      sku.articleKey,
+      sku.article,
+      sku.sku,
+      sku.vendorCode,
+      sku.supplierArticle,
+      sku.barcode
+    ].forEach((value) => addCanonical(value, sku));
+    for (const [platform, aliases] of Object.entries(sku.platformAliases || {})) {
+      (Array.isArray(aliases) ? aliases : [aliases]).forEach((value) => addAlias(platform, value, sku));
+    }
+  }
+
+  for (const row of skuAliasRows(skuAliases)) {
+    const status = normalizeKey(row?.status ?? row?.active ?? 'active');
+    if (['0', 'false', 'no', 'off', 'disabled', 'inactive', 'deleted', 'remove'].includes(status)) continue;
+    const target = canonicalByToken.get(normalizeKey(
+      row?.target_sku ?? row?.targetSku ?? row?.target ?? row?.articleKey ?? ''
+    ));
+    if (!target) continue;
+    addAlias(
+      row?.platform ?? row?.marketplace ?? 'all',
+      row?.api_sku ?? row?.apiSku ?? row?.alias ?? row?.value ?? '',
+      target
+    );
+  }
+
+  return {
+    resolve(row = {}) {
+      const platform = canonicalRetailPlatform(row.platformKey || row.platform || '');
+      const candidates = [
+        ['articleKey', row.articleKey || row.article],
+        ['externalId', row.externalId || row.offerId || row.offer_id],
+        ['barcode', row.barcode]
+      ];
+      for (const [matchedBy, value] of candidates) {
+        const token = normalizeKey(value);
+        if (!token) continue;
+        const sku = aliasByPlatform.get(`${platform}|${token}`)
+          || aliasByPlatform.get(`all|${token}`)
+          || canonicalByToken.get(token);
+        if (sku) return { sku, matchedBy, matchedValue: normalizeText(value) };
+      }
+      return null;
+    }
+  };
+}
+
+function canonicalizeRetailRecord(record = {}, resolver = null) {
+  const match = resolver?.resolve?.(record);
+  if (!match?.sku) return record;
+  const sourceArticleKey = normalizeText(record.sourceArticleKey || record.articleKey || record.article);
+  const articleKey = normalizeText(match.sku.articleKey || match.sku.article);
+  return {
+    ...record,
+    articleKey,
+    article: articleKey,
+    sourceArticleKey,
+    sourceArticleKeys: [...new Set([
+      ...(Array.isArray(record.sourceArticleKeys) ? record.sourceArticleKeys : []),
+      sourceArticleKey
+    ].filter(Boolean))],
+    skuMatched: true,
+    canonicalMatch: {
+      matchedBy: match.matchedBy,
+      matchedValue: match.matchedValue
+    }
+  };
+}
+
+function canonicalizeRetailRecords(records = [], resolver = null) {
+  const sourceRows = filterInScopeRecords(records);
+  const canonical = sourceRows.map((row) => (
+    row?.coverageOnly ? row : canonicalizeRetailRecord(row, resolver)
+  ));
+  Object.defineProperty(canonical, 'duplicateRows', {
+    value: numberOrZero(sourceRows.duplicateRows),
+    enumerable: false
+  });
+  Object.defineProperty(canonical, 'excludedOutOfScopeRows', {
+    value: numberOrZero(sourceRows.excludedOutOfScopeRows),
+    enumerable: false
+  });
+  Object.defineProperty(canonical, 'excludedInvalidRows', {
+    value: numberOrZero(sourceRows.excludedInvalidRows),
+    enumerable: false
+  });
+  return canonical;
 }
 
 function numberOrZero(value) {
@@ -126,14 +335,18 @@ function resolveOptions(args) {
   const fallbackWorkbook = normalizeText(
     args['fallback-workbook'] || process.env.ALTEA_RETAIL_NETWORK_SALES_XLSX
   );
+  const inputFile = path.resolve(args['input-file'] || path.join(root, 'data', 'platform_trends.json'));
+  const inputDir = path.dirname(inputFile);
   return {
     command: args.command || 'sync',
     workbookPath: args.workbook ? path.resolve(args.workbook) : '',
     fallbackWorkbookPath: fallbackWorkbook ? path.resolve(fallbackWorkbook) : '',
     sourceId: normalizeText(args['source-id'] || process.env.ALTEA_RETAIL_NETWORK_GOOGLE_SHEET_ID || DEFAULT_SOURCE_ID),
-    inputFile: path.resolve(args['input-file'] || path.join(root, 'data', 'platform_trends.json')),
+    inputFile,
     outputFile: path.resolve(args['output-file'] || args['input-file'] || path.join(root, 'data', 'platform_trends.json')),
     statusFile: path.resolve(args['status-file'] || path.join(root, 'data', 'retail_network_source_status.json')),
+    skusFile: path.resolve(args['skus-file'] || path.join(inputDir, 'skus.json')),
+    skuAliasesFile: path.resolve(args['sku-aliases-file'] || path.join(inputDir, 'sku_aliases.json')),
     from: isoDate(args.from),
     to: isoDate(args.to) || moscowDateKey(-1),
     dryRun: Boolean(args['dry-run']),
@@ -338,9 +551,9 @@ function dedupeLatest(records) {
 function parseRetailWorkbook(workbook, options = {}) {
   const parseOptions = { from: isoDate(options.from), to: isoDate(options.to) };
   const platforms = {
-    goldapple: parseZyaRows(sheetRows(workbook, 'зя'), parseOptions),
-    letu: parseLetualRows(sheetRows(workbook, 'лету'), parseOptions),
-    megamarket: parseMegamarketRows(sheetRows(workbook, 'мм'), parseOptions)
+    goldapple: filterInScopeRecords(parseZyaRows(sheetRows(workbook, 'зя'), parseOptions)),
+    letu: filterInScopeRecords(parseLetualRows(sheetRows(workbook, 'лету'), parseOptions)),
+    megamarket: filterInScopeRecords(parseMegamarketRows(sheetRows(workbook, 'мм'), parseOptions))
   };
   return platforms;
 }
@@ -421,6 +634,7 @@ function monthlyFromDaily(daily) {
 }
 
 function aggregatePlatform(records, existingPlatform = {}) {
+  records = filterInScopeRecords(records);
   const meta = PLATFORM_META[records[0]?.platformKey] || {};
   const source = records[0]?.source || '';
   const dateTotals = new Map();
@@ -432,18 +646,26 @@ function aggregatePlatform(records, existingPlatform = {}) {
     const article = articleMap.get(record.articleKey) || {
       articleKey: record.articleKey,
       article: record.articleKey,
-      sourceArticleKey: record.articleKey,
-      sourceArticleKeys: [record.articleKey],
+      sourceArticleKey: record.sourceArticleKey || record.articleKey,
+      sourceArticleKeys: new Set(),
       name: record.name,
       barcode: record.barcode,
       externalId: record.externalId,
+      skuMatched: false,
+      canonicalMatch: record.canonicalMatch || null,
       dailyTotals: new Map()
     };
+    (Array.isArray(record.sourceArticleKeys) ? record.sourceArticleKeys : [record.sourceArticleKey || record.articleKey])
+      .filter(Boolean)
+      .forEach((value) => article.sourceArticleKeys.add(value));
+    article.skuMatched = article.skuMatched || record.skuMatched === true;
+    article.canonicalMatch = article.canonicalMatch || record.canonicalMatch || null;
     addRecord(article.dailyTotals.get(record.date) || article.dailyTotals.set(record.date, emptyTotals()).get(record.date), record);
     articleMap.set(record.articleKey, article);
   }
   const series = refreshOffsets([...dateTotals.entries()].map(([date, totals]) => finalizePoint(date, totals, source)));
   const existingArticles = new Map((Array.isArray(existingPlatform.articles) ? existingPlatform.articles : [])
+    .filter((article) => !isOutOfScopeBrandRow(article))
     .map((article) => [normalizeText(article.articleKey || article.article), article]));
   const articles = [...articleMap.values()].map((article) => {
     const preserved = existingArticles.get(article.articleKey) || {};
@@ -460,8 +682,9 @@ function aggregatePlatform(records, existingPlatform = {}) {
       articleKey: article.articleKey,
       article: article.article,
       sourceArticleKey: article.sourceArticleKey,
-      sourceArticleKeys: article.sourceArticleKeys,
-      skuMatched: preserved.skuMatched === true,
+      sourceArticleKeys: [...article.sourceArticleKeys],
+      skuMatched: article.skuMatched || preserved.skuMatched === true,
+      canonicalMatch: article.canonicalMatch || preserved.canonicalMatch || null,
       name: article.name,
       barcode: article.barcode,
       externalId: article.externalId,
@@ -505,6 +728,8 @@ function aggregatePlatform(records, existingPlatform = {}) {
       latestDate,
       sourceRows: records.length,
       duplicateRowsRemoved: records.duplicateRows || 0,
+      excludedOutOfScopeRows: records.excludedOutOfScopeRows || 0,
+      excludedInvalidRows: records.excludedInvalidRows || 0,
       latestWarehouseTotals: Object.fromEntries(latestWarehouseTotals)
     }
   };
@@ -525,9 +750,10 @@ function mergeSeriesWindow(existingSeries, sourceSeries) {
 
 function mergeArticlesWindow(existingArticles, sourceArticles) {
   const byKey = new Map((Array.isArray(existingArticles) ? existingArticles : [])
+    .filter((article) => !isOutOfScopeBrandRow(article))
     .map((article) => [normalizeText(article.articleKey || article.article), article])
     .filter(([key]) => key));
-  for (const source of Array.isArray(sourceArticles) ? sourceArticles : []) {
+  for (const source of (Array.isArray(sourceArticles) ? sourceArticles : []).filter((article) => !isOutOfScopeBrandRow(article))) {
     const key = normalizeText(source.articleKey || source.article);
     if (!key) continue;
     const previous = byKey.get(key) || {};
@@ -577,6 +803,123 @@ function articleDiagnostics(articles) {
   };
 }
 
+function sanitizeRetailPlatform(platform = {}) {
+  const sourceArticles = Array.isArray(platform.articles) ? platform.articles : [];
+  const excludedArticles = sourceArticles.filter(isOutOfScopeBrandRow);
+  const articles = sourceArticles.filter((article) => (
+    !isOutOfScopeBrandRow(article) && !isInvalidRetailHeaderRow(article)
+  ));
+  if (!excludedArticles.length) return { ...platform, articles };
+
+  const excludedByDate = new Map();
+  for (const article of excludedArticles) {
+    for (const point of Array.isArray(article.daily) ? article.daily : []) {
+      const date = isoDate(point?.date || point?.label);
+      if (!date) continue;
+      const totals = excludedByDate.get(date) || emptyTotals();
+      for (const key of Object.keys(emptyTotals())) totals[key] += numberOrZero(point?.[key]);
+      excludedByDate.set(date, totals);
+    }
+  }
+
+  const series = refreshOffsets((Array.isArray(platform.series) ? platform.series : []).map((point) => {
+    const date = isoDate(point?.date || point?.label);
+    const excluded = excludedByDate.get(date);
+    if (!excluded) return { ...point, date, label: date };
+    const next = { ...point, date, label: date };
+    for (const key of Object.keys(emptyTotals())) {
+      const value = numberOrZero(point?.[key]) - numberOrZero(excluded[key]);
+      next[key] = round(Math.abs(value) < 0.000001 ? 0 : value);
+    }
+    next.price = next.ordersUnits > 0 ? round(next.ordersRevenue / next.ordersUnits) : 0;
+    return next;
+  }));
+  const excludedRevenue = excludedArticles.reduce((sum, article) => (
+    sum + (Array.isArray(article.daily) ? article.daily : [])
+      .reduce((inner, point) => inner + numberOrZero(point?.revenue), 0)
+  ), 0);
+
+  return {
+    ...platform,
+    series,
+    articles,
+    diagnostics: {
+      ...(platform.diagnostics || {}),
+      ...articleDiagnostics(articles),
+      scopeExcludedArticleCount: excludedArticles.length,
+      scopeExcludedRevenue: round(excludedRevenue)
+    }
+  };
+}
+
+function canonicalizeRetailPlatform(platform = {}, resolver = null) {
+  const sourceArticles = Array.isArray(platform.articles) ? platform.articles : [];
+  const byKey = new Map();
+  let canonicalizedArticleCount = 0;
+  for (const source of sourceArticles) {
+    const article = canonicalizeRetailRecord({
+      ...source,
+      platformKey: source.platformKey || platform.key
+    }, resolver);
+    const key = normalizeText(article.articleKey || article.article);
+    if (!key) continue;
+    if (key !== normalizeText(source.articleKey || source.article)) canonicalizedArticleCount += 1;
+    const previous = byKey.get(key);
+    if (!previous) {
+      byKey.set(key, article);
+      continue;
+    }
+    const dailyByDate = new Map();
+    for (const point of [
+      ...(Array.isArray(previous.daily) ? previous.daily : []),
+      ...(Array.isArray(article.daily) ? article.daily : [])
+    ]) {
+      const date = isoDate(point?.date || point?.label);
+      if (!date) continue;
+      const bucket = dailyByDate.get(date) || {
+        totals: emptyTotals(),
+        source: normalizeText(point?.source)
+      };
+      for (const field of Object.keys(emptyTotals())) {
+        bucket.totals[field] += numberOrZero(point?.[field]);
+      }
+      bucket.source = bucket.source || normalizeText(point?.source);
+      dailyByDate.set(date, bucket);
+    }
+    const daily = refreshOffsets([...dailyByDate.entries()]
+      .map(([date, bucket]) => finalizePoint(date, bucket.totals, bucket.source))
+      .sort((left, right) => left.date.localeCompare(right.date)));
+    byKey.set(key, {
+      ...previous,
+      ...article,
+      daily,
+      monthly: monthlyFromDaily(daily),
+      sourceArticleKeys: [...new Set([
+        ...(Array.isArray(previous.sourceArticleKeys) ? previous.sourceArticleKeys : []),
+        previous.sourceArticleKey,
+        ...(Array.isArray(article.sourceArticleKeys) ? article.sourceArticleKeys : []),
+        article.sourceArticleKey
+      ].filter(Boolean))],
+      skuMatched: previous.skuMatched === true || article.skuMatched === true
+    });
+  }
+  const articles = [...byKey.values()].sort((left, right) => (
+    normalizeText(left.articleKey || left.article).localeCompare(
+      normalizeText(right.articleKey || right.article),
+      'ru'
+    )
+  ));
+  return {
+    ...platform,
+    articles,
+    diagnostics: {
+      ...(platform.diagnostics || {}),
+      ...articleDiagnostics(articles),
+      canonicalizedArticleCount
+    }
+  };
+}
+
 function buildAllSeries(platforms) {
   const byDate = new Map();
   for (const platform of platforms) {
@@ -599,10 +942,15 @@ function updatePayload(basePayload, parsedPlatforms, options = {}) {
   const sourceKind = resolvedSource.startsWith('google-sheet:')
     ? 'google-sheets-retail-daily'
     : 'retail-workbook-daily';
-  const existing = new Map((Array.isArray(next.platforms) ? next.platforms : []).map((platform) => [platform.key, platform]));
+  const existing = new Map((Array.isArray(next.platforms) ? next.platforms : []).map((platform) => [
+    platform.key,
+    TARGET_PLATFORMS.includes(platform.key)
+      ? canonicalizeRetailPlatform(sanitizeRetailPlatform(platform), options.skuResolver)
+      : platform
+  ]));
   const statusPlatforms = {};
   for (const key of TARGET_PLATFORMS) {
-    const records = parsedPlatforms[key] || [];
+    const records = canonicalizeRetailRecords(parsedPlatforms[key] || [], options.skuResolver);
     if (!records.length) {
       const previous = existing.get(key) || {};
       const previousSeries = Array.isArray(previous.series) ? previous.series : [];
@@ -632,6 +980,7 @@ function updatePayload(basePayload, parsedPlatforms, options = {}) {
       series: mergeSeriesWindow(previous.series, aggregate.series),
       articles,
       diagnostics: {
+        ...(previous.diagnostics || {}),
         ...aggregate.diagnostics,
         ...articleDiagnostics(articles)
       },
@@ -646,6 +995,8 @@ function updatePayload(basePayload, parsedPlatforms, options = {}) {
       lagDays: lagDays(aggregate.diagnostics.latestDate, options.to),
       sourceRows: aggregate.diagnostics.sourceRows,
       duplicateRowsRemoved: aggregate.diagnostics.duplicateRowsRemoved,
+      excludedOutOfScopeRows: aggregate.diagnostics.excludedOutOfScopeRows,
+      excludedInvalidRows: aggregate.diagnostics.excludedInvalidRows,
       articleCount: aggregate.diagnostics.articleCount,
       latestTotals: aggregate.series[aggregate.series.length - 1] || {},
       latestWarehouseTotals: aggregate.diagnostics.latestWarehouseTotals
@@ -867,6 +1218,10 @@ async function main(argv = process.argv) {
   try {
     options.resolvedSource = workbookSource.source;
     options.sourceWarning = workbookSource.sourceWarning;
+    options.skuResolver = buildRetailSkuResolver(
+      readJson(options.skusFile, []),
+      readJson(options.skuAliasesFile, { aliases: [] })
+    );
     const workbook = XLSX.readFile(workbookSource.workbookPath, { cellDates: false });
     const parsed = parseRetailWorkbook(workbook, options);
     const base = readJson(options.inputFile, { platforms: [] });
@@ -911,9 +1266,15 @@ module.exports = {
   DEFAULT_SOURCE_ID,
   TARGET_PLATFORMS,
   aggregatePlatform,
+  buildRetailSkuResolver,
   buildPreservedSourceStatus,
+  canonicalizeRetailPlatform,
+  canonicalizeRetailRecord,
+  canonicalizeRetailRecords,
   dedupeLatest,
   exceedsAllowedLag,
+  filterInScopeRecords,
+  isOutOfScopeBrandRow,
   isoDate,
   lagDays,
   letualBusinessDate,
@@ -923,5 +1284,6 @@ module.exports = {
   parseRetailWorkbook,
   resolveWorkbookSource,
   resolveOptions,
+  sanitizeRetailPlatform,
   updatePayload
 };

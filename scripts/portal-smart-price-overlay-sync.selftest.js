@@ -8,10 +8,12 @@ const zlib = require('zlib');
 const XLSX = require('xlsx');
 
 const {
+  assertDirectLivePriceMerge,
   buildWorkbookRequestHeaders,
   decodeWorkbookFromEnvironment,
   extractGoogleFileId,
   mergeApiPriceOverlay,
+  mergeDirectLivePriceOverlay,
   preserveExtraMarketplace,
   redactUrl,
   workbookBufferLooksLikeSmartPrices,
@@ -81,6 +83,67 @@ assert.strictEqual(currentPricePayload.platforms.ozon.rows[0].currentClientPrice
 assert.strictEqual(numOrNull(null), null);
 assert.strictEqual(numOrNull(''), null);
 assert.strictEqual(numOrNull(0), 0);
+
+const directPriceMerged = mergeDirectLivePriceOverlay({
+  generatedAt: '2026-07-26T12:00:00Z',
+  platforms: {
+    wb: {
+      rows: [{
+        articleKey: 'adenofrin',
+        currentFillPrice: 560,
+        currentPrice: 560,
+        currentClientPrice: 530,
+        currentPriceDate: '2026-07-24',
+        valueDate: '2026-07-24',
+        daily: [{ date: '2026-07-24', price: 560, clientPrice: 530 }]
+      }]
+    }
+  }
+}, {
+  generatedAt: '2026-07-26T10:00:00Z',
+  asOfDate: '2026-07-26',
+  status: 'ok',
+  blockingReasons: [],
+  platforms: {
+    wb: {
+      rows: [{
+        articleKey: 'adenofrin',
+        currentFillPrice: 590,
+        currentPrice: 590,
+        currentClientPrice: 561,
+        currentListPrice: 700,
+        currentPriceDate: '2026-07-26',
+        valueDate: '2026-07-26',
+        currentSellerPriceSource: 'wb-prices-api',
+        currentSellerPriceFile: 'repricer_live_prices.json',
+        daily: [{ date: '2026-07-26', price: 590, clientPrice: 561 }]
+      }]
+    }
+  }
+});
+assert.strictEqual(directPriceMerged.platforms.wb.rows[0].currentPrice, 590);
+assert.strictEqual(directPriceMerged.platforms.wb.rows[0].currentClientPrice, 561);
+assert.strictEqual(directPriceMerged.platforms.wb.rows[0].currentListPrice, 700);
+assert.strictEqual(directPriceMerged.platforms.wb.rows[0].currentPriceDate, '2026-07-26');
+assert.strictEqual(directPriceMerged.platforms.wb.rows[0].currentSellerPriceFile, 'repricer_live_prices.json');
+assert.deepStrictEqual(
+  directPriceMerged.platforms.wb.rows[0].daily.map((point) => point.date),
+  ['2026-07-24', '2026-07-26']
+);
+assert.deepStrictEqual(directPriceMerged.priceCurrentSnapshot, {
+  importedAt: '2026-07-26T10:00:00Z',
+  sourceFile: 'repricer_live_prices.json',
+  sourceKind: 'direct-api',
+  asOfDate: '2026-07-26',
+  rowsByPlatform: { wb: 1 }
+});
+assert.strictEqual(directPriceMerged.directLivePriceSnapshot.status, 'ok');
+assert.deepStrictEqual(directPriceMerged.directLivePriceSnapshot.sourceRowsByPlatform, { wb: 1 });
+assert.deepStrictEqual(directPriceMerged.directLivePriceSnapshot.mergeCoverageByPlatform, { wb: 1 });
+assert.throws(
+  () => assertDirectLivePriceMerge({}, {}, 0.95),
+  /missing or invalid/
+);
 
 const parsedPriceImportArgs = parsePriceImportArgs([
   'node',

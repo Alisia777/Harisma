@@ -525,6 +525,7 @@ module.exports = {
   firstNumber,
   firstPositive,
   latestSeriesDate,
+  mergeTimelineWithOverlay,
   mergeSmartPriceContour,
   mergeWorkbenchOverlay,
   mergeWorkbenchPayload,

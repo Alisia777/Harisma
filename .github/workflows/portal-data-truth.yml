@@ -61,6 +61,12 @@ on:
 permissions:
   contents: read
 
+concurrency:
+  # A newer push to the same branch supersedes an unfinished truth run. Keeping
+  # PR, push, schedule and manual runs in separate groups avoids cross-cancels.
+  group: portal-data-truth-${{ github.event_name }}-${{ github.ref }}
+  cancel-in-progress: true
+
 jobs:
   truth-gate:
     runs-on: ubuntu-latest
@@ -91,6 +97,7 @@ jobs:
           node scripts/build-repricer-team-policy.selftest.js
           node scripts/build-canonical-repricer-freshness.selftest.js
           node scripts/portal-daily-layer-guard.selftest.js
+          node scripts/portal-workflow-trigger-correctness.selftest.js
           node scripts/audit-repricer-dashboard-plan.selftest.js
           node scripts/portal-upload-apply-runtime.selftest.js
           node scripts/repricer-loader-export-roundtrip.selftest.js

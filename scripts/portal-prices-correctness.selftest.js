@@ -94,8 +94,38 @@ async function run() {
       const expectedLatestFactDate = (state.rows || []).map(priceDate).filter(Boolean).sort().pop() || '';
       const wbRows = (state.rows || []).filter((row) => row.market === 'wb');
       const expectedMarketFactDate = wbRows.map(priceDate).filter(Boolean).sort().pop() || '';
-      const missingPrice = wbRows.find((row) => !positive(row.currentFillPrice));
-      const missingClientPrice = wbRows.find((row) => positive(row.currentFillPrice) && !positive(row.currentClientPrice));
+      let missingPrice = wbRows.find((row) => !positive(row.currentFillPrice));
+      let missingClientPrice = wbRows.find((row) => positive(row.currentFillPrice) && !positive(row.currentClientPrice));
+      let fixtureChanged = false;
+      if (!missingPrice) {
+        missingPrice = wbRows.find((row) => positive(row.currentFillPrice));
+        if (missingPrice) {
+          missingPrice.currentFillPrice = null;
+          (missingPrice.timeline || []).forEach((point) => {
+            point.price = null;
+          });
+          fixtureChanged = true;
+        }
+      }
+      if (!missingClientPrice) {
+        missingClientPrice = wbRows.find((row) => (
+          row !== missingPrice
+          && positive(row.currentFillPrice)
+          && positive(row.currentClientPrice)
+        ));
+        if (missingClientPrice) {
+          missingClientPrice.currentClientPrice = null;
+          missingClientPrice.currentSppPct = null;
+          (missingClientPrice.timeline || []).forEach((point) => {
+            point.clientPrice = null;
+            point.sppPct = null;
+          });
+          fixtureChanged = true;
+        }
+      }
+      if (fixtureChanged && typeof window.renderPriceWorkbench === 'function') {
+        window.renderPriceWorkbench();
+      }
       return {
         stateLatestFactDate: state.latestFactDate || '',
         expectedLatestFactDate,
@@ -135,7 +165,7 @@ async function run() {
       audit.poolQualityText,
       new RegExp(`Пул WB:.*цена \\d+\\/${audit.poolRows}.*дата цены \\d+\\/${audit.poolRows}.*маржа \\d+\\/${audit.poolRows}.*MIN/MAX \\d+\\/${audit.poolRows}.*owner \\d+\\/${audit.poolRows}.*daily \\d+\\/${audit.poolRows}`)
     );
-    assert.ok(audit.missingPriceArticle, 'Фикстура должна содержать SKU без фактической цены');
+    assert.ok(audit.missingPriceArticle, 'Тест должен подготовить SKU без фактической цены');
 
     const search = page.locator('#pwSearch');
     await search.fill(audit.missingPriceArticle);
@@ -149,7 +179,7 @@ async function run() {
     assert.doesNotMatch(missingRowText, /в коридоре/i, 'Строка без цены не должна считаться находящейся в коридоре');
     assert.match(missingRowText, /Нет цены \/ заполнить/i, 'Решение должно требовать заполнить цену');
 
-    assert.ok(audit.missingClientPriceArticle, 'Фикстура должна содержать SKU без клиентской цены');
+    assert.ok(audit.missingClientPriceArticle, 'Тест должен подготовить SKU без клиентской цены');
     await search.fill(audit.missingClientPriceArticle);
     await search.dispatchEvent('input');
     await page.waitForFunction((articleKey) => {

@@ -140,6 +140,77 @@ assert.deepStrictEqual(directPriceMerged.priceCurrentSnapshot, {
 assert.strictEqual(directPriceMerged.directLivePriceSnapshot.status, 'ok');
 assert.deepStrictEqual(directPriceMerged.directLivePriceSnapshot.sourceRowsByPlatform, { wb: 1 });
 assert.deepStrictEqual(directPriceMerged.directLivePriceSnapshot.mergeCoverageByPlatform, { wb: 1 });
+
+const directLiveOnlyMerged = mergeDirectLivePriceOverlay({
+  generatedAt: '2026-07-26T12:00:00Z',
+  platforms: {
+    wb: { rows: [] },
+    ozon: { rows: [] },
+    ym: { rows: [] }
+  }
+}, {
+  generatedAt: '2026-07-26T10:00:00Z',
+  asOfDate: '2026-07-26',
+  status: 'ok',
+  blockingReasons: [],
+  platforms: {
+    wb: {
+      rows: [{
+        articleKey: 'cabinet-only-wb',
+        article: 'wb-vendor-code',
+        nmId: 123456,
+        currentPrice: 610,
+        currentClientPrice: 579,
+        currentPriceDate: '2026-07-26'
+      }]
+    },
+    ozon: {
+      rows: [{
+        articleKey: 'cabinet-only-ozon',
+        article: 'ozon-offer-id',
+        offerId: 'ozon-offer-id',
+        currentPrice: 720,
+        currentClientPrice: 699,
+        currentPriceDate: '2026-07-26'
+      }]
+    },
+    ym: {
+      rows: [{
+        articleKey: 'cabinet-only-ym',
+        article: 'ym-offer-id',
+        currentPrice: 830,
+        currentClientPrice: 830,
+        currentPriceDate: '2026-07-26'
+      }]
+    }
+  }
+});
+assert.deepStrictEqual(
+  Object.fromEntries(Object.entries(directLiveOnlyMerged.platforms).map(([platform, bucket]) => [
+    platform,
+    bucket.rows.map((row) => row.articleKey)
+  ])),
+  {
+    wb: ['cabinet-only-wb'],
+    ozon: ['cabinet-only-ozon'],
+    ym: ['cabinet-only-ym']
+  }
+);
+assert.deepStrictEqual(
+  directLiveOnlyMerged.directLivePriceSnapshot.mergeCoverageByPlatform,
+  { wb: 1, ozon: 1, ym: 1 }
+);
+assert.doesNotThrow(
+  () => assertDirectLivePriceMerge({
+    status: 'ok',
+    blockingReasons: [],
+    platforms: {
+      wb: { rows: [{}] },
+      ozon: { rows: [{}] },
+      ym: { rows: [{}] }
+    }
+  }, directLiveOnlyMerged, 0.95)
+);
 assert.throws(
   () => assertDirectLivePriceMerge({}, {}, 0.95),
   /missing or invalid/

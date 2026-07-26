@@ -57,6 +57,12 @@ if (!workflow.includes("cron: '30 7 * * *'")) {
 if (!workflow.includes('ref: ${{ github.event.workflow_run.head_sha || github.sha }}')) {
   fail('daily close must check out the exact revision that passed the Portal data truth gate');
 }
+if (!workflow.includes('group: portal-daily-close')) {
+  fail('all production daily closes must share one concurrency group');
+}
+if (!workflow.includes('cancel-in-progress: true')) {
+  fail('a close for a newer truth-gated main SHA must supersede an obsolete close');
+}
 if (!dataTruthWorkflow.includes('group: portal-data-truth-${{ github.event_name }}-${{ github.ref }}')) {
   fail('truth runs must be grouped by event and ref so newer main pushes supersede only older main pushes');
 }

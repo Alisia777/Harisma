@@ -20,7 +20,9 @@ on:
 
 concurrency:
   group: portal-daily-close
-  cancel-in-progress: false
+  # A close for an older main SHA must never finish after a newer, already
+  # truth-gated SHA and overwrite the active generation with obsolete code.
+  cancel-in-progress: true
 
 permissions:
   contents: read

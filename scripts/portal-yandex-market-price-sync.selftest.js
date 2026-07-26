@@ -54,13 +54,14 @@ assert.strictEqual(lookup.get('ym-offer-2').articleKey, 'sku-two');
 
 const repositorySkus = JSON.parse(fs.readFileSync(path.join(__dirname, '..', 'data', 'skus.json'), 'utf8'));
 const repositoryAliases = JSON.parse(fs.readFileSync(path.join(__dirname, '..', 'data', 'sku_aliases.json'), 'utf8'));
+const repositoryCanonical = JSON.parse(fs.readFileSync(path.join(__dirname, '..', 'data', 'canonical_repricer.json'), 'utf8'));
 const productionFbsMappings = {
   fbs_arterol: 'arterol',
   fbs_okospas: 'okospas',
   fbs_trezax: 'trezax',
   fbs_yagodniy_spas: 'yagodniy_spas'
 };
-const priceLookup = buildSkuLookup(repositorySkus, repositoryAliases);
+const priceLookup = buildSkuLookup(repositorySkus, repositoryAliases, repositoryCanonical);
 const trendsLookup = buildTrendsSkuMaps(repositorySkus, repositoryAliases, 'ym').byArticle;
 const stockLookup = buildStockSkuLookup(repositorySkus, repositoryAliases);
 for (const [offerId, articleKey] of Object.entries(productionFbsMappings)) {
@@ -68,6 +69,23 @@ for (const [offerId, articleKey] of Object.entries(productionFbsMappings)) {
   assert.strictEqual(trendsLookup.get(normalizeTrendsKey(offerId))?.articleKey, articleKey, `trends alias mismatch for ${offerId}`);
   assert.strictEqual(stockLookup.get(normalizeStockKey(offerId))?.articleKey, articleKey, `stock alias mismatch for ${offerId}`);
 }
+for (const articleKey of ['maska_dlya_lica_intens_uvl_50ml', 'maslo-shimmer_spf15_100ml']) {
+  assert.strictEqual(
+    priceLookup.get(normalizePriceKey(articleKey))?.articleKey,
+    articleKey,
+    `canonical exact fallback mismatch for ${articleKey}`
+  );
+}
+const conflictLookup = buildSkuLookup([
+  { articleKey: 'existing-sku', platformAliases: { ym: ['canonical-only-sku'] } }
+], {}, {
+  rows: [{ platform: 'ozon', article_key: 'canonical-only-sku' }]
+});
+assert.strictEqual(
+  conflictLookup.get(normalizePriceKey('canonical-only-sku'))?.articleKey,
+  'existing-sku',
+  'canonical fallback must never overwrite an existing registry alias'
+);
 
 const args = parseArgs([
   'node',
@@ -76,12 +94,15 @@ const args = parseArgs([
   '123',
   '--as-of-date=2026-07-23',
   '--min-mapped-rows',
-  '2'
+  '2',
+  '--min-mapped-ratio',
+  '0.6'
 ]);
 const options = resolveOptions(args, { ALTEA_YM_API_KEY: 'test-key' });
 assert.deepStrictEqual(options.campaignIds, ['123']);
 assert.strictEqual(options.asOfDate, '2026-07-23');
 assert.strictEqual(options.minMappedRows, 2);
+assert.strictEqual(options.minMappedRatio, 0.6);
 
 assert.deepStrictEqual(campaignIdsFromPayload({
   result: {
@@ -136,6 +157,7 @@ assert.strictEqual(payload.platforms.ym.rows[1].currentPrice, 575);
 assert.strictEqual(payload.priceApiSnapshot.apiPricedOfferCount, 4);
 assert.strictEqual(payload.priceApiSnapshot.mappedOfferCount, 3);
 assert.strictEqual(payload.priceApiSnapshot.mappedRowCount, 2);
+assert.strictEqual(payload.priceApiSnapshot.mappedArticleCoverageRatio, 0.666667);
 assert.strictEqual(payload.priceApiSnapshot.duplicateMappedOfferCount, 1);
 assert.deepStrictEqual(payload.priceApiSnapshot.duplicateMappedOffers[0], {
   articleKey: 'sku-two',
@@ -153,6 +175,13 @@ assert.throws(
     { id: 'YM-OFFER-1', price: { value: 799 }, campaignId: '123' }
   ], skus, aliases),
   /mapped only 1 rows/
+);
+assert.throws(
+  () => buildPayload({ ...options, minMappedRows: 1, minMappedRatio: 0.8 }, [
+    { id: 'YM-OFFER-1', price: { value: 799 }, campaignId: '123' },
+    { id: 'UNMAPPED', price: { value: 100 }, campaignId: '123' }
+  ], skus, aliases),
+  /article coverage 0.500000 is below 0.800000/
 );
 
 console.log('portal-yandex-market-price-sync selftest ok');

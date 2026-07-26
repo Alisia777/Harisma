@@ -78,9 +78,14 @@ function resolveOptions(args, env = process.env) {
     asOfDate,
     skusPath: path.resolve(args['skus-file'] || path.join(root, 'data', 'skus.json')),
     skuAliasPath: path.resolve(args['sku-alias-file'] || path.join(root, 'data', 'sku_aliases.json')),
+    canonicalRepricerPath: path.resolve(
+      args['canonical-repricer-file']
+      || path.join(root, 'data', 'canonical_repricer.json')
+    ),
     outputPath: path.resolve(args['output-file'] || path.join(root, '.portal-truth-output', 'price-sync', 'yandex-market-prices.json')),
     pageLimit: Math.max(1, Math.min(500, Math.trunc(Number(args.limit || 500) || 500))),
-    minMappedRows: Math.max(1, Math.trunc(Number(args['min-mapped-rows'] || 10) || 10))
+    minMappedRows: Math.max(1, Math.trunc(Number(args['min-mapped-rows'] || 10) || 10)),
+    minMappedRatio: Math.max(0, Math.min(1, Number(args['min-mapped-ratio'] || 0) || 0))
   };
 }
 
@@ -132,7 +137,7 @@ function activeAliasRows(payload = {}) {
   });
 }
 
-function buildSkuLookup(skus = [], skuAliases = {}) {
+function buildSkuLookup(skus = [], skuAliases = {}, canonicalRepricer = {}) {
   const lookup = new Map();
   (Array.isArray(skus) ? skus : []).forEach((sku) => {
     skuLookupValues(sku).forEach((value) => {
@@ -149,6 +154,18 @@ function buildSkuLookup(skus = [], skuAliases = {}) {
     );
     const target = lookup.get(targetKey);
     if (target && aliasKey && !lookup.has(aliasKey)) lookup.set(aliasKey, target);
+  });
+  (Array.isArray(canonicalRepricer?.rows) ? canonicalRepricer.rows : []).forEach((row) => {
+    const articleKey = normalizeText(row?.article_key || row?.articleKey);
+    const key = normalizeKey(articleKey);
+    if (!key || lookup.has(key)) return;
+    lookup.set(key, {
+      articleKey,
+      article: articleKey,
+      name: normalizeText(row?.name || articleKey),
+      status: normalizeText(row?.facts?.product_status || row?.policy?.lifecycle_key),
+      canonicalFallback: true
+    });
   });
   return lookup;
 }
@@ -257,8 +274,8 @@ async function fetchCampaignPrices(options, campaignId) {
   return offers;
 }
 
-function buildPayload(options, offers = [], skus = [], skuAliases = {}) {
-  const lookup = buildSkuLookup(skus, skuAliases);
+function buildPayload(options, offers = [], skus = [], skuAliases = {}, canonicalRepricer = {}) {
+  const lookup = buildSkuLookup(skus, skuAliases, canonicalRepricer);
   const byOffer = new Map();
   offers.forEach((offer) => {
     const offerId = normalizeText(offer?.id || offer?.offerId || offer?.shopSku);
@@ -353,6 +370,16 @@ function buildPayload(options, offers = [], skus = [], skuAliases = {}) {
       + `API priced offers: ${byOffer.size}, unmatched: ${unmatchedOfferIds.length}.`
     );
   }
+  const mappedArticleCoverageRatio = rows.length + unmatchedOfferCount > 0
+    ? rows.length / (rows.length + unmatchedOfferCount)
+    : 0;
+  if (mappedArticleCoverageRatio < options.minMappedRatio) {
+    throw new Error(
+      `Yandex Market prices API article coverage ${mappedArticleCoverageRatio.toFixed(6)} `
+      + `is below ${options.minMappedRatio.toFixed(6)}; mapped articles: ${rows.length}, `
+      + `unmatched offers: ${unmatchedOfferCount}.`
+    );
+  }
 
   const generatedAt = new Date().toISOString();
   return {
@@ -370,6 +397,7 @@ function buildPayload(options, offers = [], skus = [], skuAliases = {}) {
       apiPricedOfferCount: byOffer.size,
       mappedOfferCount,
       mappedRowCount: rows.length,
+      mappedArticleCoverageRatio: Number(mappedArticleCoverageRatio.toFixed(6)),
       duplicateMappedOfferCount: mappedOfferCount - rows.length,
       duplicateMappedOffers: secondaryMappedOffers.slice(0, 50).map(({ selected, secondary }) => ({
         articleKey: selected.articleKey,
@@ -404,7 +432,8 @@ async function main() {
   }
   const skus = readJson(options.skusPath, []);
   const skuAliases = readJson(options.skuAliasPath, { aliases: [] });
-  const payload = buildPayload(options, offers, skus, skuAliases);
+  const canonicalRepricer = readJson(options.canonicalRepricerPath, { rows: [] });
+  const payload = buildPayload(options, offers, skus, skuAliases, canonicalRepricer);
   writeJson(options.outputPath, payload);
   console.log(JSON.stringify({
     outputPath: options.outputPath,

@@ -301,7 +301,8 @@ jobs:
           node scripts/portal-yandex-market-price-sync.js \
             --output-file .portal-truth-output/price-sync/yandex-market-prices.json \
             --as-of-date '${{ steps.cutoff.outputs.value }}' \
-            --min-mapped-rows 10
+            --min-mapped-rows 100 \
+            --min-mapped-ratio 0.95
           node scripts/build-sku-registry-meta.js --input-dir data --output-dir data --run-date '${{ steps.cutoff.outputs.run_date }}'
           node scripts/build-logistics-from-warehouse-overlay.js --input-dir data --output-dir data --run-date '${{ steps.cutoff.outputs.run_date }}'
           node scripts/portal-smart-price-overlay-sync.js sync \
@@ -313,6 +314,18 @@ jobs:
             --api-price-file .portal-truth-output/price-sync/yandex-market-prices.json \
             "${SMART_PRICE_INPUT_ARGS[@]}"
           node scripts/portal-repricer-live-prices-sync.js sync --input-dir data --output data/repricer_live_prices.json --as-of-date '${{ steps.cutoff.outputs.run_date }}' --strict
+          node scripts/portal-yandex-market-price-sync.js \
+            --output-file .portal-truth-output/price-sync/yandex-market-live-prices.json \
+            --as-of-date '${{ steps.cutoff.outputs.run_date }}' \
+            --min-mapped-rows 100 \
+            --min-mapped-ratio 0.95
+          node scripts/portal-repricer-live-prices-merge.js \
+            --base data/repricer_live_prices.json \
+            --additional-price-file .portal-truth-output/price-sync/yandex-market-live-prices.json \
+            --output data/repricer_live_prices.json \
+            --as-of-date '${{ steps.cutoff.outputs.run_date }}' \
+            --required-platform ym \
+            --strict
           node scripts/build-order-procurement-layer.js
           node scripts/build-oos-control-layer.js --input-dir data --base-data-dir data --output-dir data
           node scripts/portal-repricer-live-signals-sync.js sync --input-dir data --output data/repricer_live_signals.json --as-of-date '${{ steps.cutoff.outputs.run_date }}' --strict

@@ -37,5 +37,26 @@ assert.match(daily, /ALTEA_YM_CAMPAIGN_ID:\s*\$\{\{ secrets\.ALTEA_YM_CAMPAIGN_I
 assert.match(daily, /node scripts\/portal-yandex-market-price-sync\.js/);
 assert.match(daily, /--as-of-date '\$\{\{ steps\.cutoff\.outputs\.value \}\}'/);
 assert.match(daily, /--api-price-file \.portal-truth-output\/price-sync\/yandex-market-prices\.json/);
+assert.match(daily, /yandex-market-live-prices\.json/);
+assert.match(daily, /node scripts\/portal-repricer-live-prices-merge\.js/);
+assert.match(daily, /--required-platform ym/);
+assert.match(daily, /--min-mapped-rows 100/);
+assert.match(daily, /--min-mapped-ratio 0\.95/);
+
+const livePrices = read('.github/workflows/portal-repricer-prices.yml');
+assert.match(livePrices, /ALTEA_YM_API_KEY:\s*\$\{\{ secrets\.ALTEA_YM_API_KEY \}\}/);
+assert.match(livePrices, /node scripts\/portal-yandex-market-price-sync\.js/);
+assert.match(livePrices, /node scripts\/portal-repricer-live-prices-merge\.js/);
+assert.match(livePrices, /--required-platform ym/);
+assert.match(livePrices, /--min-mapped-rows 100/);
+assert.match(livePrices, /--min-mapped-ratio 0\.95/);
+
+const priceApply = read('.github/workflows/portal-repricer-price-apply.yml');
+assert.match(priceApply, /ALTEA_YM_API_KEY:\s*\$\{\{ secrets\.ALTEA_YM_API_KEY \}\}/);
+assert.match(priceApply, /node scripts\/portal-yandex-market-price-sync\.js/);
+assert.match(priceApply, /node scripts\/portal-repricer-live-prices-merge\.js/);
+assert.match(priceApply, /--required-platform ym/);
+assert.match(priceApply, /--min-mapped-rows 100/);
+assert.match(priceApply, /--min-mapped-ratio 0\.95/);
 
 console.log('portal-auto-refresh-workflow selftest ok');

@@ -11,6 +11,13 @@ const { buildSmartPriceOverlay } = require('./build-smart-price-overlay');
 const { buildLegacyPricesLayer } = require('./build-legacy-prices-layer');
 const { buildLegacyRepricerLayer } = require('./build-legacy-repricer-layer');
 const {
+  asIsoDate,
+  mergeTimelineWithOverlay,
+  mergeWorkbenchPayload,
+  normalizeKey,
+  parseFreshStamp
+} = require('./smart-price-contour');
+const {
   atomicWriteJson,
   mergeOverlayWithPrevious,
   priceFactMetrics,
@@ -103,6 +110,9 @@ function resolveOptions(args) {
     apiPricePath: args['api-price-file'] || process.env.ALTEA_PRICE_API_OVERLAY_PATH
       ? path.resolve(args['api-price-file'] || process.env.ALTEA_PRICE_API_OVERLAY_PATH)
       : '',
+    directLivePricePath: args['direct-live-price-file'] || process.env.ALTEA_DIRECT_LIVE_PRICE_PATH
+      ? path.resolve(args['direct-live-price-file'] || process.env.ALTEA_DIRECT_LIVE_PRICE_PATH)
+      : '',
     overlayOutputPath: path.resolve(args['overlay-output-file'] || process.env.ALTEA_OVERLAY_JSON_PATH || cwdJoin('data', 'smart_price_overlay.json')),
     pricesOutputPath: path.resolve(args['prices-output-file'] || process.env.ALTEA_PRICES_JSON_PATH || cwdJoin('data', 'prices.json')),
     repricerOutputPath: path.resolve(args['repricer-output-file'] || process.env.ALTEA_REPRICER_JSON_PATH || cwdJoin('data', 'repricer.json')),
@@ -111,6 +121,7 @@ function resolveOptions(args) {
     maxSourceLagDays: Number(args['max-source-lag-days'] || process.env.ALTEA_PRICE_MAX_SOURCE_LAG_DAYS || 3),
     maxPlatformGapDays: Number(args['max-platform-gap-days'] || process.env.ALTEA_PRICE_MAX_PLATFORM_GAP_DAYS || 3),
     minLatestCoverageRatio: Number(args['min-latest-coverage-ratio'] || process.env.ALTEA_PRICE_MIN_LATEST_COVERAGE_RATIO || 0.55),
+    minDirectLiveMergeRatio: Number(args['min-direct-live-merge-ratio'] || process.env.ALTEA_PRICE_MIN_DIRECT_LIVE_MERGE_RATIO || 0.95),
     profileExportTimeoutMs: Number(args['profile-export-timeout-ms'] || process.env.ALTEA_SMART_PRICE_PROFILE_EXPORT_TIMEOUT_MS || DEFAULT_PROFILE_EXPORT_TIMEOUT_MS),
     dryRun: Boolean(args.dryRun)
   };
@@ -144,6 +155,136 @@ function readJson(filePath, fallback = null) {
   } catch (_error) {
     return fallback;
   }
+}
+
+function positiveNumber(value) {
+  const parsed = Number(value);
+  return Number.isFinite(parsed) && parsed > 0 ? parsed : null;
+}
+
+function directPriceDate(row = {}, fallback = '') {
+  return asIsoDate(
+    row.currentPriceDate
+    || row.valueDate
+    || row.historyFreshnessDate
+    || row.asOfDate
+    || fallback
+  );
+}
+
+function mergeDirectLivePriceOverlay(overlay = {}, livePayload = {}) {
+  if (!livePayload?.platforms || typeof livePayload.platforms !== 'object') return overlay;
+  const merged = mergeWorkbenchPayload(overlay, livePayload, { includeLiveOnlyRows: false });
+  const rowsByPlatform = {};
+  const sourceRowsByPlatform = {};
+  const dates = [];
+
+  Object.entries(livePayload.platforms).forEach(([platform, liveBucket]) => {
+    const liveRows = Array.isArray(liveBucket?.rows) ? liveBucket.rows : [];
+    sourceRowsByPlatform[platform] = liveRows.length;
+    const targetRows = Array.isArray(merged?.platforms?.[platform]?.rows)
+      ? merged.platforms[platform].rows
+      : [];
+    const targetByKey = new Map();
+    targetRows.forEach((row) => {
+      const key = normalizeKey(row?.articleKey || row?.article);
+      if (key && !targetByKey.has(key)) targetByKey.set(key, row);
+    });
+
+    let appliedRows = 0;
+    liveRows.forEach((liveRow) => {
+      const key = normalizeKey(liveRow?.articleKey || liveRow?.article);
+      const target = key ? targetByKey.get(key) : null;
+      if (!target) return;
+      const livePrice = positiveNumber(liveRow.currentFillPrice ?? liveRow.currentPrice);
+      const liveDate = directPriceDate(liveRow, livePayload.asOfDate || livePayload.generatedAt);
+      const targetDate = directPriceDate(target);
+      if (!livePrice || !liveDate) return;
+      if (targetDate && parseFreshStamp(liveDate) < parseFreshStamp(targetDate)) return;
+
+      target.currentFillPrice = livePrice;
+      target.currentPrice = livePrice;
+      target.currentSellerPrice = livePrice;
+      target.currentPriceDate = liveDate;
+      target.valueDate = liveDate;
+      target.historyFreshnessDate = liveDate;
+      target.currentSellerPriceSource = liveRow.currentSellerPriceSource || liveRow.currentPriceSource || 'direct-prices-api';
+      target.currentPriceSource = liveRow.currentPriceSource || liveRow.currentSellerPriceSource || 'direct-prices-api';
+      target.currentSellerPriceFile = 'repricer_live_prices.json';
+
+      const clientPrice = positiveNumber(liveRow.currentClientPrice);
+      if (clientPrice) {
+        target.currentClientPrice = clientPrice;
+        target.currentClientPriceDate = liveDate;
+        target.currentClientPriceSource = target.currentSellerPriceSource;
+      }
+      const listPrice = positiveNumber(liveRow.currentListPrice);
+      if (listPrice) target.currentListPrice = listPrice;
+      const sppPct = Number(liveRow.currentSppPct);
+      if (Number.isFinite(sppPct)) target.currentSppPct = sppPct;
+      target.daily = mergeTimelineWithOverlay(target.daily, {
+        ...liveRow,
+        valueDate: liveDate,
+        historyFreshnessDate: liveDate,
+        currentFillPrice: livePrice,
+        currentPrice: livePrice,
+        currentClientPrice: clientPrice,
+        daily: Array.isArray(liveRow.daily) ? liveRow.daily : []
+      });
+      appliedRows += 1;
+      dates.push(liveDate);
+    });
+    if (appliedRows) rowsByPlatform[platform] = appliedRows;
+  });
+
+  if (dates.length) {
+    const asOfDate = dates.sort().pop();
+    merged.priceCurrentSnapshot = {
+      importedAt: livePayload.generatedAt || new Date().toISOString(),
+      sourceFile: 'repricer_live_prices.json',
+      sourceKind: 'direct-api',
+      asOfDate,
+      rowsByPlatform
+    };
+    merged.directLivePriceSnapshot = {
+      status: livePayload.status || 'ok',
+      generatedAt: livePayload.generatedAt || '',
+      asOfDate,
+      rowsByPlatform,
+      sourceRowsByPlatform,
+      mergeCoverageByPlatform: Object.fromEntries(Object.entries(sourceRowsByPlatform).map(([platform, sourceRows]) => [
+        platform,
+        sourceRows > 0 ? Number(((rowsByPlatform[platform] || 0) / sourceRows).toFixed(6)) : null
+      ])),
+      blockingReasons: Array.isArray(livePayload.blockingReasons) ? livePayload.blockingReasons : []
+    };
+  }
+  return merged;
+}
+
+function assertDirectLivePriceMerge(livePayload = {}, mergedOverlay = {}, minMergeRatio = 0.95) {
+  const requiredPlatforms = ['wb', 'ozon', 'ym'];
+  if (!livePayload?.platforms || typeof livePayload.platforms !== 'object') {
+    throw new Error('Direct live price snapshot is missing or invalid');
+  }
+  if (livePayload.status && livePayload.status !== 'ok') {
+    throw new Error(`Direct live price snapshot status is ${livePayload.status}`);
+  }
+  if (Array.isArray(livePayload.blockingReasons) && livePayload.blockingReasons.length) {
+    throw new Error(`Direct live price snapshot is blocked: ${livePayload.blockingReasons.join('; ')}`);
+  }
+  const snapshot = mergedOverlay?.directLivePriceSnapshot || {};
+  requiredPlatforms.forEach((platform) => {
+    const sourceRows = Array.isArray(livePayload?.platforms?.[platform]?.rows)
+      ? livePayload.platforms[platform].rows.length
+      : 0;
+    const mergedRows = Number(snapshot?.rowsByPlatform?.[platform] || 0);
+    const ratio = sourceRows > 0 ? mergedRows / sourceRows : 0;
+    if (!sourceRows) throw new Error(`Direct live price snapshot has no ${platform} rows`);
+    if (ratio < minMergeRatio) {
+      throw new Error(`Direct live ${platform} merge coverage ${ratio.toFixed(4)} is below ${minMergeRatio.toFixed(4)}`);
+    }
+  });
 }
 
 function writeJson(filePath, payload) {
@@ -663,7 +804,12 @@ async function main() {
   try {
     const result = buildSmartPriceOverlay(workbookPath, stagedOverlayPath);
     const apiPriceOverlay = readJson(options.apiPricePath, null);
-    const rawOverlay = mergeApiPriceOverlay(result.payload, apiPriceOverlay);
+    const directLivePrices = readJson(options.directLivePricePath, null);
+    const apiMergedOverlay = mergeApiPriceOverlay(result.payload, apiPriceOverlay);
+    const rawOverlay = mergeDirectLivePriceOverlay(apiMergedOverlay, directLivePrices);
+    if (options.directLivePricePath) {
+      assertDirectLivePriceMerge(directLivePrices, rawOverlay, options.minDirectLiveMergeRatio);
+    }
     const mergedOverlay = mergeOverlayWithPrevious(rawOverlay, previousOverlay || {});
     const extraMarketplacePreserved = Boolean(
       previousOverlay?.extraMarketplace && !rawOverlay?.extraMarketplace
@@ -745,6 +891,8 @@ async function main() {
       sourceMtime: workbook.sourceMtimeIso || '',
       apiPriceFile: options.apiPricePath || '',
       apiPriceSnapshot: rawOverlay.priceApiSnapshot || null,
+      directLivePriceFile: options.directLivePricePath || '',
+      directLivePriceSnapshot: rawOverlay.directLivePriceSnapshot || null,
       fallbackPath: workbook.fallbackPath || '',
       fallbackAgeHours: workbook.fallbackAgeHours ?? null,
       overlay: {
@@ -775,9 +923,11 @@ async function main() {
 
 module.exports = {
   buildWorkbookRequestHeaders,
+  assertDirectLivePriceMerge,
   decodeWorkbookFromEnvironment,
   extractGoogleFileId,
   fetchWorkbookFromUrl,
+  mergeDirectLivePriceOverlay,
   mergeApiPriceOverlay,
   mergeOverlayWithPrevious,
   preserveExtraMarketplace,

@@ -342,12 +342,23 @@ if (!workflow.includes("--expected-run-date '${{ steps.cutoff.outputs.run_date }
   "--expected-date '${{ steps.cutoff.outputs.value }}'",
   '--max-source-lag-days 3',
   '--max-platform-gap-days 3',
-  '--min-latest-coverage-ratio 0.55'
+  '--min-latest-coverage-ratio 0.55',
+  '--min-direct-live-merge-ratio 0.95',
+  '--direct-live-price-file data/repricer_live_prices.json'
 ].forEach((argument) => {
   if (!workflow.includes(argument)) {
     fail(`daily price sync must include guarded argument: ${argument}`);
   }
 });
+const livePriceSyncCommand = 'node scripts/portal-repricer-live-prices-sync.js sync';
+const liveYmMergeCommand = 'node scripts/portal-repricer-live-prices-merge.js';
+const smartPriceSyncCommand = 'node scripts/portal-smart-price-overlay-sync.js sync';
+if (workflow.indexOf(livePriceSyncCommand) > workflow.indexOf(smartPriceSyncCommand)) {
+  fail('daily close must refresh direct WB/Ozon cabinet prices before building the smart-price overlay');
+}
+if (workflow.indexOf(liveYmMergeCommand) > workflow.indexOf(smartPriceSyncCommand)) {
+  fail('daily close must merge direct Yandex Market prices before building the smart-price overlay');
+}
 
 const iuBuildCommand = 'node scripts/build-iu-drr-summary.js --input-dir data --base-data-dir data --output-dir data';
 const qualityBuildCommand = 'node scripts/build-portal-data-quality-report.js --input-dir data --base-data-dir data --output-dir data';

@@ -26,8 +26,8 @@ assert.doesNotMatch(presentation, /void\s+stage\.offsetWidth/);
 
 for (const file of ['index.html', 'live-index.html', 'docs/index.html']) {
   const html = fs.readFileSync(path.join(root, file), 'utf8');
-  assert.match(html, /portal-interface-optimization\.css\?v=20260725chrome6/);
-  assert.match(html, /portal-premium-presentation\.js\?v=20260725chrome1/);
+  assert.match(html, /portal-interface-optimization\.css\?v=20260726layout7/);
+  assert.match(html, /portal-premium-presentation\.js\?v=20260725repricerchrome1/);
   assert.match(html, /portal-shell-customizer-v2\.js\?v=20260725chrome1/);
 }
 

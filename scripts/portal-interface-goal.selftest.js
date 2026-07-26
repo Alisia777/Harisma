@@ -14,6 +14,7 @@ assert.match(css, /:is\(#view-launches, #view-sku-contour\) \.sku-launch-v1-shel
 assert.match(css, /:is\(#view-launches, #view-sku-contour\) :is\(\.sl-v1-filter-dock, \.sl-v1-filter-grid\)/);
 assert.match(css, /@media \(prefers-reduced-motion: reduce\)[\s\S]*?transition:\s*none !important/);
 assert.match(css, /\.altea-premium-route-stage\.is-route-entering[\s\S]*?alteaInterfaceRouteIn 280ms/);
+assert.match(css, /\.altea-premium-route-stage--legacy > \.view\.active\s*\{[\s\S]*?height:\s*auto !important;[\s\S]*?min-height:\s*0 !important;[\s\S]*?overflow:\s*visible !important/);
 
 assert.match(shell, /'Показать панели · Alt\+M'/);
 assert.match(shell, /'Скрыть панели · Alt\+M'/);
@@ -26,7 +27,7 @@ assert.doesNotMatch(presentation, /void\s+stage\.offsetWidth/);
 
 for (const file of ['index.html', 'live-index.html', 'docs/index.html']) {
   const html = fs.readFileSync(path.join(root, file), 'utf8');
-  assert.match(html, /portal-interface-optimization\.css\?v=20260726layout7/);
+  assert.match(html, /portal-interface-optimization\.css\?v=20260726layout8/);
   assert.match(html, /portal-premium-presentation\.js\?v=20260725repricerchrome1/);
   assert.match(html, /portal-shell-customizer-v2\.js\?v=20260725chrome1/);
 }

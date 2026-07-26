@@ -340,7 +340,7 @@ if (workflow.indexOf(fullHealthCommand) < workflow.indexOf(iuBuildCommand)) {
 }
 if (workflow.lastIndexOf(qualityBuildCommand) < workflow.indexOf(iuBuildCommand)
   || workflow.lastIndexOf(qualityBuildCommand) < workflow.indexOf(dashboardBuildCommand)) {
-  fail('daily close must rebuild data quality after the final IU/DRR and dashboard snapshots');
+  fail('daily close must rebuild data quality after the final derived ads and dashboard snapshots');
 }
 if (workflow.lastIndexOf(skuMatrixBuildCommand) < workflow.lastIndexOf(qualityBuildCommand)) {
   fail('daily close must realign the SKU matrix after the final data-quality report');

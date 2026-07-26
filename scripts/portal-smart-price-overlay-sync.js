@@ -172,6 +172,23 @@ function directPriceDate(row = {}, fallback = '') {
   );
 }
 
+function directLiveOnlyOverlayRow(liveRow = {}, platform = '') {
+  const articleKey = String(liveRow.articleKey || liveRow.article || '').trim();
+  return {
+    articleKey,
+    article: String(liveRow.article || articleKey).trim(),
+    name: String(liveRow.name || '').trim(),
+    marketplace: platform,
+    platform,
+    nmId: liveRow.nmId ?? null,
+    offerId: String(liveRow.offerId || '').trim(),
+    productId: liveRow.productId ?? null,
+    currency: String(liveRow.currency || 'RUB').trim(),
+    sourceMode: 'direct-prices-api',
+    daily: []
+  };
+}
+
 function mergeDirectLivePriceOverlay(overlay = {}, livePayload = {}) {
   if (!livePayload?.platforms || typeof livePayload.platforms !== 'object') return overlay;
   const merged = mergeWorkbenchPayload(overlay, livePayload, { includeLiveOnlyRows: false });
@@ -194,8 +211,13 @@ function mergeDirectLivePriceOverlay(overlay = {}, livePayload = {}) {
     let appliedRows = 0;
     liveRows.forEach((liveRow) => {
       const key = normalizeKey(liveRow?.articleKey || liveRow?.article);
-      const target = key ? targetByKey.get(key) : null;
-      if (!target) return;
+      if (!key) return;
+      let target = targetByKey.get(key);
+      if (!target) {
+        target = directLiveOnlyOverlayRow(liveRow, platform);
+        targetRows.push(target);
+        targetByKey.set(key, target);
+      }
       const livePrice = positiveNumber(liveRow.currentFillPrice ?? liveRow.currentPrice);
       const liveDate = directPriceDate(liveRow, livePayload.asOfDate || livePayload.generatedAt);
       const targetDate = directPriceDate(target);
@@ -234,6 +256,8 @@ function mergeDirectLivePriceOverlay(overlay = {}, livePayload = {}) {
       appliedRows += 1;
       dates.push(liveDate);
     });
+    if (!merged.platforms[platform]) merged.platforms[platform] = {};
+    merged.platforms[platform].rows = targetRows;
     if (appliedRows) rowsByPlatform[platform] = appliedRows;
   });
 

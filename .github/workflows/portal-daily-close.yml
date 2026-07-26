@@ -414,6 +414,10 @@ jobs:
           path: |
             .portal-truth-output/**
             data/active_snapshot.json
+            data/repricer_live_prices.json
+            data/price_update_audit.json
+            data/smart_price_overlay.json
+            data/prices.json
             data/portal_dashboard_metrics.json
             data/portal_dashboard_reconciliation.json
             data/portal_plan_reconciliation.json

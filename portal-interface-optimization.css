@@ -323,6 +323,94 @@ html[data-theme] body.v87-imperial.altea-premium-shell .academy-btn-primary {
   color: var(--portal-theme-primary-text) !important;
 }
 
+/* Table filter and cell-detail popovers are mounted directly under <body>.
+ * Their legacy stylesheet hard-codes a navy background while inheriting text
+ * from the active theme, which makes light-theme copy black on black. Bridge
+ * the complete component to the shell palette so every route stays readable. */
+html[data-theme] body.v87-imperial.altea-premium-shell :is(
+  .altea-filter-popover,
+  .altea-cell-detail-popover
+) {
+  --text: var(--shell-text) !important;
+  --muted: var(--shell-muted) !important;
+  --faint: var(--shell-faint) !important;
+  --line: var(--shell-line) !important;
+  --line-strong: var(--shell-line2) !important;
+  border-color: var(--shell-line2) !important;
+  background: var(--portal-theme-surface-strong) !important;
+  color: var(--shell-text) !important;
+  box-shadow: 0 24px 72px color-mix(in srgb, var(--shell-text) 22%, transparent) !important;
+}
+
+html[data-theme] body.v87-imperial.altea-premium-shell :is(
+  .altea-cell-detail-popover__head h3,
+  .altea-cell-detail-popover__grid dd,
+  .altea-filter-popover__title,
+  .altea-filter-option span
+) {
+  color: var(--shell-text) !important;
+  text-shadow: none !important;
+}
+
+html[data-theme] body.v87-imperial.altea-premium-shell :is(
+  .altea-cell-detail-popover__head p,
+  .altea-cell-detail-popover__grid dt,
+  .altea-filter-popover__meta,
+  .altea-filter-field label,
+  .altea-filter-options-head,
+  .altea-filter-option em
+) {
+  color: var(--shell-muted) !important;
+  text-shadow: none !important;
+}
+
+html[data-theme] body.v87-imperial.altea-premium-shell :is(
+  .altea-cell-detail-popover__grid div,
+  .altea-filter-options
+) {
+  border-color: var(--shell-line) !important;
+  background: color-mix(in srgb, var(--shell-surface2) 88%, var(--shell-surface)) !important;
+  color: var(--shell-text) !important;
+}
+
+html[data-theme] body.v87-imperial.altea-premium-shell :is(
+  .altea-cell-detail-popover__head button,
+  .altea-filter-popover button,
+  .altea-filter-field select,
+  .altea-filter-field input
+) {
+  border-color: var(--shell-line) !important;
+  background: var(--portal-theme-control) !important;
+  color: var(--shell-text) !important;
+  box-shadow: none !important;
+}
+
+html[data-theme] body.v87-imperial.altea-premium-shell
+  .altea-filter-option:hover {
+  background: color-mix(in srgb, var(--shell-accent) 10%, transparent) !important;
+}
+
+html[data-theme] body.v87-imperial.altea-premium-shell
+  .altea-filter-popover__actions {
+  background: linear-gradient(
+    180deg,
+    transparent,
+    var(--shell-surface) 34%
+  ) !important;
+}
+
+html[data-theme] body.v87-imperial.altea-premium-shell
+  .altea-filter-popover__actions .primary {
+  border-color: color-mix(in srgb, var(--shell-accent) 56%, var(--shell-line)) !important;
+  background: var(--portal-theme-primary) !important;
+  color: var(--portal-theme-primary-text) !important;
+}
+
+html[data-theme] body.v87-imperial.altea-premium-shell
+  .altea-cell-detail-popover__grid dd.altea-cell-detail-popover__value {
+  color: var(--ok, var(--shell-accent)) !important;
+}
+
 /* Dashboard motion layer used to own a dark-only token set. */
 html[data-theme] body.v87-imperial.altea-premium-shell
   #view-dashboard :is(.ceo-motion-v1, .ceo-drawer-back),

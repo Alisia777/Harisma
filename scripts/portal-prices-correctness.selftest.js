@@ -15,6 +15,58 @@ const MIME = {
   '.json': 'application/json; charset=utf-8'
 };
 
+function buildTestCabinetLivePayload() {
+  const live = JSON.parse(fs.readFileSync(path.join(ROOT, 'data', 'repricer_live_prices.json'), 'utf8'));
+  const prices = JSON.parse(fs.readFileSync(path.join(ROOT, 'data', 'prices.json'), 'utf8'));
+  const ymRows = (prices?.platforms?.ym?.rows || [])
+    .filter((row) => Number.isFinite(Number(row?.currentPrice)) && Number(row.currentPrice) > 0)
+    .map((row) => ({
+      id: `ym|${row.articleKey}`,
+      articleKey: row.articleKey,
+      normalizedArticleKey: String(row.articleKey || '').toLowerCase().replace(/[^a-zа-я0-9]+/gi, ''),
+      article: row.article || row.articleKey,
+      currentFillPrice: Number(row.currentPrice),
+      currentPrice: Number(row.currentPrice),
+      currentSellerPrice: Number(row.currentPrice),
+      currentClientPrice: Number(row.currentClientPrice) || null,
+      currentPriceDate: row.currentPriceDate,
+      valueDate: row.currentPriceDate,
+      historyFreshnessDate: row.historyFreshnessDate || row.currentPriceDate,
+      currentSellerPriceSource: 'yandex-market-offer-prices-api',
+      currentPriceSource: 'yandex-market-offer-prices-api',
+      currentSellerPriceFile: 'repricer_live_prices.json',
+      daily: [{
+        date: row.currentPriceDate,
+        price: Number(row.currentPrice),
+        clientPrice: Number(row.currentClientPrice) || null,
+        sppPct: null
+      }],
+      platform: 'ym',
+      marketplace: 'ym',
+      sourceMode: 'yandex-market-cabinet-current-snapshot',
+      sourceStatus: 'direct_api',
+      source: 'Yandex Market offer-prices API'
+    }));
+  const asOfDate = ymRows.map((row) => row.currentPriceDate).filter(Boolean).sort().pop() || live.asOfDate;
+  return {
+    ...live,
+    generatedAt: prices.generatedAt || live.generatedAt,
+    asOfDate,
+    source: `${live.source || ''} + Yandex Market offer-prices API test fixture`,
+    platforms: {
+      ...(live.platforms || {}),
+      ym: {
+        label: 'Я.Маркет',
+        source: 'Yandex Market offer-prices API',
+        asOfDate,
+        rows: ymRows
+      }
+    }
+  };
+}
+
+const TEST_CABINET_LIVE_PAYLOAD = buildTestCabinetLivePayload();
+
 function serve() {
   const server = http.createServer((request, response) => {
     const url = new URL(request.url || '/', 'http://127.0.0.1');
@@ -25,6 +77,14 @@ function serve() {
     if (!filePath.startsWith(ROOT) || !fs.existsSync(filePath) || fs.statSync(filePath).isDirectory()) {
       response.writeHead(404);
       response.end('not found');
+      return;
+    }
+    if (relative === 'data/repricer_live_prices.json') {
+      response.writeHead(200, {
+        'Content-Type': MIME['.json'],
+        'Cache-Control': 'no-store'
+      });
+      response.end(JSON.stringify(TEST_CABINET_LIVE_PAYLOAD));
       return;
     }
     response.writeHead(200, {
@@ -116,6 +176,45 @@ async function auditMarketplace(page, market) {
   }, market);
 }
 
+async function waitForCabinetCoverage(page) {
+  const requiredMarkets = ['wb', 'ozon', 'ym'];
+  for (let attempt = 0; attempt < 3; attempt += 1) {
+    const coverage = await page.evaluate((markets) => {
+      const state = window.__alteaPriceWorkbenchState || {};
+      return {
+        loaded: Boolean(state.loaded),
+        loading: Boolean(state.loading),
+        loadNonce: Number(state.loadNonce || 0),
+        sourceNote: state.sourceNote || '',
+        markets: Object.fromEntries(markets.map((market) => {
+          const pool = (state.rows || []).filter((row) => row.market === market);
+          return [market, {
+            rows: pool.length,
+            liveRows: pool.filter((row) => row.currentFillPriceSource === 'live').length
+          }];
+        }))
+      };
+    }, requiredMarkets);
+    const missing = requiredMarkets.filter((market) => (
+      coverage.markets?.[market]?.rows <= 0 || coverage.markets?.[market]?.liveRows <= 0
+    ));
+    if (!missing.length) return coverage;
+    if (attempt === 2) {
+      throw new Error(`Cabinet price snapshot did not cover ${missing.join(', ')} after retries: ${JSON.stringify(coverage)}`);
+    }
+
+    await page.waitForTimeout(750 * (attempt + 1));
+    await page.evaluate(() => {
+      Promise.resolve(window.__alteaRefreshPriceWorkbench?.(true)).catch(() => {});
+    });
+    await page.waitForFunction((previousNonce) => {
+      const state = window.__alteaPriceWorkbenchState || {};
+      return Number(state.loadNonce || 0) > previousNonce && state.loaded && !state.loading;
+    }, coverage.loadNonce, { timeout: 120000 });
+  }
+  return null;
+}
+
 async function run() {
   const server = await serve();
   const port = server.address().port;
@@ -123,6 +222,11 @@ async function run() {
   const page = await browser.newPage({ viewport: { width: 1600, height: 1000 } });
   const pageErrors = [];
   page.on('pageerror', (error) => pageErrors.push(error.message));
+  await page.route('**/rest/v1/portal_data_snapshots**', (route) => route.fulfill({
+    status: 200,
+    contentType: 'application/json',
+    body: '[]'
+  }));
 
   try {
     await page.addInitScript(() => {
@@ -142,6 +246,7 @@ async function run() {
       && document.querySelector('#view-prices .prices-v1-shell')
       && document.querySelector('[data-prices-v1-pool-quality]')
     ), null, { timeout: 120000 });
+    await waitForCabinetCoverage(page);
 
     const marketplaceAudits = [];
     for (const [market, label] of [['wb', 'WB'], ['ozon', 'Ozon'], ['ym', 'Я.Маркет']]) {
@@ -500,7 +605,7 @@ async function run() {
     ['index.html', 'live-index.html', 'docs/index.html'].forEach((fileName) => {
       const html = fs.readFileSync(path.join(ROOT, fileName), 'utf8');
       assert.ok(
-        html.includes('portal-price-workbench-simple-live.js?v=20260726cabinetwait1'),
+        html.includes('portal-price-workbench-simple-live.js?v=20260726cabinetwait2'),
         `${fileName} должен обновить кэш загрузчика кабинетных цен`
       );
     });

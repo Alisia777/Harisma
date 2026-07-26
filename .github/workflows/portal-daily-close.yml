@@ -19,7 +19,12 @@ on:
         type: boolean
 
 concurrency:
-  group: portal-daily-close
+  # GitHub evaluates concurrency before the job-level `if`. A failed or
+  # scheduled Portal data truth workflow therefore used to cancel a healthy
+  # production close even though its replacement close was immediately
+  # skipped. Give ineligible workflow_run events an isolated group; only a
+  # successful, non-scheduled main truth gate may supersede an active close.
+  group: ${{ github.event_name == 'workflow_run' && (github.event.workflow_run.conclusion != 'success' || github.event.workflow_run.head_branch != 'main' || github.event.workflow_run.event == 'schedule') && format('portal-daily-close-ignored-{0}', github.run_id) || 'portal-daily-close' }}
   # A close for an older main SHA must never finish after a newer, already
   # truth-gated SHA and overwrite the active generation with obsolete code.
   cancel-in-progress: true

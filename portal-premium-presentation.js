@@ -2403,14 +2403,21 @@
     Array.prototype.forEach.call(document.querySelectorAll('[data-premium-stage]'), function (stage) {
       var isActive = stage.dataset.premiumStage === activeId;
       var wasHidden = stage.hidden;
+      if (!isActive) {
+        if (stage.__alteaRouteEnterTimer) {
+          window.clearTimeout(stage.__alteaRouteEnterTimer);
+          stage.__alteaRouteEnterTimer = 0;
+        }
+        stage.classList.remove('is-route-entering');
+      } else if (wasHidden) {
+        stage.classList.add('is-route-entering');
+      }
       stage.hidden = !isActive;
       if (isActive && wasHidden) {
-        stage.classList.remove('is-route-entering');
-        void stage.offsetWidth;
-        stage.classList.add('is-route-entering');
-        window.setTimeout(function () {
+        stage.__alteaRouteEnterTimer = window.setTimeout(function () {
           if (!stage.hidden) stage.classList.remove('is-route-entering');
-        }, 720);
+          stage.__alteaRouteEnterTimer = 0;
+        }, 360);
       }
     });
     syncShell(activeId);

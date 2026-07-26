@@ -4,7 +4,9 @@ const assert = require('assert');
 const XLSX = require('xlsx');
 const {
   aggregatePlatform,
+  buildRetailSkuResolver,
   buildPreservedSourceStatus,
+  canonicalizeRetailPlatform,
   isoDate,
   letualBusinessDate,
   numberOrZero,
@@ -26,6 +28,7 @@ appendSheet(workbook, 'База  Лету', [
   ['1', '2026-07-20', '2026-07-21', '2026-07-20-2026-07-20', 'Крем', '4600000000000', 'MPL1', 'cream_1', 2, 1000, 1, 0, 0, 10, 8],
   ['1', '2026-07-20', 'Дата выгрузки', 'Период выгрузки', 'Название товара', 'Штрихкод', 'Артикул Алькор', 'Артикул', 'Всего. Заказано', 'Всего. Заказано, Р', 'Всего. Транзит', 'Всего. Доставлено', 'Всего. Доставлено, Р', 'Всего. Остаток в продаже', 'Центральный склад. Остаток в продаже'],
   ['1', '2026-07-20', '2026-07-22', '2026-07-20-2026-07-20', 'Крем', '4600000000000', 'MPL1', 'cream_1', 2, 1000, 0, 2, 1000, 9, 7],
+  ['1', '2026-07-20', '2026-07-22', '2026-07-20-2026-07-20', 'QEEP внешний бренд', '4600000000999', 'MPL-QEEP', 'qeep_external_1', 10, 10000, 0, 10, 10000, 20, 20],
   ['1', '2026-07-21', '2026-06-08', '2026-06-07-2026-06-07', 'Старая строка', '4600000000002', 'MPL2', 'stale_future_date', 99, 99000, 0, 0, 0, 1, 1],
   ['1', '2026-07-21', '2026-07-21', '2026-07-01-2026-07-20', 'Многодневный отчёт', '4600000000003', 'MPL3', 'multi_day_report', 99, 99000, 0, 0, 0, 1, 1],
   ['1', '2026-07-21', 'Дата выгрузки', 'Период выгрузки', 'Название товара', 'Штрихкод', 'Артикул Алькор', 'Артикул', 'Всего. Заказано', 'Всего. Заказано, Р', 'Всего. Транзит', 'Всего. Доставлено', 'Всего. Доставлено, Р', 'Всего. Остаток в продаже', 'Центральный склад. Остаток в продаже'],
@@ -36,26 +39,31 @@ appendSheet(workbook, 'База  ЗЯ', [
   [], [], [],
   ['Наименование', 'Номенклатура', 'Артикул', 'Штрихкод', 'Заказано руб', 'Доставлено руб', 'В пути руб', 'Отменено руб', 'Заказано шт', 'Доставлено шт', 'В пути шт', 'Отменено шт', 'Возвраты шт', 'Юр Лицо', 'Дата'],
   ['Товар', 'N1', 'product_1', '4600000000001', 900, 0, 900, 0, 3, 0, 3, 0, 0, '1', '20.07.2026'],
-  ['Товар', 'N1', 'product_1', '4600000000001', 900, 600, 300, 0, 3, 2, 1, 0, 0, '1', '20.07.2026']
+  ['Товар', 'N1', 'product_1', '4600000000001', 900, 600, 300, 0, 3, 2, 1, 0, 0, '1', '20.07.2026'],
+  ['QEEP внешний бренд', 'N-QEEP', 'qeep_external_1', '4600000000999', 10000, 10000, 0, 0, 10, 10, 0, 0, 0, '1', '20.07.2026']
 ]);
 
 appendSheet(workbook, 'База  ММ', [
   [], [],
   ['SKU', 'Наименование', 'Продано (ед.)', 'Количество возвратов (ед.)', 'Выручка (руб.)', 'Себестоимость (руб.)', 'Выручка с вычетом комиссии (руб.)', 'Комиссия маркетплейса (руб.)', 'Seller SKU ID', 'Юр Лицо', 'Дата'],
   ['MM1', 'Товар MM', 1, 0, 800, 100, 600, 200, 'product_mm', '1', '20.07.2026'],
-  ['MM1', 'Товар MM', 1, 0, 800, 100, 600, 200, 'product_mm', '1', '20.07.2026']
+  ['MM1', 'Товар MM', 1, 0, 800, 100, 600, 200, 'product_mm', '1', '20.07.2026'],
+  ['QEEP-MM', 'QEEP внешний бренд', 10, 0, 10000, 1000, 8000, 2000, 'qeep_external_1', '1', '20.07.2026']
 ]);
 
 const parsed = parseRetailWorkbook(workbook, { from: '2026-07-20', to: '2026-07-21' });
 assert.strictEqual(parsed.letu.length, 2, 'Letual revisions must be deduplicated while an explicit empty-day export stays visible');
+assert.strictEqual(parsed.letu.excludedOutOfScopeRows, 1, 'Letual QEEP rows must stay outside the Altea fact contour');
 assert.strictEqual(parsed.letu[0].date, '2026-07-20', 'Letual business date must come from the one-day export period');
 assert.strictEqual(parsed.letu[0].deliveredUnits, 2, 'Letual must keep the newest export revision');
 assert.strictEqual(parsed.letu[0].stock, 9, 'Letual total stock must be parsed');
 assert.strictEqual(parsed.letu[0].warehouseBreakdown['Центральный склад'].stock, 7, 'Letual warehouse stock must be parsed');
 assert.strictEqual(parsed.letu[1].coverageOnly, true, 'An empty Letual export must be represented as a zero-fact coverage marker');
 assert.strictEqual(parsed.goldapple.length, 1, 'ZYA revisions must be deduplicated');
+assert.strictEqual(parsed.goldapple.excludedOutOfScopeRows, 1, 'ZYA QEEP rows must stay outside the Altea fact contour');
 assert.strictEqual(parsed.goldapple[0].deliveredRevenue, 600, 'ZYA must keep the last status revision');
 assert.strictEqual(parsed.megamarket.length, 1, 'Megamarket duplicate rows must not double sales');
+assert.strictEqual(parsed.megamarket.excludedOutOfScopeRows, 1, 'Megamarket QEEP rows must stay outside the Altea fact contour');
 
 const mmAggregate = aggregatePlatform(parsed.megamarket, {});
 assert.strictEqual(mmAggregate.series[0].ordersRevenue, 800);
@@ -72,7 +80,17 @@ const base = {
     {
       key: 'letu',
       label: 'Лэтуаль',
-      series: [{ date: '2026-07-19', units: 1, revenue: 500 }],
+      series: [{
+        date: '2026-07-19',
+        units: 3,
+        revenue: 1500,
+        ordersUnits: 3,
+        ordersRevenue: 1500,
+        deliveredUnits: 3,
+        deliveredRevenue: 1500,
+        buyoutUnits: 3,
+        buyoutRevenue: 1500
+      }],
       articles: [
         {
           articleKey: 'cream_1',
@@ -85,6 +103,24 @@ const base = {
           article: 'legacy_1',
           daily: [{ date: '2026-07-19', label: '2026-07-19', ordersUnits: 1, ordersRevenue: 300, revenue: 300 }],
           monthly: [{ monthKey: '2026-07', date: '2026-07-01', ordersUnits: 1, ordersRevenue: 300, revenue: 300 }]
+        },
+        {
+          articleKey: 'qeep_legacy',
+          article: 'qeep_legacy',
+          name: 'QEEP внешний бренд',
+          daily: [{
+            date: '2026-07-19',
+            label: '2026-07-19',
+            units: 1,
+            revenue: 700,
+            ordersUnits: 1,
+            ordersRevenue: 700,
+            deliveredUnits: 1,
+            deliveredRevenue: 700,
+            buyoutUnits: 1,
+            buyoutRevenue: 700
+          }],
+          monthly: [{ monthKey: '2026-07', date: '2026-07-01', ordersUnits: 1, ordersRevenue: 700, revenue: 700 }]
         }
       ]
     },
@@ -93,11 +129,53 @@ const base = {
     { key: 'all', label: 'Все площадки', series: [] }
   ]
 };
+const skuResolver = buildRetailSkuResolver(
+  [
+    { articleKey: 'product_1_canonical', article: 'product_1_canonical', name: 'Товар' },
+    { articleKey: 'cream_1', article: 'cream_1', name: 'Крем' },
+    { articleKey: 'product_mm', article: 'product_mm', name: 'Товар MM' }
+  ],
+  {
+    aliases: [
+      {
+        target_sku: 'product_1_canonical',
+        platform: 'goldapple',
+        api_sku: 'N1',
+        status: 'active'
+      },
+      {
+        target_sku: 'product_1_canonical',
+        platform: 'goldapple',
+        api_sku: 'N2',
+        status: 'active'
+      }
+    ]
+  }
+);
+const canonicalizedDuplicate = canonicalizeRetailPlatform({
+  key: 'goldapple',
+  articles: [
+    {
+      articleKey: 'legacy-one',
+      externalId: 'N1',
+      daily: [{ date: '2026-07-20', units: 1, revenue: 100, ordersUnits: 1, ordersRevenue: 100 }]
+    },
+    {
+      articleKey: 'legacy-two',
+      externalId: 'N2',
+      daily: [{ date: '2026-07-20', units: 2, revenue: 250, ordersUnits: 2, ordersRevenue: 250 }]
+    }
+  ]
+}, skuResolver);
+assert.strictEqual(canonicalizedDuplicate.articles.length, 1, 'Aliases of one SKU must collapse into one canonical retail row');
+assert.strictEqual(canonicalizedDuplicate.articles[0].daily[0].revenue, 350, 'Collapsed retail aliases must add facts instead of overwriting one another');
+assert.strictEqual(canonicalizedDuplicate.articles[0].monthly[0].revenue, 350, 'Monthly canonical facts must be rebuilt from the additive daily series');
 const updated = updatePayload(base, parsed, {
   to: '2026-07-20',
   sourceId: 'test',
   resolvedSource: 'workbook-fallback:data/external_sources/retail_network_sales.xlsx',
-  sourceWarning: 'service account unavailable'
+  sourceWarning: 'service account unavailable',
+  skuResolver
 });
 const zyaPoint = updated.payload.platforms.find((platform) => platform.key === 'goldapple').series[0];
 assert.strictEqual(zyaPoint.units, 3, 'Actual ZYA daily fact must replace the synthetic point');
@@ -108,8 +186,19 @@ assert.strictEqual(updated.status.source, 'workbook-fallback:data/external_sourc
 assert.strictEqual(updated.status.sourceWarning, 'service account unavailable');
 assert.strictEqual(updated.payload.extraMarketplace.source, 'retail-workbook-daily');
 assert.strictEqual(updated.payload.extraMarketplace.workbook, 'workbook-fallback:data/external_sources/retail_network_sales.xlsx');
+assert.deepStrictEqual(
+  updated.payload.platforms.find((platform) => platform.key === 'goldapple').articles.map((article) => article.articleKey),
+  ['product_1_canonical'],
+  'Retail nomenclature aliases must canonicalize truncated seller articles'
+);
+assert.strictEqual(
+  updated.payload.platforms.find((platform) => platform.key === 'goldapple').articles[0].canonicalMatch.matchedBy,
+  'externalId'
+);
 const updatedLetu = updated.payload.platforms.find((platform) => platform.key === 'letu');
 assert.deepStrictEqual(updatedLetu.articles.map((article) => article.articleKey), ['cream_1', 'legacy_1']);
+assert.strictEqual(updatedLetu.series.find((point) => point.date === '2026-07-19').revenue, 800, 'Preserved QEEP revenue must be removed from the platform aggregate');
+assert.strictEqual(updatedLetu.diagnostics.scopeExcludedArticleCount, 1, 'Historical scope cleanup must remain auditable');
 assert.deepStrictEqual(updatedLetu.articles.find((article) => article.articleKey === 'cream_1').daily.map((point) => point.date), ['2026-07-19', '2026-07-20']);
 assert.strictEqual(updatedLetu.articles.find((article) => article.articleKey === 'cream_1').monthly[0].revenue, 1500);
 

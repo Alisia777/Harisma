@@ -167,6 +167,28 @@ const OUT_OF_SCOPE_BRAND_TOKENS = [
   '\u043a\u0432\u0438\u043f',
   '\u0445\u0430\u0440\u043b\u0438'
 ].map((token) => normalizeSkuToken(token));
+const SCOPE_ADDITIVE_FIELDS = [
+  'units',
+  'revenue',
+  'ordersUnits',
+  'ordersRevenue',
+  'deliveredUnits',
+  'deliveredRevenue',
+  'buyoutUnits',
+  'buyoutRevenue',
+  'transitUnits',
+  'transitRevenue',
+  'cancellationsUnits',
+  'cancelRevenue',
+  'returnsUnits',
+  'stock',
+  'cogs',
+  'commission',
+  'netPayout',
+  'financeTurnover',
+  'financialResult',
+  'estimatedMargin'
+];
 
 function isOutOfScopeBrandText(value) {
   const compact = normalizeSkuToken(value);
@@ -1196,9 +1218,10 @@ function mergeItemSeries(baseSeries, extraSeries) {
 }
 
 function pruneInactiveExtraRows(rows, extraPlatformOrder = EXTRA_PLATFORM_ORDER, preserveUnrequestedExtraPlatforms = false) {
-  if (preserveUnrequestedExtraPlatforms) return Array.isArray(rows) ? rows : [];
+  const inScopeRows = (Array.isArray(rows) ? rows : []).filter((row) => !isOutOfScopeBrandRow(row));
+  if (preserveUnrequestedExtraPlatforms) return inScopeRows;
   const activeExtraPlatforms = new Set(extraPlatformOrder.map((key) => canonicalPlatformKey(key)));
-  return (Array.isArray(rows) ? rows : []).filter((row) => {
+  return inScopeRows.filter((row) => {
     const platformKey = canonicalPlatformKey(row?.platformKey || row?.platform || row?.key);
     return shouldKeepExtraMarketplaceBucket(platformKey, activeExtraPlatforms);
   });
@@ -1511,6 +1534,50 @@ function articleRevenueTotal(article) {
     .reduce((sum, month) => sum + numberOrZero(month?.revenue), 0);
 }
 
+function articleDailyTotalsByDate(articles = []) {
+  const byDate = new Map();
+  for (const article of Array.isArray(articles) ? articles : []) {
+    for (const point of Array.isArray(article?.daily) ? article.daily : []) {
+      const date = isoDate(point?.date || point?.label);
+      if (!date) continue;
+      const totals = byDate.get(date) || Object.fromEntries(SCOPE_ADDITIVE_FIELDS.map((field) => [field, 0]));
+      for (const field of SCOPE_ADDITIVE_FIELDS) totals[field] += numberOrZero(point?.[field]);
+      byDate.set(date, totals);
+    }
+  }
+  return byDate;
+}
+
+function subtractOutOfScopeArticlesFromSeries(series = [], includedArticles = [], excludedArticles = [], cutoffDate = '') {
+  const includedByDate = articleDailyTotalsByDate(includedArticles);
+  const excludedByDate = articleDailyTotalsByDate(excludedArticles);
+  let adjustedDates = 0;
+  const cleaned = trimSeriesToDate(series, cutoffDate).map((point) => {
+    const excluded = excludedByDate.get(point.date);
+    if (!excluded) return point;
+    const included = includedByDate.get(point.date) || {};
+    const metric = numberOrZero(excluded.revenue) || numberOrZero(included.revenue)
+      ? 'revenue'
+      : 'units';
+    const actual = numberOrZero(point?.[metric]);
+    const expectedIncluded = numberOrZero(included?.[metric]);
+    const expectedWithExcluded = expectedIncluded + numberOrZero(excluded?.[metric]);
+    const includesScopeLeak = Math.abs(actual - expectedWithExcluded) <= Math.abs(actual - expectedIncluded);
+    if (!includesScopeLeak) return point;
+    adjustedDates += 1;
+    const next = { ...point };
+    for (const field of SCOPE_ADDITIVE_FIELDS) {
+      const value = numberOrZero(point?.[field]) - numberOrZero(excluded?.[field]);
+      next[field] = Number((Math.abs(value) < 0.000001 ? 0 : value).toFixed(4));
+    }
+    next.price = next.ordersUnits > 0
+      ? Number((next.ordersRevenue / next.ordersUnits).toFixed(4))
+      : 0;
+    return next;
+  });
+  return { series: cleaned, adjustedDates };
+}
+
 function articleDiagnostics(articles) {
   const summary = {
     articleCount: articles.length,
@@ -1548,6 +1615,34 @@ function articleDiagnostics(articles) {
   summary.matchedRevenue = Number(summary.matchedRevenue.toFixed(4));
   summary.unmatchedRevenue = Number(summary.unmatchedRevenue.toFixed(4));
   return summary;
+}
+
+function sanitizeExtraPlatformToDate(bucket, cutoffDate) {
+  const trimmed = trimExtraPlatformToDate(bucket, cutoffDate);
+  if (!trimmed || typeof trimmed !== 'object') return trimmed;
+  const sourceArticles = Array.isArray(trimmed.articles) ? trimmed.articles : [];
+  const excludedArticles = sourceArticles.filter(isOutOfScopeBrandRow);
+  const articles = sourceArticles.filter((article) => !isOutOfScopeBrandRow(article));
+  const aggregateCleanup = subtractOutOfScopeArticlesFromSeries(
+    trimmed.series,
+    articles,
+    excludedArticles,
+    cutoffDate
+  );
+  return {
+    ...trimmed,
+    series: aggregateCleanup.series,
+    articles,
+    diagnostics: {
+      ...(trimmed.diagnostics || {}),
+      ...articleDiagnostics(articles),
+      scopeExcludedArticleCount: excludedArticles.length,
+      scopeExcludedRevenue: Number(excludedArticles
+        .reduce((sum, article) => sum + articleRevenueTotal(article), 0)
+        .toFixed(4)),
+      scopeAggregateAdjustedDates: aggregateCleanup.adjustedDates
+    }
+  };
 }
 
 function preservedExtraDiagnostics(articles, existingDiagnostics, sourceInfo) {
@@ -1735,7 +1830,7 @@ function updatePlatformTrends(basePlatformTrends, platformTotals, articleRows, a
       .filter(([key]) => preserveUnrequestedExtraPlatforms || shouldKeepExtraMarketplaceBucket(key, activeExtraPlatforms))
       .map(([key, bucket]) => [
         canonicalPlatformKey(key),
-        trimExtraPlatformToDate(bucket, cutoffDate)
+        sanitizeExtraPlatformToDate(bucket, cutoffDate)
       ]))
   };
 
@@ -1749,10 +1844,10 @@ function updatePlatformTrends(basePlatformTrends, platformTotals, articleRows, a
 
   for (const key of extraPlatformOrder) {
     const newSeries = buildPlatformSeriesFromMonthly(platformTotals.get(key) || new Map(), asOfDate);
-    const existing = platformMap.get(key) || {};
+    const existing = sanitizeExtraPlatformToDate(platformMap.get(key) || {}, cutoffDate);
     let series = mergeSeriesFillMissing(existing.series, newSeries, cutoffDate);
     const incomingArticles = (extraArticleMap.get(key) || []).sort((left, right) => left.articleKey.localeCompare(right.articleKey));
-    const preservedBucket = trimExtraPlatformToDate(existingExtraPlatforms[key], cutoffDate);
+    const preservedBucket = sanitizeExtraPlatformToDate(existingExtraPlatforms[key], cutoffDate);
     const preservedArticles = Array.isArray(preservedBucket?.articles) ? preservedBucket.articles : [];
     let articles = mergeArticlesFillMissing(preservedArticles, incomingArticles, cutoffDate);
     let diagnostics = articleDiagnostics(articles);
@@ -1791,12 +1886,10 @@ function updatePlatformTrends(basePlatformTrends, platformTotals, articleRows, a
     if (key === 'all') continue;
     if (EXTRA_PLATFORM_ORDER.includes(key)) {
       if (preserveUnrequestedExtraPlatforms && !activeExtraPlatforms.has(key)) {
-        resultPlatforms.push({
+        resultPlatforms.push(sanitizeExtraPlatformToDate({
           ...platform,
-          series: trimSeriesToDate(platform?.series || [], cutoffDate),
-          articles: (Array.isArray(platform?.articles) ? platform.articles : [])
-            .map((article) => trimArticleDailyToDate(article, cutoffDate))
-        });
+          series: trimSeriesToDate(platform?.series || [], cutoffDate)
+        }, cutoffDate));
       }
       continue;
     }
@@ -2056,9 +2149,10 @@ function enrichSmartPriceOverlayWithPrices(baseOverlay, priceSnapshot = {}) {
   const marginLookup = buildSmartPriceMarginLookup(priceSnapshot);
   for (const [rawKey, bucket] of Object.entries(next.platforms)) {
     const platformKey = smartPriceOverlayKey(rawKey);
-    if (!['wb', 'ozon', 'ya'].includes(platformKey) || !Array.isArray(bucket?.rows)) continue;
+    if (!Array.isArray(bucket?.rows)) continue;
+    bucket.rows = bucket.rows.filter((row) => !isOutOfScopeBrandRow(row));
+    if (!['wb', 'ozon', 'ya'].includes(platformKey)) continue;
     bucket.rows = bucket.rows
-      .filter((row) => !isOutOfScopeBrandRow(row))
       .map((row) => mergeSmartPriceMarginFields(row, findSmartPriceMarginRow(marginLookup, platformKey, row)));
   }
   return next;

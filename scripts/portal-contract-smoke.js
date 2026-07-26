@@ -215,6 +215,14 @@ async function main() {
   const url = args.url || process.env.PORTAL_CONTRACT_URL || 'http://127.0.0.1:4187/index.html';
   const browser = await chromium.launch({ headless: true });
   const page = await browser.newPage({ viewport: { width: 1440, height: 950 } });
+  if (args['local-auth-bypass'] && isLocalUrl(url)) {
+    await page.addInitScript(() => {
+      window.APP_CONFIG = {
+        ...(window.APP_CONFIG || {}),
+        portalAuthRequired: false
+      };
+    });
+  }
   page.setDefaultTimeout(30000);
   page.setDefaultNavigationTimeout(20000);
   const pageErrors = [];
@@ -232,7 +240,7 @@ async function main() {
     page.on('requestfailed', (request) => {
       const requestUrl = request.url();
       const failureText = request.failure()?.errorText || 'unknown';
-      if (/ERR_ABORTED/i.test(failureText)) return;
+      if (/ERR_ABORTED|ERR_NETWORK_IO_SUSPENDED/i.test(failureText)) return;
       if (isLocalUrl(requestUrl) && !isOptionalLocalMiss(requestUrl)) {
         failedLocal.push(`failed ${requestUrl}: ${failureText}`);
       }
@@ -752,9 +760,30 @@ async function main() {
         else form?.dispatchEvent(new Event('submit', { bubbles: true, cancelable: true }));
       });
       await page.waitForFunction(() => {
-        const overrides = window.__alteaAppState?.storage?.productLifecycleOverrides || [];
-        return overrides.some((item) => item.key === 'watch' && /contract smoke lifecycle status/.test(item.note || ''));
+        const state = window.__alteaAppState;
+        const approvals = state?.storage?.skuDecisionApprovals || [];
+        return approvals.some((item) => (
+          item.articleKey === state?.activeSku
+          && item.type === 'PRODUCT_STATUS_CHANGE'
+          && item.status === 'waiting_rop'
+          && item.payload?.proposedStatusKey === 'watch'
+          && /contract smoke lifecycle status/.test(item.reason || '')
+        ));
       }, undefined, { timeout: 12000 });
+      const lifecycleApprovalCheck = await page.evaluate(() => {
+        const state = window.__alteaAppState;
+        const pending = (state?.storage?.skuDecisionApprovals || []).find((item) => (
+          item.articleKey === state?.activeSku
+          && item.type === 'PRODUCT_STATUS_CHANGE'
+          && /contract smoke lifecycle status/.test(item.reason || '')
+        ));
+        const applied = (state?.storage?.productLifecycleOverrides || [])
+          .find((item) => item.articleKey === state?.activeSku && item.key === 'watch');
+        return { pending, applied: Boolean(applied) };
+      });
+      if (!lifecycleApprovalCheck.pending?.taskId || lifecycleApprovalCheck.applied) {
+        throw new Error(`Lifecycle approval gate did not initialize safely: ${JSON.stringify(lifecycleApprovalCheck)}`);
+      }
     } finally {
       await page.evaluate(({ originalRaw, originalStorage }) => {
         const storageKey = 'brand-portal-local-v1';

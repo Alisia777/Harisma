@@ -137,15 +137,27 @@ function resolveOptions(args) {
 function skuMaps(skus) {
   const byOfferId = new Map();
   for (const sku of Array.isArray(skus) ? skus : []) {
-    for (const value of [
+    const values = [
       sku?.articleKey,
       sku?.article,
       sku?.name,
       sku?.title,
       sku?.ozon?.offerId,
       sku?.ozon?.offer_id,
-      sku?.ozon?.sku
-    ]) {
+      sku?.ozon?.sku,
+      ...(Array.isArray(sku?.platformAliases?.ozon) ? sku.platformAliases.ozon : [])
+    ];
+    for (const alias of Array.isArray(sku?.aliases) ? sku.aliases : []) {
+      if (typeof alias === 'string') {
+        values.push(alias);
+        continue;
+      }
+      const platform = normalizeKey(alias?.platform || alias?.marketplace || '');
+      if (platform === 'ozon') {
+        values.push(alias?.value, alias?.alias, alias?.sku, alias?.offerId, alias?.offer_id);
+      }
+    }
+    for (const value of values) {
       const key = normalizeKey(value);
       if (key && !byOfferId.has(key)) byOfferId.set(key, sku);
     }
@@ -249,7 +261,12 @@ async function analyticsRequest(options, body) {
   return payload;
 }
 
-async function productInfoRequest(options, skuIds) {
+async function productInfoRequest(options, ids, identifier = 'sku') {
+  const values = ids.map((item) => (
+    identifier === 'product_id' ? Number(item) : String(item)
+  )).filter((item) => (
+    identifier === 'product_id' ? Number.isFinite(item) && item > 0 : Boolean(item)
+  ));
   const response = await fetch(`${options.apiBaseUrl}/v3/product/info/list`, {
     method: 'POST',
     headers: {
@@ -257,7 +274,7 @@ async function productInfoRequest(options, skuIds) {
       'Api-Key': options.apiKey,
       'Content-Type': 'application/json'
     },
-    body: JSON.stringify({ sku: skuIds.map((item) => String(item)) })
+    body: JSON.stringify({ [identifier]: values })
   });
   const text = await response.text();
   let payload = null;
@@ -273,6 +290,24 @@ async function productInfoRequest(options, skuIds) {
     throw error;
   }
   return Array.isArray(payload?.items) ? payload.items : [];
+}
+
+function productInfoLookupKeys(item = {}) {
+  return [
+    item?.id,
+    item?.product_id,
+    item?.sku,
+    ...(Array.isArray(item?.sources) ? item.sources.map((source) => source?.sku) : []),
+    ...(Array.isArray(item?.stocks?.stocks) ? item.stocks.stocks.map((stock) => stock?.sku) : [])
+  ].map((value) => String(value || '').trim()).filter(Boolean);
+}
+
+function addProductInfoItems(map, items = []) {
+  for (const item of Array.isArray(items) ? items : []) {
+    for (const key of productInfoLookupKeys(item)) {
+      if (!map.has(key)) map.set(key, item);
+    }
+  }
 }
 
 function analyticsSkuId(row = {}) {
@@ -292,22 +327,30 @@ async function fetchProductInfoMap(options, skuIds) {
   for (let index = 0; index < ids.length; index += PRODUCT_INFO_CHUNK_SIZE) {
     const chunk = ids.slice(index, index + PRODUCT_INFO_CHUNK_SIZE);
     try {
-      const items = await productInfoRequest(options, chunk);
-      for (const item of items) {
-        const keys = [
-          item?.sku,
-          ...(Array.isArray(item?.sources) ? item.sources.map((source) => source?.sku) : []),
-          ...(Array.isArray(item?.stocks?.stocks) ? item.stocks.stocks.map((stock) => stock?.sku) : [])
-        ].map((value) => String(value || '').trim()).filter(Boolean);
-        for (const key of keys) {
-          if (!map.has(key)) map.set(key, item);
-        }
-      }
+      addProductInfoItems(map, await productInfoRequest(options, chunk, 'sku'));
     } catch (error) {
-      warnings.push(error?.message || String(error));
+      warnings.push(`sku lookup: ${error?.message || String(error)}`);
     }
   }
-  return { map, requested: ids.length, matched: map.size, warnings };
+
+  const unresolvedAfterSku = ids.filter((id) => !map.has(id));
+  for (let index = 0; index < unresolvedAfterSku.length; index += PRODUCT_INFO_CHUNK_SIZE) {
+    const chunk = unresolvedAfterSku.slice(index, index + PRODUCT_INFO_CHUNK_SIZE);
+    try {
+      addProductInfoItems(map, await productInfoRequest(options, chunk, 'product_id'));
+    } catch (error) {
+      warnings.push(`product_id lookup: ${error?.message || String(error)}`);
+    }
+  }
+  const unresolved = ids.filter((id) => !map.has(id));
+  return {
+    map,
+    requested: ids.length,
+    matched: map.size,
+    resolvedRequested: ids.length - unresolved.length,
+    unresolved,
+    warnings
+  };
 }
 
 function extractRows(payload) {
@@ -770,6 +813,8 @@ async function main() {
       articleRows: 0,
       productInfoRequested: productInfo.requested,
       productInfoMatchedKeys: productInfo.matched,
+      productInfoResolvedRequested: productInfo.resolvedRequested,
+      productInfoUnresolved: productInfo.unresolved,
       sourceMode: selectedMode,
       warnings: Array.from(new Set(warnings))
     }, null, 2));
@@ -841,6 +886,9 @@ async function main() {
       matchRate: sourceRows > 0 ? Number((matchedRows / sourceRows).toFixed(4)) : 0,
       productInfoRequested: productInfo.requested,
       productInfoMatchedKeys: productInfo.matched,
+      productInfoResolvedRequested: productInfo.resolvedRequested,
+      productInfoUnresolvedCount: productInfo.unresolved.length,
+      productInfoUnresolvedSamples: productInfo.unresolved.slice(0, 30),
       sourceMode: selectedMode,
       dimension: ANALYTICS_DIMENSION.join(','),
       revenueField: 'orders_revenue',
@@ -891,6 +939,9 @@ async function main() {
     articleRows: ozonArticles.length,
     productInfoRequested: productInfo.requested,
     productInfoMatchedKeys: productInfo.matched,
+    productInfoResolvedRequested: productInfo.resolvedRequested,
+    productInfoUnresolvedCount: productInfo.unresolved.length,
+    productInfoUnresolvedSamples: productInfo.unresolved.slice(0, 30),
     sourceMode: selectedMode,
     requestDelayMs: options.requestDelayMs,
     requestRetryDelayMs: options.requestRetryDelayMs,
@@ -899,7 +950,18 @@ async function main() {
   }, null, 2));
 }
 
-main().catch((error) => {
-  console.error(error?.stack || String(error));
-  process.exitCode = 1;
-});
+if (require.main === module) {
+  main().catch((error) => {
+    console.error(error?.stack || String(error));
+    process.exitCode = 1;
+  });
+}
+
+module.exports = {
+  addProductInfoItems,
+  analyticsSkuId,
+  buildDayBuckets,
+  fetchProductInfoMap,
+  productInfoLookupKeys,
+  skuMaps
+};

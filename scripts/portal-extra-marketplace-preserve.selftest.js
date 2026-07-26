@@ -15,18 +15,35 @@ function writeJson(name, value) {
   fs.writeFileSync(path.join(tempDir, name), `${JSON.stringify(value, null, 2)}\n`);
 }
 
-function platform(key, units) {
+function platform(key, units, withScopeLeak = false) {
   return {
     key,
     label: key,
-    series: [{ date: '2026-07-20', label: '2026-07-20', units, revenue: units * 100 }],
-    articles: [{ articleKey: `${key}-sku`, daily: [{ date: '2026-07-20', units }] }]
+    series: [{
+      date: '2026-07-20',
+      label: '2026-07-20',
+      units: units + (withScopeLeak ? 99 : 0),
+      revenue: units * 100 + (withScopeLeak ? 9900 : 0)
+    }],
+    articles: [
+      {
+        articleKey: `${key}-sku`,
+        daily: [{ date: '2026-07-20', units, revenue: units * 100 }],
+        monthly: [{ monthKey: '2026-07', revenue: units * 100 }]
+      },
+      ...(withScopeLeak ? [{
+        articleKey: `qeep-${key}-sku`,
+        name: 'QEEP external brand',
+        daily: [{ date: '2026-07-20', units: 99, revenue: 9900 }],
+        monthly: [{ monthKey: '2026-07', revenue: 9900 }]
+      }] : [])
+    ]
   };
 }
 
 const retailKeys = ['goldapple', 'letu', 'megamarket'];
 const corePlatforms = [platform('wb', 10), platform('ozon', 20)];
-const retailPlatforms = retailKeys.map((key, index) => platform(key, index + 1));
+const retailPlatforms = retailKeys.map((key, index) => platform(key, index + 1, true));
 writeJson('platform_trends.json', {
   latestMarketplaceDate: '2026-07-20',
   platforms: [...corePlatforms, ...retailPlatforms, platform('samokat', 0), platform('magnit', 4), platform('all', 40)],
@@ -35,7 +52,7 @@ writeJson('platform_trends.json', {
     platforms: Object.fromEntries([...retailKeys, 'samokat', 'magnit'].map((key) => [key, {
       key,
       marker: `keep-${key}`,
-      articles: platform(key, 1).articles
+      articles: platform(key, 1, true).articles
     }]))
   }
 });
@@ -53,7 +70,13 @@ writeJson('ads_summary.json', {
   }
 });
 writeJson('smart_price_overlay.json', {
-  platforms: Object.fromEntries([...retailKeys, 'samokat', 'magnit'].map((key) => [key, { marker: `price-${key}`, rows: [] }]))
+  platforms: Object.fromEntries([...retailKeys, 'samokat', 'magnit'].map((key) => [key, {
+    marker: `price-${key}`,
+    rows: [
+      { articleKey: `${key}-sku` },
+      { articleKey: `qeep-${key}-sku`, name: 'QEEP external brand' }
+    ]
+  }]))
 });
 writeJson('prices.json', { platforms: {} });
 writeJson('skus.json', []);
@@ -90,7 +113,10 @@ try {
     const preservedPlatform = trends.platforms.find((row) => row.key === key);
     assert.ok(preservedPlatform.series.length, `${key} series was emptied: ${JSON.stringify(preservedPlatform)}`);
     assert.strictEqual(preservedPlatform.series.at(-1).date, '2026-07-20');
+    assert.strictEqual(preservedPlatform.series.at(-1).revenue, (retailKeys.indexOf(key) + 1) * 100, `${key} aggregate kept out-of-scope revenue`);
+    assert.ok(!preservedPlatform.articles.some((row) => row.articleKey.startsWith('qeep-')), `${key} kept an out-of-scope platform article`);
     assert.strictEqual(trends.extraMarketplace.platforms[key].marker, `keep-${key}`);
+    assert.ok(!trends.extraMarketplace.platforms[key].articles.some((row) => row.articleKey.startsWith('qeep-')), `${key} kept an out-of-scope extraMarketplace article`);
   }
 
   const ads = JSON.parse(fs.readFileSync(path.join(tempDir, 'ads_summary.json'), 'utf8'));
@@ -104,6 +130,7 @@ try {
   const prices = JSON.parse(fs.readFileSync(path.join(tempDir, 'smart_price_overlay.json'), 'utf8'));
   for (const key of retailKeys) {
     assert.strictEqual(prices.platforms[key].marker, `price-${key}`);
+    assert.deepStrictEqual(prices.platforms[key].rows.map((row) => row.articleKey), [`${key}-sku`]);
   }
 
   console.log('[portal-extra-marketplace-preserve.selftest] OK');

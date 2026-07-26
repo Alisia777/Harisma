@@ -94,6 +94,15 @@ async function run() {
       const expectedLatestFactDate = (state.rows || []).map(priceDate).filter(Boolean).sort().pop() || '';
       const wbRows = (state.rows || []).filter((row) => row.market === 'wb');
       const expectedMarketFactDate = wbRows.map(priceDate).filter(Boolean).sort().pop() || '';
+      const canonicalStatusByArticle = new Map((window.state?.skuMatrix?.items || []).map((row) => [
+        String(row?.articleKey || '').trim().toLowerCase().replace(/\s+/g, '').replace(/[^a-zа-я0-9_-]+/gi, ''),
+        String(row?.registryStatus || row?.status || '').trim()
+      ]));
+      const statusMismatches = (state.rows || []).filter((row) => {
+        const key = String(row?.articleKey || '').trim().toLowerCase().replace(/\s+/g, '').replace(/[^a-zа-я0-9_-]+/gi, '');
+        const canonicalStatus = canonicalStatusByArticle.get(key);
+        return canonicalStatus && String(row?.status || '').trim() !== canonicalStatus;
+      });
       const businessDate = new Intl.DateTimeFormat('en-CA', {
         timeZone: 'Europe/Moscow',
         year: 'numeric',
@@ -152,6 +161,8 @@ async function run() {
         poolQualityText: root?.querySelector('[data-prices-v1-pool-quality]')?.textContent || '',
         cabinetLiveRows: wbRows.filter((row) => row.currentFillPriceSource === 'live').length,
         cabinetLiveListRows: wbRows.filter((row) => row.listPriceSource === 'live').length,
+        statusMismatchCount: statusMismatches.length,
+        statusMismatchExamples: statusMismatches.slice(0, 5).map((row) => row.articleKey),
         missingPriceArticle: missingPrice?.articleKey || '',
         missingClientPriceArticle: missingClientPrice?.articleKey || ''
       };
@@ -173,6 +184,11 @@ async function run() {
     assert.match(audit.sourceNote, /data\/repricer_live_prices\.json/);
     assert.ok(audit.cabinetLiveRows > 0, 'Текущая цена должна читаться из свежего кабинетного snapshot');
     assert.ok(audit.cabinetLiveListRows > 0, 'Цена до скидки должна читать currentListPrice из кабинетного snapshot');
+    assert.deepStrictEqual(
+      [audit.statusMismatchCount, audit.statusMismatchExamples],
+      [0, []],
+      'Статус товара во вкладке Цены должен совпадать с каноническим SKU-реестром'
+    );
     assert.match(audit.qualityText, /^Срез:/);
     assert.match(
       audit.poolQualityText,

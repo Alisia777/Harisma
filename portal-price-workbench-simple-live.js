@@ -2140,7 +2140,11 @@
       articleKey: source.articleKey || source.article || source.sku || "",
       name: source.name || source.title || source.articleKey || "\u0411\u0435\u0437 \u043d\u0430\u0437\u0432\u0430\u043d\u0438\u044f",
       owner: resolvedOwner || "\u2014",
-      status: overlayStatus || source.status || (skuRow && skuRow.status) || (matrixEntry && (matrixEntry.registryStatus || matrixEntry.status)) || "\u2014",
+      status: (matrixEntry && (matrixEntry.registryStatus || matrixEntry.status))
+        || (skuRow && skuRow.status)
+        || overlayStatus
+        || source.status
+        || "\u2014",
       matrixProblemLabel: matrixProblemMeta && matrixProblemMeta.label,
       matrixProblemTone: matrixProblemMeta && matrixProblemMeta.tone,
       role: source.role || (skuRow && skuRow.role) || "\u2014",

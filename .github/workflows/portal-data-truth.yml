@@ -98,6 +98,7 @@ jobs:
           node scripts/build-canonical-repricer-freshness.selftest.js
           node scripts/portal-daily-layer-guard.selftest.js
           node scripts/audit-repricer-dashboard-plan.selftest.js
+          node scripts/build-portal-dashboard-metrics.selftest.js
           node scripts/portal-upload-apply-runtime.selftest.js
           node scripts/repricer-loader-export-roundtrip.selftest.js
           node scripts/repricer-price-sync-button.selftest.js

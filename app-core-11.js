@@ -471,7 +471,7 @@ function skuPlanFactApplySingleOwnerFallback(rows = [], platform = 'all') {
 }
 
 function skuPlanFactRedistributePayrollPlansToOwners(rows = [], selectedPlatform = 'all') {
-  const platforms = SKU_PLAN_FACT_PAYROLL_PLATFORMS
+  const platforms = skuPlanFactPayrollPlatforms()
     .filter((platform) => selectedPlatform === 'all' || selectedPlatform === platform);
   platforms.forEach((platform) => {
     const entries = (rows || [])
@@ -1601,6 +1601,25 @@ function skuPlanFactPayrollCompanyPlan() {
   return null;
 }
 
+function skuPlanFactPayrollPlatforms(monthKey = '') {
+  const plan = skuPlanFactPayrollCompanyPlan();
+  const month = plan?.months?.[monthKey]
+    || (plan?.activeMonth?.monthKey === monthKey ? plan.activeMonth : null)
+    || plan?.activeMonth
+    || {};
+  const configured = [
+    plan?.payrollKpiPolicy?.includedChannels,
+    month?.salaryContour?.includedChannels,
+    Object.entries(month?.channels || {})
+      .filter(([platform, channel]) => platform !== 'all' && channel?.salaryIncluded === true)
+      .map(([platform]) => platform)
+  ].find((items) => Array.isArray(items) && items.length);
+  const platforms = Array.from(new Set((configured || SKU_PLAN_FACT_PAYROLL_PLATFORMS)
+    .map((platform) => skuPlanFactNormalizePlatform(platform))
+    .filter((platform) => SKU_PLAN_FACT_PLATFORMS.includes(platform))));
+  return platforms.length ? platforms : [...SKU_PLAN_FACT_PAYROLL_PLATFORMS];
+}
+
 function skuPlanFactPayrollControlTotals(monthKey = '') {
   const plan = skuPlanFactPayrollCompanyPlan();
   if (!plan || !monthKey) return null;
@@ -1620,7 +1639,7 @@ function skuPlanFactPayrollPlanRevenue(monthKey = '', platform = 'all') {
   const totals = skuPlanFactPayrollControlTotals(monthKey);
   if (!totals) return null;
   if (!platform || platform === 'all') return numberOrZero(totals.revenue);
-  if (!SKU_PLAN_FACT_PAYROLL_PLATFORMS.includes(platform)) return 0;
+  if (!skuPlanFactPayrollPlatforms(monthKey).includes(platform)) return 0;
   return numberOrZero(totals[platform]);
 }
 
@@ -1662,7 +1681,7 @@ function skuPlanFactCorporatePlanAdTotals(platform = '', monthKey = '', periodSt
 
 function skuPlanFactPayrollLatestFactDate(monthKey = '') {
   let maxDate = '';
-  SKU_PLAN_FACT_PAYROLL_PLATFORMS.forEach((platformKey) => {
+  skuPlanFactPayrollPlatforms(monthKey).forEach((platformKey) => {
     const platform = skuPlanFactPlatformTrend(platformKey);
     (platform?.series || []).forEach((item) => {
       const date = String(item?.date || item?.label || '').slice(0, 10);
@@ -1685,9 +1704,10 @@ function skuPlanFactPayrollEffectiveEndDate(monthKey = '', periodEnd = '') {
 }
 
 function skuPlanFactPayrollRawFactRevenue(monthKey = '', platform = 'all', periodStart = '', periodEnd = '') {
-  const platforms = platform === 'all' || !platform ? SKU_PLAN_FACT_PAYROLL_PLATFORMS : [platform];
+  const payrollPlatforms = skuPlanFactPayrollPlatforms(monthKey);
+  const platforms = platform === 'all' || !platform ? payrollPlatforms : [platform];
   return platforms
-    .filter((item) => SKU_PLAN_FACT_PAYROLL_PLATFORMS.includes(item))
+    .filter((item) => payrollPlatforms.includes(item))
     .reduce((sum, item) => sum + numberOrZero(skuPlanFactPlatformAggregateFact(item, monthKey, periodEnd, periodStart).revenue), 0);
 }
 
@@ -1697,10 +1717,11 @@ function skuPlanFactPayrollPlanShareFactRevenue(monthKey = '', platform = 'all',
   const rawAll = skuPlanFactPayrollRawFactRevenue(monthKey, 'all', periodStart, periodEnd);
   if (rawAll > 0) return null;
   if (!platform || platform === 'all') return control;
-  if (!SKU_PLAN_FACT_PAYROLL_PLATFORMS.includes(platform)) return 0;
+  const payrollPlatforms = skuPlanFactPayrollPlatforms(monthKey);
+  if (!payrollPlatforms.includes(platform)) return 0;
   const totals = skuPlanFactPayrollControlTotals(monthKey) || {};
   const totalPlan = numberOrZero(totals.revenue)
-    || SKU_PLAN_FACT_PAYROLL_PLATFORMS.reduce((sum, key) => sum + numberOrZero(totals[key]), 0);
+    || payrollPlatforms.reduce((sum, key) => sum + numberOrZero(totals[key]), 0);
   const platformPlan = numberOrZero(totals[platform]);
   if (!(totalPlan > 0) || !(platformPlan > 0)) return 0;
   return control * platformPlan / totalPlan;
@@ -1742,14 +1763,15 @@ function skuPlanFactPayrollKpiForModel(model = {}) {
   const plan = skuPlanFactPayrollCompanyPlan();
   const totals = skuPlanFactPayrollControlTotals(monthKey);
   if (!plan || !totals) return null;
+  const payrollPlatforms = skuPlanFactPayrollPlatforms(monthKey);
   const selectedPlatform = model.filters?.platform || 'all';
-  const salaryIncluded = selectedPlatform === 'all' || SKU_PLAN_FACT_PAYROLL_PLATFORMS.includes(selectedPlatform);
+  const salaryIncluded = selectedPlatform === 'all' || payrollPlatforms.includes(selectedPlatform);
   const periodEnd = skuPlanFactPayrollEffectiveEndDate(monthKey, model.periodEnd || model.selectedDate || '');
   const periodStart = skuPlanFactClampDateToRange(model.periodStart || skuPlanFactMonthStart(monthKey), skuPlanFactMonthStart(monthKey), periodEnd);
   const elapsedDays = skuPlanFactInclusiveDays(periodStart, periodEnd) || skuPlanFactElapsedDays(monthKey, periodEnd);
   const monthDays = Math.max(1, skuPlanFactMonthDays(monthKey));
   const platformItems = {};
-  SKU_PLAN_FACT_PAYROLL_PLATFORMS.forEach((platform) => {
+  payrollPlatforms.forEach((platform) => {
     const planRevenue = skuPlanFactPayrollPlanRevenue(monthKey, platform);
     const factRevenue = skuPlanFactPayrollFactRevenue(monthKey, platform, periodStart, periodEnd);
     const planToDateRevenue = planRevenue > 0 ? planRevenue * elapsedDays / monthDays : 0;
@@ -1785,7 +1807,7 @@ function skuPlanFactPayrollKpiForModel(model = {}) {
     completionMonth: planRevenue > 0 ? factRevenue / planRevenue : null,
     gapToDate: factRevenue - planToDateRevenue,
     platforms: platformItems,
-    excludedPlatforms: SKU_PLAN_FACT_PLATFORMS.filter((platform) => !SKU_PLAN_FACT_PAYROLL_PLATFORMS.includes(platform)),
+    excludedPlatforms: SKU_PLAN_FACT_PLATFORMS.filter((platform) => !payrollPlatforms.includes(platform)),
     warning: plan.payrollKpiPolicy?.warning || ''
   };
 }
@@ -1820,7 +1842,7 @@ function skuPlanFactPayrollMetricTotals(model = {}, selectedPlatform = 'all', ro
   const totals = { planRevenue: 0, planToDateRevenue: 0, planUnits: 0, planToDateUnits: 0, factRevenue: 0, factUnits: 0, adSpend: 0, planAdSpend: 0, planMonthAdSpend: 0, planPeriodAdSpend: 0, adForecastSpend: 0, hasPlanAdSpend: false, hasPlanMonthAdSpend: false, hasPlanPeriodAdSpend: false, hasAdForecastSpend: false, marginValue: 0, marginWeight: 0, planMarginValue: 0, planMarginWeight: 0 };
   const platforms = selectedPlatform && selectedPlatform !== 'all'
     ? [selectedPlatform].filter((platform) => SKU_PLAN_FACT_PLATFORMS.includes(platform))
-    : SKU_PLAN_FACT_PAYROLL_PLATFORMS;
+    : skuPlanFactPayrollPlatforms(model.monthKey || '');
   rows.forEach((row) => {
     platforms.forEach((platform) => {
       if (!skuPlanFactMetricMatchesOwner(row, platform, ownerFilter)) return;
@@ -2353,7 +2375,7 @@ function skuPlanFactApplyIuRevenueFloors(rows = [], monthKey = '', periodStart =
 }
 
 function skuPlanFactApplyCorporateRevenuePlan(rows = [], monthKey = '', periodStart = '', periodEnd = '') {
-  SKU_PLAN_FACT_PAYROLL_PLATFORMS.forEach((platform) => {
+  skuPlanFactPayrollPlatforms(monthKey).forEach((platform) => {
     const monthPlan = skuPlanFactPayrollPlanRevenue(monthKey, platform);
     if (!(monthPlan > 0)) return;
     const monthDays = skuPlanFactMonthDays(monthKey);
@@ -2442,8 +2464,9 @@ function skuPlanFactCompanyPlanChannel(monthKey = '', platform = '') {
 
 function skuPlanFactApplyCompanyPlanZeroChannels(rows = [], monthKey = '') {
   if (!monthKey) return;
+  const payrollPlatforms = skuPlanFactPayrollPlatforms(monthKey);
   SKU_PLAN_FACT_PLATFORMS.forEach((platform) => {
-    if (SKU_PLAN_FACT_PAYROLL_PLATFORMS.includes(platform)) return;
+    if (payrollPlatforms.includes(platform)) return;
     const channel = skuPlanFactCompanyPlanChannel(monthKey, platform);
     if (!channel || channel.salaryIncluded !== false || numberOrZero(channel.revenue) > 0) return;
     (rows || []).forEach((row) => {
@@ -6205,7 +6228,7 @@ function skuPlanFactPlatformSummary(model = {}, platform = '', options = {}) {
   const normalizedPlatform = String(platform || 'all').toLowerCase();
   const payrollAllScope = includePayroll && normalizedPlatform === 'all' && model.payrollKpi;
   const aggregatePlatforms = normalizedPlatform === 'all'
-    ? (payrollAllScope ? SKU_PLAN_FACT_PAYROLL_PLATFORMS : SKU_PLAN_FACT_PLATFORMS)
+    ? (payrollAllScope ? skuPlanFactPayrollPlatforms(model.monthKey || '') : SKU_PLAN_FACT_PLATFORMS)
     : [normalizedPlatform].filter((item) => SKU_PLAN_FACT_PLATFORMS.includes(item));
   const sourceRows = options.scope === 'allRows'
     ? (model.allRows || [])

@@ -308,6 +308,8 @@ async function run() {
     const v4Source = readSource('portal-planfact-general-to-detail-v4.js');
     assert.match(coreSource, /SKU_PLAN_FACT_INCLUDE_DERIVED_ROWS/);
     assert.match(coreSource, /payrollReference/);
+    assert.match(coreSource, /function skuPlanFactPayrollPlatforms/);
+    assert.match(coreSource, /payrollKpiPolicy\?\.includedChannels/);
     assert.match(coreSource, /syntheticUnmapped && !row\.syntheticUnallocated/);
     assert.match(coreSource, /negativeFactCount/);
     assert.match(coreSource, /wb_promotion_api_unmapped_residual/);
@@ -325,7 +327,7 @@ async function run() {
     ['index.html', 'live-index.html', 'docs/index.html'].forEach((fileName) => {
       const html = readSource(fileName);
       assert.ok(
-        html.includes('app-core-11.js?v=20260724planfactcorrectness4oosforecast1scenario1'),
+        html.includes('app-core-11.js?v=20260724planfactcorrectness4oosforecast1scenario1planscope1'),
         `${fileName} должен обновить кэш расчетной модели, сохранив OOS-версию`
       );
       assert.ok(

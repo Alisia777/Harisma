@@ -1,6 +1,6 @@
 (function () {
-  if (window.__ALTEA_PRICE_SIMPLE_RENDERER_20260725_CABINETLIVE1__) return;
-  window.__ALTEA_PRICE_SIMPLE_RENDERER_20260725_CABINETLIVE1__ = true;
+  if (window.__ALTEA_PRICE_SIMPLE_RENDERER_20260726_CABINETWAIT1__) return;
+  window.__ALTEA_PRICE_SIMPLE_RENDERER_20260726_CABINETWAIT1__ = true;
   window.__ALTEA_PRICE_SIMPLE_RENDERER_20260623_CHARTS1__ = true;
   window.__ALTEA_PRICE_SIMPLE_RENDERER_20260621_PRICESV1__ = true;
   window.__ALTEA_PRICE_SIMPLE_RENDERER_20260607_PRICEBADGES2__ = true;
@@ -41,8 +41,9 @@
   var STYLE_VERSION = "20260725-cabinet-live-v1";
   var SNAPSHOT_WAIT_MS = 1800;
   var SNAPSHOT_HARD_WAIT_MS = 4500;
+  var CABINET_SNAPSHOT_WAIT_MS = 8000;
   var LOCAL_FETCH_TIMEOUT_MS = 3200;
-  var LOAD_GUARD_MS = 12000;
+  var LOAD_GUARD_MS = 20000;
   var STORAGE_KEYS = [
     "brand-portal-price-workbench-v20260419-entries",
     "portal_price_workbench_entries"
@@ -1368,9 +1369,12 @@
 
     var snapshotPayload = null;
     if (snapshotTask) {
+      var snapshotWaitMs = url === CABINET_LIVE_DATA_URL
+        ? CABINET_SNAPSHOT_WAIT_MS
+        : (localPayload != null ? SNAPSHOT_WAIT_MS : SNAPSHOT_HARD_WAIT_MS);
       snapshotPayload = await Promise.race([
         snapshotTask,
-        waitResult(localPayload != null ? SNAPSHOT_WAIT_MS : SNAPSHOT_HARD_WAIT_MS, null)
+        waitResult(snapshotWaitMs, null)
       ]);
     }
 

@@ -36,6 +36,86 @@ function serve() {
   return new Promise((resolve) => server.listen(0, '127.0.0.1', () => resolve(server)));
 }
 
+async function auditMarketplace(page, market) {
+  await page.evaluate((marketKey) => {
+    if (window.AlteaPremiumPresentation?.applyMarketplace) {
+      window.AlteaPremiumPresentation.applyMarketplace(marketKey, {
+        persist: true,
+        rerender: false,
+        silent: true
+      });
+    } else {
+      localStorage.setItem('altea.portal.marketplace', marketKey);
+      document.documentElement.dataset.marketplace = marketKey;
+      document.body.dataset.marketplace = marketKey;
+    }
+    window.renderPriceWorkbench?.();
+  }, market);
+  await page.waitForFunction((marketKey) => (
+    document.querySelector('#view-prices')?.dataset.priceActiveMarket === marketKey
+    && document.querySelectorAll('#view-prices .prices-v1-table tbody .prices-v1-row').length > 0
+  ), market, { timeout: 30000 });
+  await page.waitForTimeout(150);
+
+  return page.evaluate((marketKey) => {
+    const state = window.__alteaPriceWorkbenchState || {};
+    const root = document.getElementById('view-prices');
+    const iso = (value) => {
+      const match = String(value || '').match(/^\d{4}-\d{2}-\d{2}/);
+      return match ? match[0] : '';
+    };
+    const positive = (value) => Number.isFinite(Number(value)) && Number(value) > 0;
+    const pointHasFact = (item) => Boolean(item && (
+      positive(item.price)
+      || positive(item.clientPrice)
+      || Number.isFinite(Number(item.ordersUnits))
+      || Number.isFinite(Number(item.deliveredUnits))
+      || Number.isFinite(Number(item.revenue))
+    ));
+    const priceDate = (row) => {
+      const dates = [];
+      if (positive(row?.currentFillPrice)) {
+        [row?.currentPriceDate, row?.valueDate].map(iso).filter(Boolean).forEach((date) => dates.push(date));
+      }
+      if (positive(row?.listPrice)) {
+        [row?.listPriceDate, row?.valueDate].map(iso).filter(Boolean).forEach((date) => dates.push(date));
+      }
+      (row?.timeline || []).filter(pointHasFact).forEach((item) => {
+        if (positive(item?.price)) dates.push(iso(item.date));
+      });
+      return dates.filter(Boolean).sort().pop() || '';
+    };
+    const pool = (state.rows || []).filter((row) => row.market === marketKey);
+    const sourceCounts = pool.reduce((result, row) => {
+      const source = String(row?.currentFillPriceSource || 'none');
+      result[source] = (result[source] || 0) + 1;
+      return result;
+    }, {});
+    const businessParts = new Intl.DateTimeFormat('en-CA', {
+      timeZone: 'Europe/Moscow',
+      year: 'numeric',
+      month: '2-digit',
+      day: '2-digit'
+    }).formatToParts(new Date()).reduce((result, part) => {
+      if (part.type !== 'literal') result[part.type] = part.value;
+      return result;
+    }, {});
+    return {
+      market: root?.dataset.priceActiveMarket || '',
+      poolRows: pool.length,
+      visibleRows: root?.querySelectorAll('.prices-v1-table tbody .prices-v1-row').length || 0,
+      expectedFactDate: pool.map(priceDate).filter(Boolean).sort().pop() || '',
+      dateTo: root?.querySelector('#pwTo')?.value || '',
+      freshnessText: root?.querySelector('.prices-v1-freshness')?.textContent || '',
+      poolQualityText: root?.querySelector('[data-prices-v1-pool-quality]')?.textContent || '',
+      cabinetLiveRows: pool.filter((row) => row.currentFillPriceSource === 'live').length,
+      sourceCounts,
+      sourceNote: state.sourceNote || '',
+      businessDate: [businessParts.year, businessParts.month, businessParts.day].join('-')
+    };
+  }, market);
+}
+
 async function run() {
   const server = await serve();
   const port = server.address().port;
@@ -62,6 +142,43 @@ async function run() {
       && document.querySelector('#view-prices .prices-v1-shell')
       && document.querySelector('[data-prices-v1-pool-quality]')
     ), null, { timeout: 120000 });
+
+    const marketplaceAudits = [];
+    for (const [market, label] of [['wb', 'WB'], ['ozon', 'Ozon'], ['ym', 'Я.Маркет']]) {
+      const marketAudit = await auditMarketplace(page, market);
+      marketplaceAudits.push({ ...marketAudit, label });
+      assert.strictEqual(marketAudit.market, market, `${label}: должен открыться выбранный пул`);
+      assert.ok(marketAudit.poolRows > 0, `${label}: кабинетный пул не должен быть пустым`);
+      assert.ok(marketAudit.visibleRows > 0, `${label}: последний фактический период не должен быть пустым`);
+      assert.ok(marketAudit.expectedFactDate, `${label}: дата факта должна быть определена`);
+      assert.ok(
+        marketAudit.expectedFactDate <= marketAudit.businessDate,
+        `${label}: дата факта кабинета не должна быть позже московского бизнес-дня`
+      );
+      assert.strictEqual(
+        marketAudit.dateTo,
+        marketAudit.expectedFactDate,
+        `${label}: период должен открываться на последнем факте площадки`
+      );
+      assert.match(
+        marketAudit.freshnessText,
+        new RegExp(`Факт цены до ${marketAudit.expectedFactDate}`),
+        `${label}: индикатор актуальности должен показывать реальную дату кабинетной цены`
+      );
+      assert.ok(
+        marketAudit.cabinetLiveRows > 0,
+        `${label}: текущие цены должны читаться из live snapshot кабинета (${JSON.stringify({
+          sourceCounts: marketAudit.sourceCounts,
+          sourceNote: marketAudit.sourceNote
+        })})`
+      );
+      assert.match(
+        marketAudit.poolQualityText,
+        new RegExp(`цена \\d+\\/${marketAudit.poolRows}.*дата цены \\d+\\/${marketAudit.poolRows}`),
+        `${label}: аудит пула должен считать покрытие цены и даты по полному пулу`
+      );
+    }
+    await auditMarketplace(page, 'wb');
 
     const audit = await page.evaluate(() => {
       const state = window.__alteaPriceWorkbenchState || {};
@@ -278,6 +395,7 @@ async function run() {
     assert.match(renderer, /function priceDataAudit/);
     assert.match(renderer, /function priceFactFreshnessOfPayload/);
     assert.match(renderer, /snapshotFactFreshness !== localFactFreshness/);
+    assert.match(renderer, /url === CABINET_LIVE_DATA_URL[\s\S]*?CABINET_SNAPSHOT_WAIT_MS/);
     assert.match(renderer, /orders_delta_after_change_per_day/);
     assert.match(renderer, /state\.latestFactDate = latestPriceFactDate\(rows\) \|\| last/);
     assert.doesNotMatch(renderer, /state\.latestFactDate = isoDate\(\(overlayPayload/);
@@ -379,8 +497,20 @@ async function run() {
     assert.strictEqual(preferCabinetPrice(120, '2026-07-24', null, ''), true);
     assert.strictEqual(preferCabinetPrice(null, '2026-07-24', 100, '2026-07-24'), false);
 
+    ['index.html', 'live-index.html', 'docs/index.html'].forEach((fileName) => {
+      const html = fs.readFileSync(path.join(ROOT, fileName), 'utf8');
+      assert.ok(
+        html.includes('portal-price-workbench-simple-live.js?v=20260726cabinetwait1'),
+        `${fileName} должен обновить кэш загрузчика кабинетных цен`
+      );
+    });
+
     assert.deepStrictEqual(pageErrors, []);
-    console.log(`portal-prices-correctness selftest: ok (${audit.poolRows} WB SKU, факт до ${audit.expectedMarketFactDate})`);
+    console.log(
+      `portal-prices-correctness selftest: ok (${marketplaceAudits.map((item) => (
+        `${item.poolRows} ${item.label} SKU, факт до ${item.expectedFactDate}`
+      )).join('; ')})`
+    );
   } finally {
     await browser.close();
     await new Promise((resolve) => server.close(resolve));

@@ -1,5 +1,6 @@
 (function () {
-  if (window.__ALTEA_PRICE_SIMPLE_RENDERER_20260623_CHARTS1__) return;
+  if (window.__ALTEA_PRICE_SIMPLE_RENDERER_20260725_CABINETLIVE1__) return;
+  window.__ALTEA_PRICE_SIMPLE_RENDERER_20260725_CABINETLIVE1__ = true;
   window.__ALTEA_PRICE_SIMPLE_RENDERER_20260623_CHARTS1__ = true;
   window.__ALTEA_PRICE_SIMPLE_RENDERER_20260621_PRICESV1__ = true;
   window.__ALTEA_PRICE_SIMPLE_RENDERER_20260607_PRICEBADGES2__ = true;
@@ -28,6 +29,7 @@
   var DATA_URL = "data/smart_price_workbench.json";
   var OVERLAY_URL = "data/smart_price_overlay.json";
   var PRICES_URL = "data/prices.json";
+  var CABINET_LIVE_DATA_URL = "data/repricer_live_prices.json";
   var LIVE_DATA_URL = "tmp-smart_price_workbench-live.json";
   var REPRICER_URL = "data/repricer.json";
   var REPRICER_LIVE_URL = "tmp-live-repricer.json";
@@ -36,7 +38,7 @@
   var ORDER_PROCUREMENT_OZON_URL = "data/order_procurement_ozon.json";
   var VIEW_ID = "view-prices";
   var STYLE_ID = "altea-price-simple-style";
-  var STYLE_VERSION = "20260724-prices-correctness-v5";
+  var STYLE_VERSION = "20260725-cabinet-live-v1";
   var SNAPSHOT_WAIT_MS = 1800;
   var SNAPSHOT_HARD_WAIT_MS = 4500;
   var LOCAL_FETCH_TIMEOUT_MS = 3200;
@@ -1977,6 +1979,16 @@
     return [];
   }
 
+  function shouldPreferCabinetPrice(liveValue, liveDate, dailyValue, dailyDate) {
+    if (positiveNum(liveValue) == null) return false;
+    if (positiveNum(dailyValue) == null) return true;
+    var normalizedLiveDate = isoDate(liveDate);
+    var normalizedDailyDate = isoDate(dailyDate);
+    if (!normalizedLiveDate) return false;
+    if (!normalizedDailyDate) return true;
+    return normalizedLiveDate >= normalizedDailyDate;
+  }
+
   function buildRow(source, market, manualMap, overlayRow, priceRow, liveRow, liveGeneratedAt, maxDate, skuMeta, orderProcurementRow) {
     var timeline = pickPrimaryTimeline(source, overlayRow);
     timeline = mergeTimelineWithOverlay(timeline, overlayRow, maxDate);
@@ -2006,8 +2018,11 @@
     var priceListPrice = firstPositive(priceRow && priceRow.firstPrice, priceRow && priceRow.currentFirstPrice, priceRow && priceRow.sellerPrice, priceRow && priceRow.currentSellerPriceBeforeDiscount);
     var liveFillPrice = positiveNum(liveRow && (liveRow.currentFillPrice != null ? liveRow.currentFillPrice : liveRow.currentPrice));
     var liveClientPrice = positiveNum(liveRow && liveRow.currentClientPrice);
-    var liveListPrice = firstPositive(liveRow && liveRow.firstPrice, liveRow && liveRow.currentFirstPrice, liveRow && liveRow.sellerPrice, liveRow && liveRow.currentSellerPriceBeforeDiscount);
-    var livePriceDate = isoDate(liveRow && (liveRow.valueDate || liveRow.historyFreshnessDate || liveGeneratedAt));
+    var liveListPrice = firstPositive(liveRow && liveRow.currentListPrice, liveRow && liveRow.firstPrice, liveRow && liveRow.currentFirstPrice, liveRow && liveRow.sellerPrice, liveRow && liveRow.currentSellerPriceBeforeDiscount);
+    var livePriceDate = isoDate(liveRow && (liveRow.currentPriceDate || liveRow.valueDate || liveRow.historyFreshnessDate || liveGeneratedAt));
+    var preferLiveFillPrice = shouldPreferCabinetPrice(liveFillPrice, livePriceDate, priceFillPrice, priceCurrentDate);
+    var preferLiveClientPrice = shouldPreferCabinetPrice(liveClientPrice, livePriceDate, priceClientPrice, priceCurrentDate);
+    var preferLiveListPrice = shouldPreferCabinetPrice(liveListPrice, livePriceDate, priceListPrice, priceCurrentDate);
     var sourceValueDate = isoDate(source && (source.currentPriceDate || source.historyFreshnessDate || source.valueDate)) || timelineValueDate;
     var useOverlayFacts = Boolean(overlayRow) && (!overlayValueDate || !sourceValueDate || overlayValueDate >= sourceValueDate);
     var sourceFillPrice = positiveNum(source.currentFillPrice != null ? source.currentFillPrice : source.currentPrice);
@@ -2033,36 +2048,48 @@
     );
     var currentFillPrice = overlayClearsFill
       ? null
-      : (priceFillPrice != null
+      : (preferLiveFillPrice
+        ? liveFillPrice
+        : (priceFillPrice != null
         ? priceFillPrice
         : (liveFillPrice != null
         ? liveFillPrice
-        : ((overlayFillPrice != null && (useOverlayFacts || sourceFillPrice == null)) ? overlayFillPrice : sourceFillPrice)));
-    var currentFillPriceSource = priceFillPrice != null
+        : ((overlayFillPrice != null && (useOverlayFacts || sourceFillPrice == null)) ? overlayFillPrice : sourceFillPrice))));
+    var currentFillPriceSource = preferLiveFillPrice
+      ? "live"
+      : (priceFillPrice != null
       ? "prices"
       : (liveFillPrice != null
       ? "live"
-      : ((overlayFillPrice != null && (useOverlayFacts || sourceFillPrice == null)) ? "overlay" : "workbench"));
-    var currentFillPriceMode = priceFillPrice != null
+      : ((overlayFillPrice != null && (useOverlayFacts || sourceFillPrice == null)) ? "overlay" : "workbench")));
+    var currentFillPriceMode = preferLiveFillPrice
+      ? livePriceMode
+      : (priceFillPrice != null
       ? pricePriceMode
       : (liveFillPrice != null
       ? livePriceMode
-      : ((overlayFillPrice != null && (useOverlayFacts || sourceFillPrice == null)) ? overlayPriceMode : sourcePriceMode));
-    var listPrice = priceListPrice != null
+      : ((overlayFillPrice != null && (useOverlayFacts || sourceFillPrice == null)) ? overlayPriceMode : sourcePriceMode)));
+    var listPrice = preferLiveListPrice
+      ? liveListPrice
+      : (priceListPrice != null
       ? priceListPrice
       : ((overlayListPrice != null && (useOverlayFacts || sourceListPrice == null))
         ? overlayListPrice
-        : (sourceListPrice != null ? sourceListPrice : liveListPrice));
-    var listPriceSource = priceListPrice != null
+        : (sourceListPrice != null ? sourceListPrice : liveListPrice)));
+    var listPriceSource = preferLiveListPrice
+      ? "live"
+      : (priceListPrice != null
       ? "prices"
       : ((overlayListPrice != null && (useOverlayFacts || sourceListPrice == null))
         ? "overlay"
-        : (sourceListPrice != null ? "workbench" : (liveListPrice != null ? "live" : "")));
-    var listPriceMode = priceListPrice != null
+        : (sourceListPrice != null ? "workbench" : (liveListPrice != null ? "live" : ""))));
+    var listPriceMode = preferLiveListPrice
+      ? livePriceMode
+      : (priceListPrice != null
       ? pricePriceMode
       : ((overlayListPrice != null && (useOverlayFacts || sourceListPrice == null))
         ? overlayPriceMode
-        : (sourceListPrice != null ? sourcePriceMode : livePriceMode));
+        : (sourceListPrice != null ? sourcePriceMode : livePriceMode)));
     var listPriceDate = listPriceSource === "prices"
       ? (priceCurrentDate || livePriceDate || overlayValueDate || sourceValueDate)
       : (listPriceSource === "overlay"
@@ -2123,11 +2150,13 @@
       listPriceDate: listPriceDate,
       currentClientPrice: overlayClearsClient
         ? null
-        : (priceClientPrice != null
+        : (preferLiveClientPrice
+          ? liveClientPrice
+          : (priceClientPrice != null
           ? priceClientPrice
           : ((overlayClientPrice != null && (useOverlayFacts || sourceClientPrice == null))
           ? overlayClientPrice
-          : ((liveClientPrice != null && sourceClientPrice == null) ? liveClientPrice : sourceClientPrice))),
+          : ((liveClientPrice != null && sourceClientPrice == null) ? liveClientPrice : sourceClientPrice)))),
       currentSppPct: overlayClearsSpp
         ? null
         : sanitizeDiscountPct(priceSppPct != null
@@ -2135,11 +2164,13 @@
           : ((overlaySppPct != null && (useOverlayFacts || sourceSppPct == null)) ? overlaySppPct : sourceSppPct)),
       requiredPriceForMargin: num(source.requiredPriceForMargin),
       historyNote: source.historyNote || "",
-      currentPriceDate: priceFillPrice != null
+      currentPriceDate: preferLiveFillPrice
+        ? (livePriceDate || priceCurrentDate || overlayValueDate || sourceValueDate)
+        : (priceFillPrice != null
         ? (priceCurrentDate || livePriceDate || overlayValueDate || sourceValueDate)
         : (liveFillPrice != null
         ? (livePriceDate || overlayValueDate || sourceValueDate)
-        : ((useOverlayFacts && overlayValueDate) ? overlayValueDate : sourceValueDate)),
+        : ((useOverlayFacts && overlayValueDate) ? overlayValueDate : sourceValueDate))),
       valueDate: (useOverlayFacts && overlayValueDate) ? overlayValueDate : sourceValueDate,
       timeline: timeline
     };
@@ -2194,10 +2225,22 @@
       }
       var livePayload = null;
       var liveSource = "none";
-      var liveResult = await tryLoadSnapshotAwareJson(LIVE_DATA_URL);
-      if (liveResult) {
-        livePayload = liveResult.payload || null;
-        liveSource = liveResult.source || "local";
+      var liveUrl = "";
+      var cabinetLiveResult = await tryLoadSnapshotAwareJson(CABINET_LIVE_DATA_URL);
+      var legacyLiveResult = await tryLoadSnapshotAwareJson(LIVE_DATA_URL);
+      var chosenLive = chooseFreshestPayload(
+        cabinetLiveResult && cabinetLiveResult.payload,
+        legacyLiveResult && legacyLiveResult.payload
+      );
+      if (chosenLive) {
+        livePayload = chosenLive.payload || null;
+        if (cabinetLiveResult && chosenLive.payload === cabinetLiveResult.payload) {
+          liveSource = cabinetLiveResult.source || "local";
+          liveUrl = CABINET_LIVE_DATA_URL;
+        } else {
+          liveSource = legacyLiveResult && legacyLiveResult.source || "local";
+          liveUrl = LIVE_DATA_URL;
+        }
       }
       var pricesPayload = null;
       var pricesSource = "none";
@@ -2246,7 +2289,7 @@
       state.sourceNote = overlayPayload && overlayPayload.generatedAt
         ? DATA_URL + " (" + dataResult.source + ")"
           + (pricesPayload && pricesPayload.generatedAt ? " + " + PRICES_URL + " (" + pricesSource + ")" : "")
-          + (state.liveGeneratedAt ? " + " + LIVE_DATA_URL + " (" + liveSource + ")" : "")
+          + (state.liveGeneratedAt && liveUrl ? " + " + liveUrl + " (" + liveSource + ")" : "")
           + " + " + OVERLAY_URL + " (" + overlaySource + ") \u00b7 overlay \u0434\u043e " + isoDate(overlayPayload.asOfDate || overlayPayload.generatedAt)
         : DATA_URL + " (" + dataResult.source + ") \u00b7 \u0431\u0435\u0437 \u0441\u0432\u0435\u0436\u0435\u0433\u043e overlay";
       if (state.orderProcurementFallbackCount > 0) {

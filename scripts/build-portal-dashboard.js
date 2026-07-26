@@ -4,6 +4,7 @@
 const fs = require('fs');
 const path = require('path');
 const { canonicalOwnerName, canonicalOwnerForPlatform } = require('./owner-normalization');
+const { resolvePlanScopePlatforms } = require('./build-portal-dashboard-metrics');
 
 const OUTPUT_FILE = 'dashboard.json';
 const PLATFORMS = ['wb', 'ozon', 'ya', 'goldapple', 'letu', 'megamarket', 'samokat', 'magnit'];
@@ -243,7 +244,17 @@ function buildFocusTop(skus = []) {
     .slice(0, 24);
 }
 
-function buildCards({ metrics, skus, warehouse, cutoffDate, monthKey, planSlice }) {
+function buildCards({
+  metrics,
+  skus,
+  warehouse,
+  cutoffDate,
+  monthKey,
+  planSlice,
+  planScopePlatforms,
+  planScopeFactRevenue,
+  allChannelFactRevenue
+}) {
   const cards = [];
   const seen = new Set();
   const add = (card) => {
@@ -256,7 +267,6 @@ function buildCards({ metrics, skus, warehouse, cutoffDate, monthKey, planSlice 
   const assignedSku = skuRows.filter((sku) => ownerNames(sku).length > 0).length;
   const totalMarketplaceStock = skuRows.reduce((sum, sku) => sum + marketplaceStock(sku), 0);
   const warehouseStock = numberOrNull(warehouse?.summary?.stockWarehouse) ?? rowsOf(warehouse).reduce((sum, row) => sum + numberOrZero(row.stockWarehouse), 0);
-  const factRevenue = PLATFORMS.reduce((sum, platform) => sum + numberOrZero(metricValue(metrics, 'sales.raw_revenue', platform)), 0);
   const forecastRevenue = metricValue(metrics, 'plan.forecast_revenue', 'all');
 
   add({ id: 'dashboard-cutoff', label: 'Data cutoff', value: cutoffDate, format: 'text', period: cutoffDate, hint: 'Common marketplace fact date.' });
@@ -298,11 +308,20 @@ function buildCards({ metrics, skus, warehouse, cutoffDate, monthKey, planSlice 
   add({
     id: 'company-fact-revenue',
     label: 'Company fact',
-    value: round(factRevenue, 2),
+    value: round(planScopeFactRevenue, 2),
     format: 'money',
     period: cutoffDate,
-    hint: 'Fact is read only from platform_trends.json.',
+    hint: `Fact for the plan scope: ${planScopePlatforms.join(', ')}.`,
     metricId: 'sales.raw_revenue'
+  });
+  add({
+    id: 'all-channel-fact-revenue',
+    label: 'All-channel fact',
+    value: round(allChannelFactRevenue, 2),
+    format: 'money',
+    period: cutoffDate,
+    hint: 'All visible marketplace and retail channels; kept separate from plan completion.',
+    metricId: 'sales.raw_revenue:all-channels'
   });
   add({
     id: 'company-plan-completion',
@@ -353,9 +372,15 @@ function buildPortalDashboard(options = resolveOptions({})) {
     platform,
     platformFact(trends, platform, monthKey, cutoffDate)
   ]));
-  const factRevenue = PLATFORMS.reduce((sum, platform) => sum + numberOrZero(metricValue(metrics, 'sales.raw_revenue', platform)), 0);
+  const planScopePlatforms = resolvePlanScopePlatforms(companyPlan, companyPlan.months?.[monthKey] || {});
+  const allChannelFactRevenue = PLATFORMS.reduce((sum, platform) => sum + numberOrZero(metricValue(metrics, 'sales.raw_revenue', platform)), 0);
+  const calculatedPlanScopeFactRevenue = planScopePlatforms
+    .reduce((sum, platform) => sum + numberOrZero(metricValue(metrics, 'sales.raw_revenue', platform)), 0);
+  const planScopeFactRevenue = numberOrNull(metrics.summary?.salaryFactRevenue)
+    ?? numberOrNull(metrics.summary?.factRevenue)
+    ?? calculatedPlanScopeFactRevenue;
   const factUnits = PLATFORMS.reduce((sum, platform) => sum + numberOrZero(platformFacts[platform].units), 0);
-  const planSlice = buildCompanyPlanSlice(companyPlan, monthKey, cutoffDate, factRevenue);
+  const planSlice = buildCompanyPlanSlice(companyPlan, monthKey, cutoffDate, planScopeFactRevenue);
   const skuRows = rowsOf(skus);
   const assignedSku = skuRows.filter((sku) => ownerNames(sku).length > 0).length;
   const totalMarketplaceStock = skuRows.reduce((sum, sku) => sum + marketplaceStock(sku), 0);
@@ -394,7 +419,17 @@ function buildPortalDashboard(options = resolveOptions({})) {
       warehouseStock: round(warehouseStock, 4),
       marketplaceStock: round(totalMarketplaceStock, 4)
     },
-    cards: buildCards({ metrics, skus, warehouse, cutoffDate, monthKey, planSlice }),
+    cards: buildCards({
+      metrics,
+      skus,
+      warehouse,
+      cutoffDate,
+      monthKey,
+      planSlice,
+      planScopePlatforms,
+      planScopeFactRevenue,
+      allChannelFactRevenue
+    }),
     brandSummary: [
       {
         brand: 'Altea',
@@ -406,7 +441,8 @@ function buildPortalDashboard(options = resolveOptions({})) {
         warehouse_stock: round(warehouseStock, 4),
         plan_units: 0,
         fact_units_to_date: round(factUnits, 4),
-        fact_revenue_to_date: round(factRevenue, 2),
+        fact_revenue_to_date: round(allChannelFactRevenue, 2),
+        all_channel_fact_revenue_to_date: round(allChannelFactRevenue, 2),
         plan_completion_to_date_pct: planSlice.completionToDatePct,
         company_plan_month_key: monthKey,
         company_plan_month_label: planSlice.label,
@@ -428,6 +464,7 @@ function buildPortalDashboard(options = resolveOptions({})) {
       sourceSheet: companyPlan.sourceSheet || '',
       sourcePath: companyPlan.sourcePath || '',
       planType: companyPlan.planType || 'company_revenue',
+      payrollKpiPolicy: companyPlan.payrollKpiPolicy || {},
       activeMonthKey: monthKey,
       activeMonth: planSlice,
       months: companyPlan.months || {}

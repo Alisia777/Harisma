@@ -13,6 +13,26 @@ const INDICATOR_AUDIT_FILE = 'portal_indicator_audit.json';
 const INCLUDED_PLATFORMS = ['wb', 'ozon', 'ya', 'goldapple', 'letu', 'megamarket', 'samokat', 'magnit'];
 const CORE_FACT_PLATFORMS = ['wb', 'ozon', 'ya'];
 
+function normalizePlanPlatform(value) {
+  const key = String(value || '').trim().toLowerCase();
+  if (['ym', 'yandex', 'yandex_market', 'yandex-market'].includes(key)) return 'ya';
+  return key;
+}
+
+function resolvePlanScopePlatforms(companyPlan = {}, planMonth = {}) {
+  const policyPlatforms = companyPlan.payrollKpiPolicy?.includedChannels;
+  const salaryContourPlatforms = planMonth.salaryContour?.includedChannels;
+  const channelPlatforms = Object.entries(planMonth.channels || {})
+    .filter(([platform, channel]) => platform !== 'all' && channel?.salaryIncluded === true)
+    .map(([platform]) => platform);
+  const configured = [policyPlatforms, salaryContourPlatforms, channelPlatforms]
+    .find((items) => Array.isArray(items) && items.length);
+  const supported = Array.from(new Set((configured || CORE_FACT_PLATFORMS)
+    .map(normalizePlanPlatform)
+    .filter((platform) => INCLUDED_PLATFORMS.includes(platform))));
+  return supported.length ? supported : [...CORE_FACT_PLATFORMS];
+}
+
 function parseArgs(argv) {
   const args = {};
   for (let index = 2; index < argv.length; index += 1) {
@@ -227,6 +247,7 @@ function buildPortalDashboardMetrics(options = resolveOptions({})) {
   const cutoffDate = dateKey(trends.latestMarketplaceDate || trends.asOfDate || trends.generatedAt || '');
   const monthKey = monthKeyFromDate(cutoffDate || companyPlan.activeMonthKey || Object.keys(companyPlan.months || {}).sort().pop());
   const planMonth = companyPlan.months?.[monthKey] || null;
+  const planScopePlatforms = resolvePlanScopePlatforms(companyPlan, planMonth || {});
   const planDays = Number(planMonth?.days || daysInMonth(monthKey));
   const elapsedDays = Math.min(dayOfMonth(cutoffDate), planDays || dayOfMonth(cutoffDate));
   const platforms = platformMap(trends);
@@ -239,13 +260,14 @@ function buildPortalDashboardMetrics(options = resolveOptions({})) {
   const includedUnits = INCLUDED_PLATFORMS.reduce((sum, platform) => sum + (numberOrNull(platformFacts[platform].units) || 0), 0);
   const coreRevenue = CORE_FACT_PLATFORMS.reduce((sum, platform) => sum + (numberOrNull(platformFacts[platform].revenue) || 0), 0);
   const coreUnits = CORE_FACT_PLATFORMS.reduce((sum, platform) => sum + (numberOrNull(platformFacts[platform].units) || 0), 0);
+  const planScopeRevenue = planScopePlatforms.reduce((sum, platform) => sum + (numberOrNull(platformFacts[platform].revenue) || 0), 0);
   const allRevenue = numberOrNull(allFact.revenue);
   const unallocatedRevenue = allRevenue === null ? 0 : Math.max(0, round(allRevenue - includedRevenue, 2));
   const allUnits = numberOrNull(allFact.units);
   const unallocatedUnits = allUnits === null ? 0 : Math.max(0, round(allUnits - includedUnits, 4));
-  const coreComponentDates = CORE_FACT_PLATFORMS.map((platform) => platformFacts[platform].date_to).filter(Boolean);
-  const mixedCorePlatformDates = new Set(coreComponentDates).size > 1;
-  const corePlatformsBehind = CORE_FACT_PLATFORMS.filter((platform) => platformFacts[platform].date_to !== cutoffDate);
+  const planScopeComponentDates = planScopePlatforms.map((platform) => platformFacts[platform].date_to).filter(Boolean);
+  const mixedPlanScopePlatformDates = new Set(planScopeComponentDates).size > 1;
+  const planScopePlatformsBehind = planScopePlatforms.filter((platform) => platformFacts[platform].date_to !== cutoffDate);
   const extraPlatformsBehind = INCLUDED_PLATFORMS
     .filter((platform) => !CORE_FACT_PLATFORMS.includes(platform))
     .filter((platform) => platformFacts[platform].date_to && platformFacts[platform].date_to !== cutoffDate);
@@ -266,7 +288,7 @@ function buildPortalDashboardMetrics(options = resolveOptions({})) {
   INCLUDED_PLATFORMS.forEach((platform) => {
     const fact = platformFacts[platform];
     const raw = numberOrNull(fact.revenue);
-    const dataStatus = raw === null || fact.date_to !== cutoffDate || mixedCorePlatformDates ? 'incomplete' : 'trusted';
+    const dataStatus = raw === null || fact.date_to !== cutoffDate ? 'incomplete' : 'trusted';
     metrics.push(metricRow({
       metric_id: 'sales.raw_revenue',
       label: `Raw revenue ${platform}`,
@@ -313,7 +335,9 @@ function buildPortalDashboardMetrics(options = resolveOptions({})) {
 
   const companyPlanRevenue = numberOrNull(planMonth?.revenue);
   const planToDate = companyPlanRevenue !== null && planDays > 0 ? (companyPlanRevenue / planDays) * elapsedDays : null;
-  const factRevenue = round(includedRevenue, 2);
+  const factRevenue = round(planScopeRevenue, 2);
+  const allChannelFactRevenue = round(includedRevenue, 2);
+  const outsidePlanScopeFactRevenue = round(includedRevenue - planScopeRevenue, 2);
   const completionMonth = companyPlanRevenue ? factRevenue / companyPlanRevenue : null;
   const completionToDate = planToDate ? factRevenue / planToDate : null;
   const forecastRevenue = elapsedDays > 0 ? (factRevenue / elapsedDays) * planDays : null;
@@ -334,15 +358,19 @@ function buildPortalDashboardMetrics(options = resolveOptions({})) {
     reconciliation_status: 'ok',
     business_status: 'neutral',
     confidence: companyPlanRevenue === null ? 'low' : 'high',
-    drilldown: [{ plan_id: 'corporate_revenue_monthly', month: monthKey, included_platforms: INCLUDED_PLATFORMS }]
+    drilldown: [{ plan_id: 'corporate_revenue_monthly', month: monthKey, included_platforms: planScopePlatforms }]
   }));
 
+  const planScopeFactReady = planScopePlatforms.every((platform) => (
+    numberOrNull(platformFacts[platform].revenue) !== null
+    && platformFacts[platform].date_to === cutoffDate
+  ));
   const completionIndicator = evaluateIndicator({
     policy_id: 'completion_default',
     value: completionToDate,
-    data_status: completionToDate === null ? 'incomplete' : 'trusted',
+    data_status: completionToDate === null || !planScopeFactReady ? 'incomplete' : 'trusted',
     context: {
-      fact_status: factRevenue === null ? 'incomplete' : 'trusted',
+      fact_status: factRevenue === null || !planScopeFactReady ? 'incomplete' : 'trusted',
       plan_status: planToDate === null ? 'incomplete' : 'trusted',
       same_scope: true,
       same_unit: true,
@@ -372,7 +400,15 @@ function buildPortalDashboardMetrics(options = resolveOptions({})) {
     reconciliation_status: completionIndicator.data_status === 'trusted' ? 'ok' : 'blocked',
     business_status: completionIndicator.business_status,
     confidence: completionIndicator.data_status === 'trusted' ? 'high' : 'low',
-    drilldown: [{ factRevenue, planToDate: round(planToDate, 2), completionMonth: round(completionMonth, 6), completionToDate: round(completionToDate, 6) }]
+    drilldown: [{
+      factRevenue,
+      allChannelFactRevenue,
+      outsidePlanScopeFactRevenue,
+      includedPlatforms: planScopePlatforms,
+      planToDate: round(planToDate, 2),
+      completionMonth: round(completionMonth, 6),
+      completionToDate: round(completionToDate, 6)
+    }]
   }));
 
   metrics.push(metricRow({
@@ -424,9 +460,9 @@ function buildPortalDashboardMetrics(options = resolveOptions({})) {
     }));
   }
 
-  if (mixedCorePlatformDates) dashboardBlocking.push(`mixed core platform fact dates: ${coreComponentDates.join(', ')}`);
-  if (corePlatformsBehind.length) {
-    dashboardBlocking.push(`core platform facts are behind ${cutoffDate}: ${corePlatformsBehind.map((platform) => `${platform}=${platformFacts[platform].date_to || 'missing'}`).join(', ')}`);
+  if (mixedPlanScopePlatformDates) dashboardBlocking.push(`mixed plan-scope platform fact dates: ${planScopeComponentDates.join(', ')}`);
+  if (planScopePlatformsBehind.length) {
+    dashboardBlocking.push(`plan-scope platform facts are behind ${cutoffDate}: ${planScopePlatformsBehind.map((platform) => `${platform}=${platformFacts[platform].date_to || 'missing'}`).join(', ')}`);
   }
   if (extraPlatformsBehind.length) {
     dashboardWarnings.push(`extra marketplace facts are behind ${cutoffDate}: ${extraPlatformsBehind.map((platform) => `${platform}=${platformFacts[platform].date_to}`).join(', ')}`);
@@ -435,7 +471,7 @@ function buildPortalDashboardMetrics(options = resolveOptions({})) {
     dashboardWarnings.push(`extra marketplace facts are missing: ${extraPlatformsMissing.join(', ')}`);
   }
   if (!planMonth) planBlocking.push(`company_plan has no month ${monthKey}`);
-  const planChannelSum = INCLUDED_PLATFORMS.reduce((sum, platform) => sum + (numberOrNull(planMonth?.channels?.[platform]?.revenue) || 0), 0);
+  const planChannelSum = planScopePlatforms.reduce((sum, platform) => sum + (numberOrNull(planMonth?.channels?.[platform]?.revenue) || 0), 0);
   if (companyPlanRevenue !== null && Math.abs(companyPlanRevenue - planChannelSum) > Math.max(1000, companyPlanRevenue * 0.001)) {
     planBlocking.push(`company plan total ${companyPlanRevenue} differs from included channels ${planChannelSum}`);
   }
@@ -455,6 +491,10 @@ function buildPortalDashboardMetrics(options = resolveOptions({})) {
     summary: {
       metrics: metrics.length,
       factRevenue,
+      salaryFactRevenue: factRevenue,
+      allChannelFactRevenue,
+      outsidePlanScopeFactRevenue,
+      planScopePlatforms,
       planRevenue: companyPlanRevenue,
       planToDate: round(planToDate, 2),
       completionToDate: round(completionToDate, 6),
@@ -501,7 +541,7 @@ function buildPortalDashboardMetrics(options = resolveOptions({})) {
       plan_id: 'corporate_revenue_monthly',
       month: monthKey,
       unit: 'RUB',
-      included_platforms: INCLUDED_PLATFORMS,
+      included_platforms: planScopePlatforms,
       fact_source: 'marketplace_sales_fact',
       plan_source: 'company_plan'
     },
@@ -546,5 +586,6 @@ module.exports = {
   buildPortalDashboardMetrics,
   resolveOptions,
   parseArgs,
-  stableStringify
+  stableStringify,
+  resolvePlanScopePlatforms
 };

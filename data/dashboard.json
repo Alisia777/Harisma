@@ -1,7 +1,7 @@
 {
   "schema": "portal-dashboard-v2",
-  "generatedAt": "2026-07-27T07:28:39.730Z",
-  "snapshot_id": "dashboard:21af0124ee4dfe69",
+  "generatedAt": "2026-07-27T10:25:25.389Z",
+  "snapshot_id": "dashboard:c21d506fd1648671",
   "asOfDate": "2026-07-26",
   "latestMarketplaceDate": "2026-07-26",
   "monthKey": "2026-07",
@@ -115,8 +115,8 @@
     "metrics": 14,
     "factRevenue": 413584969.47,
     "salaryFactRevenue": 413584969.47,
-    "allChannelFactRevenue": 416114167.54,
-    "outsidePlanScopeFactRevenue": 2529198.07,
+    "allChannelFactRevenue": 416218431.84,
+    "outsidePlanScopeFactRevenue": 2633462.37,
     "planScopePlatforms": [
       "wb",
       "ozon",
@@ -128,7 +128,7 @@
     "unallocatedRevenue": 0,
     "cutoffDate": "2026-07-26",
     "monthKey": "2026-07",
-    "factUnits": 345574,
+    "factUnits": 345775,
     "warehouseStock": 606930,
     "marketplaceStock": 220574
   },
@@ -204,27 +204,27 @@
     {
       "id": "sales-revenue-goldapple",
       "label": "Revenue GOLDAPPLE",
-      "value": 1453182,
+      "value": 1520000,
       "format": "money",
-      "period": "2026-07-23",
+      "period": "2026-07-26",
       "hint": "Fact from platform_trends.json.",
       "metricId": "sales.raw_revenue:goldapple"
     },
     {
       "id": "sales-revenue-letu",
       "label": "Revenue LETU",
-      "value": 976192,
+      "value": 1010386,
       "format": "money",
-      "period": "2026-07-23",
+      "period": "2026-07-26",
       "hint": "Fact from platform_trends.json.",
       "metricId": "sales.raw_revenue:letu"
     },
     {
       "id": "sales-revenue-megamarket",
       "label": "Revenue MEGAMARKET",
-      "value": 85327.14000000001,
+      "value": 88579.44000000002,
       "format": "money",
-      "period": "2026-07-23",
+      "period": "2026-07-26",
       "hint": "Fact from platform_trends.json.",
       "metricId": "sales.raw_revenue:megamarket"
     },
@@ -276,7 +276,7 @@
     {
       "id": "all-channel-fact-revenue",
       "label": "All-channel fact",
-      "value": 416114167.54,
+      "value": 416218431.84,
       "format": "money",
       "period": "2026-07-26",
       "hint": "All visible marketplace and retail channels; kept separate from plan completion.",
@@ -332,9 +332,9 @@
       "total_stock": 220574,
       "warehouse_stock": 606930,
       "plan_units": 0,
-      "fact_units_to_date": 345574,
-      "fact_revenue_to_date": 416114167.54,
-      "all_channel_fact_revenue_to_date": 416114167.54,
+      "fact_units_to_date": 345775,
+      "fact_revenue_to_date": 416218431.84,
+      "all_channel_fact_revenue_to_date": 416218431.84,
       "plan_completion_to_date_pct": 1.528866,
       "company_plan_month_key": "2026-07",
       "company_plan_month_label": "июль 2026",
@@ -367,21 +367,21 @@
         },
         "goldapple": {
           "dateFrom": "2026-07-01",
-          "dateTo": "2026-07-23",
-          "revenue": 1453182,
-          "units": 2069
+          "dateTo": "2026-07-26",
+          "revenue": 1520000,
+          "units": 2193
         },
         "letu": {
           "dateFrom": "2026-07-01",
-          "dateTo": "2026-07-23",
-          "revenue": 976192,
-          "units": 1766
+          "dateTo": "2026-07-26",
+          "revenue": 1010386,
+          "units": 1837
         },
         "megamarket": {
           "dateFrom": "2026-07-01",
-          "dateTo": "2026-07-23",
-          "revenue": 85327.14,
-          "units": 145
+          "dateTo": "2026-07-26",
+          "revenue": 88579.44,
+          "units": 151
         },
         "samokat": {
           "dateFrom": "",

@@ -523,8 +523,9 @@
     var cleanKeys = (Array.isArray(keys) ? keys : [])
       .map(function (key) { return String(key || "").trim(); })
       .filter(Boolean);
-    for (var index = 0; index < cleanKeys.length; index += 40) {
-      var batch = cleanKeys.slice(index, index + 40);
+    var batchSize = 8;
+    for (var index = 0; index < cleanKeys.length; index += batchSize) {
+      var batch = cleanKeys.slice(index, index + batchSize);
       var url = buildSnapshotUrl(baseUrl, brand);
       url.searchParams.set("snapshot_key", batch.length === 1 ? "eq." + batch[0] : "in.(" + batch.join(",") + ")");
       result = result.concat(await requestSnapshotRows(url, cfg));

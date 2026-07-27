@@ -431,11 +431,11 @@ async function run() {
     ['index.html', 'live-index.html', 'docs/index.html'].forEach((fileName) => {
       const html = readSource(fileName);
       assert.ok(
-        html.includes('app-core-01.js?v=20260727repricermarginbounds1'),
+        html.includes('app-core-01.js?v=20260727snapshottransport1'),
         `${fileName} должен обновить кэш неблокирующей загрузки WB substitution`
       );
       assert.ok(
-        html.includes('portal-snapshot-refresh-hotfix.js?v=20260724ooscorrectness3ui23planfactlazywb1'),
+        html.includes('portal-snapshot-refresh-hotfix.js?v=20260727snapshottransport1'),
         `${fileName} должен обновить кэш лёгкого refresh`
       );
       assert.ok(

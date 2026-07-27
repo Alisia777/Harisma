@@ -308,12 +308,12 @@ async function run() {
 
     ['index.html', 'live-index.html', 'docs/index.html'].forEach((fileName) => {
       const html = fs.readFileSync(path.join(ROOT, fileName), 'utf8');
-      assert.ok(html.includes('app-core-01.js?v=20260727repricermarginbounds1'), `${fileName} must cache-bust OOS loading`);
-      assert.ok(html.includes('styles.css?v=20260727planfacttable1'), `${fileName} must cache-bust current portal styles`);
+      assert.ok(html.includes('app-core-01.js?v=20260727snapshottransport1'), `${fileName} must cache-bust OOS loading`);
+      assert.ok(html.includes('styles.css?v=20260727clientprice1'), `${fileName} must cache-bust current portal styles`);
       assert.ok(html.includes('app-core-09.js?v=20260620premiumshell4procurement1'), `${fileName} must cache-bust procurement need logic`);
       assert.ok(html.includes('app-core-11.js?v=20260727planfacttable1'), `${fileName} must cache-bust current portal logic`);
       assert.ok(html.includes('portal-route-layer-lock.js?v=20260724oosforecast2'), `${fileName} must cache-bust the route lock`);
-      assert.ok(html.includes('portal-snapshot-refresh-hotfix.js?v=20260724ooscorrectness3ui23planfactlazywb1'), `${fileName} must cache-bust OOS refresh scope`);
+      assert.ok(html.includes('portal-snapshot-refresh-hotfix.js?v=20260727snapshottransport1'), `${fileName} must cache-bust OOS refresh scope`);
     });
 
     assert.deepStrictEqual(pageErrors, []);

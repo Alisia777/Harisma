@@ -53,6 +53,7 @@ function resolveOptions(args = {}) {
     metricRegistryPath: path.resolve(args['metric-registry'] || path.join(root, 'data', 'portal_metric_registry.json')),
     featurePolicyPath: path.resolve(args['feature-policy'] || path.join(root, 'data', 'portal_feature_policy.json')),
     economicsPolicyPath: path.resolve(args['economics-policy'] || path.join(inputDir, 'repricer_economics_policy.json')),
+    priceObservationHistoryPath: path.resolve(args['price-history'] || path.join(inputDir, 'repricer_price_observation_history.json')),
     noFail: Boolean(args['no-fail']),
     noWrite: Boolean(args['no-write'])
   };
@@ -202,6 +203,40 @@ function buildProcurementMap(payload = {}) {
     asOfDate: asIsoDate(payload?.asOfDate || payload?.generatedAt || ''),
     map
   };
+}
+
+function buildPriceObservationMap(payload = {}) {
+  const map = new Map();
+  const normalizedBuckets = new Map();
+  payloadRows(payload).forEach((row) => {
+    const platform = String(row?.platform || '').trim().toLowerCase();
+    const articleKey = normalizeKey(row?.article_key || row?.articleKey || row?.article || '');
+    if (!platform || !articleKey) return;
+    const observations = (Array.isArray(row?.observations) ? row.observations : [])
+      .map((observation) => ({
+        sellerPrice: firstPositive(observation?.seller_price, observation?.sellerPrice),
+        clientPrice: firstPositive(observation?.client_price, observation?.clientPrice),
+        firstSeenAt: String(observation?.first_seen_at || observation?.firstSeenAt || '').trim(),
+        lastSeenAt: String(observation?.last_seen_at || observation?.lastSeenAt || observation?.first_seen_at || '').trim(),
+        source: String(observation?.source || '').trim()
+      }))
+      .filter((observation) => observation.sellerPrice !== null && asIsoDate(observation.firstSeenAt))
+      .sort((left, right) => Date.parse(left.firstSeenAt) - Date.parse(right.firstSeenAt));
+    const history = {
+      present: observations.length > 0,
+      observations
+    };
+    const exactArticleKey = String(row?.article_key || row?.articleKey || row?.article || '').trim().toLowerCase();
+    map.set(`${platform}|${articleKey}|${exactArticleKey}`, history);
+    const normalizedKey = `${platform}|${articleKey}`;
+    const bucket = normalizedBuckets.get(normalizedKey) || [];
+    bucket.push(history);
+    normalizedBuckets.set(normalizedKey, bucket);
+  });
+  normalizedBuckets.forEach((histories, key) => {
+    if (histories.length === 1) map.set(key, histories[0]);
+  });
+  return map;
 }
 
 function buildLiveSignalBucket(payload = {}, platform = '') {
@@ -578,6 +613,16 @@ function demandPricingPolicy(economicsPolicy = {}, platform = '', targetTurnover
     platformRule.increaseStepPct,
     root.increaseStepPct
   );
+  const configuredWeights = platformRule.forecastWeights || root.forecastWeights || {};
+  const rawForecastWeights = {
+    recent7: Math.max(0, firstConfiguredNumber(configuredWeights.recent7) ?? 0.55),
+    prior7: Math.max(0, firstConfiguredNumber(configuredWeights.prior7) ?? 0.30),
+    prior14: Math.max(0, firstConfiguredNumber(configuredWeights.prior14) ?? 0.15)
+  };
+  const forecastWeightTotal = Object.values(rawForecastWeights).reduce((sum, value) => sum + value, 0) || 1;
+  const forecastWeights = Object.fromEntries(
+    Object.entries(rawForecastWeights).map(([key, value]) => [key, value / forecastWeightTotal])
+  );
   return {
     enabled: root.enabled === true,
     reviewRequired: root.reviewRequired !== false,
@@ -598,7 +643,48 @@ function demandPricingPolicy(economicsPolicy = {}, platform = '', targetTurnover
     increaseStepPct: configuredIncrease !== null && configuredIncrease > 0 && configuredIncrease <= 0.10
       ? configuredIncrease
       : (platformKey === 'ozon' ? 0.05 : 0.02),
-    decreaseStepsPct
+    decreaseStepsPct,
+    forecastWeights,
+    minForecastMultiplier: Math.max(0.1, Math.min(1, firstConfiguredNumber(
+      platformRule.minForecastMultiplier,
+      root.minForecastMultiplier
+    ) ?? 0.5)),
+    maxForecastMultiplier: Math.max(1, Math.min(3, firstConfiguredNumber(
+      platformRule.maxForecastMultiplier,
+      root.maxForecastMultiplier
+    ) ?? 1.75)),
+    accelerationThreshold: Math.max(1.05, firstConfiguredNumber(
+      platformRule.accelerationThreshold,
+      root.accelerationThreshold
+    ) ?? 1.25),
+    decelerationThreshold: Math.max(0.1, Math.min(0.95, firstConfiguredNumber(
+      platformRule.decelerationThreshold,
+      root.decelerationThreshold
+    ) ?? 0.75)),
+    minDataQualityScore: Math.max(0, Math.min(100, firstConfiguredNumber(
+      platformRule.minDataQualityScore,
+      root.minDataQualityScore
+    ) ?? 65)),
+    decreaseMinDataQualityScore: Math.max(0, Math.min(100, firstConfiguredNumber(
+      platformRule.decreaseMinDataQualityScore,
+      root.decreaseMinDataQualityScore
+    ) ?? 85)),
+    highConfidenceMinSales28Units: Math.max(1, firstConfiguredNumber(
+      platformRule.highConfidenceMinSales28Units,
+      root.highConfidenceMinSales28Units
+    ) ?? 28),
+    cooldownDays: Math.max(0, firstConfiguredNumber(
+      platformRule.cooldownDays,
+      root.cooldownDays
+    ) ?? 3),
+    dailyHistoryMaxAgeDays: Math.max(0, firstConfiguredNumber(
+      platformRule.dailyHistoryMaxAgeDays,
+      root.dailyHistoryMaxAgeDays
+    ) ?? 7),
+    minObservedDailyHistoryDays: Math.max(1, firstConfiguredNumber(
+      platformRule.minObservedDailyHistoryDays,
+      root.minObservedDailyHistoryDays
+    ) ?? 14)
   };
 }
 
@@ -608,6 +694,152 @@ function demandTier(ratio, thresholds = []) {
   if (ratio >= thresholds[1]) return 1;
   if (ratio >= thresholds[0]) return 0;
   return -1;
+}
+
+function demandForecast({
+  avgDaily = null,
+  sales7 = null,
+  sales14 = null,
+  sales28 = null,
+  config = {}
+} = {}) {
+  const baselineDaily = firstNumber(avgDaily);
+  const valuesPresent = [sales7, sales14, sales28].every((value) => firstNumber(value) !== null);
+  const normalizedSales7 = Math.max(0, firstNumber(sales7, 0) || 0);
+  const normalizedSales14 = Math.max(0, firstNumber(sales14, 0) || 0);
+  const normalizedSales28 = Math.max(0, firstNumber(sales28, 0) || 0);
+  const windowsConsistent = Boolean(
+    valuesPresent
+    && normalizedSales14 + 1e-9 >= normalizedSales7
+    && normalizedSales28 + 1e-9 >= normalizedSales14
+  );
+  if (!windowsConsistent) {
+    return {
+      model: 'baseline_avg_daily_fallback',
+      windows_consistent: false,
+      baseline_daily_units: baselineDaily,
+      forecast_daily_units: baselineDaily,
+      recent_7d_daily_units: valuesPresent ? Number((normalizedSales7 / 7).toFixed(6)) : null,
+      prior_7d_daily_units: null,
+      prior_14d_daily_units: null,
+      momentum_ratio: null,
+      trend: 'unknown',
+      raw_forecast_daily_units: baselineDaily
+    };
+  }
+
+  const recent7Daily = normalizedSales7 / 7;
+  const prior7Daily = Math.max(0, normalizedSales14 - normalizedSales7) / 7;
+  const prior14Daily = Math.max(0, normalizedSales28 - normalizedSales14) / 14;
+  const weights = config.forecastWeights || { recent7: 0.55, prior7: 0.30, prior14: 0.15 };
+  const rawForecast = recent7Daily * weights.recent7
+    + prior7Daily * weights.prior7
+    + prior14Daily * weights.prior14;
+  const fallbackBaseline = normalizedSales28 > 0 ? normalizedSales28 / 28 : baselineDaily;
+  const comparisonBaseline = baselineDaily !== null && baselineDaily > 0 ? baselineDaily : fallbackBaseline;
+  const minForecast = comparisonBaseline !== null
+    ? comparisonBaseline * (config.minForecastMultiplier ?? 0.5)
+    : 0;
+  const maxForecast = comparisonBaseline !== null
+    ? comparisonBaseline * (config.maxForecastMultiplier ?? 1.75)
+    : rawForecast;
+  const forecastDaily = Math.max(minForecast, Math.min(maxForecast, rawForecast));
+  const older21Daily = Math.max(0, normalizedSales28 - normalizedSales7) / 21;
+  const momentumRatio = older21Daily > 0
+    ? recent7Daily / older21Daily
+    : (recent7Daily > 0 ? config.maxForecastMultiplier || 1.75 : 1);
+  const trend = momentumRatio >= (config.accelerationThreshold ?? 1.25)
+    ? 'accelerating'
+    : (momentumRatio <= (config.decelerationThreshold ?? 0.75) ? 'decelerating' : 'stable');
+  return {
+    model: 'weighted_7_14_28_v2',
+    windows_consistent: true,
+    baseline_daily_units: baselineDaily,
+    forecast_daily_units: Number(forecastDaily.toFixed(6)),
+    recent_7d_daily_units: Number(recent7Daily.toFixed(6)),
+    prior_7d_daily_units: Number(prior7Daily.toFixed(6)),
+    prior_14d_daily_units: Number(prior14Daily.toFixed(6)),
+    momentum_ratio: Number(momentumRatio.toFixed(4)),
+    trend,
+    raw_forecast_daily_units: Number(rawForecast.toFixed(6))
+  };
+}
+
+function dailyDemandWindow(sourceRow = {}, snapshotAsOf = '', config = {}) {
+  const daily = Array.isArray(sourceRow?.daily)
+    ? sourceRow.daily
+    : (Array.isArray(sourceRow?.monthly) ? sourceRow.monthly : []);
+  const byDate = new Map();
+  daily.forEach((item) => {
+    const date = asIsoDate(item?.date || item?.valueDate || '');
+    const delivered = firstNumber(item?.deliveredUnits);
+    const ordered = firstNumber(item?.ordersUnits);
+    const units = delivered !== null ? delivered : ordered;
+    if (!date || units === null || units < 0) return;
+    byDate.set(date, Math.max(byDate.get(date) || 0, units));
+  });
+  const dates = [...byDate.keys()].sort();
+  const historyAsOf = dates[dates.length - 1] || '';
+  const historyAgeDays = dateAgeDays(historyAsOf, snapshotAsOf);
+  const maxAgeDays = config.dailyHistoryMaxAgeDays ?? 7;
+  const minimumObservedDays = config.minObservedDailyHistoryDays ?? 14;
+  if (!historyAsOf || historyAgeDays === null) {
+    return {
+      usable: false,
+      as_of: '',
+      age_days: null,
+      observed_days_28d: 0,
+      reason: 'daily_history_missing'
+    };
+  }
+  const endStamp = Date.parse(`${historyAsOf}T00:00:00Z`);
+  const fromDate = (daysBack) => new Date(endStamp - daysBack * 86400000).toISOString().slice(0, 10);
+  const sumFrom = (daysBack) => {
+    const start = fromDate(daysBack - 1);
+    return [...byDate.entries()]
+      .filter(([date]) => date >= start && date <= historyAsOf)
+      .reduce((sum, [, units]) => sum + units, 0);
+  };
+  const observedDays28 = dates.filter((date) => date >= fromDate(27) && date <= historyAsOf).length;
+  const usable = historyAgeDays <= maxAgeDays && observedDays28 >= minimumObservedDays;
+  return {
+    usable,
+    as_of: historyAsOf,
+    age_days: historyAgeDays,
+    observed_days_28d: observedDays28,
+    sales7: Number(sumFrom(7).toFixed(6)),
+    sales14: Number(sumFrom(14).toFixed(6)),
+    sales28: Number(sumFrom(28).toFixed(6)),
+    reason: historyAgeDays > maxAgeDays
+      ? 'daily_history_stale'
+      : (observedDays28 < minimumObservedDays ? 'daily_history_sparse' : '')
+  };
+}
+
+function priceChangeSignal(priceHistory = null, currentPrice = null, snapshotAsOf = '', cooldownDays = 3) {
+  const observations = (Array.isArray(priceHistory?.observations) ? priceHistory.observations : [])
+    .map((observation) => ({
+      sellerPrice: firstPositive(observation?.sellerPrice, observation?.seller_price),
+      firstSeenAt: String(observation?.firstSeenAt || observation?.first_seen_at || '').trim(),
+      lastSeenAt: String(observation?.lastSeenAt || observation?.last_seen_at || '').trim()
+    }))
+    .filter((observation) => observation.sellerPrice !== null && asIsoDate(observation.firstSeenAt))
+    .sort((left, right) => Date.parse(left.firstSeenAt) - Date.parse(right.firstSeenAt));
+  const current = firstPositive(currentPrice);
+  const latest = observations[observations.length - 1] || null;
+  let lastPriceChangeAt = observations.length > 1 ? observations[observations.length - 1].firstSeenAt : '';
+  if (latest && current !== null && Math.abs(latest.sellerPrice - current) >= 0.005) {
+    lastPriceChangeAt = snapshotAsOf;
+  }
+  const ageDays = lastPriceChangeAt ? dateAgeDays(lastPriceChangeAt, snapshotAsOf) : null;
+  return {
+    history_available: observations.length > 0,
+    observations: observations.length,
+    last_price_change_at: asIsoDate(lastPriceChangeAt),
+    price_change_age_days: ageDays,
+    cooldown_days: cooldownDays,
+    cooldown_active: Boolean(ageDays !== null && ageDays >= 0 && ageDays < cooldownDays)
+  };
 }
 
 function buildDemandIntelligence({
@@ -623,22 +855,37 @@ function buildDemandIntelligence({
   lifecycleKey = '',
   policy = {},
   snapshotAsOf = '',
-  approval = null
+  approval = null,
+  priceHistory = null,
+  sourceRow = null
 } = {}) {
   const config = demandPricingPolicy(economicsPolicy, platform, policy.target_turnover_days);
   const reasons = [];
   const demandAsOf = asIsoDate(procurement?.date || '');
   const demandAgeDays = dateAgeDays(demandAsOf, snapshotAsOf);
   const avgDaily = firstNumber(procurement?.avgDaily);
-  const sales7 = firstNumber(procurement?.sales7);
-  const sales14 = firstNumber(procurement?.sales14);
-  const sales28 = firstNumber(procurement?.sales28);
+  const procurementSales7 = firstNumber(procurement?.sales7);
+  const procurementSales14 = firstNumber(procurement?.sales14);
+  const procurementSales28 = firstNumber(procurement?.sales28);
   const sales30 = firstNumber(procurement?.sales30);
+  const observedDailyHistory = dailyDemandWindow(sourceRow || {}, snapshotAsOf, config);
+  const sales7 = observedDailyHistory.usable ? observedDailyHistory.sales7 : procurementSales7;
+  const sales14 = observedDailyHistory.usable ? observedDailyHistory.sales14 : procurementSales14;
+  const sales28 = observedDailyHistory.usable ? observedDailyHistory.sales28 : procurementSales28;
+  const forecast = demandForecast({
+    avgDaily,
+    sales7,
+    sales14,
+    sales28,
+    config
+  });
+  const forecastDaily = firstNumber(forecast.forecast_daily_units);
+  const priceSignal = priceChangeSignal(priceHistory, currentPrice, snapshotAsOf, config.cooldownDays);
   const availableStock = firstNumber(stock);
   const inboundUnits = firstNumber(inbound, 0) || 0;
   const coverageUnits = availableStock === null ? null : Math.max(0, availableStock + inboundUnits);
-  const turnoverDays = coverageUnits !== null && avgDaily !== null && avgDaily > 0
-    ? Number((coverageUnits / avgDaily).toFixed(2))
+  const turnoverDays = coverageUnits !== null && forecastDaily !== null && forecastDaily > 0
+    ? Number((coverageUnits / forecastDaily).toFixed(2))
     : null;
   const turnoverRatio = turnoverDays !== null && config.targetTurnoverDays > 0
     ? Number((turnoverDays / config.targetTurnoverDays).toFixed(4))
@@ -662,6 +909,7 @@ function buildDemandIntelligence({
   if (demandAgeDays !== null && demandAgeDays > config.maxAgeDays) reasons.push('demand_snapshot_stale');
   if (avgDaily === null || avgDaily < config.minAvgDailyUnits) reasons.push('demand_velocity_too_low');
   if (sales28 === null || sales28 < config.minSales28Units) reasons.push('demand_sales_history_insufficient');
+  if (!forecast.windows_consistent) reasons.push('demand_windows_inconsistent');
   if (coverageUnits === null) reasons.push('demand_stock_missing');
   if (coverageUnits !== null && coverageUnits <= 0) reasons.push('demand_oos');
   if (policy.floor === null) reasons.push('demand_floor_missing');
@@ -675,10 +923,36 @@ function buildDemandIntelligence({
     reasons.push('safety_corridor_correction_has_priority');
   }
 
+  const dataQualityScore = Math.min(100,
+    (currentPrice !== null && currentPrice > 0 && !currentPriceStale ? 20 : 0)
+    + (selectedStockDirect ? 25 : 0)
+    + (demandAsOf && demandAgeDays !== null && demandAgeDays <= config.maxAgeDays ? 20 : 0)
+    + (forecast.windows_consistent ? 15 : 0)
+    + (sales28 !== null && sales28 >= config.highConfidenceMinSales28Units
+      ? 20
+      : (sales28 !== null && sales28 >= config.minSales28Units ? 10 : 0))
+  );
+  if (dataQualityScore < config.minDataQualityScore) reasons.push('demand_data_quality_low');
+
   const eligible = reasons.length === 0;
+  const confidence = !eligible
+    ? 'insufficient'
+    : (dataQualityScore >= config.decreaseMinDataQualityScore
+      && sales28 !== null
+      && sales28 >= config.highConfidenceMinSales28Units
+      ? 'high'
+      : 'medium');
   let action = 'keep';
   let stepPct = 0;
   let requestedPrice = currentPrice;
+  if (eligible) {
+    reasons.push(observedDailyHistory.usable ? 'demand_daily_history_used' : 'demand_procurement_windows_used');
+    reasons.push(
+      forecast.trend === 'accelerating'
+        ? 'demand_trend_accelerating'
+        : (forecast.trend === 'decelerating' ? 'demand_trend_decelerating' : 'demand_trend_stable')
+    );
+  }
   if (eligible && turnoverRatio !== null && turnoverRatio <= config.lowStockRatio) {
     action = 'increase';
     stepPct = config.increaseStepPct;
@@ -688,6 +962,10 @@ function buildDemandIntelligence({
     const tier = demandTier(turnoverRatio, config.overstockRatios);
     if (tier >= 0 && oosDecreaseGuard) {
       reasons.push('demand_decrease_blocked_by_oos_risk');
+    } else if (tier >= 0 && forecast.trend === 'accelerating') {
+      reasons.push('demand_decrease_blocked_by_acceleration');
+    } else if (tier >= 0 && dataQualityScore < config.decreaseMinDataQualityScore) {
+      reasons.push('demand_decrease_needs_high_confidence');
     } else if (tier >= 0) {
       action = 'decrease';
       stepPct = config.decreaseStepsPct[tier];
@@ -696,6 +974,12 @@ function buildDemandIntelligence({
     } else {
       reasons.push('demand_turnover_in_target_band');
     }
+  }
+  if (action !== 'keep' && priceSignal.cooldown_active) {
+    action = 'keep';
+    stepPct = 0;
+    requestedPrice = currentPrice;
+    reasons.push('demand_price_cooldown_active');
   }
 
   let guardedPrice = requestedPrice;
@@ -719,7 +1003,20 @@ function buildDemandIntelligence({
     }
   }
 
-  const sufficientHistory = sales28 !== null && sales28 >= Math.max(config.minSales28Units, 28);
+  const ratioSeverity = turnoverRatio === null
+    ? 0
+    : Math.min(1, Math.abs(Math.log(Math.max(0.05, turnoverRatio))));
+  const decisionScore = Math.round(Math.min(100,
+    dataQualityScore * 0.65
+    + ratioSeverity * 30
+    + (forecast.trend === 'stable' ? 5 : 0)
+  ));
+  const nextReviewAt = priceSignal.cooldown_active && priceSignal.last_price_change_at
+    ? new Date(
+      Date.parse(`${priceSignal.last_price_change_at}T00:00:00Z`)
+      + config.cooldownDays * 86400000
+    ).toISOString().slice(0, 10)
+    : '';
   return {
     enabled: config.enabled,
     eligible,
@@ -727,7 +1024,9 @@ function buildDemandIntelligence({
       ? 'disabled'
       : (!eligible ? 'insufficient_or_guarded' : (action === 'keep' ? 'keep' : 'review_required')),
     action,
-    confidence: eligible ? (sufficientHistory ? 'high' : 'medium') : 'insufficient',
+    confidence,
+    data_quality_score: dataQualityScore,
+    decision_score: decisionScore,
     review_required: Boolean(eligible && action !== 'keep' && config.reviewRequired),
     auto_apply: Boolean(eligible && action !== 'keep' && config.autoApply && !config.reviewRequired),
     current_turnover_days: turnoverDays,
@@ -737,20 +1036,44 @@ function buildDemandIntelligence({
     inbound_units: inboundUnits,
     coverage_units: coverageUnits,
     avg_daily_units: avgDaily,
+    forecast_daily_units: forecastDaily,
+    baseline_daily_units: forecast.baseline_daily_units,
+    recent_7d_daily_units: forecast.recent_7d_daily_units,
+    prior_7d_daily_units: forecast.prior_7d_daily_units,
+    prior_14d_daily_units: forecast.prior_14d_daily_units,
+    demand_momentum_ratio: forecast.momentum_ratio,
+    demand_trend: forecast.trend,
+    forecast_model: forecast.model,
+    demand_windows_consistent: forecast.windows_consistent,
     sales_7d_units: sales7,
     sales_14d_units: sales14,
     sales_28d_units: sales28,
     sales_30d_units: sales30,
     demand_as_of: demandAsOf,
     demand_age_days: demandAgeDays,
+    demand_history_source: observedDailyHistory.usable ? 'daily_orders_history' : 'procurement_windows',
+    demand_history_as_of: observedDailyHistory.as_of,
+    demand_history_age_days: observedDailyHistory.age_days,
+    demand_history_observed_days_28d: observedDailyHistory.observed_days_28d,
+    demand_history_fallback_reason: observedDailyHistory.usable ? '' : observedDailyHistory.reason,
+    procurement_sales_7d_units: procurementSales7,
+    procurement_sales_14d_units: procurementSales14,
+    procurement_sales_28d_units: procurementSales28,
     step_pct: stepPct,
     current_price: currentPrice,
     requested_price: action === 'keep' ? currentPrice : requestedPrice,
     guarded_price: action === 'keep' ? currentPrice : guardedPrice,
     guards,
     oos_decrease_guard: oosDecreaseGuard,
+    price_history_available: priceSignal.history_available,
+    price_history_observations: priceSignal.observations,
+    last_price_change_at: priceSignal.last_price_change_at,
+    price_change_age_days: priceSignal.price_change_age_days,
+    price_cooldown_days: priceSignal.cooldown_days,
+    price_cooldown_active: priceSignal.cooldown_active,
+    next_review_at: nextReviewAt,
     reasons: [...new Set(reasons)],
-    source: 'order_procurement_sales_velocity+repricer_live_signals_stock',
+    source: 'order_procurement_sales_velocity+repricer_live_signals_stock+repricer_price_observation_history',
     policy: {
       max_age_days: config.maxAgeDays,
       approval_ttl_hours: config.approvalTtlHours,
@@ -759,7 +1082,18 @@ function buildDemandIntelligence({
       low_stock_ratio: config.lowStockRatio,
       overstock_ratios: config.overstockRatios,
       increase_step_pct: config.increaseStepPct,
-      decrease_steps_pct: config.decreaseStepsPct
+      decrease_steps_pct: config.decreaseStepsPct,
+      forecast_weights: config.forecastWeights,
+      min_forecast_multiplier: config.minForecastMultiplier,
+      max_forecast_multiplier: config.maxForecastMultiplier,
+      acceleration_threshold: config.accelerationThreshold,
+      deceleration_threshold: config.decelerationThreshold,
+      min_data_quality_score: config.minDataQualityScore,
+      decrease_min_data_quality_score: config.decreaseMinDataQualityScore,
+      high_confidence_min_sales_28d_units: config.highConfidenceMinSales28Units,
+      cooldown_days: config.cooldownDays,
+      daily_history_max_age_days: config.dailyHistoryMaxAgeDays,
+      min_observed_daily_history_days: config.minObservedDailyHistoryDays
     }
   };
 }
@@ -1281,7 +1615,8 @@ function buildCanonicalSide({
   approval,
   lifecycleApproval,
   minMaxRecord,
-  costRecord
+  costRecord,
+  priceHistory
 }) {
   const articleKey = String(sourceRow?.articleKey || sourceRow?.article || '').trim();
   const normalizedArticle = normalizeKey(articleKey);
@@ -1404,7 +1739,9 @@ function buildCanonicalSide({
     lifecycleKey,
     policy,
     snapshotAsOf,
-    approval
+    approval,
+    priceHistory,
+    sourceRow
   });
   const proposed = canRecommend
     ? chooseProposedPrice(price, policy, approval, demandIntelligence)
@@ -1580,6 +1917,12 @@ function buildCanonicalSide({
           as_of: demandIntelligence.demand_as_of,
           stock_join: preferLiveStock ? 'repricer_live_signals.json' : `order_procurement_${platform}.json`
         },
+        price_history: {
+          source_id: 'repricer_price_observation_history',
+          file: 'repricer_price_observation_history.json',
+          observations: demandIntelligence.price_history_observations,
+          last_price_change_at: demandIntelligence.last_price_change_at
+        },
         internal_advertising: {
           source_id: economics.sources?.internal_advertising || '',
           file: economics.sources?.internal_advertising === 'repricer_live_signals'
@@ -1668,6 +2011,9 @@ function buildCanonicalSide({
       margin_guard_has_priority: policy.margin_guard_required,
       demand_price_review_required: demandPriceReviewRequired,
       demand_auto_apply_allowed: demandIntelligence.auto_apply,
+      demand_forecast_model: demandIntelligence.forecast_model,
+      demand_data_quality_score: demandIntelligence.data_quality_score,
+      demand_price_cooldown_active: demandIntelligence.price_cooldown_active,
       ozon_export_current_price_used: false,
       local_storage_override_used: false,
       target_turnover_source: 'portal_indicator_policy.turnover_default.target_days'
@@ -1685,6 +2031,7 @@ function buildCanonicalRepricer(options = resolveOptions({})) {
     'order_procurement_ym.json',
     'repricer_live_signals.json',
     'repricer_live_prices.json',
+    'repricer_price_observation_history.json',
     'skus.json',
     'portal_metric_registry.json',
     'portal_indicator_policy.json',
@@ -1724,6 +2071,10 @@ function buildCanonicalRepricer(options = resolveOptions({})) {
     ozon: buildLiveSignalBucket(liveSignalsPayload, 'ozon'),
     ym: buildLiveSignalBucket(liveSignalsPayload, 'ym')
   };
+  const priceObservationHistory = buildPriceObservationMap(safeReadJson(
+    options.priceObservationHistoryPath || file(options.inputDir, 'repricer_price_observation_history.json'),
+    { generatedAt: '', rows: [] }
+  ));
   const policyPayload = readPolicyJson(options.policyPath, {});
   const metricRegistry = readJsonFile(options.metricRegistryPath, {});
   const featurePolicy = readJsonFile(options.featurePolicyPath, {});
@@ -1811,7 +2162,10 @@ function buildCanonicalRepricer(options = resolveOptions({})) {
         approval: approvalFor(approvals, articleKey, platform),
         lifecycleApproval: lifecycleApprovalFor(lifecycleApprovals, articleKey, platform),
         minMaxRecord,
-        costRecord
+        costRecord,
+        priceHistory: priceObservationHistory.get(`${skuKey}|${articleKey.toLowerCase()}`)
+          || priceObservationHistory.get(skuKey)
+          || null
       }));
     });
   });
@@ -1957,7 +2311,11 @@ module.exports = {
   targetMarginCap,
   featureReadiness,
   buildSharedProductCostMap,
+  buildPriceObservationMap,
   buildDemandIntelligence,
+  dailyDemandWindow,
+  demandForecast,
   demandPricingPolicy,
+  priceChangeSignal,
   chooseProposedPrice
 };

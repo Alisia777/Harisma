@@ -742,6 +742,15 @@
         const deltaLabel = Number.isFinite(deltaPct)
           ? ` · ${deltaPct > 0 ? '+' : ''}${Math.round(deltaPct * 1000) / 10}%`
           : '';
+        const demand = isDemandPrice && skuDecision.payload?.demandIntelligence
+          ? skuDecision.payload.demandIntelligence
+          : null;
+        const demandDetails = demand
+          ? `Прогноз ${Number.isFinite(Number(demand.forecast_daily_units)) ? `${Math.round(Number(demand.forecast_daily_units) * 100) / 100} шт./день` : '—'}`
+            + ` · тренд ${String(demand.demand_trend || '—')}`
+            + ` · качество ${Number.isFinite(Number(demand.data_quality_score)) ? `${Math.round(Number(demand.data_quality_score))}/100` : '—'}`
+            + `${demand.price_cooldown_active ? ` · cooldown до ${String(demand.next_review_at || '—')}` : ''}`
+          : '';
         return `
           <div class="card" style="margin-top:14px">
             <div class="section-subhead">
@@ -755,6 +764,7 @@
               <strong>${escapeHtml(skuDecision.articleKey || task.articleKey || 'SKU')}</strong> ·
               ${escapeHtml(String(skuDecision.currentValue || '—'))} → ${escapeHtml(String(skuDecision.proposedValue || '—'))}${escapeHtml(deltaLabel)}
               <br>${escapeHtml(skuDecision.reason || 'Основание не указано')}
+              ${demandDetails ? `<br>${escapeHtml(demandDetails)}` : ''}
             </div>
             <form id="taskRopApproveForm" class="form-stack" style="margin-top:12px">
               <textarea name="comment" rows="3" placeholder="Комментарий РОПа к решению"></textarea>

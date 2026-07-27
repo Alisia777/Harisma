@@ -134,6 +134,13 @@ function compareRepricerSnapshots({
       floor: positiveNumber(row?.policy?.floor),
       cap: positiveNumber(row?.policy?.cap),
       confidence: String(row?.demand_intelligence?.confidence || ''),
+      dataQualityScore: Number(row?.demand_intelligence?.data_quality_score),
+      decisionScore: Number(row?.demand_intelligence?.decision_score),
+      forecastDailyUnits: positiveNumber(row?.demand_intelligence?.forecast_daily_units),
+      demandTrend: String(row?.demand_intelligence?.demand_trend || ''),
+      momentumRatio: Number(row?.demand_intelligence?.demand_momentum_ratio),
+      cooldownActive: Boolean(row?.demand_intelligence?.price_cooldown_active),
+      nextReviewAt: String(row?.demand_intelligence?.next_review_at || ''),
       reasonCodes: Array.isArray(row?.recommendation?.reason_codes)
         ? row.recommendation.reason_codes
         : []
@@ -211,6 +218,12 @@ function compareRepricerSnapshots({
       demand_price_review_rows: demandPriceReviews.length,
       demand_price_increase_rows: demandPriceReviews.filter((row) => row.action === 'increase').length,
       demand_price_decrease_rows: demandPriceReviews.filter((row) => row.action === 'decrease').length,
+      demand_forecast_v2_rows: canonicalRows.filter((row) => row?.demand_intelligence?.forecast_model === 'weighted_7_14_28_v2').length,
+      demand_daily_history_rows: canonicalRows.filter((row) => row?.demand_intelligence?.demand_history_source === 'daily_orders_history').length,
+      demand_accelerating_rows: canonicalRows.filter((row) => row?.demand_intelligence?.demand_trend === 'accelerating').length,
+      demand_decelerating_rows: canonicalRows.filter((row) => row?.demand_intelligence?.demand_trend === 'decelerating').length,
+      demand_price_cooldown_rows: canonicalRows.filter((row) => row?.demand_intelligence?.price_cooldown_active === true).length,
+      demand_low_quality_rows: canonicalRows.filter((row) => Number(row?.demand_intelligence?.data_quality_score) < 65).length,
       price_agreement: Math.round(priceAgreement * 1e6) / 1e6,
       margin_minmax_gap_rows: gapBlockedRows
     },

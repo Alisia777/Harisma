@@ -3826,13 +3826,23 @@ function repricerDemandReasonLabel(reason = '') {
     demand_snapshot_stale: 'данные спроса устарели',
     demand_velocity_too_low: 'слишком мало продаж для решения',
     demand_sales_history_insufficient: 'недостаточно истории продаж',
+    demand_windows_inconsistent: 'окна 7/14/28 дней противоречат друг другу',
+    demand_data_quality_low: 'качество данных ниже безопасного порога',
+    demand_daily_history_used: 'прогноз рассчитан по фактическим дневным заказам',
+    demand_procurement_windows_used: 'прогноз рассчитан по окнам закупочного контура',
     demand_stock_missing: 'нет остатка',
     demand_oos: 'товар OOS',
     demand_floor_missing: 'не задан безопасный MIN',
     safety_corridor_correction_has_priority: 'сначала исправить маржу/MIN/MAX',
     demand_low_stock_price_increase: 'низкое покрытие: предложено повышение',
     demand_overstock_price_decrease: 'избыточное покрытие: предложено снижение',
+    demand_trend_accelerating: 'продажи ускоряются',
+    demand_trend_decelerating: 'продажи замедляются',
+    demand_trend_stable: 'спрос стабилен',
+    demand_decrease_blocked_by_acceleration: 'снижение остановлено: продажи ускоряются',
+    demand_decrease_needs_high_confidence: 'для снижения недостаточно уверенных данных',
     demand_decrease_blocked_by_oos_risk: 'снижение запрещено из-за риска OOS',
+    demand_price_cooldown_active: 'цена недавно менялась: действует cooldown',
     demand_turnover_in_target_band: 'оборачиваемость в целевом диапазоне',
     demand_move_absorbed_by_safety_corridor: 'шаг поглощён безопасным коридором'
   };
@@ -3858,6 +3868,9 @@ function renderRepricerSide(title, side) {
   const demandActionLabel = demand?.action === 'increase'
     ? 'поднять'
     : (demand?.action === 'decrease' ? 'снизить' : 'оставить');
+  const demandTrendLabel = demand?.demand_trend === 'accelerating'
+    ? 'ускоряется'
+    : (demand?.demand_trend === 'decelerating' ? 'замедляется' : (demand?.demand_trend === 'stable' ? 'стабилен' : 'не определён'));
   const confidenceBadge = badge(`${repricerConfidenceLabel(side.confidence)} ${fmt.int(side.confidenceScore)}`, repricerConfidenceTone(side.confidence));
   const lifecycleBadge = side.productLifecycleKey && side.productLifecycleKey !== 'active'
     ? badge(`товар: ${side.productLifecycleLabel || side.productLifecycleKey}`, side.productLifecycleTone || 'warn')
@@ -3933,8 +3946,13 @@ function renderRepricerSide(title, side) {
           <strong>Умный слой:</strong>
           оборот ${demand.current_turnover_days == null ? '—' : `${fmt.num(demand.current_turnover_days, 1)} дн.`}
           при цели ${demand.target_turnover_days == null ? '—' : `${fmt.num(demand.target_turnover_days, 1)} дн.`};
-          скорость ${demand.avg_daily_units == null ? '—' : `${fmt.num(demand.avg_daily_units, 2)} шт./день`};
+          прогноз ${demand.forecast_daily_units == null ? '—' : `${fmt.num(demand.forecast_daily_units, 2)} шт./день`}
+          (база ${demand.avg_daily_units == null ? '—' : `${fmt.num(demand.avg_daily_units, 2)}`});
+          тренд ${escapeHtml(demandTrendLabel)};
+          качество ${demand.data_quality_score == null ? '—' : `${fmt.int(demand.data_quality_score)}/100`};
+          источник ${demand.demand_history_source === 'daily_orders_history' ? `дневные заказы на ${escapeHtml(demand.demand_history_as_of || '—')}` : 'окна 7/14/28'};
           решение — ${escapeHtml(demandActionLabel)}.
+          ${demand.price_cooldown_active ? ` Повторная смена запрещена до ${escapeHtml(demand.next_review_at || 'окончания cooldown')}.` : ''}
           ${Array.isArray(demand.reasons) && demand.reasons.length ? ` ${escapeHtml(demand.reasons.map(repricerDemandReasonLabel).join(' · '))}` : ''}
         </div>
       ` : ''}
@@ -7030,11 +7048,22 @@ function repricerExportRows(platform = 'all', sourceRows = null) {
       demand_confidence: side.demandIntelligence?.confidence || '',
       demand_target_turnover_days: repricerExportNumber(side.demandIntelligence?.target_turnover_days, 1),
       demand_avg_daily_units: repricerExportNumber(side.demandIntelligence?.avg_daily_units, 2),
+      demand_forecast_daily_units: repricerExportNumber(side.demandIntelligence?.forecast_daily_units, 2),
+      demand_history_source: side.demandIntelligence?.demand_history_source || '',
+      demand_history_as_of: side.demandIntelligence?.demand_history_as_of || '',
+      demand_history_observed_days_28d: repricerExportNumber(side.demandIntelligence?.demand_history_observed_days_28d, 0),
+      demand_trend: side.demandIntelligence?.demand_trend || '',
+      demand_momentum_ratio: repricerExportNumber(side.demandIntelligence?.demand_momentum_ratio, 3),
+      demand_data_quality_score: repricerExportNumber(side.demandIntelligence?.data_quality_score, 0),
+      demand_decision_score: repricerExportNumber(side.demandIntelligence?.decision_score, 0),
       demand_sales_28d_units: repricerExportNumber(side.demandIntelligence?.sales_28d_units, 1),
       demand_step_pct: side.demandIntelligence?.step_pct == null
         ? ''
         : repricerExportNumber(side.demandIntelligence.step_pct * 100, 1),
       demand_review_required: side.demandIntelligence?.review_required ? 'yes' : 'no',
+      demand_last_price_change_at: side.demandIntelligence?.last_price_change_at || '',
+      demand_price_cooldown_active: side.demandIntelligence?.price_cooldown_active ? 'yes' : 'no',
+      demand_next_review_at: side.demandIntelligence?.next_review_at || '',
       demand_reason_codes: Array.isArray(side.demandIntelligence?.reasons)
         ? side.demandIntelligence.reasons.join(' · ')
         : '',
@@ -7205,9 +7234,20 @@ function downloadRepricerExcel(platform = 'all', sourceRows = null) {
     ['demand_confidence', 'Умный слой: надёжность'],
     ['demand_target_turnover_days', 'Умный слой: цель оборота, дн.'],
     ['demand_avg_daily_units', 'Умный слой: продажи, шт./день'],
+    ['demand_forecast_daily_units', 'Умный слой: прогноз, шт./день'],
+    ['demand_history_source', 'Умный слой: источник истории спроса'],
+    ['demand_history_as_of', 'Умный слой: история спроса на дату'],
+    ['demand_history_observed_days_28d', 'Умный слой: дней факта в окне 28д'],
+    ['demand_trend', 'Умный слой: тренд спроса'],
+    ['demand_momentum_ratio', 'Умный слой: ускорение спроса'],
+    ['demand_data_quality_score', 'Умный слой: качество данных, /100'],
+    ['demand_decision_score', 'Умный слой: приоритет решения, /100'],
     ['demand_sales_28d_units', 'Умный слой: продажи 28д, шт.'],
     ['demand_step_pct', 'Умный слой: шаг цены, %'],
     ['demand_review_required', 'Умный слой: нужен РОП'],
+    ['demand_last_price_change_at', 'Умный слой: последняя смена цены'],
+    ['demand_price_cooldown_active', 'Умный слой: cooldown активен'],
+    ['demand_next_review_at', 'Умный слой: проверить снова'],
     ['demand_reason_codes', 'Умный слой: причины'],
     ['autoprice_allowed', 'Autoprice'],
     ['launch_allowed', 'Launch rule'],
@@ -7876,6 +7916,7 @@ const REPRICER_PRICE_SYNC_MANIFEST_KEY = 'repricer_price_sync_manifest';
 const REPRICER_PRICE_SYNC_REQUIRED_SNAPSHOTS = Object.freeze([
   'repricer_live_prices',
   'repricer_live_signals',
+  'repricer_price_observation_history',
   'canonical_repricer',
   'portal_repricing_reconciliation',
   'repricer_team_policy_proposals',
@@ -7931,6 +7972,10 @@ function applyRepricerPriceSnapshotBundle(snapshots = {}) {
   if (snapshots.repricer_live_signals) {
     state.repricerLiveSignals = snapshots.repricer_live_signals;
     state.repricer_live_signals = snapshots.repricer_live_signals;
+    applied = true;
+  }
+  if (snapshots.repricer_price_observation_history) {
+    state.repricerPriceObservationHistory = snapshots.repricer_price_observation_history;
     applied = true;
   }
   if (snapshots.repricer_team_policy_proposals) {

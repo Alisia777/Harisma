@@ -1041,6 +1041,13 @@ html[data-theme] body.v87-imperial.altea-premium-shell
 }
 
 html[data-theme] body.v87-imperial.altea-premium-shell
+  #view-sku-plan-fact .pf-v1-table .pf-v1-row td:first-child .link-btn {
+  color: var(--text) !important;
+  text-decoration-color: color-mix(in srgb, var(--text) 55%, transparent) !important;
+  text-shadow: none !important;
+}
+
+html[data-theme] body.v87-imperial.altea-premium-shell
   #view-sku-plan-fact .pf-v1-table :is(
     thead tr:nth-child(2) th:nth-child(1),
     thead tr:nth-child(2) th:nth-child(2),
@@ -1930,6 +1937,17 @@ html[data-theme] body.v87-imperial.altea-premium-shell :is(
 
 @media (max-width: 860px) {
   html[data-theme] body.v87-imperial.altea-premium-shell
+    #view-sku-plan-fact .sku-plan-fact-v1 .sku-plan-fact-table table.pf-v1-table {
+    width: 2606px !important;
+    min-width: 2606px !important;
+  }
+
+  html[data-theme] body.v87-imperial.altea-premium-shell
+    #view-sku-plan-fact .pf-v1-cols col:nth-child(1) {
+    width: 240px !important;
+  }
+
+  html[data-theme] body.v87-imperial.altea-premium-shell
     #view-iu-drr .iu-drr-v3-toolbar {
     grid-template-columns: minmax(0, 1fr) !important;
   }
@@ -2006,6 +2024,47 @@ html[data-theme] body.v87-imperial.altea-premium-shell :is(
 }
 
 @media (max-width: 560px) {
+  html[data-theme] body.v87-imperial.altea-premium-shell
+    #view-sku-plan-fact .sku-plan-fact-v1 .sku-plan-fact-table table.pf-v1-table {
+    width: 2576px !important;
+    min-width: 2576px !important;
+  }
+
+  html[data-theme] body.v87-imperial.altea-premium-shell
+    #view-sku-plan-fact .pf-v1-cols col:nth-child(1) {
+    width: 210px !important;
+  }
+
+  html[data-theme] body.v87-imperial.altea-premium-shell
+    #view-sku-plan-fact .pf-v1-table :is(
+      thead tr:nth-child(2) th:nth-child(1),
+      tbody td:nth-child(1)
+    ) {
+    width: 210px !important;
+    min-width: 210px !important;
+    max-width: 210px !important;
+  }
+
+  html[data-theme] body.v87-imperial.altea-premium-shell
+    #view-sku-plan-fact .pf-v1-table-card .section-subhead {
+    display: grid !important;
+    grid-template-columns: minmax(0, 1fr) !important;
+    gap: 8px !important;
+  }
+
+  html[data-theme] body.v87-imperial.altea-premium-shell
+    #view-sku-plan-fact .pf-v1-table-card .badge-stack {
+    width: 100%;
+    justify-content: flex-start !important;
+  }
+
+  html[data-theme] body.v87-imperial.altea-premium-shell
+    #view-sku-plan-fact .pf-v1-table-card .badge-stack .chip {
+    width: auto !important;
+    max-width: 100%;
+    white-space: nowrap !important;
+  }
+
   html[data-theme] body.v87-imperial.altea-premium-shell
     #view-iu-drr .iu-drr-v3-datebar,
   html[data-theme] body.v87-imperial.altea-premium-shell

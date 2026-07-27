@@ -1580,10 +1580,23 @@ function skuPlanFactPlatformPlanRows(indexes = {}, platform = '', monthKey = '')
   return skuPlanFactRowsHavePlan(supportRows, monthKey) ? supportRows : smartRows;
 }
 
-function skuPlanFactPlatformHasDirectApiFact(indexes = {}, platform = '') {
+function skuPlanFactPlatformHasDirectApiFact(indexes = {}, platform = '', monthKey = '', periodEnd = '', periodStart = '') {
   if (platform !== 'ozon' && platform !== 'wb' && platform !== 'ya') return false;
+  const start = skuPlanFactDateKey(periodStart);
+  const end = skuPlanFactDateKey(periodEnd);
   return skuPlanFactRowsFromIndexMap(indexes.extra?.[platform])
-    .some((row) => String(row?.sourceMode || row?.source || '').includes('api-direct-sku'));
+    .some((row) => {
+      if (!String(row?.sourceMode || row?.source || '').includes('api-direct-sku')) return false;
+      if (!monthKey && !start && !end) return true;
+      return [...(row?.daily || []), ...(row?.monthly || [])].some((item) => {
+        const date = skuPlanFactDateKey(item?.date);
+        if (!date) return false;
+        if (monthKey && date.slice(0, 7) !== monthKey) return false;
+        if (start && date < start) return false;
+        if (end && date > end) return false;
+        return true;
+      });
+    });
 }
 
 function skuPlanFactPlatformPlanUnits(monthKey = '', platform = '') {
@@ -2866,7 +2879,13 @@ function skuPlanFactPlatformMetrics(sku, platform, monthKey, indexes, adIndex, e
   const extraRows = skuPlanFactRowsForSkuIndex(indexes.extra?.[platform], sku, platform);
   const sourceRows = skuPlanFactRowsForSkuArray(skuPlanFactPlatformSourceRows(indexes, platform), sku, platform);
   const planRows = skuPlanFactRowsForSkuArray(skuPlanFactPlatformPlanRows(indexes, platform, monthKey), sku, platform);
-  const hasDirectApiFact = skuPlanFactPlatformHasDirectApiFact(indexes, platform);
+  const hasDirectApiFact = skuPlanFactPlatformHasDirectApiFact(
+    indexes,
+    platform,
+    monthKey,
+    maxFactDate,
+    minFactDate
+  );
   const apiFactRows = hasDirectApiFact ? extraRows : [];
   const factRows = hasDirectApiFact ? apiFactRows : (sourceRows.length ? sourceRows : (overlayRows.length ? overlayRows : (smartRows.length ? smartRows : (pricesRows.length ? pricesRows : extraRows))));
   const plan = SKU_PLAN_FACT_DIRECT_PLAN_PLATFORMS.has(platform)
@@ -12923,6 +12942,10 @@ function renderSkuPlanFactV1(rootId = 'view-sku-plan-fact', options = {}) {
         </div>
         <div class="table-wrap sku-plan-fact-table pf-v1-table-wrap">
           <table class="pf-v1-table">
+            <colgroup class="pf-v1-cols" aria-hidden="true">
+              <col><col><col><col><col><col><col><col><col><col>
+              <col><col><col><col><col><col><col><col><col>
+            </colgroup>
             <thead>
               <tr class="pf-v1-groups"><th colspan="3">Идентификация</th><th colspan="5">Оборот</th><th colspan="3">Маржа</th><th colspan="4">Реклама</th><th colspan="4">Операции</th></tr>
               <tr>

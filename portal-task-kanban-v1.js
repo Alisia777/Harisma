@@ -6,7 +6,7 @@
   window.__ALTEA_TASK_KANBAN_PRIMARY__ = true;
 
   const AUTO_TOMBSTONE_VERSION = '20260701-task-auto-tombstone-v1';
-  const VERSION = '20260724-task-all-statuses-v1';
+  const VERSION = '20260727-task-platform-scope-v1';
   const ROOT_ID = 'view-control';
   const UI_KEY = 'altea.tasks.design.v1';
   const MARKETPLACE_STORAGE_KEY = 'altea.portal.marketplace';
@@ -300,6 +300,11 @@
   }
 
   function normalizePlatform(value, task) {
+    if (!value) {
+      const taskKey = normalizeText(task?.platformKey || task?.marketplaceKey || '');
+      const compactTaskKey = taskKey.replace(/[\s._'`"-]+/g, '');
+      if (PLATFORM_ALIASES[compactTaskKey]) return PLATFORM_ALIASES[compactTaskKey];
+    }
     const rawValue = value || task?.platform || task?.marketplace || task?.marketplaceKey || task?.workstream || '';
     const raw = normalizeText(rawValue);
     const compact = raw.replace(/[\s._'`"-]+/g, '');
@@ -1421,7 +1426,7 @@
     const platformFilter = normalizePlatform(platform || filters.platform || 'all');
     if (platformFilter && platformFilter !== 'all') {
       const taskPlatform = normalizePlatform('', task);
-      if (taskPlatform !== platformFilter && taskPlatform !== 'cross') return false;
+      if (taskPlatform !== platformFilter) return false;
     }
 
     const owner = ownerKey(normalizeEmployeeOwnerName(filters.owner || 'all') || normalizeOwnerName(filters.owner || 'all') || 'all');

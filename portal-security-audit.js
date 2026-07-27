@@ -128,7 +128,9 @@
       return Promise.resolve({ skipped: true });
     }
 
-    token = (session && session.access_token) || cfg.supabaseKey;
+    token = (session && session.access_token) || '';
+    if (/^guest-local-session(?:$|[-:])/i.test(String(token || '').trim())) token = '';
+    token = token || cfg.supabaseKey;
     url = cfg.supabaseUrl.replace(/\/+$/, '') + '/rest/v1/rpc/portal_audit_write';
     body = {
       p_event_type: compactText(eventType, 80),

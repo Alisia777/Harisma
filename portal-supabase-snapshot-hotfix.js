@@ -591,6 +591,20 @@
   }
 
   async function requestSnapshotRows(activeCfg, url) {
+    const transport = window.__ALTEA_PORTAL_SNAPSHOT_TRANSPORT_V1__;
+    if (transport?.requestJson) {
+      return transport.requestJson(url.toString(), {
+        label: 'Supabase snapshots',
+        fetchOptions: {
+          cache: 'no-store',
+          headers: {
+            apikey: activeCfg.supabase.anonKey,
+            Authorization: `Bearer ${activeCfg.supabase.anonKey}`,
+            Accept: 'application/json'
+          }
+        }
+      });
+    }
     const request = fetch(url.toString(), {
       cache: 'no-store',
       headers: {

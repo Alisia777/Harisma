@@ -8,14 +8,27 @@ const vm = require('vm');
 
 const root = path.resolve(__dirname, '..');
 const source = fs.readFileSync(path.join(root, 'portal-team-runtime-hotfix.js'), 'utf8');
+const appCoreSource = fs.readFileSync(path.join(root, 'app-core-03.js'), 'utf8');
+const securityAuditSource = fs.readFileSync(path.join(root, 'portal-security-audit.js'), 'utf8');
 const index = fs.readFileSync(path.join(root, 'index.html'), 'utf8');
 const liveIndex = fs.readFileSync(path.join(root, 'live-index.html'), 'utf8');
 const start = source.indexOf('async function initTeamStoreHotfix()');
 const end = source.indexOf('const AUTO_PULL_INTERVAL_MS', start);
 
 assert(start >= 0 && end > start, 'initTeamStoreHotfix must exist');
-assert(index.includes('portal-team-runtime-hotfix.js?v=20260724authsession2syncbadge4'), 'Protected entrypoint must load the authenticated team runtime');
-assert(liveIndex.includes('portal-team-runtime-hotfix.js?v=20260724authsession2syncbadge4'), 'Live entrypoint must load the authenticated team runtime');
+assert(index.includes('portal-team-runtime-hotfix.js?v=20260727snapshotretry1'), 'Protected entrypoint must load the authenticated team runtime');
+assert(liveIndex.includes('portal-team-runtime-hotfix.js?v=20260727snapshotretry1'), 'Live entrypoint must load the authenticated team runtime');
+assert(index.includes('portal-security-audit.js?v=20260727snapshotretry1'), 'Protected entrypoint must load guest-safe audit routing');
+assert(
+  appCoreSource.includes('isLocalGuestPortalSessionToken')
+    && appCoreSource.includes("state.team.note = 'Гостевой режим · локальные задачи'"),
+  'Core team runtime must keep the local guest marker out of Supabase reads.'
+);
+assert(
+  securityAuditSource.includes('guest-local-session')
+    && securityAuditSource.includes('token = token || cfg.supabaseKey;'),
+  'Security audit must fall back to the public key for a local guest session.'
+);
 assert(
   source.includes('const softErrors = [];')
     && source.includes('Задачи синхронизированы'),
@@ -51,6 +64,7 @@ function createHarness({ session = null, auth = 'email_password' } = {}) {
       supabase: { url: 'https://example.supabase.co', anonKey: 'public-key', auth }
     }),
     canUseRemote: () => true,
+    localGuestSessionToken: (token) => /^guest-local-session(?:$|[-:])/i.test(String(token || '').trim()),
     DEFAULT_APP_CONFIG: { teamMember: { name: '', role: 'Команда' } },
     updateSyncBadge() {},
     applyOwnerOverridesToSkus() {},
@@ -102,6 +116,19 @@ async function run() {
   await missing.api.init();
   assert.strictEqual(missing.state.team.mode, 'error', 'Protected deployments without a session must fail closed');
   assert.match(missing.state.team.error, /auth session is missing/, 'Missing protected session must expose the real cause');
+
+  const localGuest = createHarness({
+    session: {
+      access_token: 'guest-local-session',
+      user: { id: 'guest-local', email: 'guest@qeep.life', user_metadata: {} }
+    },
+    auth: 'email_password'
+  });
+  await localGuest.api.init();
+  assert.strictEqual(localGuest.state.team.accessToken, '', 'Local guest marker must not become a Supabase bearer token.');
+  assert.strictEqual(localGuest.state.team.mode, 'local', 'Local guest must keep team data in local mode.');
+  assert.strictEqual(localGuest.calls.anonymous, 0, 'Local guest must not retry anonymous Supabase auth.');
+  assert.strictEqual(localGuest.calls.pulls, 0, 'Local guest must not issue remote team queries.');
 
   console.log('portal-team-auth-session.selftest: ok');
 }

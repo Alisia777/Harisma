@@ -195,6 +195,7 @@ async function run() {
   const blockedWbSnapshotRoutes = [];
   const blockedPlanFactDataRoutes = [];
   let blockedWbSnapshotRequests = 0;
+  let holdWbSnapshotRoutes = true;
   let blockedPlanFactDataRequests = 0;
   let holdPlanFactDataRoutes = true;
   let markPlanFactDataRequestSeen = null;
@@ -230,6 +231,10 @@ async function run() {
         return;
       }
       blockedWbSnapshotRequests += 1;
+      if (!holdWbSnapshotRoutes) {
+        await route.abort('timedout');
+        return;
+      }
       await new Promise((resolve) => {
         blockedWbSnapshotRoutes.push(async () => {
           try {
@@ -275,6 +280,7 @@ async function run() {
       blockedWbSnapshotRequests > 0,
       'Тест должен действительно удерживать тяжёлый WB substitution snapshot во время первичной отрисовки'
     );
+    holdWbSnapshotRoutes = false;
     await Promise.all(blockedWbSnapshotRoutes.splice(0).map((release) => release()));
     await page.waitForFunction(() => (
       typeof state === 'object'
@@ -431,11 +437,11 @@ async function run() {
     ['index.html', 'live-index.html', 'docs/index.html'].forEach((fileName) => {
       const html = readSource(fileName);
       assert.ok(
-        html.includes('app-core-01.js?v=20260727snapshottransport1'),
+        html.includes('app-core-01.js?v=20260727snapshotretry1'),
         `${fileName} должен обновить кэш неблокирующей загрузки WB substitution`
       );
       assert.ok(
-        html.includes('portal-snapshot-refresh-hotfix.js?v=20260727snapshottransport1'),
+        html.includes('portal-snapshot-refresh-hotfix.js?v=20260727snapshotretry1'),
         `${fileName} должен обновить кэш лёгкого refresh`
       );
       assert.ok(

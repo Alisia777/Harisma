@@ -233,7 +233,9 @@ jobs:
           ALTEA_RETAIL_NETWORK_GOOGLE_SHEET_ID: ${{ secrets.ALTEA_RETAIL_NETWORK_GOOGLE_SHEET_ID || vars.ALTEA_RETAIL_NETWORK_GOOGLE_SHEET_ID || '1Zy0ec9-snLwh-J88KoFXyHxtYg3DXC8oWnC17iHNNS4' }}
           ALTEA_RETAIL_NETWORK_SALES_XLSX: ${{ secrets.ALTEA_RETAIL_NETWORK_SALES_XLSX || vars.ALTEA_RETAIL_NETWORK_SALES_XLSX || 'data/external_sources/retail_network_sales.xlsx' }}
         run: |
-          RETAIL_FROM="$(date -u -d '${{ steps.cutoff.outputs.value }} - 1 day' +%F)"
+          # Retail exports can arrive several days late. Reopen a bounded
+          # revision window so a newly delivered D-2/D-3 fact is not skipped.
+          RETAIL_FROM="$(date -u -d '${{ steps.cutoff.outputs.value }} - 7 days' +%F)"
           node scripts/portal-retail-network-daily-sync.js sync \
             --input-file data/platform_trends.json \
             --output-file data/platform_trends.json \

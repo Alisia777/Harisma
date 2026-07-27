@@ -102,6 +102,9 @@ if (!workflow.includes('--skip-magnit-csv')) {
 if (!workflow.includes('node scripts/portal-retail-network-daily-sync.js sync')) {
   fail('daily close must refresh retail-network daily facts from the raw Google Sheet tabs');
 }
+if (!workflow.includes("cutoff.outputs.value }} - 7 days")) {
+  fail('daily close must reopen a seven-day retail revision window for late source deliveries');
+}
 if (!workflow.includes('--status-file data/retail_network_source_status.json')) {
   fail('daily close must publish retail-network source freshness diagnostics');
 }

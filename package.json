@@ -81,6 +81,7 @@
     "portal:control-wb-oos-runtime-test": "node scripts/portal-control-wb-oos-runtime.selftest.js",
     "portal:oos-control-correctness-test": "node scripts/portal-oos-control-correctness.selftest.js",
     "portal:planfact-correctness-test": "node scripts/portal-planfact-correctness.selftest.js",
+    "portal:retail-google-fallback-test": "node scripts/build-retail-network-google-fallback.selftest.js",
     "portal:tabs-smoke": "node scripts/portal-tabs-smoke.js",
     "portal:visible-dropdown-audit": "node scripts/portal-visible-dropdown-audit.js",
     "portal:marketplace-hitbox-test": "node scripts/portal-marketplace-hitbox.selftest.js",

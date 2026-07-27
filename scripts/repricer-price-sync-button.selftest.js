@@ -6,6 +6,7 @@ const fs = require('fs');
 const http = require('http');
 const path = require('path');
 const { chromium } = require('playwright');
+const { hashPayload } = require('./portal-google-sheet-upload');
 
 const ROOT = path.resolve(__dirname, '..');
 const MIME = {
@@ -69,13 +70,25 @@ async function run() {
     workflow.includes('ALTEA_WB_PROMOTION_TOKEN: ${{ secrets.ALTEA_WB_PROMOTION_TOKEN }}'),
     'price refresh workflow must require the protected WB promotion token'
   );
+  assert(
+    workflow.includes('node scripts/portal-repricer-price-apply.js plan'),
+    'the same price-refresh job must rebuild the immutable upload plan'
+  );
+  assert(
+    workflow.includes('--commit-manifest repricer_price_sync_manifest'),
+    'price refresh must publish a commit manifest after the complete bundle'
+  );
+  assert(
+    workflow.includes('--bundle-id "${{ github.run_id }}-${{ github.run_attempt }}"'),
+    'each price refresh must have a unique workflow bundle id'
+  );
   const { server, url } = await startStaticServer();
   const browser = await chromium.launch({ headless: true });
   const page = await browser.newPage({ viewport: { width: 1500, height: 1000 } });
   page.setDefaultTimeout(90000);
 
   let syncRequested = false;
-  let snapshotReady = false;
+  let snapshotPublicationPhase = 0;
   let dispatchCalls = 0;
   let snapshotCalls = 0;
   let authorizationHeader = '';
@@ -104,6 +117,62 @@ async function run() {
       ...(liveFixture.summary || {}),
       mappedRows: expectedMappedRows
     }
+  };
+  const bundleId = 'repricer-price-sync-selftest-bundle';
+  const readBundleFixture = (fileName) => JSON.parse(fs.readFileSync(path.join(ROOT, 'data', fileName), 'utf8'));
+  const bundleFixtures = {
+    repricer_live_prices: nextFixture,
+    repricer_live_signals: {
+      ...readBundleFixture('repricer_live_signals.json'),
+      generatedAt,
+      atomicSyncMarker: bundleId
+    },
+    canonical_repricer: {
+      ...readBundleFixture('canonical_repricer.json'),
+      generatedAt,
+      atomicSyncMarker: bundleId
+    },
+    portal_repricing_reconciliation: {
+      ...readBundleFixture('portal_repricing_reconciliation.json'),
+      generatedAt,
+      atomicSyncMarker: bundleId
+    },
+    repricer_team_policy_proposals: {
+      ...readBundleFixture('repricer_team_policy_proposals.json'),
+      generatedAt,
+      atomicSyncMarker: bundleId
+    },
+    repricer_shadow_report: {
+      ...readBundleFixture('repricer_shadow_report.json'),
+      generatedAt,
+      atomicSyncMarker: bundleId
+    },
+    repricer_price_apply_plan: {
+      ...currentPlanFixture,
+      generatedAt,
+      atomicSyncMarker: bundleId
+    },
+    repricer: {
+      ...readBundleFixture('repricer.json'),
+      generatedAt,
+      atomicSyncMarker: bundleId
+    }
+  };
+  bundleFixtures.repricer_live_prices.atomicSyncMarker = bundleId;
+  const manifestGeneratedAt = new Date(Date.parse(generatedAt) + 30_000).toISOString();
+  const priceSyncManifest = {
+    schema: 'portal-snapshot-bundle-manifest-v1',
+    generatedAt: manifestGeneratedAt,
+    bundleId,
+    source: 'repricer-live-prices',
+    requiredSnapshots: Object.keys(bundleFixtures),
+    snapshots: Object.fromEntries(Object.entries(bundleFixtures).map(([snapshotKey, payload]) => [
+      snapshotKey,
+      {
+        payloadHash: hashPayload(payload),
+        generatedAt: payload.generatedAt
+      }
+    ]))
   };
   const planGeneratedAt = new Date(Date.parse(generatedAt) + 60_000).toISOString();
   const verificationGeneratedAt = new Date(Date.parse(generatedAt) + 120_000).toISOString();
@@ -218,13 +287,33 @@ async function run() {
     if (requestUrl.pathname.includes('/rest/v1/portal_data_snapshots')) {
       snapshotCalls += 1;
       const rows = [];
-      if (syncRequested && snapshotReady) {
+      if (syncRequested && snapshotPublicationPhase >= 1) {
         rows.push({
           snapshot_key: 'repricer_live_prices',
-          payload: nextFixture,
+          payload: bundleFixtures.repricer_live_prices,
           generated_at: generatedAt,
           updated_at: generatedAt,
-          payload_hash: 'selftest'
+          payload_hash: priceSyncManifest.snapshots.repricer_live_prices.payloadHash
+        });
+      }
+      if (syncRequested && snapshotPublicationPhase >= 2) {
+        Object.entries(bundleFixtures)
+          .filter(([snapshotKey]) => snapshotKey !== 'repricer_live_prices')
+          .forEach(([snapshotKey, payload]) => {
+            rows.push({
+              snapshot_key: snapshotKey,
+              payload,
+              generated_at: generatedAt,
+              updated_at: generatedAt,
+              payload_hash: priceSyncManifest.snapshots[snapshotKey].payloadHash
+            });
+          });
+        rows.push({
+          snapshot_key: 'repricer_price_sync_manifest',
+          payload: priceSyncManifest,
+          generated_at: manifestGeneratedAt,
+          updated_at: manifestGeneratedAt,
+          payload_hash: hashPayload(priceSyncManifest)
         });
       }
       if (priceApplyRequested) {
@@ -387,7 +476,19 @@ async function run() {
       null,
       { timeout: 30000 }
     );
-    snapshotReady = true;
+    snapshotPublicationPhase = 1;
+    await page.waitForTimeout(180);
+    assert.notStrictEqual(
+      await page.evaluate(() => window.__alteaAppState.repricerLivePrices?.atomicSyncMarker || ''),
+      bundleId,
+      'a new live-price row alone must not replace the old state before the full bundle is committed'
+    );
+    assert.strictEqual(
+      await page.locator('[data-repricer-price-apply="apply"]').isDisabled(),
+      true,
+      'the old upload plan must remain unusable while the fresh bundle is incomplete'
+    );
+    snapshotPublicationPhase = 2;
     const dispatchDiagnostic = await page.evaluate(() => ({
       status: document.querySelector('[data-repricer-price-sync-status]')?.textContent || '',
       generatedAt: window.__alteaAppState.repricerLivePrices?.generatedAt || '',
@@ -410,7 +511,7 @@ async function run() {
       throw new Error(`${error.message}; ${JSON.stringify({ failureDiagnostic, snapshotCalls, supabaseRequests })}`);
     }
     await page.waitForFunction(
-      () => document.querySelector('[data-repricer-price-sync-status]')?.textContent?.includes('Готово: свежие цены'),
+      () => document.querySelector('[data-repricer-price-sync-status]')?.textContent?.includes('Готово: единый пакет'),
       null,
       { timeout: 30000 }
     );
@@ -423,6 +524,19 @@ async function run() {
       await page.evaluate(() => Number(window.__alteaAppState.repricerLivePrices?.summary?.mappedRows || 0)),
       expectedMappedRows,
       'new live-price snapshot must replace the old state'
+    );
+    const atomicState = await page.evaluate(() => ({
+      livePrices: window.__alteaAppState?.repricerLivePrices?.atomicSyncMarker || '',
+      liveSignals: window.__alteaAppState?.repricerLiveSignals?.atomicSyncMarker || '',
+      canonical: window.__alteaAppState?.canonicalRepricer?.atomicSyncMarker || '',
+      shadow: window.__alteaAppState?.repricerShadowReport?.atomicSyncMarker || '',
+      plan: window.__alteaAppState?.repricerPriceApplyPlan?.atomicSyncMarker || '',
+      manifest: window.__alteaAppState?.repricerPriceSyncManifest?.bundleId || ''
+    }));
+    assert.deepStrictEqual(
+      Object.values(atomicState),
+      Array(Object.keys(atomicState).length).fill(bundleId),
+      `all repricer layers must switch to one committed bundle: ${JSON.stringify(atomicState)}`
     );
     assert(
       (await page.locator('.repricer-live-price-sync-card').innerText()).includes(`Цены API свежие: ${expectedMappedRows}`),
@@ -499,7 +613,7 @@ async function run() {
     ));
     assert.strictEqual(unexpectedErrors.length, 0, `browser errors: ${unexpectedErrors.join(' | ')}`);
     console.log(
-      `[repricer-price-sync-button-selftest] OK: visible topbar price refresh, explicit HTTP 404 diagnostic, immutable apply plan and verified price submission`
+      `[repricer-price-sync-button-selftest] OK: atomic price bundle, incomplete-publication guard, explicit HTTP 404 diagnostic and verified price submission`
     );
   } finally {
     await browser.close();

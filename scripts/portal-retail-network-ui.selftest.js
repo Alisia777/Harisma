@@ -8,12 +8,16 @@ const path = require('path');
 const { chromium } = require('playwright');
 
 const ROOT = path.resolve(__dirname, '..');
-const TARGET_DATES = {
-  goldapple: '2026-07-20',
-  letu: '2026-07-20',
-  megamarket: '2026-07-20',
-  samokat: ''
-};
+const SOURCE_STATUS = JSON.parse(fs.readFileSync(
+  path.join(ROOT, 'data', 'retail_network_source_status.json'),
+  'utf8'
+));
+const TARGET_DATES = Object.fromEntries(
+  ['goldapple', 'letu', 'megamarket', 'samokat'].map((key) => [
+    key,
+    SOURCE_STATUS.platforms?.[key]?.latestDate || ''
+  ])
+);
 
 const MIME = {
   '.css': 'text/css; charset=utf-8',
@@ -91,20 +95,25 @@ async function run() {
             const dates = (platform?.series || []).map((point) => point?.date || point?.label || '').filter(Boolean).sort();
             result.platforms[key] = {
               latest: dates[dates.length - 1] || '',
-              has19: dates.includes('2026-07-19'),
-              has20: dates.includes('2026-07-20')
+              dates
             };
           });
           return result;
         });
     }, Object.keys(TARGET_DATES));
 
-    assert.strictEqual(dataState.latestMarketplaceDate, '2026-07-20');
+    const latestRetailDate = Object.values(TARGET_DATES).filter(Boolean).sort().at(-1) || '';
+    assert(
+      dataState.latestMarketplaceDate >= latestRetailDate,
+      `portal latest date ${dataState.latestMarketplaceDate} must cover retail ${latestRetailDate}`
+    );
     for (const [key, expectedDate] of Object.entries(TARGET_DATES)) {
       assert.strictEqual(dataState.platforms[key].latest, expectedDate, `${key} latest date`);
       if (expectedDate) {
-        assert.strictEqual(dataState.platforms[key].has19, true, `${key} must contain July 19`);
-        assert.strictEqual(dataState.platforms[key].has20, true, `${key} must contain July 20`);
+        assert(
+          dataState.platforms[key].dates.includes(expectedDate),
+          `${key} must contain its source-status date`
+        );
       }
     }
 

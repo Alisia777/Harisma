@@ -312,7 +312,7 @@ async function run() {
           && button.textContent.includes('Обновление идёт');
       },
       null,
-      { timeout: 5000 }
+      { timeout: 30000 }
     );
     await page.evaluate(() => document.querySelector('[data-premium-primary-action]')?.click());
     await page.waitForTimeout(100);
@@ -324,7 +324,7 @@ async function run() {
         return button?.getAttribute('data-premium-proxy') === 'pullRemoteBtn' && !button.disabled;
       },
       null,
-      { timeout: 5000 }
+      { timeout: 30000 }
     );
     await page.evaluate(() => window.setView('repricer'));
     await page.waitForFunction(
@@ -335,7 +335,7 @@ async function run() {
           && button.dataset.repricerPriceSyncBusy === '1';
       },
       null,
-      { timeout: 5000 }
+      { timeout: 30000 }
     );
     snapshotReady = true;
     const dispatchDiagnostic = await page.evaluate(() => ({

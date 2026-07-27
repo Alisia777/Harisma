@@ -192,9 +192,30 @@ async function run() {
   const browser = await chromium.launch({ headless: true });
   const page = await browser.newPage({ viewport: { width: 1600, height: 1000 } });
   const pageErrors = [];
+  const blockedWbSnapshotRoutes = [];
+  let blockedWbSnapshotRequests = 0;
   page.on('pageerror', (error) => pageErrors.push(error.message));
 
   try {
+    await page.route('**/rest/v1/portal_data_snapshots**', async (route) => {
+      const url = new URL(route.request().url());
+      const snapshotFilter = url.searchParams.get('snapshot_key') || '';
+      if (!snapshotFilter.includes('wb_substitution_traffic')) {
+        await route.continue();
+        return;
+      }
+      blockedWbSnapshotRequests += 1;
+      await new Promise((resolve) => {
+        blockedWbSnapshotRoutes.push(async () => {
+          try {
+            await route.abort('timedout');
+          } catch (_) {
+            // The page may already be closed after the independent Plan-Fact render.
+          }
+          resolve();
+        });
+      });
+    });
     await page.addInitScript(() => {
       localStorage.clear();
       localStorage.setItem('altea-portal-active-view-v1', JSON.stringify({
@@ -211,6 +232,23 @@ async function run() {
       document.querySelector('#view-sku-plan-fact [data-planfact-v4]')?.getAttribute('data-planfact-v4') === version
       && document.querySelectorAll('#view-sku-plan-fact .pf-v1-table tbody .sku-plan-fact-row').length > 0
     ), VERSION, { timeout: 120000 });
+    await page.waitForTimeout(250);
+    assert.ok(
+      blockedWbSnapshotRequests > 0,
+      'Тест должен действительно удерживать тяжёлый WB substitution snapshot во время первичной отрисовки'
+    );
+    await Promise.all(blockedWbSnapshotRoutes.splice(0).map((release) => release()));
+    await page.waitForFunction(() => (
+      typeof state === 'object'
+      && Array.isArray(state?.wbSubstitutionTraffic?.articles)
+      && state.wbSubstitutionTraffic.articles.length > 0
+    ), null, { timeout: 30000 });
+    const substitutionWarmup = await page.evaluate(() => ({
+      asOfDate: typeof state === 'object' ? state?.wbSubstitutionTraffic?.asOfDate || '' : '',
+      articleCount: typeof state === 'object' ? state?.wbSubstitutionTraffic?.articles?.length || 0 : 0
+    }));
+    assert.ok(substitutionWarmup.asOfDate, 'Фоновый WB substitution должен сохранить дату среза');
+    assert.ok(substitutionWarmup.articleCount > 0, 'Фоновый WB substitution должен обогатить строки после первой отрисовки');
 
     const reset = page.locator('#view-sku-plan-fact [data-pf-v4-filter-reset]');
     assert.strictEqual(await reset.count(), 1, 'Панель Plan-Fact должна содержать единый сброс фильтров');
@@ -305,7 +343,26 @@ async function run() {
     );
 
     const coreSource = readSource('app-core-11.js');
+    const bootstrapSource = readSource('app-core-01.js');
+    const refreshSource = readSource('portal-snapshot-refresh-hotfix.js');
+    const supabaseRefreshSource = readSource('portal-supabase-snapshot-hotfix.js');
     const v4Source = readSource('portal-planfact-general-to-detail-v4.js');
+    assert.match(bootstrapSource, /void warmSkuPlanFactWbSubstitutionTraffic\(\);/);
+    assert.doesNotMatch(
+      bootstrapSource.match(/skuPlanFact: async \(\) => \{[\s\S]*?\n  \},\n  productLeaderboard:/)?.[0] || '',
+      /wbSubstitutionTraffic\] = await Promise\.all/,
+      'WB substitution не должен блокировать обязательный Promise.all План-факта'
+    );
+    assert.doesNotMatch(
+      refreshSource.match(/var LIGHT_REFRESH_KEYS = \[[\s\S]*?\n  \];/)?.[0] || '',
+      /wb_substitution_traffic/,
+      'Light refresh не должен загружать тяжёлый WB substitution без запроса профильного экрана'
+    );
+    assert.doesNotMatch(
+      supabaseRefreshSource.match(/const BOOT_SNAPSHOT_KEYS = \[[\s\S]*?\n  \];/)?.[0] || '',
+      /wb_substitution_traffic/,
+      'Boot refresh не должен загружать тяжёлый WB substitution'
+    );
     assert.match(coreSource, /SKU_PLAN_FACT_INCLUDE_DERIVED_ROWS/);
     assert.match(coreSource, /payrollReference/);
     assert.match(coreSource, /function skuPlanFactPayrollPlatforms/);
@@ -327,6 +384,14 @@ async function run() {
     ['index.html', 'live-index.html', 'docs/index.html'].forEach((fileName) => {
       const html = readSource(fileName);
       assert.ok(
+        html.includes('app-core-01.js?v=20260724allstatuses2ooscorrectness2planfactlazywb1'),
+        `${fileName} должен обновить кэш неблокирующей загрузки WB substitution`
+      );
+      assert.ok(
+        html.includes('portal-snapshot-refresh-hotfix.js?v=20260724ooscorrectness3ui23planfactlazywb1'),
+        `${fileName} должен обновить кэш лёгкого refresh`
+      );
+      assert.ok(
         html.includes('app-core-11.js?v=20260724planfactcorrectness4oosforecast1scenario1planscope1'),
         `${fileName} должен обновить кэш расчетной модели, сохранив OOS-версию`
       );
@@ -339,6 +404,7 @@ async function run() {
     assert.deepStrictEqual(pageErrors, []);
     console.log(`portal-planfact-correctness selftest: ok (${all.rowCount} SKU, ${all.rowAudit.length} строковых формул)`);
   } finally {
+    await Promise.all(blockedWbSnapshotRoutes.splice(0).map((release) => release()));
     await browser.close();
     await new Promise((resolve) => server.close(resolve));
   }

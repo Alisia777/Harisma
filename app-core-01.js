@@ -2793,6 +2793,43 @@ function registerDataWarning(message) {
   if (!state.boot.dataWarnings.includes(message)) state.boot.dataWarnings.push(message);
 }
 
+let skuPlanFactWbSubstitutionWarmupPromise = null;
+
+function warmSkuPlanFactWbSubstitutionTraffic() {
+  if (skuPlanFactWbSubstitutionWarmupPromise) return skuPlanFactWbSubstitutionWarmupPromise;
+  skuPlanFactWbSubstitutionWarmupPromise = loadJsonOrFallback(
+    'data/wb_substitution_traffic.json',
+    { schema: 'portal-wb-substitution-traffic-v1', generatedAt: '', asOfDate: '', summary: {}, articles: [], rows: [] },
+    'WB подменные артикулы'
+  )
+    .then((payload) => {
+      state.wbSubstitutionTraffic = payload && typeof payload === 'object'
+        ? payload
+        : { schema: 'portal-wb-substitution-traffic-v1', generatedAt: '', asOfDate: '', summary: {}, articles: [], rows: [] };
+      if (typeof skuPlanFactInvalidateModelCache === 'function') skuPlanFactInvalidateModelCache();
+      window.dispatchEvent(new CustomEvent('altea:wb-substitution-ready', {
+        detail: {
+          asOfDate: state.wbSubstitutionTraffic.asOfDate || '',
+          articleCount: Array.isArray(state.wbSubstitutionTraffic.articles)
+            ? state.wbSubstitutionTraffic.articles.length
+            : 0
+        }
+      }));
+      if (state.activeView === 'sku-plan-fact' && typeof rerenderCurrentView === 'function') {
+        rerenderCurrentView();
+      }
+      return state.wbSubstitutionTraffic;
+    })
+    .catch((error) => {
+      console.warn('[sku-plan-fact-wb-substitution]', error);
+      return state.wbSubstitutionTraffic;
+    })
+    .finally(() => {
+      skuPlanFactWbSubstitutionWarmupPromise = null;
+    });
+  return skuPlanFactWbSubstitutionWarmupPromise;
+}
+
 function parsePriceFreshStamp(value) {
   if (!value) return 0;
   const stamp = Date.parse(String(value));
@@ -3029,7 +3066,7 @@ const LAZY_DATA_LOADERS = {
       : { schema: 'portal-oos-control-v2', generatedAt: '', summary: {}, rows: [], history: { days: [] } };
   },
   skuPlanFact: async () => {
-    const [smartPriceWorkbench, smartPriceOverlay, priceWorkbenchSupport, prices, platformTrends, platformPlan, adsPayload, skuAliases, skuAliasIgnore, skuAliasAudit, wbOwnerDistributionAudit, wbSubstitutionTraffic] = await Promise.all([
+    const [smartPriceWorkbench, smartPriceOverlay, priceWorkbenchSupport, prices, platformTrends, platformPlan, adsPayload, skuAliases, skuAliasIgnore, skuAliasAudit, wbOwnerDistributionAudit] = await Promise.all([
       loadJsonOrFallback('data/smart_price_workbench.json', { generatedAt: '', platforms: {} }, 'Ценовой контур'),
       loadJsonOrFallback('data/smart_price_overlay.json', { generatedAt: '', platforms: {} }, 'Факт продаж по SKU'),
       loadJsonOrFallback('data/price_workbench_support.dashboard-compact.json', { generatedAt: '', platforms: {} }, 'План SKU'),
@@ -3060,11 +3097,6 @@ const LAZY_DATA_LOADERS = {
         'data/wb_owner_distribution_audit.json',
         { schema: 'portal-wb-owner-distribution-audit-v1', summary: { ownerCounts: {} } },
         'WB owner distribution audit'
-      ),
-      loadJsonOrFallback(
-        'data/wb_substitution_traffic.json',
-        { schema: 'portal-wb-substitution-traffic-v1', generatedAt: '', asOfDate: '', summary: {}, articles: [], rows: [] },
-        'WB подменные артикулы'
       )
     ]);
     state.smartPriceOverlay = smartPriceOverlay && typeof smartPriceOverlay === 'object'
@@ -3105,9 +3137,7 @@ const LAZY_DATA_LOADERS = {
     state.wbOwnerDistributionAudit = wbOwnerDistributionAudit && typeof wbOwnerDistributionAudit === 'object'
       ? wbOwnerDistributionAudit
       : { schema: 'portal-wb-owner-distribution-audit-v1', summary: { ownerCounts: {} } };
-    state.wbSubstitutionTraffic = wbSubstitutionTraffic && typeof wbSubstitutionTraffic === 'object'
-      ? wbSubstitutionTraffic
-      : { schema: 'portal-wb-substitution-traffic-v1', generatedAt: '', asOfDate: '', summary: {}, articles: [], rows: [] };
+    void warmSkuPlanFactWbSubstitutionTraffic();
   },
   productLeaderboard: async () => {
     const loadLocalProductData = async (path, fallback, label) => {

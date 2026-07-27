@@ -20,7 +20,7 @@
     dashboard: [],
     control: [
       'portal-form-visual-refine.js?v=20260622layer-owner1',
-      'portal-control-center-v2-hotfix.js?v=20260619task-noise3',
+      'portal-control-center-v2-hotfix.js?v=20260727demandprice1',
       'portal-control-marketplace-scope-hotfix.js?v=20260619task-noise3'
     ],
     taskKanbanV1: [
@@ -50,10 +50,10 @@
       'portal-premium-polish-hotfix.js?v=20260521prod1'
     ],
     skuLaunchV1: [
-      'portal-sku-launch-v1.js?v=20260709launchperf3'
+      'portal-sku-launch-v1.js?v=20260727demandprice1'
     ],
     launchV1: [
-      'portal-sku-launch-v1.js?v=20260709launchperf3',
+      'portal-sku-launch-v1.js?v=20260727demandprice1',
       'portal-launch-autotasks-v1.js?v=20260709launchperf3'
     ],
     iuDrrV3: [

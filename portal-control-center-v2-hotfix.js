@@ -736,7 +736,8 @@
         ? window.skuDecisionForTask(task.id)
         : null;
       if (skuDecision) {
-        const isPrice = skuDecision.type === 'SHARP_PRICE_CHANGE';
+        const isDemandPrice = skuDecision.type === 'DEMAND_PRICE_REVIEW';
+        const isPrice = skuDecision.type === 'SHARP_PRICE_CHANGE' || isDemandPrice;
         const deltaPct = Number(skuDecision.payload?.deltaPct);
         const deltaLabel = Number.isFinite(deltaPct)
           ? ` · ${deltaPct > 0 ? '+' : ''}${Math.round(deltaPct * 1000) / 10}%`
@@ -745,7 +746,7 @@
           <div class="card" style="margin-top:14px">
             <div class="section-subhead">
               <div>
-                <h3>${isPrice ? 'Подтверждение резкой цены' : 'Подтверждение статуса товара'}</h3>
+                <h3>${isPrice ? (isDemandPrice ? 'Подтверждение умной цены' : 'Подтверждение резкой цены') : 'Подтверждение статуса товара'}</h3>
                 <p class="small muted">До решения РОПа рабочие данные не меняются. Подтверждение применит изменение автоматически и закроет задачу.</p>
               </div>
               ${badge('решение РОПа', 'warn')}

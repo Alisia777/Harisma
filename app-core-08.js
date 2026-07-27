@@ -7120,7 +7120,7 @@ function applyRepricerPriceSnapshotBundle(snapshots = {}) {
 }
 
 function pollRepricerPriceSnapshot(root, baselineStamp, attempt = 0) {
-  const maxAttempts = 30;
+  const maxAttempts = 60;
   const testPollDelay = Number(window.__ALTEA_REPRICER_PRICE_SYNC_TEST_POLL_MS__);
   const pollDelay = Number.isFinite(testPollDelay) && testPollDelay >= 0
     ? testPollDelay
@@ -7132,6 +7132,12 @@ function pollRepricerPriceSnapshot(root, baselineStamp, attempt = 0) {
       const nextStamp = Date.parse(snapshots?.repricer_live_prices?.generatedAt || '');
       if (Number.isFinite(nextStamp) && nextStamp > baselineStamp) {
         applyRepricerPriceSnapshotBundle(snapshots);
+        setRepricerPriceSyncRuntime({
+          busy: false,
+          attempt: attempt + 1,
+          maxAttempts,
+          label: 'Получить актуальные цены'
+        });
         delete root.dataset.repricerRenderSignature;
         renderRepricer();
         const nextRoot = document.getElementById('view-repricer') || root;
@@ -7140,15 +7146,33 @@ function pollRepricerPriceSnapshot(root, baselineStamp, attempt = 0) {
       }
       if (attempt + 1 < maxAttempts) {
         setRepricerPriceSyncStatus(root, `Сервер собирает цены, рекламу и OOS, затем сопоставляет артикулы… проверка ${fmt.int(attempt + 1)}/${fmt.int(maxAttempts)}`, 'info');
+        setRepricerPriceSyncRuntime({
+          busy: true,
+          attempt: attempt + 1,
+          maxAttempts,
+          label: `Обновление идёт · ${fmt.int(attempt + 1)}/${fmt.int(maxAttempts)}`
+        });
         pollRepricerPriceSnapshot(root, baselineStamp, attempt + 1);
         return;
       }
+      setRepricerPriceSyncRuntime({
+        busy: false,
+        attempt: maxAttempts,
+        maxAttempts,
+        label: 'Получить актуальные цены'
+      });
       setRepricerPriceSyncStatus(root, 'Запуск принят, но новый снимок ещё не опубликован. Обновите раздел через несколько минут.', 'warn');
     } catch (error) {
       console.warn('[repricer.priceSync.poll]', error);
       if (attempt + 1 < maxAttempts) {
         pollRepricerPriceSnapshot(root, baselineStamp, attempt + 1);
       } else {
+        setRepricerPriceSyncRuntime({
+          busy: false,
+          attempt: maxAttempts,
+          maxAttempts,
+          label: 'Получить актуальные цены'
+        });
         setRepricerPriceSyncStatus(root, 'Не удалось прочитать результат синхронизации. Обновите страницу.', 'danger');
       }
     }
@@ -7156,6 +7180,28 @@ function pollRepricerPriceSnapshot(root, baselineStamp, attempt = 0) {
 }
 
 let repricerPriceSyncActionSequence = 0;
+let repricerPriceSyncRuntime = {
+  busy: false,
+  attempt: 0,
+  maxAttempts: 60,
+  label: 'Получить актуальные цены'
+};
+
+function setRepricerPriceSyncRuntime(next = {}) {
+  repricerPriceSyncRuntime = {
+    ...repricerPriceSyncRuntime,
+    ...next
+  };
+  try {
+    window.dispatchEvent(new CustomEvent('altea:repricer-price-sync-state', {
+      detail: { ...repricerPriceSyncRuntime }
+    }));
+  } catch (_) {}
+}
+
+window.alteaRepricerPriceSyncState = function alteaRepricerPriceSyncState() {
+  return { ...repricerPriceSyncRuntime };
+};
 
 function currentRepricerPriceSyncButton(button) {
   if (!button) return null;
@@ -7166,7 +7212,7 @@ function currentRepricerPriceSyncButton(button) {
 }
 
 async function requestRepricerPriceSync(button) {
-  if (!button || button.dataset.repricerPriceSyncBusy === '1') return;
+  if (!button || button.dataset.repricerPriceSyncBusy === '1' || repricerPriceSyncRuntime.busy) return;
   const root = button.closest?.('#view-repricer') || document.getElementById('view-repricer');
   const cfg = typeof currentConfig === 'function' ? currentConfig() : (window.APP_CONFIG || {});
   const endpoint = String(
@@ -7189,7 +7235,14 @@ async function requestRepricerPriceSync(button) {
   button.disabled = true;
   button.setAttribute('aria-busy', 'true');
   button.textContent = 'Запускаю…';
+  setRepricerPriceSyncRuntime({
+    busy: true,
+    attempt: 0,
+    maxAttempts: 60,
+    label: 'Запускаю обновление…'
+  });
   setRepricerPriceSyncStatus(root, 'Отправляю защищённый запрос на сервер…', 'info');
+  let accepted = false;
   try {
     const response = await fetch(endpoint, {
       method: 'POST',
@@ -7211,12 +7264,26 @@ async function requestRepricerPriceSync(button) {
       throw new Error(failureMessage);
     }
     const baselineStamp = Date.parse((state.repricerLivePrices || {}).generatedAt || '') || 0;
+    accepted = true;
+    setRepricerPriceSyncRuntime({
+      busy: true,
+      attempt: 0,
+      maxAttempts: 60,
+      label: 'Обновление идёт · 0/60'
+    });
     setRepricerPriceSyncStatus(root, 'Запуск принят. Собираю цены, рекламу и OOS WB/Ozon, сопоставляю артикулы и пересчитываю репрайсер…', 'ok');
     pollRepricerPriceSnapshot(root, baselineStamp);
   } catch (error) {
     console.error('[repricer.priceSync]', error);
+    setRepricerPriceSyncRuntime({
+      busy: false,
+      attempt: 0,
+      maxAttempts: 60,
+      label: 'Получить актуальные цены'
+    });
     setRepricerPriceSyncStatus(root, `Не удалось запустить синхронизацию: ${error?.message || error}`, 'danger');
   } finally {
+    if (accepted) return;
     window.setTimeout(() => {
       const currentButton = currentRepricerPriceSyncButton(button);
       if (!currentButton || currentButton.dataset.repricerPriceSyncActionToken !== actionToken) return;

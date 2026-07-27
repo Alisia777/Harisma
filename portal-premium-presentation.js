@@ -2446,7 +2446,7 @@
   }
 
   function proxyClick(targetId, proxy) {
-    if (proxy && proxy.dataset.premiumActionBusy === '1') return;
+    if (proxy && (proxy.dataset.premiumActionBusy === '1' || proxy.dataset.repricerPriceSyncBusy === '1')) return;
     if (targetId === 'syncStatusBadge') {
       runPortalAction('pullRemoteState', [true], proxy, {
         busy: 'Обновляю базу…',
@@ -2549,12 +2549,33 @@
       syncTarget.dataset.premiumActionState = syncError ? 'error' : (syncPending ? 'busy' : 'ready');
     }
     var primaryAction = shell.querySelector('[data-premium-primary-action]');
-    if (primaryAction && primaryAction.dataset.premiumActionBusy !== '1') {
-      var repricerActive = activeId === 'repricer';
+    var repricerActive = activeId === 'repricer';
+    var repricerSyncState = typeof window.alteaRepricerPriceSyncState === 'function'
+      ? window.alteaRepricerPriceSyncState()
+      : {};
+    var repricerSyncBusy = repricerActive && repricerSyncState.busy === true;
+    var otherActionBusy = primaryAction
+      && primaryAction.dataset.premiumActionBusy === '1'
+      && primaryAction.dataset.repricerPriceSyncBusy !== '1';
+    if (primaryAction && !otherActionBusy) {
       primaryAction.setAttribute('data-premium-proxy', repricerActive ? 'repricerPriceSync' : 'pullRemoteBtn');
-      primaryAction.textContent = repricerActive ? 'Получить актуальные цены' : 'Обновить данные';
+      primaryAction.disabled = repricerSyncBusy;
+      if (repricerSyncBusy) {
+        primaryAction.dataset.repricerPriceSyncBusy = '1';
+        primaryAction.dataset.premiumActionState = 'busy';
+        primaryAction.setAttribute('aria-busy', 'true');
+      } else {
+        delete primaryAction.dataset.repricerPriceSyncBusy;
+        if (primaryAction.dataset.premiumActionState === 'busy') delete primaryAction.dataset.premiumActionState;
+        primaryAction.removeAttribute('aria-busy');
+      }
+      primaryAction.textContent = repricerSyncBusy
+        ? (repricerSyncState.label || 'Обновление идёт…')
+        : (repricerActive ? 'Получить актуальные цены' : 'Обновить данные');
       primaryAction.title = repricerActive
-        ? 'Запустить защищённое обновление цен, рекламы и OOS WB/Ozon'
+        ? (repricerSyncBusy
+          ? 'Сервер уже собирает цены, рекламу и OOS. Повторное нажатие не требуется.'
+          : 'Запустить защищённое обновление цен, рекламы и OOS WB/Ozon')
         : 'Загрузить свежие командные данные';
     }
     var userSource = document.querySelector('.portal-auth-user');
@@ -2869,6 +2890,7 @@
     window.addEventListener('altea:themechange', function () { scheduleRender(40); });
     window.addEventListener('altea:marketplacechange', function () { invalidateExecutivePresentation(); scheduleRender(40); });
     window.addEventListener('altea:data-ready', function () { invalidateExecutivePresentation(); scheduleRender(80); });
+    window.addEventListener('altea:repricer-price-sync-state', function () { scheduleRender(0); });
     window.addEventListener('load', function () { scheduleRouteRepair(); });
     document.addEventListener('visibilitychange', function () {
       if (!document.hidden) scheduleRouteRepair();

@@ -154,6 +154,27 @@ function applyLiveCurrentSellerPrice(target = {}, liveRow = {}, liveGeneratedAt 
   return true;
 }
 
+function applyLiveCurrentClientPrice(target = {}, liveRow = {}) {
+  const liveClientPrice = firstPositive(liveRow?.currentClientPrice);
+  const liveBuyerDiscountPct = firstNumber(
+    liveRow?.currentBuyerDiscountPct,
+    liveRow?.currentSppPct
+  );
+  const liveSppPct = firstNumber(
+    liveRow?.currentSppPct,
+    liveRow?.currentBuyerDiscountPct
+  );
+  target.currentClientPrice = liveClientPrice;
+  target.currentBuyerDiscountPct = liveBuyerDiscountPct;
+  target.currentSppPct = liveSppPct;
+  target.currentClientPriceSource = liveClientPrice === null
+    ? 'direct-api:client-price-missing'
+    : (liveRow?.currentClientPriceSource || 'direct-api');
+  if (!valueMissing(liveRow?.currentListPrice)) {
+    target.currentListPrice = clone(liveRow.currentListPrice);
+  }
+}
+
 function mergeWorkbenchRow(primaryRow = {}, liveRow = {}, platform = '', options = {}) {
   const next = clone(primaryRow) || {};
   const live = liveRow && typeof liveRow === 'object' ? liveRow : null;
@@ -190,7 +211,12 @@ function mergeWorkbenchRow(primaryRow = {}, liveRow = {}, platform = '', options
     ].forEach((key) => mergeWorkbenchField(next, key, live[key], true));
   }
 
-  applyLiveCurrentSellerPrice(next, live, options.liveGeneratedAt || '');
+  const liveSellerPriceApplied = applyLiveCurrentSellerPrice(
+    next,
+    live,
+    options.liveGeneratedAt || ''
+  );
+  if (liveSellerPriceApplied) applyLiveCurrentClientPrice(next, live);
 
   if (valueMissing(next.marketplace) && platform) next.marketplace = platform;
   return next;

@@ -170,6 +170,9 @@ function run() {
           rows: [{
             articleKey: 'freshness-test-sku',
             currentFillPrice: 1300,
+            currentClientPrice: 1234,
+            currentClientPriceSource: 'wb-prices-api:clubDiscountedPrice',
+            currentSppPct: 0.050769,
             currentPriceDate: '2026-07-24',
             currentSellerPriceSource: 'wb-prices-api',
             currentSellerPriceFile: 'repricer_live_prices.json'
@@ -186,6 +189,12 @@ function run() {
 
     const directApi = canonicalRow(options);
     assert.strictEqual(directApi.row.facts.seller_price, 1300);
+    assert.strictEqual(directApi.row.facts.client_price, 1234);
+    assert.strictEqual(directApi.row.facts.spp_pct, 0.050769);
+    assert.strictEqual(
+      directApi.row.facts.sources.client_price.source_id,
+      'wb-prices-api:clubDiscountedPrice'
+    );
     assert.strictEqual(directApi.row.facts.sources.seller_price.source_mode, 'wb-prices-api');
     assert.strictEqual(directApi.row.facts.sources.seller_price.file, 'repricer_live_prices.json');
     assert.strictEqual(directApi.payload.source_checksums['repricer_live_prices.json'].exists, true);

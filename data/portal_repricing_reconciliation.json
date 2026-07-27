@@ -1,30 +1,30 @@
 {
   "schema": "portal-repricing-reconciliation-v1",
-  "generatedAt": "2026-07-25T00:48:50.043Z",
-  "freshness_reference_date": "2026-07-25",
-  "snapshot_id": "repricer:c53c42c469e32ce0",
+  "generatedAt": "2026-07-27T07:35:17.594Z",
+  "freshness_reference_date": "2026-07-27",
+  "snapshot_id": "repricer:0d3eb1667e1e5bc9",
   "status": "ok",
   "publish_allowed": true,
   "feature_publish_allowed": true,
   "feature_status": "ok",
-  "business_fingerprint": "bcd356ea08656c78aee99e597fd17fbbc60e963aae2955b94c422c4d68caa3d6",
+  "business_fingerprint": "9e62e53d7273302629ddb682638496186600ca0b0438aa1e23ca756c51937970",
   "summary": {
-    "rows": 411,
-    "eligible_rows": 411,
-    "publishable_rows": 37,
-    "blocked_rows": 374,
-    "publishable_coverage": 0.090024,
+    "rows": 414,
+    "eligible_rows": 414,
+    "publishable_rows": 64,
+    "blocked_rows": 350,
+    "publishable_coverage": 0.154589,
     "required_publishable_coverage": 0.01,
     "feature_status": "ok",
-    "publishable_recommendations": 37,
-    "blocked_recommendations": 374,
+    "publishable_recommendations": 64,
+    "blocked_recommendations": 350,
     "duplicate_platform_keys": 0,
     "normalized_article_collisions": 0,
     "deduped_exact_duplicates": 0
   },
   "blockingReasons": [],
   "warnings": [
-    "374 repricer rows are present but not publishable because required facts/economics/policy are incomplete"
+    "350 repricer rows are present but not publishable because required facts/economics/policy are incomplete"
   ],
   "duplicatePlatformKeys": [],
   "normalizedArticleCollisions": [],
@@ -47,10 +47,10 @@
       "blockingReasons": [],
       "warnings": [],
       "details": {
-        "eligible_rows": 411,
-        "publishable_rows": 37,
-        "blocked_rows": 374,
-        "publishable_coverage": 0.090024,
+        "eligible_rows": 414,
+        "publishable_rows": 64,
+        "blocked_rows": 350,
+        "publishable_coverage": 0.154589,
         "required_publishable_coverage": 0.01,
         "feature_status": "ok"
       }

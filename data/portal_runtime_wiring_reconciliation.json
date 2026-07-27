@@ -1,10 +1,10 @@
 {
   "schema": "portal-runtime-wiring-reconciliation-v1",
-  "generatedAt": "2026-07-25T19:12:08.830Z",
+  "generatedAt": "2026-07-27T07:57:12.125Z",
   "status": "ok",
   "publish_allowed": true,
   "writeMode": "runtime",
-  "business_fingerprint": "de598837600657deb361a0b663471b050225f3532bdc9b3e525f574b47994ab9",
+  "business_fingerprint": "509fdd62bb394799226f635bb81f704e00c2081ccede73e75bb96b3bbd0191e5",
   "artifacts": [
     {
       "id": "canonical_repricer",
@@ -17,7 +17,7 @@
       "sourcePath": ".portal-truth-output/canonical_repricer.json",
       "runtimePath": "data/canonical_repricer.json",
       "lastGoodPath": "data/last_good/canonical_repricer.json",
-      "checksum": "05b8ceed2c17f3fe25612fa1006927629b2919a7316299203a5a7ce0149c4b3f",
+      "checksum": "bd83f8f7f95e0815415cca789fe68fc19415326e73ee1e591f3150a54b890498",
       "rowCount": 414,
       "reconciliationStatus": "ok",
       "reconciliationPublishAllowed": true,
@@ -37,7 +37,7 @@
       "sourcePath": ".portal-truth-output/portal_dashboard_metrics.json",
       "runtimePath": "data/portal_dashboard_metrics.json",
       "lastGoodPath": "data/last_good/portal_dashboard_metrics.json",
-      "checksum": "8cb206d12d5359b0a42b068e5f007f7a7bc92c3d9b4a447b640e23fb29c062cd",
+      "checksum": "d70f4d0dbda088c4adf1dfe90e6302be10a41ecb9a060c049d83fdfaa2020aa1",
       "rowCount": 14,
       "reconciliationStatus": "warning",
       "reconciliationPublishAllowed": true,

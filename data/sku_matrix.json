@@ -1,29 +1,28 @@
 {
   "schema": "portal-sku-matrix-v1",
-  "generatedAt": "2026-07-25T06:01:51.453Z",
+  "generatedAt": "2026-07-27T07:55:32.870Z",
   "source": {
     "skus": 209,
-    "aliases": 348,
+    "aliases": 351,
     "ignored": 0,
-    "dataQualityGeneratedAt": "2026-07-25T06:01:51.233Z"
+    "dataQualityGeneratedAt": "2026-07-27T07:55:32.826Z"
   },
   "summary": {
     "skuCount": 209,
     "activeSkuCount": 60,
-    "aliasCount": 348,
+    "aliasCount": 351,
     "ignoredApiSkuCount": 0,
-    "apiUnmappedCount": 10,
+    "apiUnmappedCount": 0,
     "duplicateRiskCount": 0,
     "duplicateRiskOverage": 0,
     "missingOwnerCount": 0,
     "planNeedsAssignmentCount": 0,
     "planAssignedCount": 96,
-    "issueCount": 93,
-    "infoIssueCount": 39,
+    "issueCount": 82,
+    "infoIssueCount": 3,
     "problemStateCounts": {
       "ok": 168,
-      "has_critical_issue": 41,
-      "api_unmapped": 1
+      "has_critical_issue": 41
     }
   },
   "problemStates": {
@@ -1142,7 +1141,15 @@
       "brand": "",
       "category": "",
       "type": "",
-      "aliases": [],
+      "aliases": [
+        {
+          "platform": "goldapple",
+          "api_sku": "99000177794",
+          "status": "active",
+          "note": "ЗЯ номенклатура; подтверждено дневным отчётом и мастер-реестром",
+          "source": "sku_aliases"
+        }
+      ],
       "problemStates": [
         "ok"
       ],
@@ -5420,10 +5427,18 @@
       "problemState": "has_critical_issue",
       "problemLabel": "Есть критичная ошибка",
       "problemTone": "danger",
-      "issueCount": 1,
+      "issueCount": 2,
       "infoIssueCount": 0,
-      "criticalIssueCount": 1,
+      "criticalIssueCount": 2,
       "issues": [
+        {
+          "severity": "critical",
+          "type": "order_no_stock_need",
+          "platform": "ya",
+          "revenue": 0,
+          "units": 0,
+          "message": "По складу нет остатка, но есть продажи/потребность"
+        },
         {
           "severity": "critical",
           "type": "order_no_stock_need",
@@ -6039,7 +6054,15 @@
       "brand": "",
       "category": "",
       "type": "",
-      "aliases": [],
+      "aliases": [
+        {
+          "platform": "goldapple",
+          "api_sku": "99000184675",
+          "status": "active",
+          "note": "ЗЯ номенклатура; подтверждено дневным отчётом и мастер-реестром",
+          "source": "sku_aliases"
+        }
+      ],
       "problemStates": [
         "ok"
       ],
@@ -12185,7 +12208,15 @@
       "brand": "Алтея",
       "category": "",
       "type": "",
-      "aliases": [],
+      "aliases": [
+        {
+          "platform": "goldapple",
+          "api_sku": "99000179424",
+          "status": "active",
+          "note": "ЗЯ номенклатура; подтверждено дневным отчётом и мастер-реестром",
+          "source": "sku_aliases"
+        }
+      ],
       "problemStates": [
         "has_critical_issue"
       ],
@@ -17209,98 +17240,7 @@
       "issues": []
     }
   ],
-  "apiUnmapped": [
-    {
-      "platform": "letu",
-      "api_sku": "qeep_bloodypeeling_30ml",
-      "name": "Кровавый кислотный пилинг для лица от прыщей AHA BHA",
-      "revenue": 48454,
-      "units": 105,
-      "firstDate": "2026-07-01",
-      "lastDate": "2026-07-23"
-    },
-    {
-      "platform": "goldapple",
-      "api_sku": "qeep_magnB6_120caps",
-      "name": "магний цитрат 635 мг с витамином в6 qeep, 120 капсул",
-      "revenue": 28726,
-      "units": 14,
-      "firstDate": "2026-07-01",
-      "lastDate": "2026-07-22"
-    },
-    {
-      "platform": "letu",
-      "api_sku": "qeep_enzyme_80g",
-      "name": "Энзимная пудра для умывания лица и тела",
-      "revenue": 21015,
-      "units": 48,
-      "firstDate": "2026-07-01",
-      "lastDate": "2026-07-23"
-    },
-    {
-      "platform": "letu",
-      "api_sku": "qeep_retinolcream_50ml",
-      "name": "Крем для Лица с Липосомальным Ретинолом 0.5%, антивозрастной крем от морщин",
-      "revenue": 20046,
-      "units": 23,
-      "firstDate": "2026-07-01",
-      "lastDate": "2026-07-23"
-    },
-    {
-      "platform": "goldapple",
-      "api_sku": "qeep_inositol1500mg_",
-      "name": "QEEP Биологически активная добавка к пище INOSITOL (Инозитол) 1500 mg",
-      "revenue": 17784,
-      "units": 12,
-      "firstDate": "2026-07-01",
-      "lastDate": "2026-07-16"
-    },
-    {
-      "platform": "letu",
-      "api_sku": "qeep_perfect_spray_200ml",
-      "name": "Спрей для объема и укладки волос с фиксацией",
-      "revenue": 16339,
-      "units": 36,
-      "firstDate": "2026-07-01",
-      "lastDate": "2026-07-23"
-    },
-    {
-      "platform": "goldapple",
-      "api_sku": "qeepinositol",
-      "name": "биологически активная добавка к пище \"INOSITOL (ИНОЗИТОЛ) ЮНИЭКО\" (капсулы по 400 мг) 60 капсул",
-      "revenue": 15041,
-      "units": 16,
-      "firstDate": "2026-07-01",
-      "lastDate": "2026-07-22"
-    },
-    {
-      "platform": "goldapple",
-      "api_sku": "qeep_chlorophyll_500",
-      "name": "QEEP Биологически активная добавка к пище Хлорофилл со вкусом: Мята, 500 мл",
-      "revenue": 14830,
-      "units": 6,
-      "firstDate": "2026-07-01",
-      "lastDate": "2026-07-16"
-    },
-    {
-      "platform": "goldapple",
-      "api_sku": "qeep_omega_3_1620_90",
-      "name": "Биологически активная добавка к пище «ОМЕГА-3 ЖИРНЫЕ КИСЛОТЫ ВЫСОКОЙ КОНЦЕНТРАЦИИ» 90 капсул",
-      "revenue": 12883,
-      "units": 10,
-      "firstDate": "2026-07-01",
-      "lastDate": "2026-07-16"
-    },
-    {
-      "platform": "letu",
-      "api_sku": "qeep_retinolcream15_50ml",
-      "name": "Крем с ретинолом для лица 1,5%, от морщин и для выравнивания тона",
-      "revenue": 10225,
-      "units": 8,
-      "firstDate": "2026-07-01",
-      "lastDate": "2026-07-23"
-    }
-  ],
+  "apiUnmapped": [],
   "duplicateRisks": [],
   "ignoredApiSku": [],
   "indexes": {
@@ -17863,7 +17803,10 @@
       "ya|fbsokospas": "okospas",
       "ya|fbstrezax": "trezax",
       "ya|fbsyagodniyspas": "yagodniy_spas",
-      "goldapple|penkakudryaviimeto": "penka_kudryavii_metod_150ml"
+      "goldapple|penkakudryaviimeto": "penka_kudryavii_metod_150ml",
+      "goldapple|99000177794": "balzam_kudryavii_metod_500ml",
+      "goldapple|99000184675": "krem_dlya_lica_pdrn_50_ml",
+      "goldapple|99000179424": "shampun_kudryavii_metod_500ml"
     }
   }
 }

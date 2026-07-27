@@ -125,11 +125,22 @@ def main():
     month = str(active.get('monthKey') or dashboard.get('dataFreshness', {}).get('googleSheetsMonth') or '')
     if month and trends:
         components = {platform: platform_month_total(trends, platform, month) for platform in platform_keys(trends)}
-        scoped = sum(components.values())
+        included_channels = active.get('salaryContour', {}).get('includedChannels', [])
+        scoped_keys = [
+            str(platform).lower().strip()
+            for platform in included_channels
+            if str(platform).lower().strip() in components
+        ] or list(components)
+        scoped = sum(components[platform] for platform in scoped_keys)
         fact = active.get('factRevenueToDate')
         if fact is not None and abs(float(fact) - scoped) > max(1.0, scoped * 1e-6):
-            nonzero = {key: round(value, 2) for key, value in components.items() if abs(value) > 0.01}
+            nonzero = {key: round(components[key], 2) for key in scoped_keys if abs(components[key]) > 0.01}
             fail(errors, f'payroll fact must equal active marketplace sum: dashboard={fact}, scoped={scoped}, components={nonzero}')
+        all_channel_fact = dashboard.get('summary', {}).get('allChannelFactRevenue')
+        all_channel_sum = sum(components.values())
+        if all_channel_fact is not None and abs(float(all_channel_fact) - all_channel_sum) > max(1.0, all_channel_sum * 1e-6):
+            nonzero = {key: round(value, 2) for key, value in components.items() if abs(value) > 0.01}
+            fail(errors, f'all-channel fact must equal active marketplace sum: dashboard={all_channel_fact}, scoped={all_channel_sum}, components={nonzero}')
 
     current_aliases = aliases.get('aliases', []) if isinstance(aliases, dict) else aliases or []
     previous_aliases = last_aliases.get('aliases', []) if isinstance(last_aliases, dict) else last_aliases or []

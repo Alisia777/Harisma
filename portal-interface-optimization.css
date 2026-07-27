@@ -165,10 +165,11 @@ body.v87-imperial.altea-premium-shell .altea-global-marketplace--premium .altea-
   }
 
   body.v87-imperial.altea-premium-shell .altea-premium-shell-action[data-premium-proxy="pullRemoteBtn"],
+  body.v87-imperial.altea-premium-shell .altea-premium-shell-action[data-premium-primary-action],
   body.v87-imperial.altea-premium-shell .altea-premium-shell-action[data-premium-proxy="pushRemoteBtn"] {
     order: 2;
     flex: 0 0 auto;
-    max-width: 150px;
+    max-width: 190px;
     overflow: hidden;
     text-overflow: ellipsis;
   }

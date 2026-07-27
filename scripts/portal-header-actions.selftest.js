@@ -57,10 +57,16 @@ async function installActionSpies(page) {
     window.pullRemoteState = async function pullRemoteStateSpy(rerender) {
       assertBoolean(rerender);
       window.__HEADER_ACTION_SELFTEST__.pull += 1;
+      await new Promise((resolve) => window.setTimeout(resolve, 250));
     };
     window.pushStateToRemote = async function pushStateToRemoteSpy() {
       window.__HEADER_ACTION_SELFTEST__.push += 1;
+      await new Promise((resolve) => window.setTimeout(resolve, 250));
     };
+    try {
+      pullRemoteState = window.pullRemoteState;
+      pushStateToRemote = window.pushStateToRemote;
+    } catch (error) {}
     window.alteaPortalAuthGate.signOut = async function signOutSpy() {
       window.__HEADER_ACTION_SELFTEST__.signOut += 1;
     };
@@ -74,11 +80,61 @@ async function installActionSpies(page) {
 async function clickAction(page, proxy, counter, expected) {
   const selector = `.altea-premium-app:not([hidden]) [data-premium-proxy="${proxy}"]`;
   await page.locator(selector).click({ timeout: 30000 });
+  if (proxy !== 'portalAuthSignOutBtn') {
+    try {
+      await page.waitForFunction(
+        ({ target, name, count }) => {
+          const button = document.querySelector(target);
+          return button?.dataset?.premiumActionState === 'busy'
+            || window.__HEADER_ACTION_SELFTEST__?.[name] === count;
+        },
+        { target: selector, name: counter, count: expected },
+        { timeout: 5000 }
+      );
+    } catch (error) {
+      const diagnostic = await page.evaluate(({ target, name }) => {
+        const button = document.querySelector(target);
+        return {
+          text: button?.textContent || '',
+          disabled: Boolean(button?.disabled),
+          state: button?.dataset?.premiumActionState || '',
+          busy: button?.dataset?.premiumActionBusy || '',
+          token: button?.dataset?.premiumActionToken || '',
+          counter: window.__HEADER_ACTION_SELFTEST__?.[name]
+        };
+      }, { target: selector, name: counter });
+      throw new Error(`${error.message}; ${proxy}: ${JSON.stringify(diagnostic)}`);
+    }
+  }
   await page.waitForFunction(
     ({ name, count }) => window.__HEADER_ACTION_SELFTEST__?.[name] === count,
     { name: counter, count: expected },
     { timeout: 5000 }
   );
+  if (proxy !== 'portalAuthSignOutBtn') {
+    try {
+      await page.waitForFunction(
+        (target) => {
+          const button = document.querySelector(target);
+          return button && !button.disabled && button.dataset.premiumActionBusy !== '1';
+        },
+        selector,
+        { timeout: 5000 }
+      );
+    } catch (error) {
+      const diagnostic = await page.evaluate((target) => {
+        const button = document.querySelector(target);
+        return {
+          text: button?.textContent || '',
+          disabled: Boolean(button?.disabled),
+          state: button?.dataset?.premiumActionState || '',
+          busy: button?.dataset?.premiumActionBusy || '',
+          token: button?.dataset?.premiumActionToken || ''
+        };
+      }, selector);
+      throw new Error(`${error.message}; restore ${proxy}: ${JSON.stringify(diagnostic)}`);
+    }
+  }
 }
 
 async function openAndCloseHelp(page) {
@@ -131,20 +187,27 @@ async function run() {
     await page.waitForSelector('.altea-premium-app:not([hidden]) [data-academy-global-help]', { timeout: 30000 });
     await installActionSpies(page);
 
-    await clickAction(page, 'pullRemoteBtn', 'pull', 1);
+    assert.match(
+      (await page.locator('[data-premium-base-action]').innerText()).trim(),
+      /баз/i,
+      'team database status must be a clear database action'
+    );
+    await clickAction(page, 'syncStatusBadge', 'pull', 1);
+    await clickAction(page, 'pullRemoteBtn', 'pull', 2);
     await clickAction(page, 'pushRemoteBtn', 'push', 1);
     await clickAction(page, 'portalAuthSignOutBtn', 'signOut', 1);
     await openAndCloseHelp(page);
 
     await replaceDashboardAndTopbar(page);
 
-    await clickAction(page, 'pullRemoteBtn', 'pull', 2);
+    await clickAction(page, 'syncStatusBadge', 'pull', 3);
+    await clickAction(page, 'pullRemoteBtn', 'pull', 4);
     await clickAction(page, 'pushRemoteBtn', 'push', 2);
     await clickAction(page, 'portalAuthSignOutBtn', 'signOut', 2);
     await openAndCloseHelp(page);
 
     const counts = await page.evaluate(() => window.__HEADER_ACTION_SELFTEST__);
-    assert.deepStrictEqual(counts, { pull: 2, push: 2, signOut: 2 });
+    assert.deepStrictEqual(counts, { pull: 4, push: 2, signOut: 2 });
   } finally {
     await browser.close();
     await new Promise((resolve) => server.close(resolve));

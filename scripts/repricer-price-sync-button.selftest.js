@@ -57,6 +57,18 @@ function startStaticServer() {
 }
 
 async function run() {
+  const workflow = fs.readFileSync(path.join(ROOT, '.github', 'workflows', 'portal-repricer-prices.yml'), 'utf8');
+  const wbAdsRefresh = 'node scripts/portal-wb-ads-sync.js sync';
+  const ozonAdsRefresh = 'node scripts/portal-ozon-ads-finance-sync.js sync';
+  const liveSignalsBuild = 'node scripts/portal-repricer-live-signals-sync.js sync';
+  assert(workflow.includes(wbAdsRefresh), 'price refresh workflow must refresh WB advertising before margin recalculation');
+  assert(workflow.includes(ozonAdsRefresh), 'price refresh workflow must refresh Ozon advertising before margin recalculation');
+  assert(workflow.indexOf(wbAdsRefresh) < workflow.indexOf(liveSignalsBuild), 'WB advertising must refresh before repricer live signals');
+  assert(workflow.indexOf(ozonAdsRefresh) < workflow.indexOf(liveSignalsBuild), 'Ozon advertising must refresh before repricer live signals');
+  assert(
+    workflow.includes('ALTEA_WB_PROMOTION_TOKEN: ${{ secrets.ALTEA_WB_PROMOTION_TOKEN }}'),
+    'price refresh workflow must require the protected WB promotion token'
+  );
   const { server, url } = await startStaticServer();
   const browser = await chromium.launch({ headless: true });
   const page = await browser.newPage({ viewport: { width: 1500, height: 1000 } });
@@ -225,7 +237,7 @@ async function run() {
       null,
       { timeout: 90000 }
     );
-    await page.waitForSelector('[data-repricer-price-sync]', { timeout: 30000 });
+    await page.waitForSelector('[data-premium-primary-action][data-premium-proxy="repricerPriceSync"]', { timeout: 30000 });
     await page.waitForFunction(
       () => document.querySelector('#view-repricer')?.dataset?.repricerDataSource === 'canonical-audit',
       null,
@@ -237,10 +249,14 @@ async function run() {
       const normalize = (value) => String(value || '').replace(/\s+/g, ' ').trim();
       const hero = normalize(root?.querySelector('.repricer-game-hero')?.textContent);
       const arrival = normalize(root?.querySelector('.repricer-arrival-price-card')?.textContent);
+      const workflowButtons = Array.from(root?.querySelectorAll('[data-repricer-excel-workflow] button') || [])
+        .filter((button) => button.offsetParent !== null)
+        .map((button) => normalize(button.textContent));
       return {
         source: root?.dataset?.repricerDataSource || '',
         hero,
         arrival,
+        workflowButtons,
         ready: Number(window.__alteaAppState?.canonicalRepricer?.summary?.publishable_rows || 0),
         blocked: Number(window.__alteaAppState?.canonicalRepricer?.summary?.blocked_rows || 0)
       };
@@ -261,6 +277,11 @@ async function run() {
     assert(
       !canonicalUi.arrival.includes('60 095') && !canonicalUi.arrival.includes('21 480'),
       'legacy economically impossible price spikes must not leak into the canonical operator screen'
+    );
+    assert.deepStrictEqual(
+      canonicalUi.workflowButtons,
+      ['1. Скачать рабочий Excel', '2. Загрузить заполненный Excel'],
+      'simple mode must expose one clear Excel download/upload workflow'
     );
 
     const baselineStamp = await page.evaluate(() => {
@@ -341,11 +362,11 @@ async function run() {
 
     dispatchResponseStatus = 404;
     await page.waitForFunction(
-      () => !document.querySelector('[data-repricer-price-sync]')?.disabled,
+      () => !document.querySelector('[data-premium-primary-action]')?.disabled,
       null,
       { timeout: 30000 }
     );
-    await page.locator('[data-repricer-price-sync]').click();
+    await page.locator('[data-premium-primary-action]').click();
     await page.waitForFunction(
       () => document.querySelector('[data-repricer-price-sync-status]')?.textContent?.includes('Серверная функция синхронизации ещё не опубликована'),
       null,

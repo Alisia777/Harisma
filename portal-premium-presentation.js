@@ -113,6 +113,7 @@
   var executiveModelCache = { key: '', model: null, time: 0 };
   var executiveDeferredBuild = { key: '', pending: false, token: 0 };
   var EXECUTIVE_MODEL_CACHE_TTL_MS = 15000;
+  var premiumActionSequence = 0;
 
   function state() {
     return window.__alteaAppState || window.state || {};
@@ -2256,9 +2257,9 @@
       '<div class="altea-premium-crumb"><span class="altea-premium-crumb-index" data-premium-crumb-index>01</span><strong data-premium-crumb-title>Дашборд</strong></div>',
       '<div class="altea-premium-top-spacer"></div>',
       marketplaceSelectorHtml('altea-global-marketplace--premium', 'premium'),
-      '<button type="button" class="altea-premium-shell-action altea-premium-sync" data-premium-proxy="syncStatusBadge">Командная база синхронизируется</button>',
-      '<button type="button" class="altea-premium-shell-action" data-premium-primary-action data-premium-proxy="pullRemoteBtn">Обновить данные</button>',
-      '<button type="button" class="altea-premium-shell-action" data-premium-proxy="pushRemoteBtn">Синхронизировать</button>',
+      '<button type="button" class="altea-premium-shell-action altea-premium-sync" data-premium-base-action data-premium-proxy="syncStatusBadge" aria-live="polite">Обновить базу</button>',
+      '<button type="button" class="altea-premium-shell-action" data-premium-primary-action data-premium-proxy="pullRemoteBtn" aria-live="polite">Обновить данные</button>',
+      '<button type="button" class="altea-premium-shell-action" data-premium-push-action data-premium-proxy="pushRemoteBtn" aria-live="polite">Синхронизировать</button>',
       '<span class="altea-premium-shell-action" data-premium-user>user</span>',
       '<button type="button" class="altea-premium-shell-action" data-premium-proxy="portalAuthSignOutBtn">Выйти</button>',
       '</header>',
@@ -2315,6 +2316,9 @@
   }
 
   function resolvePortalAction(name) {
+    // Runtime hotfixes replace the public window action. Prefer the newest
+    // callable instead of a stale lexical binding left by an older bundle.
+    if (typeof window[name] === 'function') return window[name];
     if (name === 'pullRemoteState') {
       try {
         if (typeof pullRemoteState === 'function') return pullRemoteState;
@@ -2325,26 +2329,139 @@
         if (typeof pushStateToRemote === 'function') return pushStateToRemote;
       } catch (_) {}
     }
-    return typeof window[name] === 'function' ? window[name] : null;
+    if (name === 'requestRepricerPriceSync') {
+      try {
+        if (typeof requestRepricerPriceSync === 'function') return requestRepricerPriceSync;
+      } catch (_) {}
+    }
+    return null;
   }
 
-  function runPortalAction(name, args) {
+  function premiumActionRouteId() {
+    var route = activeRoute();
+    return route && route.id
+      ? route.id
+      : String(window.location.hash || '').replace(/^#/, '') || 'dashboard';
+  }
+
+  function currentPremiumActionProxy(proxy) {
+    if (!proxy) return null;
+    var proxyId = proxy.getAttribute('data-premium-proxy') || '';
+    var stableAttribute = proxy.hasAttribute('data-premium-primary-action')
+      ? '[data-premium-primary-action]'
+      : (proxy.hasAttribute('data-premium-base-action')
+        ? '[data-premium-base-action]'
+        : (proxy.hasAttribute('data-premium-push-action') ? '[data-premium-push-action]' : ''));
+    var currentProxy = stableAttribute
+      ? document.querySelector(`.altea-premium-app:not([hidden]) ${stableAttribute}`)
+      : (proxyId
+        ? document.querySelector(`.altea-premium-app:not([hidden]) [data-premium-proxy="${proxyId}"]`)
+        : null);
+    if (!currentProxy && proxy.isConnected) currentProxy = proxy;
+    return currentProxy;
+  }
+
+  function restorePremiumAction(proxy, fallbackText, actionToken) {
+    if (!proxy) return;
+    var currentProxy = currentPremiumActionProxy(proxy);
+    if (!currentProxy) return;
+    if (actionToken && currentProxy.dataset.premiumActionToken !== actionToken) return;
+    currentProxy.disabled = false;
+    currentProxy.removeAttribute('aria-busy');
+    delete currentProxy.dataset.premiumActionBusy;
+    delete currentProxy.dataset.premiumActionState;
+    delete currentProxy.dataset.premiumActionToken;
+    if (fallbackText) currentProxy.textContent = fallbackText;
+    syncShell(premiumActionRouteId());
+  }
+
+  function setPremiumActionUnavailable(proxy, message) {
+    if (!proxy) return;
+    var fallbackText = proxy.textContent || '';
+    var actionToken = String(++premiumActionSequence);
+    proxy.dataset.premiumActionToken = actionToken;
+    proxy.dataset.premiumActionState = 'error';
+    proxy.textContent = message || 'Действие недоступно';
+    proxy.title = message || 'Действие сейчас недоступно';
+    window.setTimeout(function () {
+      restorePremiumAction(proxy, fallbackText, actionToken);
+    }, 2200);
+  }
+
+  function runPortalAction(name, args, proxy, labels) {
     var action = resolvePortalAction(name);
-    if (!action) return false;
+    if (!action) {
+      setPremiumActionUnavailable(proxy, labels && labels.unavailable);
+      return false;
+    }
+    var fallbackText = proxy && proxy.textContent ? proxy.textContent : '';
+    var actionToken = String(++premiumActionSequence);
+    if (proxy) {
+      proxy.dataset.premiumActionToken = actionToken;
+      proxy.dataset.premiumActionBusy = '1';
+      proxy.dataset.premiumActionState = 'busy';
+      proxy.disabled = true;
+      proxy.setAttribute('aria-busy', 'true');
+      proxy.textContent = labels && labels.busy ? labels.busy : 'Выполняю…';
+      // Never leave the visible toolbar dead when a legacy network wrapper
+      // hangs or the underlying view is rebuilt mid-request.
+      window.setTimeout(function () {
+        restorePremiumAction(proxy, fallbackText, actionToken);
+      }, 3500);
+    }
     try {
-      Promise.resolve(action.apply(window, args || [])).catch(function (error) {
-        console.error('[portal-premium] topbar action failed', name, error);
-      });
+      Promise.resolve(action.apply(window, args || []))
+        .then(function () {
+          var currentProxy = currentPremiumActionProxy(proxy);
+          if (!currentProxy || currentProxy.dataset.premiumActionToken !== actionToken) return;
+          currentProxy.dataset.premiumActionState = 'ok';
+          currentProxy.textContent = labels && labels.done ? labels.done : 'Готово';
+        })
+        .catch(function (error) {
+          console.error('[portal-premium] topbar action failed', name, error);
+          var currentProxy = currentPremiumActionProxy(proxy);
+          if (!currentProxy || currentProxy.dataset.premiumActionToken !== actionToken) return;
+          currentProxy.dataset.premiumActionState = 'error';
+          currentProxy.textContent = labels && labels.failed ? labels.failed : 'Ошибка';
+          currentProxy.title = error && error.message ? error.message : String(error || 'Ошибка действия');
+        })
+        .finally(function () {
+          window.setTimeout(function () {
+            restorePremiumAction(proxy, fallbackText, actionToken);
+          }, 1200);
+        });
       return true;
     } catch (error) {
       console.error('[portal-premium] topbar action failed', name, error);
+      if (proxy) {
+        proxy.dataset.premiumActionState = 'error';
+        proxy.textContent = labels && labels.failed ? labels.failed : 'Ошибка';
+        proxy.title = error && error.message ? error.message : String(error || 'Ошибка действия');
+        window.setTimeout(function () {
+          restorePremiumAction(proxy, fallbackText, actionToken);
+        }, 2200);
+      }
       return true;
     }
   }
 
-  function proxyClick(targetId) {
-    if (targetId === 'syncStatusBadge') return;
+  function proxyClick(targetId, proxy) {
+    if (proxy && proxy.dataset.premiumActionBusy === '1') return;
+    if (targetId === 'syncStatusBadge') {
+      runPortalAction('pullRemoteState', [true], proxy, {
+        busy: 'Обновляю базу…',
+        done: 'База обновлена',
+        failed: 'Ошибка базы',
+        unavailable: 'База недоступна'
+      });
+      return;
+    }
     if (targetId === 'repricerPriceSync') {
+      var directPriceSync = resolvePortalAction('requestRepricerPriceSync');
+      if (directPriceSync && proxy) {
+        directPriceSync(proxy);
+        return;
+      }
       var priceSyncButton = document.querySelector('#altea-premium-stage-repricer [data-repricer-price-sync], #view-repricer [data-repricer-price-sync]');
       if (priceSyncButton && !priceSyncButton.disabled) {
         priceSyncButton.click();
@@ -2353,12 +2470,32 @@
       scheduleRender(0);
       window.setTimeout(function () {
         var retryButton = document.querySelector('#altea-premium-stage-repricer [data-repricer-price-sync], #view-repricer [data-repricer-price-sync]');
-        if (retryButton && !retryButton.disabled) retryButton.click();
+        if (retryButton && !retryButton.disabled) {
+          retryButton.click();
+          return;
+        }
+        setPremiumActionUnavailable(proxy, 'Обновление цен недоступно');
       }, 250);
       return;
     }
-    if (targetId === 'pullRemoteBtn' && runPortalAction('pullRemoteState', [true])) return;
-    if (targetId === 'pushRemoteBtn' && runPortalAction('pushStateToRemote')) return;
+    if (targetId === 'pullRemoteBtn') {
+      runPortalAction('pullRemoteState', [true], proxy, {
+        busy: 'Обновляю данные…',
+        done: 'Данные обновлены',
+        failed: 'Ошибка обновления',
+        unavailable: 'Обновление недоступно'
+      });
+      return;
+    }
+    if (targetId === 'pushRemoteBtn') {
+      runPortalAction('pushStateToRemote', [], proxy, {
+        busy: 'Синхронизирую…',
+        done: 'Синхронизировано',
+        failed: 'Ошибка синхронизации',
+        unavailable: 'Синхронизация недоступна'
+      });
+      return;
+    }
     if (targetId === 'portalAuthSignOutBtn') {
       if (window.alteaPortalAuthGate && typeof window.alteaPortalAuthGate.signOut === 'function') {
         Promise.resolve(window.alteaPortalAuthGate.signOut()).catch(function (error) {
@@ -2401,14 +2538,23 @@
     });
     var syncSource = document.getElementById('syncStatusBadge');
     var syncTarget = shell.querySelector('[data-premium-proxy="syncStatusBadge"]');
-    if (syncSource && syncTarget) syncTarget.textContent = syncSource.textContent || 'Командная база синхронизирована';
+    if (syncSource && syncTarget && syncTarget.dataset.premiumActionBusy !== '1') {
+      var syncDetail = syncSource.textContent || 'Командная база';
+      var syncError = syncSource.classList.contains('error');
+      var syncPending = syncSource.classList.contains('pending');
+      syncTarget.textContent = syncError
+        ? 'Повторить обновление базы'
+        : (syncPending ? 'База обновляется…' : 'Обновить базу');
+      syncTarget.title = `${syncDetail}. Нажмите, чтобы заново получить данные из командной базы.`;
+      syncTarget.dataset.premiumActionState = syncError ? 'error' : (syncPending ? 'busy' : 'ready');
+    }
     var primaryAction = shell.querySelector('[data-premium-primary-action]');
-    if (primaryAction) {
+    if (primaryAction && primaryAction.dataset.premiumActionBusy !== '1') {
       var repricerActive = activeId === 'repricer';
       primaryAction.setAttribute('data-premium-proxy', repricerActive ? 'repricerPriceSync' : 'pullRemoteBtn');
       primaryAction.textContent = repricerActive ? 'Получить актуальные цены' : 'Обновить данные';
       primaryAction.title = repricerActive
-        ? 'Запустить защищённое обновление цен и остатков WB/Ozon'
+        ? 'Запустить защищённое обновление цен, рекламы и OOS WB/Ozon'
         : 'Загрузить свежие командные данные';
     }
     var userSource = document.querySelector('.portal-auth-user');
@@ -2559,10 +2705,10 @@
       var proxy = event.target && event.target.closest && event.target.closest('[data-premium-proxy]');
       if (!proxy) return;
       var targetId = proxy.getAttribute('data-premium-proxy') || '';
-      if (!targetId || targetId === 'syncStatusBadge') return;
+      if (!targetId) return;
       event.preventDefault();
       event.stopImmediatePropagation();
-      proxyClick(targetId);
+      proxyClick(targetId, proxy);
     }, true);
     document.addEventListener('click', function (event) {
       var funnelControl = event.target && event.target.closest && event.target.closest('#altea-premium-stage-executive [data-executive-funnel-platform], #altea-premium-stage-executive [data-executive-funnel-status]');
@@ -2622,7 +2768,7 @@
       var proxy = event.target && event.target.closest && event.target.closest('[data-premium-proxy]');
       if (proxy) {
         event.preventDefault();
-        proxyClick(proxy.getAttribute('data-premium-proxy'));
+        proxyClick(proxy.getAttribute('data-premium-proxy'), proxy);
         return;
       }
       var nav = event.target && event.target.closest && event.target.closest('[data-premium-navigate]');

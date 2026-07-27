@@ -10,7 +10,7 @@
   let enhanceTimer = 0;
 
   const TOP_ACTION_LABELS = {
-    all: "Аудит в Excel",
+    all: "1. Скачать рабочий Excel",
     "template:wb": "Шаблон WB",
     "template:ozon": "Шаблон Ozon",
     "promo:wb": "WB промо",
@@ -18,7 +18,7 @@
   };
 
   const TOP_ACTION_TITLES = {
-    all: "Выгружает полный аудит по всем SKU и площадкам для проверки.",
+    all: "Скачивает единый рабочий файл: маржа, MIN/MAX и изменения по SKU.",
     "template:wb": "Готовит безопасный файл цен Wildberries: только зелёные строки.",
     "template:ozon": "Готовит безопасный файл цен Ozon: только зелёные строки.",
     "promo:wb": "Готовит безопасный файл акционных цен Wildberries: только зелёные строки.",

@@ -92,6 +92,10 @@ function assertHeaders(matrix, expected) {
   return headers;
 }
 
+function numericCell(value) {
+  return Number(String(value ?? '').replace(/\s+/g, '').replace(',', '.'));
+}
+
 function assertTemplateRows(matrix, expectedRows, actionHeader) {
   const headers = matrix[0].map((value) => String(value || '').trim());
   const records = matrix.slice(1).map((row) => Object.fromEntries(headers.map((header, index) => [header, row[index] ?? ''])));
@@ -422,11 +426,9 @@ async function main() {
     }
 
     const auditPath = path.join(tempDir, 'repricer-audit.xls');
-    const marginPath = path.join(tempDir, 'repricer-sku-margin.xls');
     const wbTemplatePath = path.join(tempDir, 'repricer-wb-template.xls');
     const ozonTemplatePath = path.join(tempDir, 'repricer-ozon-template.xls');
     const auditName = await captureExport(page, 'all', auditPath);
-    const marginName = await captureExport(page, 'margin:sku', marginPath);
     const wbTemplateName = await captureExport(page, 'template:wb', wbTemplatePath);
     const ozonTemplateName = await captureExport(page, 'template:ozon', ozonTemplatePath);
 
@@ -449,7 +451,16 @@ async function main() {
       'Источник маржи',
       'Маржа обязательна',
       'Маржа приоритетна',
-      'MAX поднят маржой'
+      'MAX поднят маржой',
+      'Внутренняя реклама применена, %',
+      'Фактический ДРР за окно, %',
+      'Реклама в финальной цене, ₽',
+      'Доп. реклама фиксированная, ₽/шт.',
+      'Расход рекламы платформы за окно, ₽',
+      'Статус данных рекламы',
+      'Источник данных рекламы',
+      'Реклама актуальна на',
+      'Себестоимость + комиссия + издержки + реклама, ₽'
     ]);
     assert.strictEqual(auditHeaders[0], 'Новая маржа SKU, %', 'SKU margin input must be the leftmost audit column');
     assert(audit.length > 1, 'audit export must contain data rows');
@@ -472,31 +483,41 @@ async function main() {
         assert(!String(value || '').includes('[object Object]'), `audit export must serialize source labels as text: ${auditHeaders[index]}`);
       });
     });
-
-    const marginWorkbook = workbookMatrix(marginPath);
-    const marginHeaders = assertHeaders(marginWorkbook, [
-      'article_key',
-      'Артикул',
-      'Название',
-      'Статус товара',
-      'Текущая маржа SKU, %',
-      'Новая маржа SKU, %',
-      'Маржа обязательна',
-      'Что сделать',
-      'Площадки',
-      'Комментарий для импорта',
-      'Как заполнить'
-    ]);
-    assert.strictEqual(marginHeaders[0], 'Новая маржа SKU, %', 'SKU margin input must be the leftmost margin-workbook column');
-    assert.match(marginName, /^repricer-sku-margin-\d{4}-\d{2}-\d{2}\.xls$/);
-    assert.strictEqual(marginWorkbook.length - 1, downloadExpectations.skuRows, 'margin workbook must contain exactly one row per SKU');
-    const marginArticleIndex = marginHeaders.indexOf('article_key');
-    const newMarginIndex = marginHeaders.indexOf('Новая маржа SKU, %');
-    const marginArticles = marginWorkbook.slice(1).map((row) => String(row[marginArticleIndex] || '').trim()).filter(Boolean);
-    assert.strictEqual(new Set(marginArticles).size, marginArticles.length, 'margin workbook must not duplicate SKU rows');
-    marginWorkbook.slice(1).forEach((row) => {
-      assert.strictEqual(String(row[newMarginIndex] || '').trim(), '', 'new SKU margin input must be blank by default');
+    const advertisingColumns = {
+      marketplace: auditHeaders.indexOf('Площадка'),
+      currentPrice: auditHeaders.indexOf('Текущая цена, ₽'),
+      finalPrice: auditHeaders.indexOf('Финальная цена, ₽'),
+      appliedPct: auditHeaders.indexOf('Внутренняя реклама применена, %'),
+      observedPct: auditHeaders.indexOf('Фактический ДРР за окно, %'),
+      appliedRub: auditHeaders.indexOf('Реклама в финальной цене, ₽'),
+      fixedRub: auditHeaders.indexOf('Доп. реклама фиксированная, ₽/шт.'),
+      windowSpend: auditHeaders.indexOf('Расход рекламы платформы за окно, ₽'),
+      status: auditHeaders.indexOf('Статус данных рекламы'),
+      source: auditHeaders.indexOf('Источник данных рекламы'),
+      asOf: auditHeaders.indexOf('Реклама актуальна на'),
+      totalCosts: auditHeaders.indexOf('Себестоимость + комиссия + издержки + реклама, ₽')
+    };
+    let pricedAdvertisingRows = 0;
+    audit.slice(1).forEach((row) => {
+      const marketplace = String(row[advertisingColumns.marketplace] || '').trim().toLowerCase();
+      if (!['wb', 'ozon'].includes(marketplace)) return;
+      assert(numericCell(row[advertisingColumns.appliedPct]) > 0, `${marketplace}: applied advertising rate must be visible`);
+      assert(numericCell(row[advertisingColumns.observedPct]) > 0, `${marketplace}: observed DRR must be visible`);
+      const pricingBase = numericCell(row[advertisingColumns.finalPrice]) || numericCell(row[advertisingColumns.currentPrice]);
+      if (pricingBase > 0) {
+        pricedAdvertisingRows += 1;
+        assert(numericCell(row[advertisingColumns.appliedRub]) > 0, `${marketplace}: percentage advertising must be converted to rubles at the final price`);
+      }
+      assert.strictEqual(numericCell(row[advertisingColumns.fixedRub]), 0, `${marketplace}: fixed advertising add-on is a separate zero component`);
+      assert(numericCell(row[advertisingColumns.windowSpend]) > 0, `${marketplace}: platform advertising spend window must be visible`);
+      assert.strictEqual(String(row[advertisingColumns.status] || '').trim(), 'trusted', `${marketplace}: advertising snapshot must be trusted`);
+      assert(String(row[advertisingColumns.source] || '').includes('ads_summary.json'), `${marketplace}: advertising source must identify the live summary`);
+      assert(String(row[advertisingColumns.asOf] || '').trim(), `${marketplace}: advertising freshness date must be visible`);
+      if (pricingBase > 0) {
+        assert(numericCell(row[advertisingColumns.totalCosts]) > numericCell(row[advertisingColumns.appliedRub]), `${marketplace}: total costs must include advertising plus the other margin components`);
+      }
     });
+    assert(pricedAdvertisingRows > 0, 'working Excel must contain priced rows with advertising converted to rubles');
 
     const wbTemplate = workbookMatrix(wbTemplatePath);
     const wbHeaders = assertHeaders(wbTemplate, ['sku_code', 'final_price', 'discount_flag', 'confidence', 'reason_code', 'load_ts', 'comment']);
@@ -761,11 +782,6 @@ async function main() {
           skipped: unchangedValidation.skipped,
           errors: unchangedValidation.errors
         }
-      },
-      marginWorkbook: {
-        file: marginName,
-        rows: marginWorkbook.length - 1,
-        columns: marginHeaders.length
       },
       marketplaceTemplates: {
         wb: { file: wbTemplateName, rows: wbTemplate.length - 1, columns: wbHeaders.length },

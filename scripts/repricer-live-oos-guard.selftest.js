@@ -26,7 +26,8 @@ function seed(root, stockAvailable, advertisingStatus = 'trusted', options = {})
           costRub: 100,
           manualMinPrice: 500,
           manualMaxPrice: options.manualMaxPrice ?? 1500,
-          targetMarginPct: 0.2
+          targetMarginPct: 0.2,
+          maxMarginPct: 0.4
         }]
       }
     }

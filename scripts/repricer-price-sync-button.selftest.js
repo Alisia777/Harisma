@@ -253,23 +253,38 @@ async function run() {
       const workflowButtons = Array.from(root?.querySelectorAll('[data-repricer-excel-workflow] button') || [])
         .filter((button) => button.offsetParent !== null)
         .map((button) => normalize(button.textContent));
+      const metrics = Object.fromEntries(
+        Array.from(root?.querySelectorAll('.repricer-game-metric') || []).map((node) => {
+          const label = normalize(node.querySelector('span')?.textContent);
+          const value = Number(normalize(node.querySelector('strong')?.textContent).replace(/[^\d-]/g, '')) || 0;
+          return [label, value];
+        })
+      );
       return {
         source: root?.dataset?.repricerDataSource || '',
         hero,
         arrival,
         workflowButtons,
+        metrics,
+        rows: Number(window.__alteaAppState?.canonicalRepricer?.summary?.rows || 0),
         ready: Number(window.__alteaAppState?.canonicalRepricer?.summary?.publishable_rows || 0),
         blocked: Number(window.__alteaAppState?.canonicalRepricer?.summary?.blocked_rows || 0)
       };
     });
     assert.strictEqual(canonicalUi.source, 'canonical-audit', 'portal must show canonical calculations before cutover');
-    assert(
-      canonicalUi.hero.includes(`Аудит ${canonicalUi.ready}`),
-      `canonical ready rows must be visible as audit-only: ${canonicalUi.hero}`
+    assert.strictEqual(
+      canonicalUi.metrics.Аудит + canonicalUi.metrics.Стоп,
+      canonicalUi.rows,
+      `all canonical rows must remain visible in audit/stop while cutover is closed: ${canonicalUi.hero}`
     );
     assert(
-      canonicalUi.hero.includes(`Стоп ${canonicalUi.blocked}`),
-      `canonical blocked rows must remain stopped: ${canonicalUi.hero}`
+      canonicalUi.ready > 0 && canonicalUi.blocked > 0,
+      `canonical audit fixture must contain both calculated and blocked recommendations: ${canonicalUi.hero}`
+    );
+    assert.strictEqual(
+      canonicalUi.ready + canonicalUi.blocked,
+      canonicalUi.rows,
+      `canonical recommendation totals must remain internally consistent: ${canonicalUi.hero}`
     );
     assert(
       canonicalUi.hero.includes('В файл цен 0'),

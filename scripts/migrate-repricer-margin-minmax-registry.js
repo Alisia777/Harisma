@@ -96,7 +96,8 @@ function migrateRegistry(options = {}) {
     const articleKey = String(row.article_key || '').trim();
     const platform = String(row.platform || '').trim().toLowerCase();
     const missing = [];
-    if (!(Number(policy.target_margin_pct) > 0 && Number(policy.target_margin_pct) < 1)) missing.push('margin');
+    if (!(Number(policy.target_margin_pct) > 0 && Number(policy.target_margin_pct) < 1)) missing.push('min_margin');
+    if (!(Number(policy.max_margin_pct) > Number(policy.target_margin_pct) && Number(policy.max_margin_pct) < 1)) missing.push('max_margin');
     if (!(Number(policy.min_max_floor) > 0)) missing.push('min');
     if (!(Number(policy.min_max_cap) > 0)) missing.push('max');
     if (missing.length) {
@@ -105,6 +106,8 @@ function migrateRegistry(options = {}) {
         platform,
         lifecycle: policy.lifecycle_key || '',
         targetMarginPct: policy.target_margin_pct,
+        minMarginPct: policy.target_margin_pct,
+        maxMarginPct: policy.max_margin_pct,
         minPrice: policy.min_max_floor,
         maxPrice: policy.min_max_cap,
         missing,
@@ -119,6 +122,8 @@ function migrateRegistry(options = {}) {
       articleKey,
       platform,
       targetMarginPct: Number(policy.target_margin_pct),
+      minMarginPct: Number(policy.target_margin_pct),
+      maxMarginPct: Number(policy.max_margin_pct),
       minPrice: Number(policy.min_max_floor),
       maxPrice: Number(policy.min_max_cap),
       effectiveFrom

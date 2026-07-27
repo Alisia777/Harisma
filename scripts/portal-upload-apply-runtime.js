@@ -35,7 +35,8 @@ const UNITS = new Set(['piece', 'pcs', 'unit', 'шт', 'штука']);
 const COLUMN_ALIASES = {
   articleKey: ['articlekey', 'article_key', 'article', 'sku', 'sku_code', 'артикул', 'номенклатура'],
   platform: ['platform', 'marketplace', 'площадка', 'маркетплейс'],
-  targetMarginPct: ['targetmarginpct', 'marginpct', 'margin', 'маржа', 'целеваямаржа', 'минимальнаямаржа', 'порогмаржи'],
+  minMarginPct: ['minmarginpct', 'min_margin_pct', 'targetmarginpct', 'marginpct', 'margin', 'маржа', 'целеваямаржа', 'минимальнаямаржа', 'порогмаржи', 'minмаржа'],
+  maxMarginPct: ['maxmarginpct', 'max_margin_pct', 'максимальнаямаржа', 'верхняямаржа', 'maxмаржа'],
   minPrice: ['minprice', 'min_price', 'min', 'minrub', 'min_rub', 'importminrub', 'новыйmin', 'minцена'],
   maxPrice: ['maxprice', 'max_price', 'max', 'maxrub', 'max_rub', 'importmaxrub', 'новыйmax', 'maxцена'],
   legalEntity: ['legalentity', 'legal_entity', 'юрлицо', 'юрлицо', 'юридическоелицо', 'юрлице'],
@@ -186,7 +187,7 @@ function readUploadRows(filePath, dataset) {
   const matrix = xlsx().utils.sheet_to_json(sheet, { header: 1, defval: '', raw: true, blankrows: false });
   const needed = dataset === 'cost_price'
     ? ['articleKey', 'legalEntity', 'cost', 'currency', 'unit', 'effectiveFrom', 'reason']
-    : ['articleKey', 'platform', 'targetMarginPct', 'minPrice', 'maxPrice', 'effectiveFrom'];
+    : ['articleKey', 'platform', 'minMarginPct', 'maxMarginPct', 'minPrice', 'maxPrice', 'effectiveFrom'];
   let headerIndex = -1;
   let columnMap = {};
   for (let index = 0; index < Math.min(matrix.length, 20); index += 1) {
@@ -272,9 +273,13 @@ function validateMinMaxRow(row, context) {
   if (context.skuCollisions.has(normalizeKey(articleInput))) errors.push('alias_collision');
   const platform = normalizePlatform(raw.platform);
   if (!PLATFORMS.has(platform)) errors.push('invalid_platform');
-  const targetMarginPct = percentOrNull(raw.targetMarginPct);
-  if (targetMarginPct === null) errors.push('missing_target_margin');
-  else if (targetMarginPct <= 0 || targetMarginPct >= 1) errors.push('invalid_target_margin');
+  const minMarginPct = percentOrNull(raw.minMarginPct);
+  const maxMarginPct = percentOrNull(raw.maxMarginPct);
+  if (minMarginPct === null) errors.push('missing_min_margin');
+  else if (minMarginPct <= 0 || minMarginPct >= 1) errors.push('invalid_min_margin');
+  if (maxMarginPct === null) errors.push('missing_max_margin');
+  else if (maxMarginPct <= 0 || maxMarginPct >= 1) errors.push('invalid_max_margin');
+  if (minMarginPct !== null && maxMarginPct !== null && maxMarginPct <= minMarginPct) errors.push('max_margin_lte_min_margin');
   const minPrice = numberOrNull(raw.minPrice);
   const maxPrice = numberOrNull(raw.maxPrice);
   if (minPrice === null || minPrice <= 0) errors.push('invalid_min_price');
@@ -293,7 +298,9 @@ function validateMinMaxRow(row, context) {
     record: {
       articleKey: sku?.articleKey || articleInput,
       platform,
-      targetMarginPct,
+      targetMarginPct: minMarginPct,
+      minMarginPct,
+      maxMarginPct,
       minPrice,
       maxPrice,
       effectiveFrom,
@@ -369,7 +376,9 @@ function validateRows(dataset, rows, options, source) {
     const comparable = dataset === 'cost_price'
       ? stableStringify({ cost: result.record.cost, currency: result.record.currency, unit: result.record.unit, effectiveFrom: result.record.effectiveFrom })
       : stableStringify({
-        targetMarginPct: result.record.targetMarginPct,
+        targetMarginPct: result.record.minMarginPct,
+        minMarginPct: result.record.minMarginPct,
+        maxMarginPct: result.record.maxMarginPct,
         minPrice: result.record.minPrice,
         maxPrice: result.record.maxPrice,
         effectiveFrom: result.record.effectiveFrom
@@ -497,23 +506,53 @@ function writeAllReports(options, reports) {
 function generateTemplates(templateDir) {
   fs.mkdirSync(templateDir, { recursive: true });
   const minMaxRows = [
-    { 'Маржа, %': '', articleKey: '', platform: 'wb', minPrice: '', maxPrice: '', effectiveFrom: '', author: '', role: '', reason: '' }
+    { 'MIN маржа, %': '', 'MAX маржа, %': '', articleKey: '', platform: 'wb', minPrice: '', maxPrice: '', effectiveFrom: '', author: '', role: '', reason: '' }
   ];
   const costRows = [
     { articleKey: '', legalEntity: '', cost: '', currency: 'RUB', unit: 'piece', effectiveFrom: '', author: '', role: '', reason: '' }
   ];
   const build = (rows, instructions, dictionaryRows, fileName) => {
     const workbook = xlsx().utils.book_new();
-    xlsx().utils.book_append_sheet(workbook, xlsx().utils.json_to_sheet(rows), SHEETS.fill);
-    xlsx().utils.book_append_sheet(workbook, xlsx().utils.aoa_to_sheet(instructions.map((line) => [line])), SHEETS.instruction);
-    xlsx().utils.book_append_sheet(workbook, xlsx().utils.json_to_sheet(dictionaryRows), SHEETS.dictionary);
-    xlsx().utils.book_append_sheet(workbook, xlsx().utils.json_to_sheet([{ rowNumber: '', articleKey: '', error: '' }]), SHEETS.previousErrors);
+    const fillSheet = xlsx().utils.json_to_sheet(rows);
+    const headers = Object.keys(rows[0] || {});
+    const isMarginTemplate = headers.includes('MIN маржа, %');
+    const widths = isMarginTemplate
+      ? [18, 18, 28, 13, 14, 14, 16, 22, 14, 44]
+      : [28, 24, 14, 12, 12, 16, 22, 14, 44];
+    fillSheet['!cols'] = widths.map((wch) => ({ wch }));
+    fillSheet['!rows'] = [{ hpt: 28 }, { hpt: 24 }];
+    fillSheet['!autofilter'] = { ref: `A1:${xlsx().utils.encode_col(Math.max(0, headers.length - 1))}1000` };
+    fillSheet['!freeze'] = { xSplit: 0, ySplit: 1, topLeftCell: 'A2', activePane: 'bottomLeft', state: 'frozen' };
+    headers.forEach((_, index) => {
+      const cell = fillSheet[xlsx().utils.encode_cell({ r: 0, c: index })];
+      if (!cell) return;
+      cell.s = {
+        fill: { fgColor: { rgb: isMarginTemplate && index < 2 ? 'FFF2CC' : '1F4E78' } },
+        font: { bold: true, color: { rgb: isMarginTemplate && index < 2 ? '7F6000' : 'FFFFFF' } },
+        alignment: { horizontal: 'center', vertical: 'center', wrapText: true },
+        border: { bottom: { style: 'thin', color: { rgb: '9EADBA' } } }
+      };
+    });
+    const instructionSheet = xlsx().utils.aoa_to_sheet(instructions.map((line) => [line]));
+    instructionSheet['!cols'] = [{ wch: 115 }];
+    instructions.forEach((_, index) => {
+      const cell = instructionSheet[`A${index + 1}`];
+      if (cell) cell.s = { alignment: { wrapText: true, vertical: 'top' } };
+    });
+    const dictionarySheet = xlsx().utils.json_to_sheet(dictionaryRows);
+    dictionarySheet['!cols'] = [{ wch: 20 }, { wch: 28 }];
+    const previousErrorsSheet = xlsx().utils.json_to_sheet([{ rowNumber: '', articleKey: '', error: '' }]);
+    previousErrorsSheet['!cols'] = [{ wch: 12 }, { wch: 28 }, { wch: 72 }];
+    xlsx().utils.book_append_sheet(workbook, fillSheet, SHEETS.fill);
+    xlsx().utils.book_append_sheet(workbook, instructionSheet, SHEETS.instruction);
+    xlsx().utils.book_append_sheet(workbook, dictionarySheet, SHEETS.dictionary);
+    xlsx().utils.book_append_sheet(workbook, previousErrorsSheet, SHEETS.previousErrors);
     xlsx().writeFile(workbook, path.join(templateDir, fileName), { bookType: 'xlsx' });
   };
   build(minMaxRows, [
-    'Required: Маржа, %, articleKey, platform, minPrice, maxPrice, effectiveFrom.',
-    'Маржа задаётся для каждого SKU: 25%, 25 или 0.25 означают один и тот же порог 25%.',
-    'Для активных товаров, новинок и перезапусков маржинальный floor имеет приоритет перед MIN и MAX.',
+    'Required: MIN маржа, %, MAX маржа, %, articleKey, platform, minPrice, maxPrice, effectiveFrom.',
+    'Оба порога задаются для каждого SKU: 25%, 25 или 0.25 означают 25%. MAX маржа должна быть выше MIN маржи.',
+    'Для активных товаров, новинок и перезапусков коридор маржи имеет приоритет перед ценовыми MIN и MAX.',
     'Allowed platforms: wb, ozon, ym, all.',
     'Rows are applied only after server validation, approval, canonical rebuild, reconciliation, and runtime refetch.'
   ], [...PLATFORMS].sort().map((platform) => ({ type: 'platform', value: platform })), 'portal-min-max-template.xlsx');
@@ -628,10 +667,10 @@ function aggregateFixtureReports(options) {
   };
 
   const validMinmax = writeFixtureWorkbook(path.join(uploadDir, 'minmax-ok.xlsx'), [
-    { articleKey: 'sku-1', platform: 'wb', 'Маржа, %': 25, minPrice: 90, maxPrice: 150, effectiveFrom: '2026-06-20', author: 'Codex', role: 'admin', reason: 'fixture accepted corridor' }
+    { articleKey: 'sku-1', platform: 'wb', 'MIN маржа, %': 25, 'MAX маржа, %': 40, minPrice: 90, maxPrice: 150, effectiveFrom: '2026-06-20', author: 'Codex', role: 'admin', reason: 'fixture accepted corridor' }
   ]);
   const invalidMinmax = writeFixtureWorkbook(path.join(uploadDir, 'minmax-bad.xlsx'), [
-    { articleKey: 'sku-1', platform: 'wb', 'Маржа, %': 25, minPrice: 200, maxPrice: 150, effectiveFrom: '2026-06-20', author: 'Codex', role: 'admin', reason: 'fixture rejected corridor' }
+    { articleKey: 'sku-1', platform: 'wb', 'MIN маржа, %': 25, 'MAX маржа, %': 40, minPrice: 200, maxPrice: 150, effectiveFrom: '2026-06-20', author: 'Codex', role: 'admin', reason: 'fixture rejected corridor' }
   ]);
   const validCost = writeFixtureWorkbook(path.join(uploadDir, 'cost-ok.xlsx'), [
     { articleKey: 'sku-1', legalEntity: 'Alisia LLC', cost: 55, currency: 'RUB', unit: 'piece', effectiveFrom: '2026-06-20', author: 'Codex', role: 'admin', reason: 'fixture verified cost' }
@@ -820,6 +859,7 @@ module.exports = {
   applyUpload,
   buildSkuIndex,
   canonicalColumn,
+  generateTemplates,
   normalizeHeader,
   parseArgs,
   readUploadRows,

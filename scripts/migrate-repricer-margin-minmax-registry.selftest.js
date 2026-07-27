@@ -31,6 +31,7 @@ function main() {
               currentPriceDate: '2026-07-24',
               costRub: 40,
               targetMarginPct: 0.25,
+              maxMarginPct: 0.4,
               minPrice: 100,
               maxPrice: 150
             },
@@ -85,10 +86,11 @@ function main() {
     assert.strictEqual(first.migrated.length, 1);
     assert.strictEqual(first.registry.rows[0].articleKey, 'sku-complete');
     assert.strictEqual(first.registry.rows[0].targetMarginPct, 0.25);
+    assert.strictEqual(first.registry.rows[0].maxMarginPct, 0.4);
     assert.strictEqual(first.registry.rows[0].minPrice, 100);
     assert.strictEqual(first.registry.rows[0].maxPrice, 150);
     assert.strictEqual(first.gapReport.summary.blockedRows, 1);
-    assert.deepStrictEqual(first.gapReport.rows[0].missing, ['margin']);
+    assert.deepStrictEqual(first.gapReport.rows[0].missing, ['min_margin', 'max_margin']);
 
     const second = migrateRegistry({ inputDir: root, outputDir: root, author: 'Codex', role: 'admin' });
     assert.strictEqual(second.registry.rows.length, 1, 'migration must be idempotent');

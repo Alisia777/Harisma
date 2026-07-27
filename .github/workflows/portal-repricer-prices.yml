@@ -42,18 +42,37 @@ jobs:
       - name: Check protected credentials
         env:
           ALTEA_WB_API_TOKEN: ${{ secrets.ALTEA_WB_API_TOKEN }}
+          ALTEA_WB_PROMOTION_TOKEN: ${{ secrets.ALTEA_WB_PROMOTION_TOKEN }}
           ALTEA_OZON_CLIENT_ID: ${{ secrets.ALTEA_OZON_CLIENT_ID }}
           ALTEA_OZON_API_KEY: ${{ secrets.ALTEA_OZON_API_KEY }}
           ALTEA_YM_API_KEY: ${{ secrets.ALTEA_YM_API_KEY }}
           SUPABASE_SERVICE_ROLE_KEY: ${{ secrets.SUPABASE_SERVICE_ROLE_KEY || secrets.ALTEA_SUPABASE_SERVICE_ROLE_KEY }}
         shell: bash
         run: |
-          for name in ALTEA_WB_API_TOKEN ALTEA_OZON_CLIENT_ID ALTEA_OZON_API_KEY ALTEA_YM_API_KEY SUPABASE_SERVICE_ROLE_KEY; do
+          for name in ALTEA_WB_API_TOKEN ALTEA_WB_PROMOTION_TOKEN ALTEA_OZON_CLIENT_ID ALTEA_OZON_API_KEY ALTEA_YM_API_KEY SUPABASE_SERVICE_ROLE_KEY; do
             if [ -z "${!name:-}" ]; then
               echo "::error::$name is missing"
               exit 1
             fi
           done
+
+      - name: Refresh advertising facts used by margin
+        env:
+          ALTEA_WB_PROMOTION_TOKEN: ${{ secrets.ALTEA_WB_PROMOTION_TOKEN }}
+          ALTEA_WB_API_TOKEN: ${{ secrets.ALTEA_WB_API_TOKEN }}
+          ALTEA_OZON_CLIENT_ID: ${{ secrets.ALTEA_OZON_CLIENT_ID }}
+          ALTEA_OZON_API_KEY: ${{ secrets.ALTEA_OZON_API_KEY }}
+        shell: bash
+        run: |
+          ADS_FROM="$(date -u -d '${{ steps.run_date.outputs.value }} - 30 days' +%F)"
+          node scripts/portal-wb-ads-sync.js sync \
+            --from "$ADS_FROM" \
+            --to '${{ steps.run_date.outputs.value }}' \
+            --no-fixture-fallback \
+            --no-external-ads
+          node scripts/portal-ozon-ads-finance-sync.js sync \
+            --from "$ADS_FROM" \
+            --to '${{ steps.run_date.outputs.value }}'
 
       - name: Collect current WB, Ozon and Yandex Market prices
         env:

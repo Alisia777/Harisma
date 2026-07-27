@@ -2679,6 +2679,14 @@ function canonicalRepricerRuntimeSide(canonical = {}) {
     rawCostPresent: economics.cost != null && numberOrZero(economics.cost) > 0,
     commissionPctValue: economics.commission_pct == null ? null : numberOrZero(economics.commission_pct),
     internalAdvertisingPctValue: internalAdvertisingPct,
+    internalAdvertisingObservedPctValue: economics.internal_advertising_observed_pct == null
+      ? null
+      : numberOrZero(economics.internal_advertising_observed_pct),
+    internalAdvertisingStatus: economics.internal_advertising_status || '',
+    internalAdvertisingSource: typeof economics.sources?.internal_advertising === 'string'
+      ? economics.sources.internal_advertising
+      : '',
+    internalAdvertisingAsOf: economics.internal_advertising_as_of || '',
     logisticsRubValue: economicsComponents.logistics_rub == null
       ? platformCostsRub
       : numberOrZero(economicsComponents.logistics_rub),
@@ -6200,7 +6208,31 @@ function repricerExportRows(platform = 'all', sourceRows = null) {
     const sides = [];
     if ((platform === 'all' || platform === 'wb') && row.wb) sides.push(['WB', row.wb]);
     if ((platform === 'all' || platform === 'ozon') && row.ozon) sides.push(['Ozon', row.ozon]);
-    return sides.map(([platformLabel, side]) => ({
+    return sides.map(([platformLabel, side]) => {
+      const pricingBaseRub = numberOrZero(side.finalPrice) || numberOrZero(side.currentPrice);
+      const revenueFactor = side.canonicalSource ? 1 : (numberOrZero(side.buyerDiscountFactor) || 1);
+      const revenueBaseRub = pricingBaseRub * revenueFactor;
+      const advertisingPct = numberOrZero(side.internalAdvertisingPctValue);
+      const advertisingFixedRub = numberOrZero(side.internalAdvertisingRub);
+      const advertisingAppliedRub = revenueBaseRub * advertisingPct + advertisingFixedRub;
+      const commissionAppliedRub = revenueBaseRub * numberOrZero(side.commissionPctValue);
+      const advertisingSnapshot = state.repricerLiveSignals?.platforms?.[String(side.platform || platformLabel || '').toLowerCase()]?.advertising
+        || state.repricer_live_signals?.platforms?.[String(side.platform || platformLabel || '').toLowerCase()]?.advertising
+        || {};
+      const advertisingObservedPct = side.internalAdvertisingObservedPctValue == null
+        ? numberOrZero(advertisingSnapshot.observedPct)
+        : numberOrZero(side.internalAdvertisingObservedPctValue);
+      const advertisingStatus = side.internalAdvertisingStatus || advertisingSnapshot.status || '';
+      const advertisingSource = [...new Set([
+        side.internalAdvertisingSource,
+        advertisingSnapshot.source
+      ].map((value) => String(value || '').trim()).filter(Boolean))].join(' + ');
+      const advertisingAsOf = side.internalAdvertisingAsOf || advertisingSnapshot.to || '';
+      const totalCostsAtPriceRub = numberOrZero(side.costRub)
+        + numberOrZero(side.platformCostsRub)
+        + advertisingAppliedRub
+        + commissionAppliedRub;
+      return {
       import_margin_pct: '',
       import_command: '',
       import_price_rub: '',
@@ -6248,9 +6280,18 @@ function repricerExportRows(platform = 'all', sourceRows = null) {
       floor_source: side.floorSourceSummary || '',
       cost_rub: repricerExportNumber(side.costRub),
       platform_commission_pct: side.commissionPctValue == null ? '' : repricerExportNumber(side.commissionPctValue * 100, 2),
+      platform_commission_rub: repricerExportNumber(commissionAppliedRub),
       platform_costs_rub: repricerExportNumber(side.platformCostsRub),
       internal_advertising_pct: side.internalAdvertisingPctValue == null ? '' : repricerExportNumber(side.internalAdvertisingPctValue * 100, 3),
+      internal_advertising_observed_pct: repricerExportNumber(advertisingObservedPct * 100, 3),
+      internal_advertising_applied_rub: repricerExportNumber(advertisingAppliedRub),
       internal_advertising_rub: repricerExportNumber(side.internalAdvertisingRub),
+      internal_advertising_snapshot_spend_rub: repricerExportNumber(advertisingSnapshot.spendRub),
+      internal_advertising_snapshot_revenue_rub: repricerExportNumber(advertisingSnapshot.revenueRub),
+      internal_advertising_status: advertisingStatus,
+      internal_advertising_source: advertisingSource,
+      internal_advertising_as_of: advertisingAsOf,
+      total_costs_at_price_rub: repricerExportNumber(totalCostsAtPriceRub),
       fee_stack_rub: repricerExportNumber(side.feeStackRub),
       pre_align_price_rub: repricerExportNumber(side.preAlignPrice),
       capped_price_rub: repricerExportNumber(side.cappedPrice),
@@ -6336,13 +6377,14 @@ function repricerExportRows(platform = 'all', sourceRows = null) {
       reason: side.reason || '',
       current_price_date: side.currentPriceDate || '',
       history_freshness_date: side.historyFreshnessDate || ''
-    }));
+      };
+    });
   });
 }
 
 function downloadRepricerExcel(platform = 'all', sourceRows = null) {
   const rows = repricerExportRows(platform, sourceRows);
-  if (!rows.length) return { ok: false, rows: 0, tone: 'warn', message: 'В аудите нет строк для выгрузки.' };
+  if (!rows.length) return { ok: false, rows: 0, tone: 'warn', message: 'В рабочем Excel нет строк для выгрузки.' };
   const columns = [
     ['import_margin_pct', 'Новая маржа SKU, %'],
     ['import_command', 'Команда'],
@@ -6390,9 +6432,18 @@ function downloadRepricerExcel(platform = 'all', sourceRows = null) {
     ['economic_floor_source', 'Economic source'],
     ['cost_rub', 'Себестоимость, ₽'],
     ['platform_commission_pct', 'Комиссия площадки, %'],
+    ['platform_commission_rub', 'Комиссия в финальной цене, ₽'],
     ['platform_costs_rub', 'Издержки площадки без рекламы, ₽'],
-    ['internal_advertising_pct', 'Внутренняя реклама, %'],
-    ['internal_advertising_rub', 'Внутренняя реклама, ₽/шт.'],
+    ['internal_advertising_pct', 'Внутренняя реклама применена, %'],
+    ['internal_advertising_observed_pct', 'Фактический ДРР за окно, %'],
+    ['internal_advertising_applied_rub', 'Реклама в финальной цене, ₽'],
+    ['internal_advertising_rub', 'Доп. реклама фиксированная, ₽/шт.'],
+    ['internal_advertising_snapshot_spend_rub', 'Расход рекламы платформы за окно, ₽'],
+    ['internal_advertising_snapshot_revenue_rub', 'Выручка платформы за окно, ₽'],
+    ['internal_advertising_status', 'Статус данных рекламы'],
+    ['internal_advertising_source', 'Источник данных рекламы'],
+    ['internal_advertising_as_of', 'Реклама актуальна на'],
+    ['total_costs_at_price_rub', 'Себестоимость + комиссия + издержки + реклама, ₽'],
     ['fee_stack_rub', 'Всего фиксированных издержек, ₽'],
     ['pre_align_price_rub', 'Pre-align, ₽'],
     ['capped_price_rub', 'Capped, ₽'],
@@ -6471,8 +6522,8 @@ function downloadRepricerExcel(platform = 'all', sourceRows = null) {
     ['current_price_date', 'Дата текущей цены'],
     ['history_freshness_date', 'История до']
   ];
-  repricerDownloadHtmlTable(columns, rows, `repricer-final-${platform}-${new Date().toISOString().slice(0, 10)}.xls`);
-  return { ok: true, rows: rows.length, tone: 'ok', message: `Аудит подготовлен: ${fmt.int(rows.length)} строк.` };
+  repricerDownloadHtmlTable(columns, rows, `repricer-workbook-${platform}-${new Date().toISOString().slice(0, 10)}.xls`);
+  return { ok: true, rows: rows.length, tone: 'ok', message: `Рабочий Excel подготовлен: ${fmt.int(rows.length)} строк.` };
 }
 
 function repricerSkuMarginExportRows(sourceRows = null) {
@@ -6981,7 +7032,7 @@ function renderRepricerLivePriceSyncCard() {
       <div class="section-subhead">
         <div>
           <h3>Актуальные цены WB и Ozon</h3>
-          <p class="small muted">Ключи хранятся на сервере. Портал запускает защищённую выгрузку, подставляет articleKey и заново считает маржу → MIN/MAX.</p>
+          <p class="small muted">Ключи хранятся на сервере. Портал обновляет цены, рекламные расходы и OOS, подставляет articleKey и заново считает реклама → маржа → MIN/MAX.</p>
         </div>
         ${badge(headline, tone)}
       </div>
@@ -6998,10 +7049,8 @@ function renderRepricerLivePriceSyncCard() {
         ${snapshot.unresolvedRows ? badge(`внешний каталог ${fmt.int(snapshot.unresolvedRows)}`, 'info') : ''}
         ${badge(snapshotText, snapshot.fresh ? 'ok' : 'warn')}
       </div>
-      <div class="quick-actions" style="margin-top:12px">
-        <button type="button" class="quick-chip repricer-price-sync-primary" data-repricer-price-sync ${endpoint ? '' : 'disabled aria-disabled="true"'}>Получить актуальные цены</button>
-      </div>
-      <div class="small muted" style="margin-top:8px" data-repricer-price-sync-status>${endpoint ? 'После запуска WB/Ozon выгрузятся на сервере; страница сама подхватит новый снимок.' : 'Не настроен защищённый server endpoint для синхронизации цен.'}</div>
+      <button type="button" class="hidden" data-repricer-price-sync ${endpoint ? '' : 'disabled aria-disabled="true"'} aria-hidden="true" tabindex="-1">Получить актуальные цены</button>
+      <div class="small muted" style="margin-top:12px" data-repricer-price-sync-status>${endpoint ? 'Одна кнопка в верхней панели обновляет цены, рекламу и OOS. После запуска страница сама подхватит новый снимок.' : 'Не настроен защищённый server endpoint для синхронизации цен.'}</div>
       ${blockingText ? `<div class="small muted repricer-price-sync-blocking" style="margin-top:6px">${escapeHtml(`Снимок заблокирован: ${blockingText}`)}</div>` : ''}
     </div>
   `;
@@ -7090,7 +7139,7 @@ function pollRepricerPriceSnapshot(root, baselineStamp, attempt = 0) {
         return;
       }
       if (attempt + 1 < maxAttempts) {
-        setRepricerPriceSyncStatus(root, `Сервер собирает цены и сопоставляет артикулы… проверка ${fmt.int(attempt + 1)}/${fmt.int(maxAttempts)}`, 'info');
+        setRepricerPriceSyncStatus(root, `Сервер собирает цены, рекламу и OOS, затем сопоставляет артикулы… проверка ${fmt.int(attempt + 1)}/${fmt.int(maxAttempts)}`, 'info');
         pollRepricerPriceSnapshot(root, baselineStamp, attempt + 1);
         return;
       }
@@ -7104,6 +7153,16 @@ function pollRepricerPriceSnapshot(root, baselineStamp, attempt = 0) {
       }
     }
   }, pollDelay);
+}
+
+let repricerPriceSyncActionSequence = 0;
+
+function currentRepricerPriceSyncButton(button) {
+  if (!button) return null;
+  if (button.hasAttribute?.('data-premium-primary-action')) {
+    return document.querySelector('.altea-premium-app:not([hidden]) [data-premium-primary-action]') || (button.isConnected ? button : null);
+  }
+  return document.querySelector('#view-repricer [data-repricer-price-sync]') || (button.isConnected ? button : null);
 }
 
 async function requestRepricerPriceSync(button) {
@@ -7124,6 +7183,8 @@ async function requestRepricerPriceSync(button) {
     return;
   }
   const originalText = button.textContent;
+  const actionToken = String(++repricerPriceSyncActionSequence);
+  button.dataset.repricerPriceSyncActionToken = actionToken;
   button.dataset.repricerPriceSyncBusy = '1';
   button.disabled = true;
   button.setAttribute('aria-busy', 'true');
@@ -7150,17 +7211,20 @@ async function requestRepricerPriceSync(button) {
       throw new Error(failureMessage);
     }
     const baselineStamp = Date.parse((state.repricerLivePrices || {}).generatedAt || '') || 0;
-    setRepricerPriceSyncStatus(root, 'Запуск принят. Собираю WB/Ozon, сопоставляю артикулы и пересчитываю репрайсер…', 'ok');
+    setRepricerPriceSyncStatus(root, 'Запуск принят. Собираю цены, рекламу и OOS WB/Ozon, сопоставляю артикулы и пересчитываю репрайсер…', 'ok');
     pollRepricerPriceSnapshot(root, baselineStamp);
   } catch (error) {
     console.error('[repricer.priceSync]', error);
     setRepricerPriceSyncStatus(root, `Не удалось запустить синхронизацию: ${error?.message || error}`, 'danger');
   } finally {
     window.setTimeout(() => {
-      button.disabled = false;
-      button.removeAttribute('aria-busy');
-      delete button.dataset.repricerPriceSyncBusy;
-      button.textContent = originalText;
+      const currentButton = currentRepricerPriceSyncButton(button);
+      if (!currentButton || currentButton.dataset.repricerPriceSyncActionToken !== actionToken) return;
+      currentButton.disabled = false;
+      currentButton.removeAttribute('aria-busy');
+      delete currentButton.dataset.repricerPriceSyncBusy;
+      delete currentButton.dataset.repricerPriceSyncActionToken;
+      currentButton.textContent = originalText;
     }, 900);
   }
 }
@@ -7587,7 +7651,7 @@ function attachRepricerEvents(root) {
         root,
         importKind === 'margin'
           ? 'Выберите файл «Маржа SKU Excel», в котором заполнена колонка «Новая маржа SKU, %».'
-          : 'Выберите файл аудита, который скачали из портала и поправили в Excel.',
+          : 'Выберите рабочий Excel, который скачали из репрайсера и заполнили.',
         'info'
       );
       auditImportInput?.click();
@@ -8082,16 +8146,11 @@ function renderRepricer() {
             </div>
           </div>
         ` : ''}
-        <div class="repricer-human-actions">
-          <button type="button" class="quick-chip repricer-audit-primary" data-repricer-export="margin:sku">Скачать маржу SKU</button>
-          <button type="button" class="quick-chip" data-repricer-import="audit" data-repricer-import-kind="margin">Загрузить маржу SKU</button>
-          <button type="button" class="quick-chip repricer-audit-primary" data-repricer-export="all">Аудит Excel</button>
-          <button type="button" class="quick-chip" data-repricer-import="audit" title="Загрузить обратно файл аудита после правок в Excel">Загрузить аудит</button>
-          <button type="button" class="quick-chip" data-repricer-export="stop:all">Стоп-лист</button>
-          <button type="button" class="quick-chip" data-repricer-export="fix:proposals">Предложения</button>
-          <button type="button" class="quick-chip repricer-advanced-toggle" data-repricer-layer-toggle="advanced">Полный режим</button>
+        <div class="repricer-human-actions" data-repricer-excel-workflow>
+          <button type="button" class="quick-chip repricer-audit-primary" data-repricer-export="all">1. Скачать рабочий Excel</button>
+          <button type="button" class="quick-chip" data-repricer-import="audit" title="Загрузить обратно заполненный рабочий Excel">2. Загрузить заполненный Excel</button>
         </div>
-        <div class="repricer-export-status" data-repricer-export-status>Для маржи: скачайте короткий файл, заполните «Новая маржа SKU, %» и загрузите его обратно.</div>
+        <div class="repricer-export-status" data-repricer-export-status>Скачайте один файл, заполните слева маржу, MIN/MAX и нужные изменения, затем загрузите этот же файл обратно.</div>
         <input id="repricerAuditImportInput" class="hidden" type="file" data-repricer-audit-import accept=".xlsx,.xls,.html,.htm,.csv,.tsv,.txt,application/vnd.openxmlformats-officedocument.spreadsheetml.sheet,text/html,text/csv,text/tab-separated-values,application/vnd.ms-excel">
       </div>
 
@@ -8131,6 +8190,9 @@ function renderRepricer() {
       <details class="repricer-game-details">
         <summary>Подробная диагностика и правила</summary>
         <div class="repricer-game-details-body">
+          <div class="quick-actions">
+            <button type="button" class="quick-chip repricer-advanced-toggle" data-repricer-layer-toggle="advanced">Открыть технический режим</button>
+          </div>
           <div class="repricer-operator-focus-card">
             <div class="section-subhead">
               <div>
@@ -8207,20 +8269,12 @@ function renderRepricer() {
         <h2>Репрайсер</h2>
         <p>Здесь связываются три вещи: рабочие MIN/MAX из «Цен», рекомендация модели и ручные решения по конкретной площадке.</p>
       </div>
-      <div class="quick-actions">
-        <button type="button" class="quick-chip repricer-audit-primary" data-repricer-export="margin:sku">Скачать маржу SKU</button>
-        <button type="button" class="quick-chip" data-repricer-import="audit" data-repricer-import-kind="margin">Загрузить маржу SKU</button>
-        <button type="button" class="quick-chip" data-repricer-export="all">Аудит в Excel</button>
-        <button type="button" class="quick-chip" data-repricer-import="audit" title="Загрузить обратно файл аудита после правок в Excel">Загрузить аудит Excel</button>
-        <button type="button" class="quick-chip" data-repricer-export="stop:all">Стоп-лист</button>
-        <button type="button" class="quick-chip" data-repricer-export="fix:proposals">Предложения</button>
-        <button type="button" class="quick-chip" data-repricer-export="template:wb">Шаблон WB</button>
-        <button type="button" class="quick-chip" data-repricer-export="template:ozon">Шаблон Ozon</button>
-        <button type="button" class="quick-chip" data-repricer-export="promo:wb">WB промо</button>
-        <button type="button" class="quick-chip" data-repricer-export="promo:ozon">Ozon промо</button>
+      <div class="quick-actions" data-repricer-excel-workflow>
+        <button type="button" class="quick-chip repricer-audit-primary" data-repricer-export="all">1. Скачать рабочий Excel</button>
+        <button type="button" class="quick-chip" data-repricer-import="audit" title="Загрузить обратно заполненный рабочий Excel">2. Загрузить заполненный Excel</button>
         <button type="button" class="quick-chip" data-repricer-layer-toggle="simple">Простой режим</button>
       </div>
-      <div class="small muted repricer-export-status" data-repricer-export-status>Для маржи заполните только «Новая маржа SKU, %»: 25, 25% или 0,25. Пустая строка ничего не меняет.</div>
+      <div class="small muted repricer-export-status" data-repricer-export-status>Один рабочий файл: заполните слева маржу, MIN/MAX и нужные изменения; пустые поля ничего не меняют.</div>
       <input id="repricerAuditImportInput" class="hidden" type="file" data-repricer-audit-import accept=".xlsx,.xls,.html,.htm,.csv,.tsv,.txt,application/vnd.openxmlformats-officedocument.spreadsheetml.sheet,text/html,text/csv,text/tab-separated-values,application/vnd.ms-excel">
     </div>
 

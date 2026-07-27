@@ -129,7 +129,7 @@
     { selector: "[data-price-export='daily']", text: "Динамика по дням", title: "Скачать ценовую динамику по дням" },
     { selector: "[data-price-minmax-template]", text: "Скачать MIN/MAX (TSV)", title: "Скачать TSV-шаблон для ручной загрузки MIN/MAX" },
     { selector: "[data-price-minmax-import]", text: "Загрузить MIN/MAX", title: "Загрузить TSV/CSV-файл с ручными MIN/MAX" },
-    { selector: "[data-repricer-export='all']", text: "Аудит в Excel", title: "Скачать полный аудит репрайсера в Excel" },
+    { selector: "[data-repricer-export='all']", text: "1. Скачать рабочий Excel", title: "Скачать единый рабочий файл: маржа, MIN/MAX и изменения по SKU" },
     { selector: "[data-repricer-export='template:wb']", text: "Шаблон WB", title: "Скачать шаблон WB по текущему срезу" },
     { selector: "[data-repricer-export='template:ozon']", text: "Шаблон Ozon", title: "Скачать шаблон Ozon по текущему срезу" },
     { selector: "[data-repricer-export='promo:wb']", text: "WB промо", title: "Скачать промо-выгрузку WB" },

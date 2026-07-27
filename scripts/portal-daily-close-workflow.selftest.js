@@ -67,8 +67,33 @@ if (
 ) {
   fail('ineligible workflow_run events must not cancel an active production close before the job-level guard skips them');
 }
-if (!workflow.includes('cancel-in-progress: true')) {
-  fail('a close for a newer truth-gated main SHA must supersede an obsolete close');
+if (!workflow.includes('cancel-in-progress: false')) {
+  fail('an in-flight daily close must not be interrupted during refresh or multi-batch publish');
+}
+const currentMainGuard = 'git fetch --no-tags --depth=1 origin main --quiet';
+const guardCount = workflow.split(currentMainGuard).length - 1;
+if (guardCount !== 2) {
+  fail('daily close must verify current main exactly twice: before packaging and before activation');
+}
+if (
+  !workflow.includes('CURRENT_MAIN_SHA="$(git rev-parse FETCH_HEAD)"')
+  || !workflow.includes('CLOSE_SHA="$(git rev-parse HEAD)"')
+  || !workflow.includes('if [[ "$CURRENT_MAIN_SHA" != "$CLOSE_SHA" ]]')
+) {
+  fail('daily close current-main guards must compare the checked-out truth-gated SHA with the live main SHA');
+}
+const packageGuardIndex = workflow.indexOf('Confirm current main before package');
+const packageIndex = workflow.indexOf('Package active generation');
+const activationGuardIndex = workflow.indexOf('Confirm current main before activation');
+const publishIndex = workflow.indexOf('Publish generation and verify readback');
+if (
+  packageGuardIndex < 0
+  || activationGuardIndex < 0
+  || packageGuardIndex > packageIndex
+  || activationGuardIndex < packageIndex
+  || activationGuardIndex > publishIndex
+) {
+  fail('current-main guards must run immediately before generation packaging and production activation');
 }
 if (!dataTruthWorkflow.includes('group: portal-data-truth-${{ github.event_name }}-${{ github.ref }}')) {
   fail('truth runs must be grouped by event and ref so newer main pushes supersede only older main pushes');
@@ -140,6 +165,9 @@ if (workflow.includes('--platforms wb,ozon,ya,goldapple,letu,megamarket,samokat,
 }
 if (!workflow.includes('--verify-readback')) {
   fail('daily close Supabase publish must verify readback hashes');
+}
+if (!workflow.includes('--require-current-main')) {
+  fail('daily close publisher must re-check current main after staging and immediately before active-manifest upsert');
 }
 if (!workflow.includes('--no-fixture-fallback --no-external-ads')) {
   fail('daily close WB ads refresh must not use fixture or external fallback data');

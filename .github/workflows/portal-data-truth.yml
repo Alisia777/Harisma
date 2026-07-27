@@ -116,6 +116,7 @@ jobs:
           node scripts/import-wb-substitution-traffic.selftest.js
           node scripts/portal-daily-close-workflow.selftest.js
           node scripts/build-retail-network-fallback.selftest.js
+          node scripts/build-retail-network-google-fallback.selftest.js
           node scripts/portal-retail-network-daily-sync.selftest.js
           node scripts/portal-extra-marketplace-preserve.selftest.js
           node scripts/portal-data-quality-scope.selftest.js

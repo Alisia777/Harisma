@@ -24,7 +24,7 @@
       'portal-control-marketplace-scope-hotfix.js?v=20260619task-noise3'
     ],
     taskKanbanV1: [
-      'portal-task-kanban-v1.js?v=20260724allstatuses1'
+      'portal-task-kanban-v1.js?v=20260727platformscope1'
     ],
     executive: [
       'portal-executive-lite-guard.js?v=20260623executivefallback1',
@@ -43,7 +43,7 @@
       'portal-sku-plan-fact-stability-hotfix.js?v=20260724planfactcorrectness2'
     ],
     planFactV4: [
-      'portal-planfact-general-to-detail-v4.js?v=20260724planfactcorrectness4'
+      'portal-planfact-general-to-detail-v4.js?v=20260727planfacttable1'
     ],
     skus: [
       'portal-sku-registry-live-note-hotfix.js?v=20260521prod1',

@@ -157,7 +157,7 @@ async function run() {
       motionVisible: Boolean(document.querySelector('.altea-motion-stage.is-visible'))
     }));
 
-    assert.strictEqual(recovered.version, '20260724-task-all-statuses-v1');
+    assert.strictEqual(recovered.version, '20260727-task-platform-scope-v1');
     assert.deepStrictEqual(
       {
         search: recovered.search,
@@ -198,6 +198,59 @@ async function run() {
     await page.waitForFunction((owner) => window.state.controlFilters.owner === owner, DARIA_OWNER, { timeout: 30000 });
     await page.selectOption('[data-task-filter="owner"]', 'all');
     await page.waitForFunction(() => window.state.controlFilters.owner === 'all', null, { timeout: 30000 });
+    await page.waitForFunction(
+      () => (document.querySelector('.task-design-result-line')?.textContent || '').includes('Показано 25 из 25'),
+      null,
+      { timeout: 30000 }
+    );
+
+    await page.evaluate(() => {
+      window.state.storage.tasks.push(
+        {
+          id: 'task-cross-misha',
+          title: 'Secondary marketplace task',
+          owner: 'Миша',
+          status: 'new',
+          priority: 'high',
+          type: 'general',
+          platform: 'ЯМ / ЗЯ / Магнит / Лэтуаль',
+          platformKey: 'cross'
+        },
+        {
+          id: 'task-ozon-only',
+          title: 'Ozon task',
+          owner: 'РОП Саша',
+          status: 'new',
+          priority: 'high',
+          type: 'general',
+          platform: 'Ozon',
+          platformKey: 'ozon'
+        }
+      );
+      document.body.setAttribute('data-marketplace', 'wb');
+      localStorage.setItem('altea.portal.marketplace', 'wb');
+      window.dispatchEvent(new CustomEvent('altea:marketplacechange', { detail: { internalPlatform: 'wb' } }));
+    });
+    await page.waitForFunction(() => window.state.controlFilters.platform === 'wb', null, { timeout: 30000 });
+    await page.waitForFunction(() => !document.querySelector('[data-kanban-task="task-cross-misha"]'), null, { timeout: 30000 });
+    assert.strictEqual(await page.locator('[data-kanban-task="task-ozon-only"]').count(), 0);
+
+    await page.evaluate(() => {
+      document.body.setAttribute('data-marketplace', 'ozon');
+      localStorage.setItem('altea.portal.marketplace', 'ozon');
+      window.dispatchEvent(new CustomEvent('altea:marketplacechange', { detail: { internalPlatform: 'ozon' } }));
+    });
+    await page.waitForFunction(() => window.state.controlFilters.platform === 'ozon', null, { timeout: 30000 });
+    await page.waitForSelector('[data-kanban-task="task-ozon-only"]', { timeout: 30000 });
+    assert.strictEqual(await page.locator('[data-kanban-task="task-cross-misha"]').count(), 0);
+
+    await page.evaluate(() => {
+      window.state.storage.tasks = window.state.storage.tasks.filter((task) => !['task-cross-misha', 'task-ozon-only'].includes(task.id));
+      document.body.setAttribute('data-marketplace', 'all');
+      localStorage.setItem('altea.portal.marketplace', 'all');
+      window.dispatchEvent(new CustomEvent('altea:marketplacechange', { detail: { internalPlatform: 'all' } }));
+    });
+    await page.waitForFunction(() => window.state.controlFilters.platform === 'all', null, { timeout: 30000 });
     await page.waitForFunction(
       () => (document.querySelector('.task-design-result-line')?.textContent || '').includes('Показано 25 из 25'),
       null,

@@ -193,10 +193,35 @@ async function run() {
   const page = await browser.newPage({ viewport: { width: 1600, height: 1000 } });
   const pageErrors = [];
   const blockedWbSnapshotRoutes = [];
+  const blockedPlanFactDataRoutes = [];
   let blockedWbSnapshotRequests = 0;
+  let blockedPlanFactDataRequests = 0;
+  let holdPlanFactDataRoutes = true;
+  let markPlanFactDataRequestSeen = null;
+  const planFactDataRequestSeen = new Promise((resolve) => {
+    markPlanFactDataRequestSeen = resolve;
+  });
   page.on('pageerror', (error) => pageErrors.push(error.message));
 
   try {
+    await page.route('**/platform_trends.json**', async (route) => {
+      blockedPlanFactDataRequests += 1;
+      markPlanFactDataRequestSeen?.();
+      if (!holdPlanFactDataRoutes) {
+        await route.continue();
+        return;
+      }
+      await new Promise((resolve) => {
+        blockedPlanFactDataRoutes.push(async () => {
+          try {
+            await route.continue();
+          } catch (_) {
+            // The page may already be closed after a failed assertion.
+          }
+          resolve();
+        });
+      });
+    });
     await page.route('**/rest/v1/portal_data_snapshots**', async (route) => {
       const url = new URL(route.request().url());
       const snapshotFilter = url.searchParams.get('snapshot_key') || '';
@@ -228,6 +253,19 @@ async function run() {
       waitUntil: 'domcontentloaded',
       timeout: 30000
     });
+    await page.waitForSelector('#view-sku-plan-fact [data-plan-fact-loading="true"]', { timeout: 30000 });
+    await Promise.race([
+      planFactDataRequestSeen,
+      new Promise((_, reject) => setTimeout(() => reject(new Error('platform_trends request was not observed')), 30000))
+    ]);
+    assert.ok(blockedPlanFactDataRequests > 0, 'Тест должен удерживать обязательный platform_trends во время первичной загрузки');
+    assert.strictEqual(
+      await page.locator('#view-sku-plan-fact [data-planfact-v4]').count(),
+      0,
+      'Аналитический слой не должен показывать нулевой факт поверх незагруженного План-факта'
+    );
+    holdPlanFactDataRoutes = false;
+    await Promise.all(blockedPlanFactDataRoutes.splice(0).map((release) => release()));
     await page.waitForFunction((version) => (
       document.querySelector('#view-sku-plan-fact [data-planfact-v4]')?.getAttribute('data-planfact-v4') === version
       && document.querySelectorAll('#view-sku-plan-fact .pf-v1-table tbody .sku-plan-fact-row').length > 0
@@ -292,6 +330,12 @@ async function run() {
       assertScope(platformSnapshot, label);
       assertRowPool(platformSnapshot, label);
       assert.ok(platformSnapshot.rowCount <= all.rowCount, `${label}: фильтр площадки должен сужать строки`);
+      if (platform === 'wb') {
+        assert.ok(
+          platformSnapshot.topFact > 0,
+          'WB: при устаревшем direct-SKU слое должен использоваться свежий кабинетный факт, а не ложный 0 ₽'
+        );
+      }
       if (platform === 'wb' || platform === 'ozon') {
         const adAudit = await page.evaluate((platformKey) => {
           const model = window.skuPlanFactBuildModel?.(null, { noCache: true });
@@ -374,8 +418,11 @@ async function run() {
     assert.match(coreSource, /const actualFactDate = skuPlanFactLatestActualDate\(indexes, monthKey, filters\.platform\)/);
     assert.match(coreSource, /freshness: skuPlanFactRuntimeFreshness\(actualFactDate\)/);
     assert.doesNotMatch(coreSource, /skuPlanFactRuntimeFreshness\(maxAvailableDate\)/);
+    assert.match(coreSource, /function skuPlanFactPlatformHasDirectApiFact\(indexes = \{\}, platform = '', monthKey = '', periodEnd = '', periodStart = ''\)/);
+    assert.match(coreSource, /<colgroup class="pf-v1-cols" aria-hidden="true">/);
     assert.match(v4Source, /metric\.factDaily/);
     assert.match(v4Source, /data-pf-v4-ad-attribution/);
+    assert.match(v4Source, /host\.querySelector\('\[data-plan-fact-loading="true"\]'\)/);
     const wbAdsSyncSource = readSource('scripts/portal-wb-ads-sync.js');
     assert.match(wbAdsSyncSource, /readSubstitutionNmMap/);
     assert.match(v4Source, /function applyPlanFactFilterPatch[\s\S]*?lastShellSignature = '';\s*renderBase\(\);/);
@@ -392,11 +439,11 @@ async function run() {
         `${fileName} должен обновить кэш лёгкого refresh`
       );
       assert.ok(
-        html.includes('app-core-11.js?v=20260724planfactcorrectness4oosforecast1scenario1planscope1'),
+        html.includes('app-core-11.js?v=20260727planfacttable1'),
         `${fileName} должен обновить кэш расчетной модели, сохранив OOS-версию`
       );
       assert.ok(
-        html.includes('portal-live-lazy-hotfixes.js?v=20260724planfact5allstatuses2'),
+        html.includes('portal-live-lazy-hotfixes.js?v=20260727planfacttable1'),
         `${fileName} должен обновить кэш Plan-Fact V4`
       );
     });
@@ -404,6 +451,7 @@ async function run() {
     assert.deepStrictEqual(pageErrors, []);
     console.log(`portal-planfact-correctness selftest: ok (${all.rowCount} SKU, ${all.rowAudit.length} строковых формул)`);
   } finally {
+    await Promise.all(blockedPlanFactDataRoutes.splice(0).map((release) => release()));
     await Promise.all(blockedWbSnapshotRoutes.splice(0).map((release) => release()));
     await browser.close();
     await new Promise((resolve) => server.close(resolve));

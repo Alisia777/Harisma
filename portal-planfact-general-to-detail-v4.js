@@ -2610,6 +2610,11 @@
     installActiveObserver();
     ensureStyle();
     bind(host);
+    if (host.querySelector('[data-plan-fact-loading="true"]')) {
+      host.classList.remove('pf-v4-controls-active');
+      host.querySelector('[data-planfact-v4]')?.remove();
+      return;
+    }
     host.classList.add('pf-v4-controls-active');
     cleanupLegacyFilterLayers(host);
     const hasNativePlanFact = Boolean(host.querySelector('[data-plan-fact-design="v1"]'));
@@ -2683,6 +2688,7 @@
 
   function needsRestore(host = root()) {
     if (!host || !host.classList.contains('active')) return false;
+    if (host.querySelector('[data-plan-fact-loading="true"]')) return false;
     const hasV4 = Boolean(host.querySelector('[data-planfact-v4]'));
     if (!hasV4) return true;
     if (!host.querySelector('[data-plan-fact-design="v1"]')) return false;

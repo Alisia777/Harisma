@@ -9,6 +9,9 @@ const {
   submitApplyPlan,
   verifyReceipt
 } = require('./portal-repricer-price-apply');
+const {
+  clientPriceProjection: canonicalClientPriceProjection
+} = require('./build-canonical-repricer');
 
 function fixture() {
   const generatedAt = new Date().toISOString();
@@ -59,6 +62,8 @@ function fixture() {
             nmId: 101,
             discountPct: 20,
             currentSellerPrice: 1000,
+            currentClientPrice: 950,
+            currentBuyerDiscountPct: 0.05,
             currentListPrice: 1250
           }]
         },
@@ -69,6 +74,8 @@ function fixture() {
             productId: 202,
             currency: 'RUB',
             currentSellerPrice: 1000,
+            currentClientPrice: 920,
+            currentBuyerDiscountPct: 0.08,
             currentListPrice: 1500
           }]
         }
@@ -102,6 +109,20 @@ async function run() {
   assert.strictEqual(plan.actions[0].apiPayload.price, 1500);
   assert.strictEqual(plan.actions[0].apiPayload.discount, 20);
   assert.strictEqual(plan.actions[0].expectedSellerPrice, 1200);
+  assert.strictEqual(plan.actions[0].currentClientPrice, 950);
+  assert.strictEqual(plan.actions[0].expectedClientPriceAfter, 1140);
+  assert.strictEqual(plan.actions[0].currentBuyerDiscountPct, 0.05);
+  assert.strictEqual(plan.actions[1].expectedClientPriceAfter, 1012);
+  assert.deepStrictEqual(
+    canonicalClientPriceProjection(1000, 950, null, 1200),
+    {
+      client_price_before: 950,
+      buyer_discount_factor: 0.95,
+      effective_buyer_discount_pct: 0.05,
+      expected_client_price_after: 1140,
+      source: 'current_client_price_ratio'
+    }
+  );
   const repeatedPlan = buildApplyPlan({
     ...source,
     livePrices: { ...source.livePrices, generatedAt: new Date(Date.parse(source.livePrices.generatedAt) + 60000).toISOString() },
@@ -156,14 +177,21 @@ async function run() {
   };
   const verified = verifyReceipt(receipt, {
     platforms: {
-      wb: { rows: [{ articleKey: 'wb-safe', currentSellerPrice: 1200 }] },
-      ozon: { rows: [{ articleKey: 'oz-safe', currentSellerPrice: 1100 }] }
+      wb: { rows: [{ articleKey: 'wb-safe', currentSellerPrice: 1200, currentClientPrice: 1134 }] },
+      ozon: { rows: [{ articleKey: 'oz-safe', currentSellerPrice: 1100, currentClientPrice: 1012 }] }
     }
   });
   assert.strictEqual(verified.status, 'verified');
   assert.strictEqual(verified.summary.matched, 2);
   assert.strictEqual(verified.requestedBy, 'operator@example.com');
   assert.strictEqual(verified.confirmationHash, plan.confirmationHash);
+  assert.strictEqual(verified.summary.clientPricesObserved, 2);
+  assert.strictEqual(verified.rows[0].previousClientPrice, 950);
+  assert.strictEqual(verified.rows[0].expectedClientPrice, 1140);
+  assert.strictEqual(verified.rows[0].actualClientPrice, 1134);
+  assert.strictEqual(verified.rows[0].sellerMatched, true);
+  assert.strictEqual(verified.rows[0].clientPriceMatchedProjection, false);
+  assert.strictEqual(verified.rows[1].clientPriceMatchedProjection, true);
 
   const fallback = fixture();
   fallback.liveSignals.summary.directPlatforms = [];

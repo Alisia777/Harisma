@@ -1780,7 +1780,7 @@ button.sku-data-focus-row:hover{border-color:rgba(255,214,130,.36);background:rg
 .repricer-side-action.info{border-color:rgba(59,130,246,.35);background:rgba(59,130,246,.1)}
 .repricer-side-action.warn{border-color:rgba(217,151,21,.35);background:rgba(217,151,21,.1)}
 .repricer-side-action.danger{border-color:rgba(210,73,73,.35);background:rgba(210,73,73,.12)}
-.repricer-prices{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:10px;margin-top:10px}
+.repricer-prices{display:grid;grid-template-columns:repeat(auto-fit,minmax(130px,1fr));gap:10px;margin-top:10px}
 .repricer-prices span{display:block;font-size:12px;color:var(--muted)}
 .repricer-prices strong{display:block;margin-top:4px;font-size:16px}
 .order-layout{align-items:start}

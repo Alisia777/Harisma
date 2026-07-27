@@ -89,6 +89,40 @@ function liveSignalsMap(liveSignals = {}) {
   ]));
 }
 
+function clientPriceProjection(liveRow = {}, sellerPriceAfter = null) {
+  const sellerBefore = numberOrNull(liveRow.currentSellerPrice);
+  const clientBefore = numberOrNull(liveRow.currentClientPrice);
+  const rawDiscount = numberOrNull(liveRow.currentBuyerDiscountPct ?? liveRow.currentSppPct);
+  const explicitDiscount = rawDiscount !== null && rawDiscount > 1 && rawDiscount <= 100
+    ? rawDiscount / 100
+    : rawDiscount;
+  let factor = null;
+  let source = '';
+  if (
+    sellerBefore !== null
+    && sellerBefore > 0
+    && clientBefore !== null
+    && clientBefore > 0
+    && clientBefore <= sellerBefore + 0.01
+  ) {
+    factor = Math.max(0.05, Math.min(1, clientBefore / sellerBefore));
+    source = 'current_client_price_ratio';
+  } else if (explicitDiscount !== null && explicitDiscount >= 0 && explicitDiscount <= 0.95) {
+    factor = 1 - explicitDiscount;
+    source = 'current_spp_pct';
+  }
+  const sellerAfter = numberOrNull(sellerPriceAfter);
+  return {
+    currentClientPrice: clientBefore,
+    currentBuyerDiscountPct: factor === null ? null : round(1 - factor, 6),
+    buyerDiscountFactor: factor === null ? null : round(factor, 6),
+    expectedClientPriceAfter: factor === null || sellerAfter === null
+      ? null
+      : round(sellerAfter * factor, 2),
+    source
+  };
+}
+
 function wbPayload(row, liveRow) {
   const discountPct = numberOrNull(liveRow?.discountPct);
   const target = numberOrNull(row?.recommendation?.price);
@@ -217,12 +251,18 @@ function buildApplyPlan({
       rejected.push({ platform: row.platform, articleKey: row.article_key, reasons: [...new Set(reasons)] });
       continue;
     }
+    const clientProjection = clientPriceProjection(liveRow, platformPayload.expectedSellerPrice);
     candidateActions.push({
       platform: row.platform,
       articleKey: row.article_key,
       currentSellerPrice: currentPrice,
       requestedSellerPrice: targetPrice,
       expectedSellerPrice: platformPayload.expectedSellerPrice,
+      currentClientPrice: clientProjection.currentClientPrice,
+      expectedClientPriceAfter: clientProjection.expectedClientPriceAfter,
+      currentBuyerDiscountPct: clientProjection.currentBuyerDiscountPct,
+      buyerDiscountFactor: clientProjection.buyerDiscountFactor,
+      clientPriceProjectionSource: clientProjection.source,
       changePct: round((targetPrice - currentPrice) / currentPrice),
       lifecycle: facts.lifecycle_key || '',
       approvalId: row?.approval?.id || '',
@@ -345,19 +385,37 @@ function verifyReceipt(receipt, livePrices, toleranceRub = 0.01) {
   const maps = priceMaps(livePrices);
   const rows = (receipt?.actions || []).map((action) => {
     const liveRow = maps[action.platform]?.get(normalizeKey(action.articleKey));
-    const actual = numberOrNull(liveRow?.currentSellerPrice);
-    const expected = numberOrNull(action.expectedSellerPrice);
-    const matched = actual !== null && expected !== null && Math.abs(actual - expected) <= toleranceRub;
+    const actualSellerPrice = numberOrNull(liveRow?.currentSellerPrice);
+    const expectedSellerPrice = numberOrNull(action.expectedSellerPrice);
+    const actualClientPrice = numberOrNull(liveRow?.currentClientPrice);
+    const expectedClientPrice = numberOrNull(action.expectedClientPriceAfter);
+    const actualProjection = clientPriceProjection(liveRow, actualSellerPrice);
+    const sellerMatched = actualSellerPrice !== null
+      && expectedSellerPrice !== null
+      && Math.abs(actualSellerPrice - expectedSellerPrice) <= toleranceRub;
+    const clientPriceMatchedProjection = actualClientPrice !== null
+      && expectedClientPrice !== null
+      && Math.abs(actualClientPrice - expectedClientPrice) <= toleranceRub;
     return {
       platform: action.platform,
       articleKey: action.articleKey,
-      expectedSellerPrice: expected,
-      actualSellerPrice: actual,
-      matched
+      previousSellerPrice: numberOrNull(action.currentSellerPrice),
+      previousClientPrice: numberOrNull(action.currentClientPrice),
+      expectedSellerPrice,
+      actualSellerPrice,
+      expectedClientPrice,
+      actualClientPrice,
+      actualBuyerDiscountPct: actualProjection.currentBuyerDiscountPct,
+      clientPriceDeltaRub: actualClientPrice !== null && numberOrNull(action.currentClientPrice) !== null
+        ? round(actualClientPrice - numberOrNull(action.currentClientPrice), 2)
+        : null,
+      clientPriceMatchedProjection,
+      sellerMatched,
+      matched: sellerMatched
     };
   });
   return {
-    schema: 'repricer-price-apply-verification-v1',
+    schema: 'repricer-price-apply-verification-v2',
     generatedAt: new Date().toISOString(),
     requestedBy: String(receipt?.requestedBy || '').trim().slice(0, 320),
     confirmationHash: String(receipt?.confirmationHash || '').trim(),
@@ -365,7 +423,9 @@ function verifyReceipt(receipt, livePrices, toleranceRub = 0.01) {
     summary: {
       rows: rows.length,
       matched: rows.filter((row) => row.matched).length,
-      mismatched: rows.filter((row) => !row.matched).length
+      mismatched: rows.filter((row) => !row.matched).length,
+      clientPricesObserved: rows.filter((row) => row.actualClientPrice !== null).length,
+      clientPricesMatchedProjection: rows.filter((row) => row.clientPriceMatchedProjection).length
     },
     rows
   };
@@ -456,6 +516,7 @@ if (require.main === module) {
 
 module.exports = {
   buildApplyPlan,
+  clientPriceProjection,
   parseArgs,
   planHash,
   submitApplyPlan,

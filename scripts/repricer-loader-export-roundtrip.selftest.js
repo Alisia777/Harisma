@@ -460,6 +460,14 @@ async function main() {
       'Комментарий для импорта',
       'Площадка',
       'Артикул',
+      'Цена продавца сейчас, ₽',
+      'Клиентская цена сейчас, ₽',
+      'СПП / скидка покупателя сейчас, %',
+      'Цена продавца к загрузке, ₽',
+      'Клиентская цена станет*, ₽',
+      'Δ клиентская цена, ₽',
+      'Δ клиентская цена, %',
+      'Источник прогноза клиентской цены',
       'Фактическая маржа сейчас, %',
       'Историческая маржа, %',
       'Источник исторической маржи',
@@ -511,10 +519,44 @@ async function main() {
     historicalMarginRows.forEach((row) => {
       assert(String(row[historicalMarginSourceIndex] || '').trim(), 'every historical margin value must identify its source');
     });
+    const clientPriceColumns = {
+      sellerBefore: auditHeaders.indexOf('Цена продавца сейчас, ₽'),
+      clientBefore: auditHeaders.indexOf('Клиентская цена сейчас, ₽'),
+      buyerDiscountPct: auditHeaders.indexOf('СПП / скидка покупателя сейчас, %'),
+      sellerAfter: auditHeaders.indexOf('Цена продавца к загрузке, ₽'),
+      clientAfter: auditHeaders.indexOf('Клиентская цена станет*, ₽'),
+      clientDeltaRub: auditHeaders.indexOf('Δ клиентская цена, ₽'),
+      clientDeltaPct: auditHeaders.indexOf('Δ клиентская цена, %'),
+      projectionSource: auditHeaders.indexOf('Источник прогноза клиентской цены')
+    };
+    let projectedClientRows = 0;
+    audit.slice(1).forEach((row) => {
+      const sellerBefore = numericCell(row[clientPriceColumns.sellerBefore]);
+      const clientBefore = numericCell(row[clientPriceColumns.clientBefore]);
+      const sellerAfter = numericCell(row[clientPriceColumns.sellerAfter]);
+      const clientAfter = numericCell(row[clientPriceColumns.clientAfter]);
+      if (!(sellerBefore > 0 && clientBefore > 0 && sellerAfter > 0 && clientAfter > 0)) return;
+      projectedClientRows += 1;
+      const expectedFactor = clientBefore / sellerBefore;
+      assert(
+        Math.abs(clientAfter - sellerAfter * expectedFactor) <= 0.02,
+        'projected client price must preserve the current effective SPP/buyer-discount factor'
+      );
+      assert(
+        Math.abs(numericCell(row[clientPriceColumns.buyerDiscountPct]) - (1 - expectedFactor) * 100) <= 0.02,
+        'exported SPP/buyer discount must match current seller/client prices'
+      );
+      assert(
+        Math.abs(numericCell(row[clientPriceColumns.clientDeltaRub]) - (clientAfter - clientBefore)) <= 0.02,
+        'client price delta in rubles must match before/after values'
+      );
+      assert(String(row[clientPriceColumns.projectionSource] || '').trim(), 'client price projection must identify its source');
+    });
+    assert(projectedClientRows > 0, 'working Excel must contain client price before/after projections');
     const advertisingColumns = {
       marketplace: auditHeaders.indexOf('Площадка'),
-      currentPrice: auditHeaders.indexOf('Текущая цена, ₽'),
-      finalPrice: auditHeaders.indexOf('Финальная цена, ₽'),
+      currentPrice: auditHeaders.indexOf('Цена продавца сейчас, ₽'),
+      finalPrice: auditHeaders.indexOf('Финальная цена продавца, ₽'),
       appliedPct: auditHeaders.indexOf('Внутренняя реклама применена, %'),
       observedPct: auditHeaders.indexOf('Фактический ДРР за окно, %'),
       appliedRub: auditHeaders.indexOf('Реклама в финальной цене, ₽'),
@@ -729,7 +771,7 @@ async function main() {
       ? auditHeaders.indexOf('article_key')
       : auditHeaders.indexOf('Артикул');
     const platformIndex = auditHeaders.indexOf('Площадка');
-    const currentPriceIndex = auditHeaders.indexOf('Текущая цена, ₽');
+    const currentPriceIndex = auditHeaders.indexOf('Цена продавца сейчас, ₽');
     const safeExportIndex = auditHeaders.indexOf('В безопасной выгрузке');
     const priceDataRow = audit.slice(1).find((row) => {
       const platform = String(row[platformIndex] || '').trim().toLowerCase();

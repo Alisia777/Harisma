@@ -120,18 +120,53 @@ async function run() {
     summary: { actions: 2, wb: 1, ozon: 1, rejected: 0, ignored: 0 },
     globalBlockers: [],
     actions: [
-      { platform: 'wb', articleKey: 'wb-test', expectedSellerPrice: 1000 },
-      { platform: 'ozon', articleKey: 'ozon-test', expectedSellerPrice: 1100 }
+      {
+        platform: 'wb',
+        articleKey: 'wb-test',
+        currentSellerPrice: 900,
+        expectedSellerPrice: 1000,
+        currentClientPrice: 855,
+        expectedClientPriceAfter: 950
+      },
+      {
+        platform: 'ozon',
+        articleKey: 'ozon-test',
+        currentSellerPrice: 1000,
+        expectedSellerPrice: 1100,
+        currentClientPrice: 920,
+        expectedClientPriceAfter: 1012
+      }
     ]
   };
   const verificationFixture = {
-    schema: 'repricer-price-apply-verification-v1',
+    schema: 'repricer-price-apply-verification-v2',
     generatedAt: verificationGeneratedAt,
     requestedBy: 'operator@example.com',
     confirmationHash: 'a'.repeat(64),
     status: 'verified',
-    summary: { rows: 2, matched: 2, mismatched: 0 },
-    rows: []
+    summary: { rows: 2, matched: 2, mismatched: 0, clientPricesObserved: 2 },
+    rows: [
+      {
+        platform: 'wb',
+        articleKey: 'wb-test',
+        previousSellerPrice: 900,
+        actualSellerPrice: 1000,
+        previousClientPrice: 855,
+        expectedClientPrice: 950,
+        actualClientPrice: 948,
+        matched: true
+      },
+      {
+        platform: 'ozon',
+        articleKey: 'ozon-test',
+        previousSellerPrice: 1000,
+        actualSellerPrice: 1100,
+        previousClientPrice: 920,
+        expectedClientPrice: 1012,
+        actualClientPrice: 1012,
+        matched: true
+      }
+    ]
   };
 
   await page.route('https://iyckwryrucqrxwlowxow.supabase.co/**', async (route) => {
@@ -439,7 +474,7 @@ async function run() {
 
     await page.locator('[data-repricer-price-apply="apply"]').click();
     await page.waitForFunction(
-      () => document.querySelector('[data-repricer-price-apply-status]')?.textContent?.includes('цены изменены и совпали'),
+      () => document.querySelector('[data-repricer-price-apply-status]')?.textContent?.includes('фактические клиентские цены'),
       null,
       { timeout: 30000 }
     );
@@ -450,6 +485,9 @@ async function run() {
       await page.evaluate(() => window.__alteaAppState?.repricerPriceApplyVerification?.status),
       'verified'
     );
+    const verifiedPriceCard = (await page.locator('.repricer-price-apply-card').innerText()).replace(/\s+/g, ' ');
+    assert(verifiedPriceCard.includes('клиент 855 ₽ → 948 ₽ факт'));
+    assert(verifiedPriceCard.includes('прогноз был 950 ₽'));
 
     const unexpectedErrors = errors.filter((message) => !(
       /Failed to load resource/i.test(message)

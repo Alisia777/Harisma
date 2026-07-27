@@ -323,9 +323,20 @@ async function run() {
       (await page.locator('.repricer-live-price-sync-card').innerText()).includes(`Цены API свежие: ${expectedMappedRows}`),
       'repricer card must rerender with the refreshed API count'
     );
+    const expectedStockSourceLabel = await page.evaluate(() => {
+      const signals = window.__alteaAppState?.repricerLiveSignals
+        || window.__alteaAppState?.repricer_live_signals
+        || {};
+      const directPlatforms = Array.isArray(signals?.summary?.directPlatforms)
+        ? signals.summary.directPlatforms.map((value) => String(value || '').trim().toLowerCase())
+        : [];
+      return ['wb', 'ozon'].every((platform) => directPlatforms.includes(platform))
+        ? 'OOS API WB/Ozon'
+        : 'OOS fallback';
+    });
     assert(
-      (await page.locator('.repricer-live-price-sync-card').innerText()).includes('OOS fallback'),
-      'repricer card must make fallback stock/OOS data visible to the operator'
+      (await page.locator('.repricer-live-price-sync-card').innerText()).includes(expectedStockSourceLabel),
+      'repricer card must make the active stock/OOS source visible to the operator'
     );
 
     dispatchResponseStatus = 404;

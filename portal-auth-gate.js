@@ -14,6 +14,7 @@
   var DELAYED_SCRIPT_TYPE = 'application/x-altea-auth-delayed';
   var DELAYED_SCRIPT_TIMEOUT_MS = 30000;
   var LOGIN_REQUEST_TIMEOUT_MS = 15000;
+  var GUEST_ANONYMOUS_TIMEOUT_MS = 5000;
   var LOGIN_MIN_RESPONSE_MS = 700;
   var LOGIN_JITTER_MS = 450;
   var MAX_EMAIL_LENGTH = 254;
@@ -1201,23 +1202,32 @@
 
   function signInGuest(authClient) {
     var auth = authClient && authClient.auth;
+    var localResult = function () {
+      return { data: { session: buildGuestSession(null) } };
+    };
     if (!auth || !auth.signInAnonymously) {
-      return Promise.resolve({ data: { session: buildGuestSession(null) } });
+      return Promise.resolve(localResult());
     }
-    return auth.signInAnonymously({
-      options: {
-        data: {
-          name: GUEST_NAME,
-          portal_role: 'guest'
+    return withTimeout(
+      auth.signInAnonymously({
+        options: {
+          data: {
+            name: GUEST_NAME,
+            portal_role: 'guest'
+          }
         }
-      }
-    }).then(function (result) {
-      if (result && result.error) throw result.error;
+      }),
+      GUEST_ANONYMOUS_TIMEOUT_MS,
+      'guest-anonymous-timeout'
+    ).then(function (result) {
+      if (result && result.error) return localResult();
       return {
         data: {
           session: buildGuestSession(result && result.data && result.data.session)
         }
       };
+    }).catch(function () {
+      return localResult();
     });
   }
 

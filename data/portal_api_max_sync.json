@@ -1,39 +1,36 @@
 {
   "schema": "portal-api-max-sync-v1",
-  "generatedAt": "2026-07-15T08:27:13.193Z",
-  "startedAt": "2026-07-15T05:41:25.685Z",
+  "generatedAt": "2026-07-27T07:28:38.878Z",
+  "startedAt": "2026-07-27T06:51:03.797Z",
   "mode": "daily",
   "window": {
-    "from": "2026-06-15",
-    "to": "2026-07-14"
+    "from": "2026-06-27",
+    "to": "2026-07-26"
   },
   "platforms": [
     "wb",
     "ozon",
     "ya",
-    "goldapple",
-    "letu",
-    "megamarket",
     "samokat",
     "magnit"
   ],
   "dryRun": false,
-  "strict": false,
+  "strict": true,
   "status": "ok",
   "steps": [
     {
       "id": "wb",
       "name": "WB API marketplace facts",
       "status": "ok",
-      "startedAt": "2026-07-15T05:41:26.406Z",
-      "finishedAt": "2026-07-15T05:51:04.506Z",
+      "startedAt": "2026-07-27T06:51:04.537Z",
+      "finishedAt": "2026-07-27T07:01:26.947Z",
       "exitCode": 0,
       "skippedReason": "",
       "chunkDays": 31,
       "chunks": [
         {
-          "from": "2026-06-15",
-          "to": "2026-07-14",
+          "from": "2026-06-27",
+          "to": "2026-07-26",
           "status": "ok",
           "exitCode": 0,
           "merge": {
@@ -46,15 +43,15 @@
       "id": "ozon",
       "name": "Ozon API marketplace facts",
       "status": "ok",
-      "startedAt": "2026-07-15T05:51:04.506Z",
-      "finishedAt": "2026-07-15T05:53:08.781Z",
+      "startedAt": "2026-07-27T07:01:26.947Z",
+      "finishedAt": "2026-07-27T07:10:00.540Z",
       "exitCode": 0,
       "skippedReason": "",
       "chunkDays": 31,
       "chunks": [
         {
-          "from": "2026-06-15",
-          "to": "2026-07-14",
+          "from": "2026-06-27",
+          "to": "2026-07-26",
           "status": "ok",
           "exitCode": 0,
           "merge": {
@@ -67,15 +64,15 @@
       "id": "yandex-market",
       "name": "Yandex Market API marketplace facts",
       "status": "ok",
-      "startedAt": "2026-07-15T05:53:08.782Z",
-      "finishedAt": "2026-07-15T06:00:13.480Z",
+      "startedAt": "2026-07-27T07:10:00.540Z",
+      "finishedAt": "2026-07-27T07:23:43.306Z",
       "exitCode": 0,
       "skippedReason": "",
       "chunkDays": 31,
       "chunks": [
         {
-          "from": "2026-06-15",
-          "to": "2026-07-14",
+          "from": "2026-06-27",
+          "to": "2026-07-26",
           "status": "ok",
           "exitCode": 0,
           "merge": {
@@ -88,8 +85,8 @@
       "id": "extra-marketplace-workbook",
       "name": "Extra marketplace API workbook build",
       "status": "ok",
-      "startedAt": "2026-07-15T06:00:13.480Z",
-      "finishedAt": "2026-07-15T06:00:22.227Z",
+      "startedAt": "2026-07-27T07:23:43.306Z",
+      "finishedAt": "2026-07-27T07:23:50.829Z",
       "exitCode": 0,
       "skippedReason": ""
     },
@@ -97,34 +94,17 @@
       "id": "extra-marketplace-merge",
       "name": "Extra marketplace API merge",
       "status": "ok",
-      "startedAt": "2026-07-15T06:00:22.227Z",
-      "finishedAt": "2026-07-15T06:00:24.233Z",
+      "startedAt": "2026-07-27T07:23:50.829Z",
+      "finishedAt": "2026-07-27T07:23:54.682Z",
       "exitCode": 0,
       "skippedReason": ""
-    },
-    {
-      "id": "magnit",
-      "name": "Magnit Market daily source normalization",
-      "status": "ok",
-      "startedAt": "2026-07-15T06:00:24.233Z",
-      "finishedAt": "2026-07-15T08:27:13.193Z",
-      "exitCode": 0,
-      "sourceMode": "magnit-market-xlsx-daily",
-      "result": {
-        "series": 99,
-        "articles": 35,
-        "revenue": 160446.66,
-        "from": "2026-04-01",
-        "to": "2026-07-08",
-        "sourceCutoffWarning": "Source ends before portal cutoff 2026-07-14; no synthetic zero dates added."
-      }
     },
     {
       "id": "wb-ads",
       "name": "WB ads expense facts with channel overrides",
       "status": "ok",
-      "startedAt": "2026-07-15T06:00:24.234Z",
-      "finishedAt": "2026-07-15T06:03:19.258Z",
+      "startedAt": "2026-07-27T07:23:54.683Z",
+      "finishedAt": "2026-07-27T07:28:37.798Z",
       "exitCode": 0,
       "skippedReason": ""
     },
@@ -132,49 +112,13 @@
       "id": "yandex-ads-summary",
       "name": "Yandex Market ads summary bridge",
       "status": "ok",
-      "startedAt": "2026-07-15T06:03:19.258Z",
-      "finishedAt": "2026-07-15T06:03:19.671Z",
+      "startedAt": "2026-07-27T07:28:37.798Z",
+      "finishedAt": "2026-07-27T07:28:38.659Z",
       "exitCode": 0,
       "skippedReason": ""
     }
   ],
   "platformSummary": {
-    "wb": {
-      "points": 75,
-      "from": "2026-05-01",
-      "to": "2026-07-14",
-      "revenue": 690153580
-    },
-    "ozon": {
-      "points": 75,
-      "from": "2026-05-01",
-      "to": "2026-07-14",
-      "revenue": 164257347.34
-    },
-    "ya": {
-      "points": 195,
-      "from": "2026-01-01",
-      "to": "2026-07-14",
-      "revenue": 23744676.9015
-    },
-    "goldapple": {
-      "points": 91,
-      "from": "2026-04-01",
-      "to": "2026-06-30",
-      "revenue": 2606053
-    },
-    "letu": {
-      "points": 181,
-      "from": "2026-01-01",
-      "to": "2026-06-30",
-      "revenue": 6922390
-    },
-    "megamarket": {
-      "points": 44,
-      "from": "2026-06-01",
-      "to": "2026-07-14",
-      "revenue": 6666.5714
-    },
     "samokat": {
       "points": 0,
       "from": "",
@@ -182,16 +126,52 @@
       "revenue": 0
     },
     "magnit": {
-      "points": 99,
-      "from": "2026-04-01",
+      "points": 189,
+      "from": "2026-01-01",
       "to": "2026-07-08",
-      "revenue": 160446.66
+      "revenue": 433025.8573
+    },
+    "wb": {
+      "points": 87,
+      "from": "2026-05-01",
+      "to": "2026-07-26",
+      "revenue": 836782808
+    },
+    "ozon": {
+      "points": 87,
+      "from": "2026-05-01",
+      "to": "2026-07-26",
+      "revenue": 189815348.36
+    },
+    "ya": {
+      "points": 207,
+      "from": "2026-01-01",
+      "to": "2026-07-26",
+      "revenue": 25225908.9015
+    },
+    "goldapple": {
+      "points": 326,
+      "from": "2025-09-01",
+      "to": "2026-07-23",
+      "revenue": 14255070
+    },
+    "letu": {
+      "points": 325,
+      "from": "2025-09-01",
+      "to": "2026-07-23",
+      "revenue": 13542738
+    },
+    "megamarket": {
+      "points": 194,
+      "from": "2026-01-03",
+      "to": "2026-07-23",
+      "revenue": 593841.81
     },
     "all": {
-      "points": 195,
-      "from": "2026-01-01",
-      "to": "2026-07-14",
-      "revenue": 887851160.4695
+      "points": 329,
+      "from": "2025-09-01",
+      "to": "2026-07-26",
+      "revenue": 1080648740.9278
     }
   }
 }

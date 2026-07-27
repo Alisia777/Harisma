@@ -184,7 +184,7 @@ function directLiveOnlyOverlayRow(liveRow = {}, platform = '') {
     offerId: String(liveRow.offerId || '').trim(),
     productId: liveRow.productId ?? null,
     currency: String(liveRow.currency || 'RUB').trim(),
-    sourceMode: 'direct-prices-api',
+    sourceMode: `${platform}-cabinet-current-snapshot`,
     daily: []
   };
 }
@@ -233,6 +233,7 @@ function mergeDirectLivePriceOverlay(overlay = {}, livePayload = {}) {
       target.currentSellerPriceSource = liveRow.currentSellerPriceSource || liveRow.currentPriceSource || 'direct-prices-api';
       target.currentPriceSource = liveRow.currentPriceSource || liveRow.currentSellerPriceSource || 'direct-prices-api';
       target.currentSellerPriceFile = 'repricer_live_prices.json';
+      target.sourceMode = `${platform}-cabinet-current-snapshot`;
 
       const clientPrice = positiveNumber(liveRow.currentClientPrice);
       if (clientPrice) {

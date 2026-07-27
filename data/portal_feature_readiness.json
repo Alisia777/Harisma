@@ -1,6 +1,6 @@
 {
   "schema": "portal-feature-readiness-v1",
-  "generatedAt": "2026-07-25T19:12:08.833Z",
+  "generatedAt": "2026-07-27T07:57:12.125Z",
   "status": "ok",
   "technical_publish_allowed": true,
   "feature_activation_allowed": true,
@@ -13,11 +13,11 @@
       "diagnostic_available": true,
       "report_status": "ok",
       "runtime_path": "data/canonical_repricer.json",
-      "checksum": "05b8ceed2c17f3fe25612fa1006927629b2919a7316299203a5a7ce0149c4b3f",
+      "checksum": "bd83f8f7f95e0815415cca789fe68fc19415326e73ee1e591f3150a54b890498",
       "eligible_rows": 414,
-      "publishable_rows": 37,
-      "blocked_rows": 377,
-      "publishable_coverage": 0.089372,
+      "publishable_rows": 64,
+      "blocked_rows": 350,
+      "publishable_coverage": 0.154589,
       "warnings": []
     },
     "dashboard": {
@@ -25,7 +25,7 @@
       "publish_allowed": true,
       "activation_allowed": true,
       "runtime_path": "data/portal_dashboard_metrics.json",
-      "checksum": "8cb206d12d5359b0a42b068e5f007f7a7bc92c3d9b4a447b640e23fb29c062cd",
+      "checksum": "d70f4d0dbda088c4adf1dfe90e6302be10a41ecb9a060c049d83fdfaa2020aa1",
       "metricCount": 14,
       "warnings": [
         "1 platform raw fact metrics are missing before daily sync",

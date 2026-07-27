@@ -1,9 +1,9 @@
 {
   "schema": "repricer-shadow-report-v1",
-  "generatedAt": "2026-07-25T02:38:22.685Z",
+  "generatedAt": "2026-07-27T07:55:32.019Z",
   "mode": "legacy_shadow",
   "cutover_allowed": false,
-  "source_snapshot_id": "repricer:c53c42c469e32ce0",
+  "source_snapshot_id": "repricer:0d3eb1667e1e5bc9",
   "thresholds": {
     "price_tolerance_rub": 1,
     "min_canonical_coverage": 0.95,
@@ -11,16 +11,16 @@
     "required_margin_minmax_gaps": 0
   },
   "summary": {
-    "canonical_rows": 411,
-    "canonical_ready_rows": 37,
-    "canonical_blocked_rows": 374,
-    "canonical_publishable_coverage": 0.090024,
-    "legacy_side_rows": 391,
-    "comparable_ready_rows": 36,
-    "matching_price_rows": 7,
-    "price_mismatch_rows": 29,
-    "canonical_only_ready_rows": 1,
-    "price_agreement": 0.194444,
+    "canonical_rows": 414,
+    "canonical_ready_rows": 64,
+    "canonical_blocked_rows": 350,
+    "canonical_publishable_coverage": 0.154589,
+    "legacy_side_rows": 414,
+    "comparable_ready_rows": 64,
+    "matching_price_rows": 23,
+    "price_mismatch_rows": 41,
+    "canonical_only_ready_rows": 0,
+    "price_agreement": 0.359375,
     "margin_minmax_gap_rows": 30
   },
   "blocking_reasons": [
@@ -30,185 +30,308 @@
   ],
   "mismatches": [
     {
-      "articleKey": "limfaks_bad_30caps",
+      "articleKey": "retinol_full_journey",
       "platform": "ozon",
-      "canonicalPrice": 816,
-      "legacyPrice": 13611,
-      "priceDeltaRub": -12795,
+      "canonicalPrice": 2900,
+      "legacyPrice": 6665,
+      "priceDeltaRub": -3765,
       "withinTolerance": false,
-      "legacyAction": "FLOOR",
+      "legacyAction": "BLOCK_DATA",
       "canonicalReasonCodes": [
         "max_cap_applied"
       ]
     },
     {
-      "articleKey": "syvorotka_guk_30ml",
+      "articleKey": "retinol_start_kit",
       "platform": "ozon",
-      "canonicalPrice": 536,
-      "legacyPrice": 4287,
-      "priceDeltaRub": -3751,
+      "canonicalPrice": 1700,
+      "legacyPrice": 4250,
+      "priceDeltaRub": -2550,
       "withinTolerance": false,
-      "legacyAction": "FLOOR",
-      "canonicalReasonCodes": [
-        "max_cap_applied"
-      ]
+      "legacyAction": "BLOCK_DATA",
+      "canonicalReasonCodes": []
     },
     {
-      "articleKey": "insulight_bad_60caps",
-      "platform": "wb",
-      "canonicalPrice": 742,
-      "legacyPrice": 2500,
-      "priceDeltaRub": -1758,
+      "articleKey": "telomeras_60caps",
+      "platform": "ozon",
+      "canonicalPrice": 3685,
+      "legacyPrice": 2355,
+      "priceDeltaRub": 1330,
       "withinTolerance": false,
-      "legacyAction": "FLOOR",
+      "legacyAction": "BLOCK_DATA",
       "canonicalReasonCodes": [
         "min_floor_applied"
+      ]
+    },
+    {
+      "articleKey": "wbmicelix_1_1",
+      "platform": "ozon",
+      "canonicalPrice": 814,
+      "legacyPrice": 1932,
+      "priceDeltaRub": -1118,
+      "withinTolerance": false,
+      "legacyAction": "BLOCK_DATA",
+      "canonicalReasonCodes": [
+        "min_floor_applied"
+      ]
+    },
+    {
+      "articleKey": "maska-batter_500ml",
+      "platform": "ozon",
+      "canonicalPrice": 801,
+      "legacyPrice": 1793,
+      "priceDeltaRub": -992,
+      "withinTolerance": false,
+      "legacyAction": "BLOCK_DATA",
+      "canonicalReasonCodes": [
+        "cap_lifted_by_margin_floor",
+        "max_cap_applied"
+      ]
+    },
+    {
+      "articleKey": "strong_hair",
+      "platform": "ozon",
+      "canonicalPrice": 2019,
+      "legacyPrice": 3000,
+      "priceDeltaRub": -981,
+      "withinTolerance": false,
+      "legacyAction": "BLOCK_DATA",
+      "canonicalReasonCodes": [
+        "max_cap_applied"
       ]
     },
     {
       "articleKey": "maslo_dlya_borodi_50ml",
       "platform": "ozon",
       "canonicalPrice": 612,
-      "legacyPrice": 1755,
-      "priceDeltaRub": -1143,
+      "legacyPrice": 1140,
+      "priceDeltaRub": -528,
       "withinTolerance": false,
-      "legacyAction": "FLOOR",
+      "legacyAction": "BLOCK_DATA",
       "canonicalReasonCodes": [
         "min_floor_applied"
       ]
     },
     {
-      "articleKey": "cardicin_bad_60caps",
-      "platform": "wb",
-      "canonicalPrice": 675,
-      "legacyPrice": 900,
-      "priceDeltaRub": -225,
+      "articleKey": "syvorotka_guk_30ml",
+      "platform": "ozon",
+      "canonicalPrice": 536,
+      "legacyPrice": 1001,
+      "priceDeltaRub": -465,
       "withinTolerance": false,
-      "legacyAction": "UP",
+      "legacyAction": "BLOCK_DATA",
+      "canonicalReasonCodes": [
+        "max_cap_applied"
+      ]
+    },
+    {
+      "articleKey": "i_am_alpha_bad_60caps",
+      "platform": "ozon",
+      "canonicalPrice": 1540,
+      "legacyPrice": 1150,
+      "priceDeltaRub": 390,
+      "withinTolerance": false,
+      "legacyAction": "BLOCK_DATA",
       "canonicalReasonCodes": [
         "min_floor_applied"
+      ]
+    },
+    {
+      "articleKey": "urolgan",
+      "platform": "ozon",
+      "canonicalPrice": 343,
+      "legacyPrice": 730,
+      "priceDeltaRub": -387,
+      "withinTolerance": false,
+      "legacyAction": "BLOCK_DATA",
+      "canonicalReasonCodes": []
+    },
+    {
+      "articleKey": "khvoinitsa",
+      "platform": "ozon",
+      "canonicalPrice": 402,
+      "legacyPrice": 782,
+      "priceDeltaRub": -380,
+      "withinTolerance": false,
+      "legacyAction": "BLOCK_DATA",
+      "canonicalReasonCodes": [
+        "min_floor_applied"
+      ]
+    },
+    {
+      "articleKey": "revmastop_bad_60caps",
+      "platform": "ozon",
+      "canonicalPrice": 1142,
+      "legacyPrice": 1500,
+      "priceDeltaRub": -358,
+      "withinTolerance": false,
+      "legacyAction": "BLOCK_DATA",
+      "canonicalReasonCodes": []
+    },
+    {
+      "articleKey": "kardicin",
+      "platform": "ozon",
+      "canonicalPrice": 717,
+      "legacyPrice": 430,
+      "priceDeltaRub": 287,
+      "withinTolerance": false,
+      "legacyAction": "BLOCK_DATA",
+      "canonicalReasonCodes": []
+    },
+    {
+      "articleKey": "enteroshol",
+      "platform": "ozon",
+      "canonicalPrice": 488,
+      "legacyPrice": 685,
+      "priceDeltaRub": -197,
+      "withinTolerance": false,
+      "legacyAction": "BLOCK_DATA",
+      "canonicalReasonCodes": [
+        "max_cap_applied"
+      ]
+    },
+    {
+      "articleKey": "limfaks_bad_30caps",
+      "platform": "ozon",
+      "canonicalPrice": 816,
+      "legacyPrice": 977,
+      "priceDeltaRub": -161,
+      "withinTolerance": false,
+      "legacyAction": "BLOCK_DATA",
+      "canonicalReasonCodes": [
+        "max_cap_applied"
+      ]
+    },
+    {
+      "articleKey": "micardin_1_1_1",
+      "platform": "ozon",
+      "canonicalPrice": 1919,
+      "legacyPrice": 1777,
+      "priceDeltaRub": 142,
+      "withinTolerance": false,
+      "legacyAction": "BLOCK_DATA",
+      "canonicalReasonCodes": [
+        "min_floor_applied"
+      ]
+    },
+    {
+      "articleKey": "maslo_dlya_volos_parf_110ml_",
+      "platform": "ozon",
+      "canonicalPrice": 823,
+      "legacyPrice": 962,
+      "priceDeltaRub": -139,
+      "withinTolerance": false,
+      "legacyAction": "BLOCK_DATA",
+      "canonicalReasonCodes": [
+        "min_floor_applied"
+      ]
+    },
+    {
+      "articleKey": "wbbiotrin_1_1_1",
+      "platform": "wb",
+      "canonicalPrice": 1066,
+      "legacyPrice": 976.6,
+      "priceDeltaRub": 89.4,
+      "withinTolerance": false,
+      "legacyAction": "BLOCK_DATA",
+      "canonicalReasonCodes": [
+        "min_floor_applied"
+      ]
+    },
+    {
+      "articleKey": "kremshelk_100ml",
+      "platform": "wb",
+      "canonicalPrice": 969,
+      "legacyPrice": 885.3,
+      "priceDeltaRub": 83.7,
+      "withinTolerance": false,
+      "legacyAction": "BLOCK_DATA",
+      "canonicalReasonCodes": [
+        "cap_lifted_by_margin_floor",
+        "margin_floor_applied",
+        "current_margin_below_target"
+      ]
+    },
+    {
+      "articleKey": "wbpantogor_1_1",
+      "platform": "wb",
+      "canonicalPrice": 1031,
+      "legacyPrice": 1107.5,
+      "priceDeltaRub": -76.5,
+      "withinTolerance": false,
+      "legacyAction": "BLOCK_DATA",
+      "canonicalReasonCodes": [
+        "max_cap_applied"
+      ]
+    },
+    {
+      "articleKey": "i_am_alpha_bad_60caps",
+      "platform": "wb",
+      "canonicalPrice": 870,
+      "legacyPrice": 800,
+      "priceDeltaRub": 70,
+      "withinTolerance": false,
+      "legacyAction": "BLOCK_DATA",
+      "canonicalReasonCodes": [
+        "min_floor_applied"
+      ]
+    },
+    {
+      "articleKey": "micardin_1_1_1",
+      "platform": "wb",
+      "canonicalPrice": 932,
+      "legacyPrice": 868.64,
+      "priceDeltaRub": 63.36,
+      "withinTolerance": false,
+      "legacyAction": "BLOCK_DATA",
+      "canonicalReasonCodes": [
+        "min_floor_applied"
+      ]
+    },
+    {
+      "articleKey": "maslo_dlya_volos_parf_110ml_",
+      "platform": "wb",
+      "canonicalPrice": 598,
+      "legacyPrice": 660,
+      "priceDeltaRub": -62,
+      "withinTolerance": false,
+      "legacyAction": "BLOCK_DATA",
+      "canonicalReasonCodes": [
+        "max_cap_applied"
       ]
     },
     {
       "articleKey": "uromax_1_1",
       "platform": "wb",
       "canonicalPrice": 645,
-      "legacyPrice": 859.44,
-      "priceDeltaRub": -214.44,
+      "legacyPrice": 587.4,
+      "priceDeltaRub": 57.6,
       "withinTolerance": false,
-      "legacyAction": "DOWN",
+      "legacyAction": "BLOCK_DATA",
       "canonicalReasonCodes": [
         "min_floor_applied"
       ]
     },
     {
-      "articleKey": "indolakt_bad_60caps",
+      "articleKey": "yagodniy_spas_1_1",
       "platform": "wb",
-      "canonicalPrice": 600,
-      "legacyPrice": 785.4,
-      "priceDeltaRub": -185.4,
+      "canonicalPrice": 830,
+      "legacyPrice": 773.5,
+      "priceDeltaRub": 56.5,
       "withinTolerance": false,
-      "legacyAction": "UP",
-      "canonicalReasonCodes": []
-    },
-    {
-      "articleKey": "menoflavon_bad_60caps",
-      "platform": "ozon",
-      "canonicalPrice": 1466,
-      "legacyPrice": 1302,
-      "priceDeltaRub": 164,
-      "withinTolerance": false,
-      "legacyAction": "KEEP",
-      "canonicalReasonCodes": [
-        "max_cap_applied"
-      ]
-    },
-    {
-      "articleKey": "glikiron_bad_60caps",
-      "platform": "wb",
-      "canonicalPrice": 502,
-      "legacyPrice": 610.68,
-      "priceDeltaRub": -108.68,
-      "withinTolerance": false,
-      "legacyAction": "DOWN",
-      "canonicalReasonCodes": []
-    },
-    {
-      "articleKey": "revmastop_bad_60caps",
-      "platform": "ozon",
-      "canonicalPrice": 1142,
-      "legacyPrice": 1246,
-      "priceDeltaRub": -104,
-      "withinTolerance": false,
-      "legacyAction": "DOWN",
-      "canonicalReasonCodes": []
-    },
-    {
-      "articleKey": "dardrakona_1_1",
-      "platform": "wb",
-      "canonicalPrice": 701,
-      "legacyPrice": 771.9166666666666,
-      "priceDeltaRub": -70.92,
-      "withinTolerance": false,
-      "legacyAction": "KEEP",
+      "legacyAction": "BLOCK_DATA",
       "canonicalReasonCodes": [
         "min_floor_applied"
       ]
     },
     {
-      "articleKey": "sustalit",
+      "articleKey": "artoks_1_1",
       "platform": "wb",
-      "canonicalPrice": 379,
-      "legacyPrice": 439.24583333333334,
-      "priceDeltaRub": -60.25,
+      "canonicalPrice": 739,
+      "legacyPrice": 688.48,
+      "priceDeltaRub": 50.52,
       "withinTolerance": false,
-      "legacyAction": "KEEP",
-      "canonicalReasonCodes": [
-        "min_floor_applied"
-      ]
-    },
-    {
-      "articleKey": "nabor_remuver_40ml_1_1",
-      "platform": "wb",
-      "canonicalPrice": 385,
-      "legacyPrice": 442.56,
-      "priceDeltaRub": -57.56,
-      "withinTolerance": false,
-      "legacyAction": "DOWN",
-      "canonicalReasonCodes": []
-    },
-    {
-      "articleKey": "mycoplax",
-      "platform": "wb",
-      "canonicalPrice": 342,
-      "legacyPrice": 399.24925925925925,
-      "priceDeltaRub": -57.25,
-      "withinTolerance": false,
-      "legacyAction": "KEEP",
-      "canonicalReasonCodes": [
-        "min_floor_applied"
-      ]
-    },
-    {
-      "articleKey": "khvoinitsa",
-      "platform": "ozon",
-      "canonicalPrice": 402,
-      "legacyPrice": 459,
-      "priceDeltaRub": -57,
-      "withinTolerance": false,
-      "legacyAction": "DOWN",
-      "canonicalReasonCodes": [
-        "min_floor_applied"
-      ]
-    },
-    {
-      "articleKey": "psoral_50ml",
-      "platform": "wb",
-      "canonicalPrice": 395,
-      "legacyPrice": 449.475,
-      "priceDeltaRub": -54.48,
-      "withinTolerance": false,
-      "legacyAction": "KEEP",
+      "legacyAction": "BLOCK_DATA",
       "canonicalReasonCodes": [
         "min_floor_applied"
       ]
@@ -217,42 +340,60 @@
       "articleKey": "gel_dlya_britya_300ml",
       "platform": "wb",
       "canonicalPrice": 502,
-      "legacyPrice": 552.0257894736842,
-      "priceDeltaRub": -50.03,
+      "legacyPrice": 550,
+      "priceDeltaRub": -48,
       "withinTolerance": false,
-      "legacyAction": "BLOCK_MARGIN",
+      "legacyAction": "BLOCK_DATA",
       "canonicalReasonCodes": [
         "max_cap_applied"
       ]
     },
     {
-      "articleKey": "intimvita_300ml",
+      "articleKey": "dardrakona_1_1",
       "platform": "wb",
-      "canonicalPrice": 552,
-      "legacyPrice": 512.1136363636364,
-      "priceDeltaRub": 39.89,
+      "canonicalPrice": 701,
+      "legacyPrice": 653.2,
+      "priceDeltaRub": 47.8,
       "withinTolerance": false,
-      "legacyAction": "BLOCK_MARGIN",
-      "canonicalReasonCodes": []
+      "legacyAction": "BLOCK_DATA",
+      "canonicalReasonCodes": [
+        "min_floor_applied"
+      ]
     },
     {
-      "articleKey": "urolgan",
-      "platform": "ozon",
-      "canonicalPrice": 343,
-      "legacyPrice": 373,
-      "priceDeltaRub": -30,
+      "articleKey": "maska-batter_dlya_rosta_500ml",
+      "platform": "wb",
+      "canonicalPrice": 896,
+      "legacyPrice": 849.73,
+      "priceDeltaRub": 46.27,
       "withinTolerance": false,
-      "legacyAction": "DOWN",
-      "canonicalReasonCodes": []
+      "legacyAction": "BLOCK_DATA",
+      "canonicalReasonCodes": [
+        "cap_lifted_by_margin_floor",
+        "margin_floor_applied",
+        "current_margin_below_target"
+      ]
     },
     {
-      "articleKey": "erobrut",
+      "articleKey": "cardicin_bad_60caps",
       "platform": "wb",
-      "canonicalPrice": 371,
-      "legacyPrice": 400.2352941176471,
-      "priceDeltaRub": -29.24,
+      "canonicalPrice": 675,
+      "legacyPrice": 629.55,
+      "priceDeltaRub": 45.45,
       "withinTolerance": false,
-      "legacyAction": "KEEP",
+      "legacyAction": "BLOCK_DATA",
+      "canonicalReasonCodes": [
+        "min_floor_applied"
+      ]
+    },
+    {
+      "articleKey": "micardin_1_1",
+      "platform": "wb",
+      "canonicalPrice": 621,
+      "legacyPrice": 578.9,
+      "priceDeltaRub": 42.1,
+      "withinTolerance": false,
+      "legacyAction": "BLOCK_DATA",
       "canonicalReasonCodes": [
         "min_floor_applied"
       ]
@@ -261,111 +402,122 @@
       "articleKey": "daoshen_75ml",
       "platform": "wb",
       "canonicalPrice": 540,
-      "legacyPrice": 568,
-      "priceDeltaRub": -28,
+      "legacyPrice": 503.4,
+      "priceDeltaRub": 36.6,
       "withinTolerance": false,
-      "legacyAction": "KEEP",
+      "legacyAction": "BLOCK_DATA",
       "canonicalReasonCodes": [
         "min_floor_applied"
       ]
-    },
-    {
-      "articleKey": "wbgetsizegel",
-      "platform": "wb",
-      "canonicalPrice": 270,
-      "legacyPrice": 291,
-      "priceDeltaRub": -21,
-      "withinTolerance": false,
-      "legacyAction": "KEEP",
-      "canonicalReasonCodes": []
     },
     {
       "articleKey": "uromax",
       "platform": "wb",
       "canonicalPrice": 323,
-      "legacyPrice": 340.29,
-      "priceDeltaRub": -17.29,
+      "legacyPrice": 294,
+      "priceDeltaRub": 29,
       "withinTolerance": false,
-      "legacyAction": "KEEP",
+      "legacyAction": "BLOCK_DATA",
       "canonicalReasonCodes": [
         "min_floor_applied"
       ]
     },
     {
-      "articleKey": "frutalika_bad_60caps",
+      "articleKey": "otivin",
       "platform": "wb",
-      "canonicalPrice": 548,
-      "legacyPrice": 565.08,
-      "priceDeltaRub": -17.08,
+      "canonicalPrice": 414,
+      "legacyPrice": 385.65,
+      "priceDeltaRub": 28.35,
       "withinTolerance": false,
-      "legacyAction": "UP",
-      "canonicalReasonCodes": []
-    },
-    {
-      "articleKey": "micardin_1_1",
-      "platform": "wb",
-      "canonicalPrice": 621,
-      "legacyPrice": 634.2875,
-      "priceDeltaRub": -13.29,
-      "withinTolerance": false,
-      "legacyAction": "KEEP",
+      "legacyAction": "BLOCK_DATA",
       "canonicalReasonCodes": [
         "min_floor_applied"
       ]
     },
     {
-      "articleKey": "gel_parfum_tabacco_vanille_450ml",
+      "articleKey": "yagodniy_spas",
       "platform": "wb",
-      "canonicalPrice": 445,
-      "legacyPrice": 456.8,
-      "priceDeltaRub": -11.8,
+      "canonicalPrice": 415,
+      "legacyPrice": 387.03,
+      "priceDeltaRub": 27.97,
       "withinTolerance": false,
-      "legacyAction": "DOWN",
-      "canonicalReasonCodes": []
+      "legacyAction": "BLOCK_DATA",
+      "canonicalReasonCodes": [
+        "min_floor_applied"
+      ]
     },
     {
-      "articleKey": "synergel_60ml",
+      "articleKey": "sustalit",
       "platform": "wb",
-      "canonicalPrice": 560,
-      "legacyPrice": 550.2,
-      "priceDeltaRub": 9.8,
+      "canonicalPrice": 379,
+      "legacyPrice": 352.1,
+      "priceDeltaRub": 26.9,
       "withinTolerance": false,
-      "legacyAction": "KEEP",
-      "canonicalReasonCodes": []
+      "legacyAction": "BLOCK_DATA",
+      "canonicalReasonCodes": [
+        "min_floor_applied"
+      ]
     },
     {
-      "articleKey": "ekdisteron_ultra_man_60caps",
+      "articleKey": "erobrut",
       "platform": "wb",
-      "canonicalPrice": 714,
-      "legacyPrice": 722.72,
-      "priceDeltaRub": -8.72,
+      "canonicalPrice": 371,
+      "legacyPrice": 345.6,
+      "priceDeltaRub": 25.4,
       "withinTolerance": false,
-      "legacyAction": "DOWN",
-      "canonicalReasonCodes": []
+      "legacyAction": "BLOCK_DATA",
+      "canonicalReasonCodes": [
+        "min_floor_applied"
+      ]
     },
     {
-      "articleKey": "urolgan",
+      "articleKey": "mycoplax",
       "platform": "wb",
-      "canonicalPrice": 300,
-      "legacyPrice": 292.5,
-      "priceDeltaRub": 7.5,
+      "canonicalPrice": 342,
+      "legacyPrice": 318.5,
+      "priceDeltaRub": 23.5,
       "withinTolerance": false,
-      "legacyAction": "KEEP",
-      "canonicalReasonCodes": []
+      "legacyAction": "BLOCK_DATA",
+      "canonicalReasonCodes": [
+        "min_floor_applied"
+      ]
+    },
+    {
+      "articleKey": "intimvita_200ml",
+      "platform": "wb",
+      "canonicalPrice": 350,
+      "legacyPrice": 370.8,
+      "priceDeltaRub": -20.8,
+      "withinTolerance": false,
+      "legacyAction": "BLOCK_DATA",
+      "canonicalReasonCodes": [
+        "max_cap_applied"
+      ]
+    },
+    {
+      "articleKey": "brutalax",
+      "platform": "wb",
+      "canonicalPrice": 261,
+      "legacyPrice": 243.36,
+      "priceDeltaRub": 17.64,
+      "withinTolerance": false,
+      "legacyAction": "BLOCK_DATA",
+      "canonicalReasonCodes": [
+        "min_floor_applied"
+      ]
+    },
+    {
+      "articleKey": "insulight_bad_60caps",
+      "platform": "wb",
+      "canonicalPrice": 742,
+      "legacyPrice": 725,
+      "priceDeltaRub": 17,
+      "withinTolerance": false,
+      "legacyAction": "BLOCK_DATA",
+      "canonicalReasonCodes": [
+        "min_floor_applied"
+      ]
     }
   ],
-  "canonical_only_ready": [
-    {
-      "articleKey": "wbbiotrin_1_1_1",
-      "platform": "wb",
-      "canonicalPrice": 1066,
-      "legacyPrice": null,
-      "priceDeltaRub": null,
-      "withinTolerance": false,
-      "legacyAction": "BLOCK",
-      "canonicalReasonCodes": [
-        "min_floor_applied"
-      ]
-    }
-  ]
+  "canonical_only_ready": []
 }

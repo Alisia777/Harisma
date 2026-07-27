@@ -32,6 +32,10 @@ function normalizedKey(value = '') {
   return String(value || '').toLowerCase().replace(/[^\p{L}\p{N}]+/gu, '');
 }
 
+function exactArticleKey(value = '') {
+  return String(value || '').trim().toLowerCase();
+}
+
 function currentSnapshotRows(payload, platform, asOfDate) {
   return platformRows(payload, platform).filter((row) => (
     String(row?.sourceMode || '') === `${platform}-cabinet-current-snapshot`
@@ -85,17 +89,30 @@ assert.ok(Number(currentSnapshotCounts.ozon) >= 90, 'Текущий кабине
 
 ['wb', 'ozon'].forEach((platform) => {
   const sourceRows = currentSnapshotRows(overlay, platform, currentSnapshotDate);
+  const priceRows = platformRows(prices, platform);
   const derivedRows = new Map(
-    platformRows(prices, platform).map((row) => [normalizedKey(row?.articleKey || row?.article), row])
+    priceRows.map((row) => [exactArticleKey(row?.articleKey || row?.article), row])
   );
+  const normalizedDerivedRows = new Map();
+  priceRows.forEach((row) => {
+    const key = normalizedKey(row?.articleKey || row?.article);
+    const bucket = normalizedDerivedRows.get(key) || [];
+    bucket.push(row);
+    normalizedDerivedRows.set(key, bucket);
+  });
   assert.strictEqual(
     sourceRows.length,
     Number(currentSnapshotCounts[platform]),
     `${platform}: число строк кабинетного среза должно совпадать с метаданными импорта`
   );
   sourceRows.forEach((sourceRow) => {
-    const key = normalizedKey(sourceRow?.articleKey || sourceRow?.article);
-    const derivedRow = derivedRows.get(key);
+    const sourceArticle = sourceRow?.articleKey || sourceRow?.article;
+    const exactKey = exactArticleKey(sourceArticle);
+    const normalized = normalizedKey(sourceArticle);
+    const normalizedCandidates = normalizedDerivedRows.get(normalized) || [];
+    const derivedRow = derivedRows.get(exactKey)
+      || (normalizedCandidates.length === 1 ? normalizedCandidates[0] : null);
+    const key = exactKey || normalized;
     assert.ok(derivedRow, `${platform}: SKU ${key} из кабинетного среза должен попасть в prices.json`);
     assert.strictEqual(
       Number(derivedRow.currentPrice),

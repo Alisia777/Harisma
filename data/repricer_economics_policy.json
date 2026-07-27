@@ -1,6 +1,6 @@
 {
   "schema": "repricer-economics-policy-v1",
-  "version": "2026-07-24.4-live-signals",
+  "version": "2026-07-27.5-demand-intelligence-shadow",
   "liveSignals": {
     "requiredPlatforms": [
       "wb",
@@ -33,6 +33,41 @@
   "approval": {
     "sharpPriceChangePct": 10,
     "extremePriceChangePct": 100
+  },
+  "demandPricing": {
+    "enabled": true,
+    "reviewRequired": true,
+    "autoApply": false,
+    "approvalTtlHours": 72,
+    "maxAgeDays": 2,
+    "minAvgDailyUnits": 0.1,
+    "minSales28Units": 3,
+    "targetTurnoverDays": 30,
+    "lowStockRatio": 0.6,
+    "overstockRatios": [
+      1.5,
+      2,
+      3
+    ],
+    "platforms": {
+      "wb": {
+        "increaseStepPct": 2,
+        "decreaseStepsPct": [
+          1,
+          2,
+          3
+        ]
+      },
+      "ozon": {
+        "increaseStepPct": 5,
+        "decreaseStepsPct": [
+          5,
+          5,
+          5
+        ]
+      }
+    },
+    "guardRule": "Demand may suggest a small price move only inside the margin-first MIN/MAX corridor, on fresh direct stock and fresh sales velocity. Every demand move stays shadow-only until ROP approval; OOS risk can never lower price."
   },
   "safety": {
     "minimumResidualContributionPct": 5,

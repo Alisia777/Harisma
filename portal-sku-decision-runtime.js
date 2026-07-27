@@ -2,7 +2,7 @@
   'use strict';
 
   if (window.__ALTEA_SKU_DECISION_RUNTIME__) return;
-  window.__ALTEA_SKU_DECISION_RUNTIME__ = '20260724-repricer-approval-3';
+  window.__ALTEA_SKU_DECISION_RUNTIME__ = '20260727-demand-price-approval-4';
 
   function persistLifecycleControlsSafely() {
     try {
@@ -87,7 +87,7 @@
     }
     return deleteMarker;
   };
-const SKU_DECISION_TYPES = new Set(['PRODUCT_STATUS_CHANGE', 'SHARP_PRICE_CHANGE']);
+const SKU_DECISION_TYPES = new Set(['PRODUCT_STATUS_CHANGE', 'SHARP_PRICE_CHANGE', 'DEMAND_PRICE_REVIEW']);
 const SKU_DECISION_PENDING_STATUSES = new Set(['preparing', 'waiting_rop', 'changes_requested']);
 const SKU_DECISION_REQUESTS_IN_FLIGHT = new Map();
 
@@ -191,6 +191,21 @@ function skuDecisionPersist(decision = null) {
 }
 
 function skuDecisionTaskCopy(decision = {}) {
+  if (decision.type === 'DEMAND_PRICE_REVIEW') {
+    const turnoverDays = Number(decision.payload?.demandIntelligence?.current_turnover_days);
+    const targetDays = Number(decision.payload?.demandIntelligence?.target_turnover_days);
+    const approvalTtlHours = Math.max(1, Number(decision.payload?.approvalTtlHours) || 72);
+    const turnoverLabel = Number.isFinite(turnoverDays) && Number.isFinite(targetDays)
+      ? ` Оборачиваемость ${Math.round(turnoverDays * 10) / 10} дн. при цели ${Math.round(targetDays * 10) / 10} дн.`
+      : '';
+    return {
+      title: `Согласовать умную цену · ${decision.articleKey}`,
+      entityLabel: `${decision.articleKey} · ${String(decision.platform || 'all').toUpperCase()}`,
+      type: 'price_margin',
+      priority: 'high',
+      nextAction: `РОП проверяет цену ${decision.currentValue || '—'} → ${decision.proposedValue || '—'} ₽.${turnoverLabel} До подтверждения цена не меняется; решение действует ${approvalTtlHours} ч., затем SKU пересчитывается заново.`
+    };
+  }
   if (decision.type === 'SHARP_PRICE_CHANGE') {
     const deltaPct = Number(decision.payload?.deltaPct);
     const deltaLabel = Number.isFinite(deltaPct) ? ` (${deltaPct > 0 ? '+' : ''}${Math.round(deltaPct * 1000) / 10}%)` : '';
@@ -322,10 +337,16 @@ async function applySkuDecisionApproval(decision, comment = '') {
         note: [decision.reason, comment ? `РОП: ${comment}` : '', `Согласовано ${approvedBy}`].filter(Boolean).join(' · ')
       });
     }
-  } else if (decision.type === 'SHARP_PRICE_CHANGE') {
+  } else if (['SHARP_PRICE_CHANGE', 'DEMAND_PRICE_REVIEW'].includes(decision.type)) {
     const rawOverride = decision.payload?.override && typeof decision.payload.override === 'object'
       ? decision.payload.override
       : {};
+    const demandApprovalTtlHours = decision.type === 'DEMAND_PRICE_REVIEW'
+      ? Math.max(1, Number(decision.payload?.approvalTtlHours) || 72)
+      : null;
+    const expiresAt = demandApprovalTtlHours === null
+      ? String(rawOverride.expiresAt || rawOverride.expires_at || '').trim()
+      : new Date(Date.parse(approvedAt) + demandApprovalTtlHours * 60 * 60 * 1000).toISOString();
     const sourceChecksum = stableId('approval', `${decision.id}|${decision.articleKey}|${decision.platform}|${decision.proposedValue}`);
     const approvedOverride = normalizeRepricerOverride({
       ...rawOverride,
@@ -341,6 +362,7 @@ async function applySkuDecisionApproval(decision, comment = '') {
       createdAt: decision.createdAt,
       approvedBy,
       approvedAt,
+      expiresAt,
       batchId: decision.id,
       sourceFile: `portal-task:${decision.taskId}`,
       sourceChecksum

@@ -1050,11 +1050,12 @@
         <div class="sl-v1-decision-grid">
           ${active.slice(0, 8).map((item) => {
             const statusMeta = skuDecisionStatusMeta(item.status);
-            const isPrice = item.type === 'SHARP_PRICE_CHANGE';
+            const isDemandPrice = item.type === 'DEMAND_PRICE_REVIEW';
+            const isPrice = item.type === 'SHARP_PRICE_CHANGE' || isDemandPrice;
             const deltaPct = Number(item.payload?.deltaPct);
             return `
               <button type="button" class="sl-v1-decision-card ${escapeValue(statusMeta.tone)}" ${item.taskId ? `data-open-task="${escapeValue(item.taskId)}"` : ''}>
-                <span>${escapeValue(isPrice ? `Цена · ${String(item.platform || 'all').toUpperCase()}` : 'Статус товара')}</span>
+                <span>${escapeValue(isPrice ? `${isDemandPrice ? 'Умная цена' : 'Резкая цена'} · ${String(item.platform || 'all').toUpperCase()}` : 'Статус товара')}</span>
                 <strong>${escapeValue(item.articleKey)}</strong>
                 <b>${escapeValue(String(item.currentValue || '—'))} → ${escapeValue(String(item.proposedValue || '—'))}${isPrice && Number.isFinite(deltaPct) ? ` · ${escapeValue(`${deltaPct > 0 ? '+' : ''}${Math.round(deltaPct * 1000) / 10}%`)}` : ''}</b>
                 <small>${escapeValue(statusMeta.label)} · ${escapeValue(item.reason || 'без основания')}</small>

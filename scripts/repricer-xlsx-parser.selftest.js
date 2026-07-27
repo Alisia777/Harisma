@@ -95,7 +95,7 @@ assert(fs.statSync(vendor).size > 500_000, 'browser XLSX reader asset is missing
 for (const file of ['index.html', 'live-index.html', 'docs/index.html']) {
   const html = fs.readFileSync(path.join(ROOT, file), 'utf8');
   assert(html.includes('xlsx.full.min.js?v=0.18.5'), `${file} must load the XLSX reader`);
-  assert(html.includes('app-core-08.js?v=20260727clientprice1'), `${file} must bust the repricer loader cache`);
+  assert(html.includes('app-core-08.js?v=20260727demandprice1'), `${file} must bust the repricer loader cache`);
 }
 assert(source.includes('accept=".xlsx,.xls'), 'repricer file input must expose XLSX');
 

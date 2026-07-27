@@ -115,6 +115,29 @@ function compareRepricerSnapshots({
     row?.recommendation?.status === 'ready'
     && positiveNumber(row?.recommendation?.price) !== null
   ));
+  const demandPriceReviews = canonicalRows
+    .filter((row) => (
+      row?.approval_gate?.type === 'DEMAND_PRICE_REVIEW'
+      && row?.recommendation?.status === 'waiting_rop'
+      && positiveNumber(row?.recommendation?.price) !== null
+    ))
+    .map((row) => ({
+      articleKey: normalizeKey(row?.article_key || row?.articleKey || row?.article),
+      platform: String(row?.platform || '').trim().toLowerCase(),
+      action: String(row?.demand_intelligence?.action || 'keep'),
+      currentPrice: positiveNumber(row?.facts?.seller_price),
+      proposedPrice: positiveNumber(row?.recommendation?.price),
+      currentTurnoverDays: positiveNumber(row?.demand_intelligence?.current_turnover_days),
+      targetTurnoverDays: positiveNumber(row?.demand_intelligence?.target_turnover_days),
+      stepPct: Number(row?.demand_intelligence?.step_pct) || 0,
+      proposedMarginPct: Number(row?.recommendation?.margin_pct),
+      floor: positiveNumber(row?.policy?.floor),
+      cap: positiveNumber(row?.policy?.cap),
+      confidence: String(row?.demand_intelligence?.confidence || ''),
+      reasonCodes: Array.isArray(row?.recommendation?.reason_codes)
+        ? row.recommendation.reason_codes
+        : []
+    }));
   const comparisons = readyRows.map((row) => {
     const articleKey = normalizeKey(row?.article_key || row?.articleKey || row?.article);
     const platform = String(row?.platform || '').trim().toLowerCase();
@@ -185,12 +208,16 @@ function compareRepricerSnapshots({
       matching_price_rows: matching.length,
       price_mismatch_rows: mismatches.length,
       canonical_only_ready_rows: canonicalOnlyReady.length,
+      demand_price_review_rows: demandPriceReviews.length,
+      demand_price_increase_rows: demandPriceReviews.filter((row) => row.action === 'increase').length,
+      demand_price_decrease_rows: demandPriceReviews.filter((row) => row.action === 'decrease').length,
       price_agreement: Math.round(priceAgreement * 1e6) / 1e6,
       margin_minmax_gap_rows: gapBlockedRows
     },
     blocking_reasons: reasons,
     mismatches: mismatches.slice(0, 200),
-    canonical_only_ready: canonicalOnlyReady.slice(0, 200)
+    canonical_only_ready: canonicalOnlyReady.slice(0, 200),
+    demand_price_reviews: demandPriceReviews.slice(0, 200)
   };
 }
 

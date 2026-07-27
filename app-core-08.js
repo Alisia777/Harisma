@@ -1044,19 +1044,28 @@ function repricerSidePriceDate(side = {}) {
   return side.currentPriceDate || side.historyFreshnessDate || side.sourceAsOf || '';
 }
 
-function repricerSharpPriceDecisionForSide(side = {}) {
+function repricerPriceDecisionForSide(side = {}, decisionType = 'SHARP_PRICE_CHANGE') {
   const articleKey = String(side.articleKey || '').trim();
   const platform = String(side.platform || 'all').trim().toLowerCase() || 'all';
   const finalPrice = Math.round(numberOrZero(side.finalPrice ?? side.recommendedPrice));
+  const type = String(decisionType || '').trim().toUpperCase();
   if (!articleKey || finalPrice <= 0) return null;
   return (state.storage?.skuDecisionApprovals || []).find((item) => {
-    if (String(item?.type || '').trim().toUpperCase() !== 'SHARP_PRICE_CHANGE') return false;
+    if (String(item?.type || '').trim().toUpperCase() !== type) return false;
     if (String(item.articleKey || '').trim() !== articleKey) return false;
     const itemPlatform = String(item.platform || 'all').trim().toLowerCase() || 'all';
     if (itemPlatform !== platform && itemPlatform !== 'all' && platform !== 'all') return false;
     const requestedPrice = Math.round(numberOrZero(item.payload?.requestedPrice ?? item.proposedValue));
     return requestedPrice === finalPrice;
   }) || null;
+}
+
+function repricerSharpPriceDecisionForSide(side = {}) {
+  return repricerPriceDecisionForSide(side, 'SHARP_PRICE_CHANGE');
+}
+
+function repricerDemandPriceDecisionForSide(side = {}) {
+  return repricerPriceDecisionForSide(side, 'DEMAND_PRICE_REVIEW');
 }
 
 function repricerSideHasApprovedSharpPrice(side = {}) {
@@ -2744,8 +2753,22 @@ function canonicalRepricerRuntimeSide(canonical = {}) {
   const cutoverAllowed = canonicalRepricerCutoverAllowed();
   const approvalGateType = String(canonical.approval_gate?.type || '').trim().toUpperCase();
   const policyReviewRequired = approvalGateType === 'MARGIN_POLICY_REVIEW';
+  const demandReviewRequired = approvalGateType === 'DEMAND_PRICE_REVIEW'
+    && Boolean(canonical.approval_gate?.required);
   const waitingRop = recommendation.status === 'waiting_rop'
-    || (approvalGateType === 'SHARP_PRICE_CHANGE' && Boolean(canonical.approval_gate?.required));
+    || (
+      ['SHARP_PRICE_CHANGE', 'DEMAND_PRICE_REVIEW'].includes(approvalGateType)
+      && Boolean(canonical.approval_gate?.required)
+    );
+  const demandDecision = demandReviewRequired
+    ? repricerDemandPriceDecisionForSide({
+      articleKey: canonical.article_key,
+      platform: canonical.platform,
+      finalPrice
+    })
+    : null;
+  const demandDecisionStatus = String(demandDecision?.status || '').trim().toLowerCase();
+  const demandApprovalPending = ['preparing', 'waiting_rop', 'changes_requested'].includes(demandDecisionStatus);
   const reasonCodes = Array.isArray(recommendation.reason_codes) ? recommendation.reason_codes : [];
   const runtimeReasonCodes = [...reasonCodes];
   const marginBoundsMissing = Boolean(
@@ -2922,7 +2945,11 @@ function canonicalRepricerRuntimeSide(canonical = {}) {
       ? 'Сначала пересогласовать маржу и коридор; цену подтверждать нельзя.'
       : (
         waitingRop
-          ? 'Резкая цена ждёт подтверждения РОПа.'
+          ? (
+            demandReviewRequired
+              ? 'Умная корректировка по оборачиваемости ждёт подтверждения РОПа.'
+              : 'Резкая цена ждёт подтверждения РОПа.'
+          )
           : (
             auditReady
               ? `${approvedOverrideApplied ? 'Цена согласована РОПом и защищена маржой/MIN/MAX. ' : ''}Расчёт готов для аудита; выгрузка откроется только после допуска canonical cutover.`
@@ -2950,7 +2977,9 @@ function canonicalRepricerRuntimeSide(canonical = {}) {
     launchHold: '',
     floorRaiseReady: false,
     floorRaiseSafeToExport: false,
-    lowStockRisk: false,
+    lowStockRisk: canonical.demand_intelligence?.turnover_ratio != null
+      && numberOrZero(canonical.demand_intelligence.turnover_ratio)
+        <= numberOrZero(canonical.demand_intelligence.policy?.low_stock_ratio || 0.6),
     marginRisk: recommendation.margin_pct != null
       && (
         (
@@ -2970,12 +2999,29 @@ function canonicalRepricerRuntimeSide(canonical = {}) {
     floorSourceSummary: 'canonical policy',
     capSourceSummary: 'canonical policy',
     baseSourceSummary: 'canonical recommendation',
+    turnoverDays: canonical.demand_intelligence?.current_turnover_days ?? facts.stock_turnover_days ?? null,
+    targetTurnoverDays: canonical.demand_intelligence?.target_turnover_days ?? policy.target_turnover_days ?? null,
+    avgDailyUnits: canonical.demand_intelligence?.avg_daily_units ?? null,
+    sales28Units: canonical.demand_intelligence?.sales_28d_units ?? null,
+    demandIntelligence: canonical.demand_intelligence || null,
+    demandPriceReviewRequired: demandReviewRequired,
+    demandPriceApprovalPending: demandApprovalPending,
+    demandPriceApprovalStatus: demandApprovalPending
+      ? 'waiting_rop'
+      : (demandReviewRequired ? 'required' : 'not_required'),
+    demandPriceAutoTaskEligible: demandReviewRequired
+      && !demandApprovalPending
+      && !policyReviewRequired
+      && !reasonCodes.includes('stale_current_seller_price'),
     passports: canonical.passports || {},
     audit: canonical.audit || {},
-    sharpPriceApprovalRequired: waitingRop,
+    sharpPriceApprovalRequired: approvalGateType === 'SHARP_PRICE_CHANGE' && waitingRop,
     sharpPriceApprovalPending: false,
-    sharpPriceApprovalStatus: waitingRop ? 'required' : (canonical.approval ? 'approved' : 'not_required'),
-    sharpPriceAutoTaskEligible: waitingRop
+    sharpPriceApprovalStatus: approvalGateType === 'SHARP_PRICE_CHANGE' && waitingRop
+      ? 'required'
+      : (canonical.approval ? 'approved' : 'not_required'),
+    sharpPriceAutoTaskEligible: approvalGateType === 'SHARP_PRICE_CHANGE'
+      && waitingRop
       && !policyReviewRequired
       && !reasonCodes.includes('stale_current_seller_price'),
     marginPolicyReviewRequired: policyReviewRequired
@@ -3767,6 +3813,32 @@ function renderRepricerArrivalSignal(side) {
   `;
 }
 
+function repricerDemandReasonLabel(reason = '') {
+  const labels = {
+    demand_pricing_disabled: 'умный слой выключен политикой',
+    demand_lifecycle_not_eligible: 'статус товара не допускает управление по спросу',
+    approved_override_priority: 'подтверждённая цена имеет приоритет',
+    demand_current_price_missing: 'нет текущей цены',
+    demand_current_price_stale: 'текущая цена устарела',
+    demand_direct_stock_required: 'нужен прямой остаток API',
+    demand_sales_velocity_missing: 'нет скорости продаж',
+    demand_snapshot_date_missing: 'нет даты данных спроса',
+    demand_snapshot_stale: 'данные спроса устарели',
+    demand_velocity_too_low: 'слишком мало продаж для решения',
+    demand_sales_history_insufficient: 'недостаточно истории продаж',
+    demand_stock_missing: 'нет остатка',
+    demand_oos: 'товар OOS',
+    demand_floor_missing: 'не задан безопасный MIN',
+    safety_corridor_correction_has_priority: 'сначала исправить маржу/MIN/MAX',
+    demand_low_stock_price_increase: 'низкое покрытие: предложено повышение',
+    demand_overstock_price_decrease: 'избыточное покрытие: предложено снижение',
+    demand_decrease_blocked_by_oos_risk: 'снижение запрещено из-за риска OOS',
+    demand_turnover_in_target_band: 'оборачиваемость в целевом диапазоне',
+    demand_move_absorbed_by_safety_corridor: 'шаг поглощён безопасным коридором'
+  };
+  return labels[String(reason || '').trim()] || String(reason || '').trim();
+}
+
 function renderRepricerSide(title, side) {
   if (!side) {
     return `<div class="repricer-side"><div class="repricer-side-head">${escapeHtml(title)}</div><div class="muted small">Нет данных по площадке.</div></div>`;
@@ -3780,6 +3852,12 @@ function renderRepricerSide(title, side) {
   const floorForCapGuard = Math.max(numberOrZero(side.finalGuardFloor), numberOrZero(side.effectiveFloor));
   const capLiftedByFloorGuard = manualCap > 0 && floorForCapGuard > 0 && manualCap + 0.001 < floorForCapGuard;
   const action = repricerExplainSideAction(side);
+  const demand = side.demandIntelligence && typeof side.demandIntelligence === 'object'
+    ? side.demandIntelligence
+    : null;
+  const demandActionLabel = demand?.action === 'increase'
+    ? 'поднять'
+    : (demand?.action === 'decrease' ? 'снизить' : 'оставить');
   const confidenceBadge = badge(`${repricerConfidenceLabel(side.confidence)} ${fmt.int(side.confidenceScore)}`, repricerConfidenceTone(side.confidence));
   const lifecycleBadge = side.productLifecycleKey && side.productLifecycleKey !== 'active'
     ? badge(`товар: ${side.productLifecycleLabel || side.productLifecycleKey}`, side.productLifecycleTone || 'warn')
@@ -3806,7 +3884,10 @@ function renderRepricerSide(title, side) {
     side.marginPct == null ? '' : badge(`факт маржи ${fmt.pct(side.marginPct)}`, side.marginRisk ? 'danger' : 'ok'),
     side.arrivalPriceSignal?.hasMovement ? badge(`приход: ${side.arrivalPriceSignal.stockLabel}`, side.arrivalPriceSignal.needsCheck ? 'warn' : 'ok') : '',
     side.promoActive ? badge(`${side.promoSource === 'promo_offer' ? 'акция' : 'промо'} ${fmt.money(side.promoPrice)}`, side.promoSource === 'promo_offer' ? 'info' : 'warn') : '',
-    side.hasLiveBenchmark ? badge(`live ${fmt.money(side.liveReferencePrice)}`, side.liveDrift ? 'warn' : 'info') : ''
+    side.hasLiveBenchmark ? badge(`live ${fmt.money(side.liveReferencePrice)}`, side.liveDrift ? 'warn' : 'info') : '',
+    demand && demand.action !== 'keep'
+      ? badge(`умная цена: ${demandActionLabel} ${fmt.pct(numberOrZero(demand.step_pct))}`, 'warn')
+      : ''
   ].filter(Boolean).join('');
   const summaryBadges = [
     confidenceBadge,
@@ -3847,6 +3928,16 @@ function renderRepricerSide(title, side) {
         <span>${escapeHtml(side.decisionText || action.hint)}</span>
       </div>
       ${renderRepricerArrivalSignal(side)}
+      ${demand ? `
+        <div class="muted small" style="margin-top:8px">
+          <strong>Умный слой:</strong>
+          оборот ${demand.current_turnover_days == null ? '—' : `${fmt.num(demand.current_turnover_days, 1)} дн.`}
+          при цели ${demand.target_turnover_days == null ? '—' : `${fmt.num(demand.target_turnover_days, 1)} дн.`};
+          скорость ${demand.avg_daily_units == null ? '—' : `${fmt.num(demand.avg_daily_units, 2)} шт./день`};
+          решение — ${escapeHtml(demandActionLabel)}.
+          ${Array.isArray(demand.reasons) && demand.reasons.length ? ` ${escapeHtml(demand.reasons.map(repricerDemandReasonLabel).join(' · '))}` : ''}
+        </div>
+      ` : ''}
       <div class="badge-stack" style="margin-top:8px">
         ${businessBadges}
       </div>
@@ -4196,6 +4287,56 @@ async function requestRepricerSharpPriceApproval(next, side, deltaPct, options =
   return decision;
 }
 
+async function requestRepricerDemandPriceApproval(next, side, options = {}) {
+  if (typeof window.requestSkuDecisionApproval !== 'function') {
+    throw new Error('Модуль согласования РОПа не загружен; умная цена не применена.');
+  }
+  const requestedPrice = repricerRequestedExactPrice(next);
+  const currentPrice = numberOrZero(side?.currentPrice);
+  const deltaPct = currentPrice > 0 && requestedPrice > 0
+    ? (requestedPrice - currentPrice) / currentPrice
+    : null;
+  const reason = String(next.note || '').trim();
+  if (!reason) throw new Error('Для умной цены требуется объяснение расчёта.');
+  const decision = await window.requestSkuDecisionApproval({
+    type: 'DEMAND_PRICE_REVIEW',
+    articleKey: next.articleKey,
+    platform: next.platform,
+    currentValue: Math.round(currentPrice),
+    proposedValue: Math.round(requestedPrice),
+    reason,
+    payload: {
+      currentPrice,
+      requestedPrice,
+      deltaPct,
+      autoGenerated: Boolean(options.autoGenerated),
+      demandIntelligence: side?.demandIntelligence || null,
+      approvalTtlHours: numberOrZero(side?.demandIntelligence?.policy?.approval_ttl_hours) || 72,
+      override: next
+    },
+    metrics: {
+      currentMarginPct: side?.currentMarginPct ?? side?.marginPct ?? null,
+      proposedMarginPct: side?.marginPct ?? null,
+      requiredMarginPct: side?.requiredMarginPct ?? null,
+      maximumMarginPct: side?.maximumMarginPct ?? null,
+      marginFloor: side?.marginFloor ?? null,
+      minPrice: side?.effectiveFloor ?? side?.minPrice ?? null,
+      maxPrice: side?.finalGuardCap ?? side?.capPrice ?? null,
+      turnoverDays: side?.turnoverDays ?? null,
+      targetTurnoverDays: side?.targetTurnoverDays ?? null,
+      avgDailyUnits: side?.avgDailyUnits ?? null,
+      sales28Units: side?.sales28Units ?? null,
+      stock: side?.stock ?? null
+    }
+  });
+  if (!options.silent) {
+    window.alert(decision.duplicate
+      ? 'Такая умная цена уже ждёт решения РОПа. Рабочая цена не изменена.'
+      : 'Умная цена не применена. РОПу создана задача с расчётом оборачиваемости.');
+  }
+  return decision;
+}
+
 const REPRICER_AUTO_SHARP_APPROVAL_SYNC = {
   signature: '',
   running: false,
@@ -4214,10 +4355,38 @@ function repricerAutomaticSharpPriceCandidates(rows = []) {
     if (Math.abs(deltaPct) + 1e-9 < REPRICER_SHARP_PRICE_APPROVAL_PCT) return;
     const articleKey = String(side.articleKey || row?.articleKey || row?.article || '').trim();
     const platform = String(side.platform || '').trim().toLowerCase();
-    const key = `${articleKey}|${platform}|${requestedPrice}`;
+    const key = `SHARP_PRICE_CHANGE|${articleKey}|${platform}|${requestedPrice}`;
     if (!articleKey || !platform || seen.has(key)) return;
     seen.add(key);
-    candidates.push({ row, side, articleKey, platform, currentPrice, requestedPrice, deltaPct, key });
+    candidates.push({ type: 'SHARP_PRICE_CHANGE', row, side, articleKey, platform, currentPrice, requestedPrice, deltaPct, key });
+  });
+  return candidates.slice(0, 250);
+}
+
+function repricerAutomaticDemandPriceCandidates(rows = []) {
+  const candidates = [];
+  const seen = new Set();
+  repricerCollectSides(rows).forEach(({ row, side }) => {
+    if (!side?.demandPriceAutoTaskEligible || side.demandPriceApprovalPending) return;
+    const currentPrice = numberOrZero(side.currentPrice);
+    const requestedPrice = Math.round(numberOrZero(side.finalPrice ?? side.recommendedPrice));
+    if (currentPrice <= 0 || requestedPrice <= 0 || Math.abs(requestedPrice - currentPrice) < 1) return;
+    const articleKey = String(side.articleKey || row?.articleKey || row?.article || '').trim();
+    const platform = String(side.platform || '').trim().toLowerCase();
+    const key = `DEMAND_PRICE_REVIEW|${articleKey}|${platform}|${requestedPrice}`;
+    if (!articleKey || !platform || seen.has(key)) return;
+    seen.add(key);
+    candidates.push({
+      type: 'DEMAND_PRICE_REVIEW',
+      row,
+      side,
+      articleKey,
+      platform,
+      currentPrice,
+      requestedPrice,
+      deltaPct: (requestedPrice - currentPrice) / currentPrice,
+      key
+    });
   });
   return candidates.slice(0, 250);
 }
@@ -4225,7 +4394,10 @@ function repricerAutomaticSharpPriceCandidates(rows = []) {
 async function syncRepricerAutomaticSharpPriceApprovals(rows = buildRepricerRows()) {
   if (window.__REPRICER_TEST_DISABLE_AUTO_APPROVAL_SYNC__) return { created: 0, duplicates: 0, skipped: 0 };
   if (REPRICER_AUTO_SHARP_APPROVAL_SYNC.running) return { created: 0, duplicates: 0, skipped: 0, running: true };
-  const candidates = repricerAutomaticSharpPriceCandidates(rows);
+  const candidates = [
+    ...repricerAutomaticSharpPriceCandidates(rows),
+    ...repricerAutomaticDemandPriceCandidates(rows)
+  ];
   const signature = candidates.map((item) => item.key).sort().join('||');
   if (!signature || signature === REPRICER_AUTO_SHARP_APPROVAL_SYNC.signature) {
     return { created: 0, duplicates: 0, skipped: candidates.length };
@@ -4237,11 +4409,20 @@ async function syncRepricerAutomaticSharpPriceApprovals(rows = buildRepricerRows
   const summary = { created: 0, duplicates: 0, skipped: 0 };
   try {
     for (const candidate of candidates) {
-      const note = [
-        'Автопредложение репрайсера: изменение цены не менее 10%.',
-        `${fmt.money(candidate.currentPrice)} → ${fmt.money(candidate.requestedPrice)}.`,
-        candidate.side.reason || candidate.side.decisionText || ''
-      ].filter(Boolean).join(' ');
+      const note = candidate.type === 'DEMAND_PRICE_REVIEW'
+        ? [
+          'Умное предложение репрайсера по оборачиваемости.',
+          `${fmt.money(candidate.currentPrice)} → ${fmt.money(candidate.requestedPrice)}.`,
+          Number.isFinite(Number(candidate.side.turnoverDays))
+            ? `Оборачиваемость ${fmt.num(candidate.side.turnoverDays, 1)} дн. при цели ${fmt.num(candidate.side.targetTurnoverDays, 1)} дн.`
+            : '',
+          candidate.side.reason || candidate.side.decisionText || ''
+        ].filter(Boolean).join(' ')
+        : [
+          'Автопредложение репрайсера: изменение цены не менее 10%.',
+          `${fmt.money(candidate.currentPrice)} → ${fmt.money(candidate.requestedPrice)}.`,
+          candidate.side.reason || candidate.side.decisionText || ''
+        ].filter(Boolean).join(' ');
       const next = normalizeRepricerOverride({
         articleKey: candidate.articleKey,
         platform: candidate.platform,
@@ -4252,10 +4433,15 @@ async function syncRepricerAutomaticSharpPriceApprovals(rows = buildRepricerRows
         updatedBy: 'Репрайсер'
       });
       try {
-        const decision = await requestRepricerSharpPriceApproval(next, candidate.side, candidate.deltaPct, {
-          silent: true,
-          autoGenerated: true
-        });
+        const decision = candidate.type === 'DEMAND_PRICE_REVIEW'
+          ? await requestRepricerDemandPriceApproval(next, candidate.side, {
+            silent: true,
+            autoGenerated: true
+          })
+          : await requestRepricerSharpPriceApproval(next, candidate.side, candidate.deltaPct, {
+            silent: true,
+            autoGenerated: true
+          });
         if (decision?.duplicate) summary.duplicates += 1;
         else summary.created += 1;
       } catch (error) {
@@ -4282,6 +4468,7 @@ function scheduleRepricerAutomaticSharpPriceApprovals(rows = []) {
 }
 
 window.repricerAutomaticSharpPriceCandidates = repricerAutomaticSharpPriceCandidates;
+window.repricerAutomaticDemandPriceCandidates = repricerAutomaticDemandPriceCandidates;
 window.syncRepricerAutomaticSharpPriceApprovals = syncRepricerAutomaticSharpPriceApprovals;
 
 async function saveRepricerOverride(form) {
@@ -6839,6 +7026,18 @@ function repricerExportRows(platform = 'all', sourceRows = null) {
       target_days: repricerExportNumber(side.targetDays),
       turnover_days: repricerExportNumber(side.turnoverDays, 1),
       turnover_source: side.turnoverSource || '',
+      demand_action: side.demandIntelligence?.action || '',
+      demand_confidence: side.demandIntelligence?.confidence || '',
+      demand_target_turnover_days: repricerExportNumber(side.demandIntelligence?.target_turnover_days, 1),
+      demand_avg_daily_units: repricerExportNumber(side.demandIntelligence?.avg_daily_units, 2),
+      demand_sales_28d_units: repricerExportNumber(side.demandIntelligence?.sales_28d_units, 1),
+      demand_step_pct: side.demandIntelligence?.step_pct == null
+        ? ''
+        : repricerExportNumber(side.demandIntelligence.step_pct * 100, 1),
+      demand_review_required: side.demandIntelligence?.review_required ? 'yes' : 'no',
+      demand_reason_codes: Array.isArray(side.demandIntelligence?.reasons)
+        ? side.demandIntelligence.reasons.join(' · ')
+        : '',
       autoprice_allowed: side.autopriceAllowed ? 'yes' : 'no',
       launch_allowed: side.launchAllowed ? 'yes' : 'no',
       volume_push_allowed: side.volumePushAllowed ? 'yes' : 'no',
@@ -7002,6 +7201,14 @@ function downloadRepricerExcel(platform = 'all', sourceRows = null) {
     ['target_days', 'Цель, дн.'],
     ['turnover_days', 'Оборот, дн.'],
     ['turnover_source', 'Источник оборота'],
+    ['demand_action', 'Умный слой: действие'],
+    ['demand_confidence', 'Умный слой: надёжность'],
+    ['demand_target_turnover_days', 'Умный слой: цель оборота, дн.'],
+    ['demand_avg_daily_units', 'Умный слой: продажи, шт./день'],
+    ['demand_sales_28d_units', 'Умный слой: продажи 28д, шт.'],
+    ['demand_step_pct', 'Умный слой: шаг цены, %'],
+    ['demand_review_required', 'Умный слой: нужен РОП'],
+    ['demand_reason_codes', 'Умный слой: причины'],
     ['autoprice_allowed', 'Autoprice'],
     ['launch_allowed', 'Launch rule'],
     ['volume_push_allowed', 'Volume push'],

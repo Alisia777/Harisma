@@ -177,11 +177,23 @@ function buildProcurementMap(payload = {}) {
       inStock: 0,
       inTransit: 0,
       inRequest: 0,
+      avgDaily: 0,
+      sales7: 0,
+      sales14: 0,
+      sales28: 0,
+      sales30: 0,
+      demandRows: 0,
       date: asIsoDate(row?.asOfDate || row?.date || payload?.asOfDate || payload?.generatedAt || '')
     };
     current.inStock += firstNumber(row?.inStock, row?.stock, row?.stockUnits, 0) || 0;
     current.inTransit += firstNumber(row?.inTransit, row?.stockInTransit, 0) || 0;
     current.inRequest += firstNumber(row?.inRequest, row?.stockInSupplyRequest, 0) || 0;
+    current.avgDaily += firstNumber(row?.avgDaily, row?.averageDailySales, 0) || 0;
+    current.sales7 += firstNumber(row?.sales7, row?.sales_7d, 0) || 0;
+    current.sales14 += firstNumber(row?.sales14, row?.sales_14d, 0) || 0;
+    current.sales28 += firstNumber(row?.sales28, row?.sales_28d, 0) || 0;
+    current.sales30 += firstNumber(row?.sales30, row?.sales_30d, 0) || 0;
+    if (firstNumber(row?.avgDaily, row?.averageDailySales) !== null) current.demandRows += 1;
     map.set(key, current);
   });
   return {
@@ -527,6 +539,229 @@ function extremePriceChangePct(economicsPolicy = {}) {
     economicsPolicy?.extreme_price_change_pct
   );
   return configured !== null && configured >= 1 ? configured : 1;
+}
+
+function demandPricingPolicy(economicsPolicy = {}, platform = '', targetTurnoverDays = 30) {
+  const root = economicsPolicy?.demandPricing && typeof economicsPolicy.demandPricing === 'object'
+    ? economicsPolicy.demandPricing
+    : {};
+  const platformKey = String(platform || '').trim().toLowerCase();
+  const platformRule = root?.platforms?.[platformKey] && typeof root.platforms[platformKey] === 'object'
+    ? root.platforms[platformKey]
+    : {};
+  const configuredTarget = firstConfiguredNumber(
+    platformRule.targetTurnoverDays,
+    root.targetTurnoverDays,
+    targetTurnoverDays
+  );
+  const tierValues = Array.isArray(platformRule.overstockRatios)
+    ? platformRule.overstockRatios
+    : (Array.isArray(root.overstockRatios) ? root.overstockRatios : [1.5, 2, 3]);
+  const overstockRatios = tierValues
+    .map((value) => Number(value))
+    .filter((value) => Number.isFinite(value) && value > 1)
+    .sort((left, right) => left - right);
+  const normalizedRatios = overstockRatios.length >= 3
+    ? overstockRatios.slice(0, 3)
+    : [1.5, 2, 3];
+  const configuredDecreaseSteps = Array.isArray(platformRule.decreaseStepsPct)
+    ? platformRule.decreaseStepsPct
+    : (Array.isArray(root.decreaseStepsPct) ? root.decreaseStepsPct : []);
+  const fallbackDecreaseSteps = platformKey === 'ozon' ? [0.05, 0.05, 0.05] : [0.01, 0.02, 0.03];
+  const decreaseStepsPct = normalizedRatios.map((_, index) => {
+    const configured = firstConfiguredPct(configuredDecreaseSteps[index]);
+    return configured !== null && configured > 0 && configured <= 0.10
+      ? configured
+      : fallbackDecreaseSteps[index];
+  });
+  const configuredIncrease = firstConfiguredPct(
+    platformRule.increaseStepPct,
+    root.increaseStepPct
+  );
+  return {
+    enabled: root.enabled === true,
+    reviewRequired: root.reviewRequired !== false,
+    autoApply: root.autoApply === true,
+    approvalTtlHours: Math.max(
+      1,
+      firstConfiguredNumber(platformRule.approvalTtlHours, root.approvalTtlHours) ?? 72
+    ),
+    maxAgeDays: Math.max(0, firstConfiguredNumber(platformRule.maxAgeDays, root.maxAgeDays) ?? 2),
+    minAvgDailyUnits: Math.max(0, firstConfiguredNumber(platformRule.minAvgDailyUnits, root.minAvgDailyUnits) ?? 0.1),
+    minSales28Units: Math.max(0, firstConfiguredNumber(platformRule.minSales28Units, root.minSales28Units) ?? 3),
+    targetTurnoverDays: configuredTarget !== null && configuredTarget > 0 ? configuredTarget : 30,
+    lowStockRatio: Math.max(0.05, Math.min(1, firstConfiguredNumber(
+      platformRule.lowStockRatio,
+      root.lowStockRatio
+    ) ?? 0.6)),
+    overstockRatios: normalizedRatios,
+    increaseStepPct: configuredIncrease !== null && configuredIncrease > 0 && configuredIncrease <= 0.10
+      ? configuredIncrease
+      : (platformKey === 'ozon' ? 0.05 : 0.02),
+    decreaseStepsPct
+  };
+}
+
+function demandTier(ratio, thresholds = []) {
+  if (!Number.isFinite(ratio) || thresholds.length < 3) return -1;
+  if (ratio >= thresholds[2]) return 2;
+  if (ratio >= thresholds[1]) return 1;
+  if (ratio >= thresholds[0]) return 0;
+  return -1;
+}
+
+function buildDemandIntelligence({
+  economicsPolicy = {},
+  platform = '',
+  procurement = null,
+  stock = null,
+  inbound = null,
+  selectedStock = null,
+  selectedStockDirect = false,
+  currentPrice = null,
+  currentPriceStale = false,
+  lifecycleKey = '',
+  policy = {},
+  snapshotAsOf = '',
+  approval = null
+} = {}) {
+  const config = demandPricingPolicy(economicsPolicy, platform, policy.target_turnover_days);
+  const reasons = [];
+  const demandAsOf = asIsoDate(procurement?.date || '');
+  const demandAgeDays = dateAgeDays(demandAsOf, snapshotAsOf);
+  const avgDaily = firstNumber(procurement?.avgDaily);
+  const sales7 = firstNumber(procurement?.sales7);
+  const sales14 = firstNumber(procurement?.sales14);
+  const sales28 = firstNumber(procurement?.sales28);
+  const sales30 = firstNumber(procurement?.sales30);
+  const availableStock = firstNumber(stock);
+  const inboundUnits = firstNumber(inbound, 0) || 0;
+  const coverageUnits = availableStock === null ? null : Math.max(0, availableStock + inboundUnits);
+  const turnoverDays = coverageUnits !== null && avgDaily !== null && avgDaily > 0
+    ? Number((coverageUnits / avgDaily).toFixed(2))
+    : null;
+  const turnoverRatio = turnoverDays !== null && config.targetTurnoverDays > 0
+    ? Number((turnoverDays / config.targetTurnoverDays).toFixed(4))
+    : null;
+  const oosRiskStatus = String(selectedStock?.oosRiskStatus || '').trim().toLowerCase();
+  const oosDecreaseGuard = Boolean(
+    selectedStock?.partialOos
+    || ['risk', 'watch'].includes(oosRiskStatus)
+  );
+
+  if (!config.enabled) reasons.push('demand_pricing_disabled');
+  if (!['active', 'new', 'relaunch'].includes(String(lifecycleKey || '').trim().toLowerCase())) {
+    reasons.push('demand_lifecycle_not_eligible');
+  }
+  if (approval) reasons.push('approved_override_priority');
+  if (currentPrice === null || currentPrice <= 0) reasons.push('demand_current_price_missing');
+  if (currentPriceStale) reasons.push('demand_current_price_stale');
+  if (!selectedStockDirect) reasons.push('demand_direct_stock_required');
+  if (!procurement?.present) reasons.push('demand_sales_velocity_missing');
+  if (!demandAsOf) reasons.push('demand_snapshot_date_missing');
+  if (demandAgeDays !== null && demandAgeDays > config.maxAgeDays) reasons.push('demand_snapshot_stale');
+  if (avgDaily === null || avgDaily < config.minAvgDailyUnits) reasons.push('demand_velocity_too_low');
+  if (sales28 === null || sales28 < config.minSales28Units) reasons.push('demand_sales_history_insufficient');
+  if (coverageUnits === null) reasons.push('demand_stock_missing');
+  if (coverageUnits !== null && coverageUnits <= 0) reasons.push('demand_oos');
+  if (policy.floor === null) reasons.push('demand_floor_missing');
+  if (
+    currentPrice !== null
+    && (
+      (policy.floor !== null && currentPrice + 1e-9 < policy.floor)
+      || (policy.cap !== null && currentPrice > policy.cap + 1e-9)
+    )
+  ) {
+    reasons.push('safety_corridor_correction_has_priority');
+  }
+
+  const eligible = reasons.length === 0;
+  let action = 'keep';
+  let stepPct = 0;
+  let requestedPrice = currentPrice;
+  if (eligible && turnoverRatio !== null && turnoverRatio <= config.lowStockRatio) {
+    action = 'increase';
+    stepPct = config.increaseStepPct;
+    requestedPrice = Math.ceil(currentPrice * (1 + stepPct));
+    reasons.push('demand_low_stock_price_increase');
+  } else if (eligible && turnoverRatio !== null) {
+    const tier = demandTier(turnoverRatio, config.overstockRatios);
+    if (tier >= 0 && oosDecreaseGuard) {
+      reasons.push('demand_decrease_blocked_by_oos_risk');
+    } else if (tier >= 0) {
+      action = 'decrease';
+      stepPct = config.decreaseStepsPct[tier];
+      requestedPrice = Math.floor(currentPrice * (1 - stepPct));
+      reasons.push('demand_overstock_price_decrease');
+    } else {
+      reasons.push('demand_turnover_in_target_band');
+    }
+  }
+
+  let guardedPrice = requestedPrice;
+  const guards = [];
+  if (eligible && action !== 'keep') {
+    if (policy.floor !== null && guardedPrice < policy.floor) {
+      guardedPrice = Math.ceil(policy.floor);
+      guards.push(policy.margin_floor !== null && policy.margin_floor >= (policy.min_max_floor || 0)
+        ? 'margin_floor'
+        : 'min_floor');
+    }
+    if (policy.cap !== null && guardedPrice > policy.cap) {
+      guardedPrice = Math.floor(policy.cap);
+      guards.push(policy.cap_lowered_by_max_margin ? 'max_margin_cap' : 'max_cap');
+    }
+    if (Math.abs(guardedPrice - currentPrice) < 1) {
+      action = 'keep';
+      stepPct = 0;
+      guardedPrice = currentPrice;
+      reasons.push('demand_move_absorbed_by_safety_corridor');
+    }
+  }
+
+  const sufficientHistory = sales28 !== null && sales28 >= Math.max(config.minSales28Units, 28);
+  return {
+    enabled: config.enabled,
+    eligible,
+    status: !config.enabled
+      ? 'disabled'
+      : (!eligible ? 'insufficient_or_guarded' : (action === 'keep' ? 'keep' : 'review_required')),
+    action,
+    confidence: eligible ? (sufficientHistory ? 'high' : 'medium') : 'insufficient',
+    review_required: Boolean(eligible && action !== 'keep' && config.reviewRequired),
+    auto_apply: Boolean(eligible && action !== 'keep' && config.autoApply && !config.reviewRequired),
+    current_turnover_days: turnoverDays,
+    target_turnover_days: config.targetTurnoverDays,
+    turnover_ratio: turnoverRatio,
+    available_stock: availableStock,
+    inbound_units: inboundUnits,
+    coverage_units: coverageUnits,
+    avg_daily_units: avgDaily,
+    sales_7d_units: sales7,
+    sales_14d_units: sales14,
+    sales_28d_units: sales28,
+    sales_30d_units: sales30,
+    demand_as_of: demandAsOf,
+    demand_age_days: demandAgeDays,
+    step_pct: stepPct,
+    current_price: currentPrice,
+    requested_price: action === 'keep' ? currentPrice : requestedPrice,
+    guarded_price: action === 'keep' ? currentPrice : guardedPrice,
+    guards,
+    oos_decrease_guard: oosDecreaseGuard,
+    reasons: [...new Set(reasons)],
+    source: 'order_procurement_sales_velocity+repricer_live_signals_stock',
+    policy: {
+      max_age_days: config.maxAgeDays,
+      approval_ttl_hours: config.approvalTtlHours,
+      min_avg_daily_units: config.minAvgDailyUnits,
+      min_sales_28d_units: config.minSales28Units,
+      low_stock_ratio: config.lowStockRatio,
+      overstock_ratios: config.overstockRatios,
+      increase_step_pct: config.increaseStepPct,
+      decrease_steps_pct: config.decreaseStepsPct
+    }
+  };
 }
 
 function minimumResidualContributionPct(economicsPolicy = {}) {
@@ -924,12 +1159,17 @@ function marginAtPrice(price, economics = {}) {
   return Number((net / value).toFixed(6));
 }
 
-function chooseProposedPrice(currentPrice, policy = {}, approval = null) {
+function chooseProposedPrice(currentPrice, policy = {}, approval = null, demandIntelligence = null) {
   const approvedPrice = firstPositive(approval?.price, approval?.forcePrice, approval?.approvedPrice);
-  if (approvedPrice === null && currentPrice === null) return { price: null, source: '' };
+  const demandPrice = approvedPrice === null
+    && demandIntelligence?.eligible
+    && ['increase', 'decrease'].includes(demandIntelligence?.action)
+    ? firstPositive(demandIntelligence.requested_price)
+    : null;
+  if (approvedPrice === null && demandPrice === null && currentPrice === null) return { price: null, source: '' };
   const floor = firstPositive(policy.floor);
   const cap = firstPositive(policy.cap);
-  const startingPrice = approvedPrice ?? currentPrice;
+  const startingPrice = approvedPrice ?? demandPrice ?? currentPrice;
   let price = startingPrice;
   let guard = '';
   if (floor !== null && price < floor) {
@@ -947,7 +1187,9 @@ function chooseProposedPrice(currentPrice, policy = {}, approval = null) {
     : (guard === 'max_cap' || guard === 'max_margin_cap' ? Math.floor(price) : Math.round(price));
   return {
     price: roundedPrice,
-    source: approvedPrice !== null ? 'approved_override_guarded' : 'canonical_keep_inside_corridor',
+    source: approvedPrice !== null
+      ? 'approved_override_guarded'
+      : (demandPrice !== null ? 'demand_turnover_guarded' : 'canonical_keep_inside_corridor'),
     guard,
     requested_price: startingPrice
   };
@@ -1054,6 +1296,9 @@ function buildCanonicalSide({
   const stockTrusted = Boolean(stockSnapshotAvailable && selectedStock);
   const stock = stockTrusted ? firstNumber(selectedStock.inStock, 0) : null;
   const inbound = stockTrusted ? (firstNumber(selectedStock.inTransit, 0) || 0) + (firstNumber(selectedStock.inRequest, 0) || 0) : null;
+  const selectedStockSourceMode = String(selectedStock?.sourceMode || '').trim().toLowerCase();
+  const selectedStockDirect = selectedStockSourceMode === 'wb_stock_api'
+    || selectedStockSourceMode.startsWith('ozon_stock_api_');
   const economics = resolveEconomics(sourceRow, supportRow, costRecord, economicsPolicy, platform, livePlatformSignal);
   const skuPlatformStatus = skuRow?.platformMatrix?.[platform]?.status
     || skuRow?.[platform]?.status
@@ -1117,9 +1362,6 @@ function buildCanonicalSide({
   const liveSignalsRequired = requiredLivePlatforms.includes(platform);
   const advertisingSignalStatus = String(livePlatformSignal?.advertising?.status || '').trim().toLowerCase();
   const advertisingSignalTrusted = advertisingSignalStatus === 'trusted';
-  const selectedStockSourceMode = String(selectedStock?.sourceMode || '').trim().toLowerCase();
-  const selectedStockDirect = selectedStockSourceMode === 'wb_stock_api'
-    || selectedStockSourceMode.startsWith('ozon_stock_api_');
   if (liveSignalsRequired && !livePlatformSignal?.advertising) reasonCodes.push('advertising_snapshot_missing');
   else if (liveSignalsRequired && !advertisingSignalTrusted) reasonCodes.push('advertising_snapshot_stale');
   if (liveSignalsRequired && !liveSignalBucket?.snapshotAvailable) reasonCodes.push('live_stock_snapshot_missing');
@@ -1149,11 +1391,37 @@ function buildCanonicalSide({
     && !reasonCodes.includes('advertising_snapshot_stale')
     && !reasonCodes.includes('live_stock_snapshot_missing')
     && !reasonCodes.includes('direct_stock_required');
-  const proposed = canRecommend ? chooseProposedPrice(price, policy, approval) : { price: null, source: '' };
+  const demandIntelligence = buildDemandIntelligence({
+    economicsPolicy,
+    platform,
+    procurement,
+    stock,
+    inbound,
+    selectedStock,
+    selectedStockDirect,
+    currentPrice: price,
+    currentPriceStale,
+    lifecycleKey,
+    policy,
+    snapshotAsOf,
+    approval
+  });
+  const proposed = canRecommend
+    ? chooseProposedPrice(price, policy, approval, demandIntelligence)
+    : { price: null, source: '' };
   if (proposed.guard === 'margin_floor') reasonCodes.push('margin_floor_applied');
   if (proposed.guard === 'min_floor') reasonCodes.push('min_floor_applied');
   if (proposed.guard === 'max_cap') reasonCodes.push('max_cap_applied');
   if (proposed.guard === 'max_margin_cap') reasonCodes.push('max_margin_cap_applied');
+  const demandPriceSuggested = proposed.source === 'demand_turnover_guarded'
+    && proposed.price !== null
+    && price !== null
+    && Math.abs(proposed.price - price) >= 1;
+  if (demandPriceSuggested) {
+    demandIntelligence.reasons
+      .filter((reason) => reason.startsWith('demand_'))
+      .forEach((reason) => reasonCodes.push(reason));
+  }
   const oosRiskStatus = String(selectedStock?.oosRiskStatus || '').trim().toLowerCase();
   const oosDemandGuardActive = policy.margin_guard_required
     && (Boolean(selectedStock?.partialOos) || ['risk', 'watch'].includes(oosRiskStatus));
@@ -1184,8 +1452,14 @@ function buildCanonicalSide({
     && Math.abs(changePct) + 1e-9 >= sharpThresholdPct
     && !extremePricePolicyReviewRequired
     && !approval;
+  const demandPriceReviewRequired = demandPriceSuggested
+    && demandIntelligence.review_required
+    && !extremePricePolicyReviewRequired
+    && !sharpPriceApprovalRequired
+    && !approval;
   if (extremePricePolicyReviewRequired) reasonCodes.push('extreme_price_requires_margin_policy_review');
   if (sharpPriceApprovalRequired) reasonCodes.push('sharp_price_requires_rop');
+  if (demandPriceReviewRequired) reasonCodes.push('demand_price_requires_rop');
   const marginSafe = !policy.margin_guard_required
     || (
       policy.target_margin_pct !== null
@@ -1216,6 +1490,7 @@ function buildCanonicalSide({
     && !oosRiskPriceDecreaseBlocked
     && !extremePricePolicyReviewRequired
     && !sharpPriceApprovalRequired
+    && !demandPriceReviewRequired
       ? 'trusted'
       : 'blocked';
   const indicator = evaluateIndicator({
@@ -1271,7 +1546,7 @@ function buildCanonicalSide({
       partial_oos: Boolean(selectedStock?.partialOos),
       oos_risk_status: String(selectedStock?.oosRiskStatus || ''),
       oos_risk_rule: String(selectedStock?.oosRiskRule || ''),
-      stock_turnover_days: firstNumber(selectedStock?.turnoverDays),
+      stock_turnover_days: demandIntelligence.current_turnover_days,
       oos_task_id: String(selectedStock?.oosTaskId || ''),
       as_of: current.asOf,
       price_age_days: priceAgeDays,
@@ -1298,6 +1573,12 @@ function buildCanonicalSide({
           file: preferLiveStock ? 'repricer_live_signals.json' : `order_procurement_${platform}.json`,
           as_of: selectedStock?.date || (preferLiveStock ? liveSignalBucket?.asOfDate : procurementBucket?.asOfDate) || '',
           source_mode: selectedStock?.sourceMode || ''
+        },
+        demand: {
+          source_id: 'order_procurement_sales_velocity',
+          file: `order_procurement_${platform}.json`,
+          as_of: demandIntelligence.demand_as_of,
+          stock_join: preferLiveStock ? 'repricer_live_signals.json' : `order_procurement_${platform}.json`
         },
         internal_advertising: {
           source_id: economics.sources?.internal_advertising || '',
@@ -1331,10 +1612,13 @@ function buildCanonicalSide({
         ? 'blocked'
         : sharpPriceApprovalRequired
         ? 'waiting_rop'
+        : demandPriceReviewRequired
+        ? 'waiting_rop'
         : (proposed.price !== null && dataStatus === 'trusted' ? 'ready' : 'blocked'),
       reason_codes: [...new Set(reasonCodes)],
       source: proposed.source
     },
+    demand_intelligence: demandIntelligence,
     approval: approval ? {
       id: approval.id || approval.override_id || '',
       author: approval.author || approval.createdBy || approval.created_by || '',
@@ -1347,15 +1631,23 @@ function buildCanonicalSide({
       supersedes_id: approval.supersedes_id || approval.supersedesId || null
     } : null,
     approval_gate: {
-      required: sharpPriceApprovalRequired || extremePricePolicyReviewRequired,
+      required: sharpPriceApprovalRequired || extremePricePolicyReviewRequired || demandPriceReviewRequired,
       type: extremePricePolicyReviewRequired
         ? 'MARGIN_POLICY_REVIEW'
-        : (sharpPriceApprovalRequired ? 'SHARP_PRICE_CHANGE' : ''),
+        : (
+          sharpPriceApprovalRequired
+            ? 'SHARP_PRICE_CHANGE'
+            : (demandPriceReviewRequired ? 'DEMAND_PRICE_REVIEW' : '')
+        ),
       threshold_pct: sharpThresholdPct,
       extreme_threshold_pct: extremeThresholdPct,
       status: extremePricePolicyReviewRequired
         ? 'blocked_policy_review'
-        : (sharpPriceApprovalRequired ? 'waiting_rop' : (approval ? 'approved' : 'not_required'))
+        : (
+          sharpPriceApprovalRequired || demandPriceReviewRequired
+            ? 'waiting_rop'
+            : (approval ? 'approved' : 'not_required')
+        )
     },
     data_status: dataStatus,
     indicator,
@@ -1374,6 +1666,8 @@ function buildCanonicalSide({
       requested_price_before_guards: proposed.requested_price ?? price,
       calculated_price_before_policy_review: extremePricePolicyReviewRequired ? proposed.price : null,
       margin_guard_has_priority: policy.margin_guard_required,
+      demand_price_review_required: demandPriceReviewRequired,
+      demand_auto_apply_allowed: demandIntelligence.auto_apply,
       ozon_export_current_price_used: false,
       local_storage_override_used: false,
       target_turnover_source: 'portal_indicator_policy.turnover_default.target_days'
@@ -1662,5 +1956,8 @@ module.exports = {
   targetMarginFloor,
   targetMarginCap,
   featureReadiness,
-  buildSharedProductCostMap
+  buildSharedProductCostMap,
+  buildDemandIntelligence,
+  demandPricingPolicy,
+  chooseProposedPrice
 };

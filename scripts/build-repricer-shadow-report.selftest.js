@@ -27,7 +27,30 @@ function run() {
     },
     rows: [
       canonicalRow('sku-1', 'wb', 100),
-      canonicalRow('sku-2', 'ozon', 200)
+      canonicalRow('sku-2', 'ozon', 200),
+      {
+        article_key: 'sku-demand',
+        platform: 'wb',
+        facts: { seller_price: 100 },
+        policy: { floor: 80, cap: 140 },
+        demand_intelligence: {
+          action: 'decrease',
+          current_turnover_days: 120,
+          target_turnover_days: 30,
+          step_pct: 0.03,
+          confidence: 'high'
+        },
+        recommendation: {
+          status: 'waiting_rop',
+          price: 97,
+          margin_pct: 0.3,
+          reason_codes: ['demand_overstock_price_decrease', 'demand_price_requires_rop']
+        },
+        approval_gate: {
+          type: 'DEMAND_PRICE_REVIEW',
+          required: true
+        }
+      }
     ]
   };
   const legacy = {
@@ -55,6 +78,9 @@ function run() {
   assert.strictEqual(allowed.summary.matching_price_rows, 1);
   assert.strictEqual(allowed.summary.price_mismatch_rows, 1);
   assert.strictEqual(allowed.summary.price_agreement, 0.5);
+  assert.strictEqual(allowed.summary.demand_price_review_rows, 1);
+  assert.strictEqual(allowed.summary.demand_price_decrease_rows, 1);
+  assert.strictEqual(allowed.demand_price_reviews[0].proposedPrice, 97);
 
   const openGaps = compareRepricerSnapshots({
     canonical,

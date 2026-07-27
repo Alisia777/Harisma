@@ -1053,12 +1053,16 @@
             const isDemandPrice = item.type === 'DEMAND_PRICE_REVIEW';
             const isPrice = item.type === 'SHARP_PRICE_CHANGE' || isDemandPrice;
             const deltaPct = Number(item.payload?.deltaPct);
+            const demand = isDemandPrice ? item.payload?.demandIntelligence : null;
+            const demandMeta = demand
+              ? ` · ${String(demand.demand_trend || 'trend —')} · Q${Number.isFinite(Number(demand.data_quality_score)) ? Math.round(Number(demand.data_quality_score)) : '—'}`
+              : '';
             return `
               <button type="button" class="sl-v1-decision-card ${escapeValue(statusMeta.tone)}" ${item.taskId ? `data-open-task="${escapeValue(item.taskId)}"` : ''}>
                 <span>${escapeValue(isPrice ? `${isDemandPrice ? 'Умная цена' : 'Резкая цена'} · ${String(item.platform || 'all').toUpperCase()}` : 'Статус товара')}</span>
                 <strong>${escapeValue(item.articleKey)}</strong>
                 <b>${escapeValue(String(item.currentValue || '—'))} → ${escapeValue(String(item.proposedValue || '—'))}${isPrice && Number.isFinite(deltaPct) ? ` · ${escapeValue(`${deltaPct > 0 ? '+' : ''}${Math.round(deltaPct * 1000) / 10}%`)}` : ''}</b>
-                <small>${escapeValue(statusMeta.label)} · ${escapeValue(item.reason || 'без основания')}</small>
+                <small>${escapeValue(statusMeta.label)}${escapeValue(demandMeta)} · ${escapeValue(item.reason || 'без основания')}</small>
               </button>
             `;
           }).join('') || '<div class="sl-v1-empty">Нет решений, ожидающих РОПа.</div>'}

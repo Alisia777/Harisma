@@ -451,6 +451,7 @@ const PORTAL_SNAPSHOT_PATH_MAP = {
   'data/warehouse_stock_overlay.json': 'warehouse_stock_overlay',
   'data/repricer_live_signals.json': 'repricer_live_signals',
   'data/repricer_live_prices.json': 'repricer_live_prices',
+  'data/repricer_price_observation_history.json': 'repricer_price_observation_history',
   'data/canonical_repricer.json': 'canonical_repricer',
   'data/portal_repricing_reconciliation.json': 'portal_repricing_reconciliation',
   'data/repricer_team_policy_proposals.json': 'repricer_team_policy_proposals',

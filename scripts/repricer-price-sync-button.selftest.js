@@ -75,6 +75,18 @@ async function run() {
     'the same price-refresh job must rebuild the immutable upload plan'
   );
   assert(
+    workflow.includes('--snapshot repricer_price_observation_history,repricer_live_prices'),
+    'price refresh must hydrate the previous observation history before collecting the next price'
+  );
+  assert(
+    workflow.includes('node scripts/build-repricer-price-observation-history.js'),
+    'price refresh must persist compact price-change observations for cooldown and audit'
+  );
+  assert(
+    workflow.includes('repricer_live_signals,repricer_price_observation_history,canonical_repricer'),
+    'the atomic price bundle must publish price history together with canonical recommendations'
+  );
+  assert(
     workflow.includes('--commit-manifest repricer_price_sync_manifest'),
     'price refresh must publish a commit manifest after the complete bundle'
   );
@@ -125,6 +137,24 @@ async function run() {
     repricer_live_signals: {
       ...readBundleFixture('repricer_live_signals.json'),
       generatedAt,
+      atomicSyncMarker: bundleId
+    },
+    repricer_price_observation_history: {
+      schema: 'repricer-price-observation-history-v1',
+      generatedAt,
+      summary: { rows: 1, observations: 1, price_changed_rows: 0 },
+      rows: [{
+        platform: 'wb',
+        article_key: 'wb-test',
+        normalized_article_key: 'wb-test',
+        observations: [{
+          seller_price: 900,
+          client_price: 855,
+          first_seen_at: generatedAt,
+          last_seen_at: generatedAt,
+          source: 'current_live_prices'
+        }]
+      }],
       atomicSyncMarker: bundleId
     },
     canonical_repricer: {

@@ -50,10 +50,10 @@
       'portal-premium-polish-hotfix.js?v=20260521prod1'
     ],
     skuLaunchV1: [
-      'portal-sku-launch-v1.js?v=20260727demandprice1'
+      'portal-sku-launch-v1.js?v=20260727demandforecast2'
     ],
     launchV1: [
-      'portal-sku-launch-v1.js?v=20260727demandprice1',
+      'portal-sku-launch-v1.js?v=20260727demandforecast2',
       'portal-launch-autotasks-v1.js?v=20260709launchperf3'
     ],
     iuDrrV3: [

@@ -1,6 +1,6 @@
 {
   "schema": "repricer-economics-policy-v1",
-  "version": "2026-07-27.5-demand-intelligence-shadow",
+  "version": "2026-07-27.6-demand-forecast-v2-shadow",
   "liveSignals": {
     "requiredPlatforms": [
       "wb",
@@ -49,6 +49,21 @@
       2,
       3
     ],
+    "forecastWeights": {
+      "recent7": 0.55,
+      "prior7": 0.3,
+      "prior14": 0.15
+    },
+    "minForecastMultiplier": 0.5,
+    "maxForecastMultiplier": 1.75,
+    "accelerationThreshold": 1.25,
+    "decelerationThreshold": 0.75,
+    "minDataQualityScore": 65,
+    "decreaseMinDataQualityScore": 85,
+    "highConfidenceMinSales28Units": 28,
+    "cooldownDays": 3,
+    "dailyHistoryMaxAgeDays": 7,
+    "minObservedDailyHistoryDays": 14,
     "platforms": {
       "wb": {
         "increaseStepPct": 2,
@@ -67,7 +82,7 @@
         ]
       }
     },
-    "guardRule": "Demand may suggest a small price move only inside the margin-first MIN/MAX corridor, on fresh direct stock and fresh sales velocity. Every demand move stays shadow-only until ROP approval; OOS risk can never lower price."
+    "guardRule": "Demand v2 uses a weighted 7/14/28-day forecast, current stock plus inbound, trend and persistent price observations. It may suggest a small move only inside the margin-first MIN/MAX corridor. Decreases require high-confidence data, accelerating demand blocks a decrease, every move stays shadow-only until ROP approval, OOS risk can never lower price, and a changed price receives a three-day cooldown."
   },
   "safety": {
     "minimumResidualContributionPct": 5,

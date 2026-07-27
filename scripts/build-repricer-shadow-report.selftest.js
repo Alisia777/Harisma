@@ -38,7 +38,15 @@ function run() {
           current_turnover_days: 120,
           target_turnover_days: 30,
           step_pct: 0.03,
-          confidence: 'high'
+          confidence: 'high',
+          forecast_model: 'weighted_7_14_28_v2',
+          demand_history_source: 'daily_orders_history',
+          forecast_daily_units: 1.2,
+          demand_trend: 'decelerating',
+          demand_momentum_ratio: 0.7,
+          data_quality_score: 90,
+          decision_score: 94,
+          price_cooldown_active: false
         },
         recommendation: {
           status: 'waiting_rop',
@@ -80,7 +88,11 @@ function run() {
   assert.strictEqual(allowed.summary.price_agreement, 0.5);
   assert.strictEqual(allowed.summary.demand_price_review_rows, 1);
   assert.strictEqual(allowed.summary.demand_price_decrease_rows, 1);
+  assert.strictEqual(allowed.summary.demand_forecast_v2_rows, 1);
+  assert.strictEqual(allowed.summary.demand_daily_history_rows, 1);
+  assert.strictEqual(allowed.summary.demand_decelerating_rows, 1);
   assert.strictEqual(allowed.demand_price_reviews[0].proposedPrice, 97);
+  assert.strictEqual(allowed.demand_price_reviews[0].dataQualityScore, 90);
 
   const openGaps = compareRepricerSnapshots({
     canonical,

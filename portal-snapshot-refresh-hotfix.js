@@ -497,6 +497,20 @@
   }
 
   async function requestSnapshotRows(url, cfg) {
+    var transport = window.__ALTEA_PORTAL_SNAPSHOT_TRANSPORT_V1__;
+    if (transport && typeof transport.requestJson === "function") {
+      return transport.requestJson(url.toString(), {
+        label: "Supabase snapshots",
+        fetchOptions: {
+          cache: "no-store",
+          headers: {
+            apikey: cfg.supabase.anonKey,
+            Authorization: "Bearer " + cfg.supabase.anonKey,
+            Accept: "application/json"
+          }
+        }
+      });
+    }
     var controller = typeof AbortController === "function" ? new AbortController() : null;
     var timer = window.setTimeout(function () {
       if (controller) controller.abort();

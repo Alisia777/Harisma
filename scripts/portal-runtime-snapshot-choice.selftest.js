@@ -115,6 +115,7 @@ async function verifySnapshotTransport() {
   vm.runInContext([
     extractFunction('getPortalSnapshotRequestConfig'),
     extractFunction('portalSnapshotRequestBaseUrl'),
+    extractFunction('requestPortalSnapshotJson'),
     extractFunction('fetchPortalSnapshotRowsByKeys'),
     'result = {',
     '  fullConfig: getPortalSnapshotRequestConfig(),',

@@ -1390,6 +1390,7 @@ function resetPortalSnapshotState() {
   portalSnapshotState.promises = {};
   portalSnapshotState.rows = {};
   portalSnapshotState.brand = '';
+  window.__ALTEA_PORTAL_SNAPSHOT_TRANSPORT_V1__?.invalidate?.();
 }
 
 function getPortalSnapshotRequestConfig() {
@@ -1524,15 +1525,7 @@ async function loadPortalSnapshotRows() {
   const requestConfig = getPortalSnapshotRequestConfig();
   if (!requestConfig) return {};
 
-  portalSnapshotState.promise = withTimeout(
-    fetch(requestConfig.url, { headers: requestConfig.headers }),
-    PORTAL_SNAPSHOT_REQUEST_TIMEOUT_MS,
-    'Загрузка витрины из Supabase'
-  )
-    .then((response) => {
-      if (!response?.ok) throw new Error(`Supabase snapshots ${response?.status || 'request failed'}`);
-      return withTimeout(response.json(), PORTAL_SNAPSHOT_REQUEST_TIMEOUT_MS, 'Чтение витрины из Supabase');
-    })
+  portalSnapshotState.promise = requestPortalSnapshotJson(requestConfig.url, requestConfig.headers)
     .then((data) => {
       const rows = decodeChunkedPortalSnapshots(data);
       portalSnapshotState.rows = rows;
@@ -1565,6 +1558,27 @@ function portalSnapshotRequestBaseUrl() {
 
 const PORTAL_SNAPSHOT_KEY_BATCH_SIZE = 8;
 
+async function requestPortalSnapshotJson(url, headers) {
+  const transport = window.__ALTEA_PORTAL_SNAPSHOT_TRANSPORT_V1__;
+  if (transport?.requestJson) {
+    return transport.requestJson(url, {
+      label: 'Supabase snapshots',
+      priority: 'high',
+      fetchOptions: {
+        cache: 'no-store',
+        headers
+      }
+    });
+  }
+  const response = await withTimeout(
+    fetch(url, { cache: 'no-store', headers }),
+    PORTAL_SNAPSHOT_REQUEST_TIMEOUT_MS,
+    'Загрузка витрины из Supabase'
+  );
+  if (!response?.ok) throw new Error(`Supabase snapshots ${response?.status || 'request failed'}`);
+  return withTimeout(response.json(), PORTAL_SNAPSHOT_REQUEST_TIMEOUT_MS, 'Чтение витрины из Supabase');
+}
+
 async function fetchPortalSnapshotRowsByKeys(snapshotKeys) {
   const requestConfig = portalSnapshotRequestBaseUrl();
   if (!requestConfig || !Array.isArray(snapshotKeys) || !snapshotKeys.length) return [];
@@ -1579,13 +1593,7 @@ async function fetchPortalSnapshotRowsByKeys(snapshotKeys) {
     url.searchParams.set('brand', `eq.${requestConfig.brand}`);
     url.searchParams.set('snapshot_key', batch.length === 1 ? `eq.${batch[0]}` : `in.(${batch.join(',')})`);
     url.searchParams.set('order', 'generated_at.desc');
-    const response = await withTimeout(
-      fetch(url.toString(), { headers: requestConfig.headers }),
-      PORTAL_SNAPSHOT_REQUEST_TIMEOUT_MS,
-      'Загрузка витрины из Supabase'
-    );
-    if (!response?.ok) throw new Error(`Supabase snapshots ${response?.status || 'request failed'}`);
-    rows.push(...await withTimeout(response.json(), PORTAL_SNAPSHOT_REQUEST_TIMEOUT_MS, 'Чтение витрины из Supabase'));
+    rows.push(...await requestPortalSnapshotJson(url.toString(), requestConfig.headers));
   }
   return rows;
 }

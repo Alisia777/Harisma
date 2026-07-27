@@ -264,6 +264,14 @@ async function initTeamStore() {
 
     if ((cfg.supabase.auth || 'anonymous') !== 'anonymous') {
       const session = window.alteaPortalAuthGate?.getSession?.() || window.__ALTEA_AUTH_SESSION__ || null;
+      if (isLocalGuestPortalSessionToken(session?.access_token)) {
+        state.team.mode = 'local';
+        state.team.ready = false;
+        state.team.note = 'Гостевой режим · локальные задачи';
+        applyOwnerOverridesToSkus();
+        updateSyncBadge();
+        return;
+      }
       state.team.accessToken = session?.access_token || '';
       state.team.userId = session?.user?.id || '';
       if (!state.team.accessToken) throw new Error('Supabase auth session is missing');
@@ -907,13 +915,20 @@ function teamRestConfig() {
   const baseUrl = String(cfg.supabase.url || '').replace(/\/+$/, '');
   const passwordAuth = String(cfg.supabase?.auth || '').trim().toLowerCase() !== 'anonymous';
   const authToken = window.alteaPortalAuthGate?.getSession?.()?.access_token || window.__ALTEA_AUTH_SESSION__?.access_token || '';
-  const accessToken = state.team.accessToken || authToken || (passwordAuth ? '' : cfg.supabase.anonKey);
+  const accessToken = [state.team.accessToken, authToken]
+    .map((token) => String(token || '').trim())
+    .find((token) => token && !isLocalGuestPortalSessionToken(token))
+    || (passwordAuth ? '' : cfg.supabase.anonKey);
   return {
     baseUrl,
     anonKey: cfg.supabase.anonKey,
     accessToken,
     brand: currentBrand()
   };
+}
+
+function isLocalGuestPortalSessionToken(token) {
+  return /^guest-local-session(?:$|[-:])/i.test(String(token || '').trim());
 }
 
 async function readSupabaseJson(response, label) {

@@ -38,8 +38,17 @@
       baseUrl: String(cfg.supabase.url || '').replace(/\/+$/, ''),
       anonKey: cfg.supabase.anonKey,
       brand: currentBrandSafe(),
-      accessToken: String(appState()?.team?.accessToken || '')
+      accessToken: localGuestSessionToken(appState()?.team?.accessToken)
+        ? ''
+        : String(appState()?.team?.accessToken || '')
     };
+  }
+
+  function localGuestSessionToken(token) {
+    if (typeof isLocalGuestPortalSessionToken === 'function') {
+      return isLocalGuestPortalSessionToken(token);
+    }
+    return /^guest-local-session(?:$|[-:])/i.test(String(token || '').trim());
   }
 
   async function readJson(response, label) {
@@ -104,7 +113,8 @@
 
   function hasRemoteStoreHotfix() {
     const app = appState();
-    return Boolean(app?.team?.ready && (app.team.accessToken || app.team.client));
+    const accessToken = localGuestSessionToken(app?.team?.accessToken) ? '' : app?.team?.accessToken;
+    return Boolean(app?.team?.ready && (accessToken || app.team.client));
   }
 
   function syncedItemStampHotfix(item = {}) {
@@ -536,6 +546,14 @@
         || window.__ALTEA_AUTH_SESSION__
         || null;
       if (portalSession?.access_token) {
+        if (localGuestSessionToken(portalSession.access_token)) {
+          app.team.mode = 'local';
+          app.team.ready = false;
+          app.team.note = 'Гостевой режим · локальные задачи';
+          if (typeof applyOwnerOverridesToSkus === 'function') applyOwnerOverridesToSkus();
+          if (typeof updateSyncBadge === 'function') updateSyncBadge();
+          return;
+        }
         const email = String(portalSession?.user?.email || '').trim();
         const memberName = String(
           window.__ALTEA_PORTAL_ACCESS__?.name

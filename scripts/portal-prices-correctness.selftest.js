@@ -258,11 +258,22 @@ async function run() {
       waitUntil: 'domcontentloaded',
       timeout: 30000
     });
-    await page.waitForFunction(() => (
-      window.__alteaPriceWorkbenchState?.loaded
-      && document.querySelector('#view-prices .prices-v1-shell')
-      && document.querySelector('[data-prices-v1-pool-quality]')
-    ), null, { timeout: 120000 });
+    try {
+      await page.waitForFunction(() => (
+        window.__alteaPriceWorkbenchState?.loaded
+        && document.querySelector('#view-prices .prices-v1-shell')
+        && document.querySelector('[data-prices-v1-pool-quality]')
+      ), null, { timeout: 120000 });
+    } catch (error) {
+      const diagnostics = await page.evaluate(() => ({
+        state: window.__alteaPriceWorkbenchState || null,
+        activeView: typeof state === 'object' ? state?.activeView || '' : '',
+        shell: Boolean(document.querySelector('#view-prices .prices-v1-shell')),
+        poolQuality: Boolean(document.querySelector('[data-prices-v1-pool-quality]')),
+        transport: window.__ALTEA_PORTAL_SNAPSHOT_TRANSPORT_V1__?.diagnostics?.() || null
+      }));
+      throw new Error(`${error.message}: ${JSON.stringify({ diagnostics, pageErrors })}`);
+    }
     await waitForCabinetCoverage(page);
 
     const marketplaceAudits = [];

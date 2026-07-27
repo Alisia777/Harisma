@@ -136,11 +136,13 @@ jobs:
           node scripts/portal-sync-health-price-generation.selftest.js
           node scripts/portal-dashboard-money-kpi-realdata.selftest.js
           node scripts/portal-runtime-snapshot-choice.selftest.js
+          node scripts/portal-snapshot-transport.selftest.js
           node scripts/portal-bootstrap-snapshot-choice.selftest.js
           node scripts/portal-designers-access-history.selftest.js
           node scripts/sync-design-workspace-memberships.selftest.js
           node scripts/portal-auth-invite-browser.selftest.js
           node scripts/portal-auth-guest-fallback.selftest.js
+          node scripts/portal-team-auth-session.selftest.js
           node scripts/provision-portal-designers.selftest.js
           node scripts/import-design-tasks-to-workspace.selftest.js
           node scripts/portal-designers-permissions.selftest.js

@@ -60,6 +60,7 @@
     repricerPendingCostFixes: [],
     repricerPendingApiTasks: [],
     repricerRepairHistory: [],
+    repricerImportHistory: [],
     repricerRepairSnapshots: [],
     repricerApiReconcileHistory: [],
     repricerLastAuditImport: null,
@@ -1649,6 +1650,7 @@ function defaultStorage() {
     repricerPendingCostFixes: [],
     repricerPendingApiTasks: [],
     repricerRepairHistory: [],
+    repricerImportHistory: [],
     repricerRepairSnapshots: [],
     repricerApiReconcileHistory: [],
     repricerLastAuditImport: null,
@@ -2357,13 +2359,24 @@ function normalizeRepricerOverride(item = {}) {
 
 function normalizeRepricerSkuProfile(item = {}) {
   const articleKey = String(item.articleKey || item.article || '').trim();
+  const minMarginPct = repricerNumberOrBlank(
+    item.minMarginPct
+      ?? item.min_margin_pct
+      ?? item.targetMarginPct
+      ?? item.marginPct
+      ?? item.allowedMarginPct
+  );
+  const maxMarginPct = repricerNumberOrBlank(item.maxMarginPct ?? item.max_margin_pct);
   return {
     id: item.id || stableId('repricer-sku', articleKey),
     articleKey,
     status: String(item.status || item.statusSku || '').trim(),
     role: String(item.role || item.roleSku || '').trim(),
     launchReady: normalizeRepricerLaunchReady(item.launchReady || item.launch_status || item.launchState),
-    targetMarginPct: repricerNumberOrBlank(item.targetMarginPct ?? item.marginPct ?? item.allowedMarginPct),
+    // targetMarginPct remains as a read-compatible alias for older snapshots/API tasks.
+    targetMarginPct: minMarginPct,
+    minMarginPct,
+    maxMarginPct,
     updatedAt: item.updatedAt || new Date().toISOString(),
     updatedBy: String(item.updatedBy || item.updatedByName || state.team.member.name || 'Команда').trim() || 'Команда'
   };

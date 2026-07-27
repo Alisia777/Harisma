@@ -481,7 +481,8 @@ function repricerHasSkuProfile(profile) {
     String(profile.status || '').trim()
     || String(profile.role || '').trim()
     || String(profile.launchReady || '').trim()
-    || repricerMarginRatio(profile.targetMarginPct) > 0
+    || repricerMarginRatio(profile.minMarginPct ?? profile.targetMarginPct) > 0
+    || repricerMarginRatio(profile.maxMarginPct) > 0
   );
 }
 
@@ -494,7 +495,11 @@ function repricerRequiredMarginGap(articleKey, platform) {
   return rows.some((row) => (
     repricerNormalizeArticleKey(row?.articleKey || row?.article || row?.sku) === targetArticle
     && String(row?.platform || '').trim().toLowerCase() === targetPlatform
-    && (Array.isArray(row?.missing) ? row.missing.includes('margin') : true)
+    && (
+      Array.isArray(row?.missing)
+        ? row.missing.some((item) => ['margin', 'min_margin', 'max_margin'].includes(String(item || '').trim().toLowerCase()))
+        : true
+    )
   ));
 }
 
@@ -1209,7 +1214,7 @@ function repricerApplyConfidence(side) {
   side.sharpPriceTaskId = sharpDecision?.taskId || '';
 
   if (side.outOfSpec || side.criticalGate === 'SKIP') repricerAddReason(red, 'строка вне спецификации');
-  if (side.marginPolicyMissing) repricerAddReason(red, 'нет обязательной маржи SKU');
+  if (side.marginPolicyMissing) repricerAddReason(red, 'нет полной пары MIN/MAX маржи SKU');
   if (side.criticalGate === 'BLOCK') repricerAddReason(red, 'нет обязательных входов');
   if (side.stockGateBlocksAutoprice) repricerAddReason(red, side.marketplaceUnavailable ? 'товар не продаётся или нет на складе' : 'нет актуального остатка и поставок');
   if (currentPrice <= 0) repricerAddReason(red, 'нет текущей цены');
@@ -1337,7 +1342,9 @@ function repricerFinalizeSide(side) {
     side.changePct = holdPrice > 0 ? 0 : null;
     side.changed = false;
     side.belowFloorNow = false;
-    side.marginRisk = side.marginPct != null && side.requiredMarginPct != null && numberOrZero(side.marginPct) + 0.0001 < numberOrZero(side.requiredMarginPct);
+    side.marginBelowMin = side.marginPct != null && side.requiredMarginPct != null && numberOrZero(side.marginPct) + 0.0001 < numberOrZero(side.requiredMarginPct);
+    side.marginAboveMax = side.marginPct != null && side.maximumMarginPct != null && numberOrZero(side.marginPct) - 0.0001 > numberOrZero(side.maximumMarginPct);
+    side.marginRisk = side.marginBelowMin || side.marginAboveMax;
     side.lowStockRisk = false;
     side.hasLiveBenchmark = numberOrZero(side.liveReferencePrice) > 0;
     side.liveDeltaRub = side.hasLiveBenchmark ? holdPrice - numberOrZero(side.liveReferencePrice) : null;
@@ -1375,7 +1382,9 @@ function repricerFinalizeSide(side) {
   side.changePct = numberOrZero(side.currentPrice) > 0 ? side.changeRub / numberOrZero(side.currentPrice) : null;
   side.changed = Math.abs(side.changeRub) >= 1;
   side.belowFloorNow = numberOrZero(side.currentPrice) > 0 && numberOrZero(side.effectiveFloor) > 0 && numberOrZero(side.currentPrice) + 0.001 < numberOrZero(side.effectiveFloor);
-  side.marginRisk = side.marginPct != null && side.requiredMarginPct != null && numberOrZero(side.marginPct) + 0.0001 < numberOrZero(side.requiredMarginPct);
+  side.marginBelowMin = side.marginPct != null && side.requiredMarginPct != null && numberOrZero(side.marginPct) + 0.0001 < numberOrZero(side.requiredMarginPct);
+  side.marginAboveMax = side.marginPct != null && side.maximumMarginPct != null && numberOrZero(side.marginPct) - 0.0001 > numberOrZero(side.maximumMarginPct);
+  side.marginRisk = side.marginBelowMin || side.marginAboveMax;
   side.lowStockRisk = numberOrZero(side.turnoverDays) > 0 && numberOrZero(side.turnoverDays) <= numberOrZero(side.oosDays);
   side.hasLiveBenchmark = numberOrZero(side.liveReferencePrice) > 0;
   side.liveDeltaRub = side.hasLiveBenchmark ? numberOrZero(side.finalPrice) - numberOrZero(side.liveReferencePrice) : null;
@@ -1559,7 +1568,8 @@ function buildRepricerSide(sourceRow, platform, settings, context = {}) {
     numberOrZero(legacySide?.cost),
     numberOrZero(legacySide?.costRub)
   );
-  const profileTargetMarginPct = repricerMarginRatio(profile?.targetMarginPct);
+  const profileMinMarginPct = repricerMarginRatio(profile?.minMarginPct ?? profile?.targetMarginPct);
+  const profileMaxMarginPct = repricerMarginRatio(profile?.maxMarginPct);
   const liveMinMarginPct = repricerMarginRatio(liveSide?.marginNoAdsMinPct);
   const sourceAllowedMarginPct = repricerFirstPositiveNumber(
     repricerMarginRatio(sourceRow.manualMarginPct),
@@ -1578,25 +1588,50 @@ function buildRepricerSide(sourceRow, platform, settings, context = {}) {
   );
   const legacyAllowedMarginPct = repricerMarginRatio(legacySide?.allowedMarginPct || legacySide?.marginNoAdsMinPct);
   const perSkuMarginPct = repricerFirstPositiveNumber(
-    profileTargetMarginPct,
+    profileMinMarginPct,
     sourceAllowedMarginPct,
     supportAllowedMarginPct,
     priceAllowedMarginPct,
     legacyAllowedMarginPct,
     liveMinMarginPct
   );
+  const sourceMaxMarginPct = repricerFirstPositiveNumber(
+    repricerMarginRatio(sourceRow.manualMaxMarginPct),
+    repricerMarginRatio(sourceRow.maxMarginPct),
+    repricerMarginRatio(sourceRow.allowedMaxMarginPct)
+  );
+  const supportMaxMarginPct = repricerFirstPositiveNumber(
+    repricerMarginRatio(supportRow?.manualMaxMarginPct),
+    repricerMarginRatio(supportRow?.maxMarginPct),
+    repricerMarginRatio(supportRow?.allowedMaxMarginPct)
+  );
+  const priceMaxMarginPct = repricerFirstPositiveNumber(
+    repricerMarginRatio(priceRow?.manualMaxMarginPct),
+    repricerMarginRatio(priceRow?.maxMarginPct),
+    repricerMarginRatio(priceRow?.allowedMaxMarginPct)
+  );
+  const maximumMarginPct = repricerFirstPositiveNumber(
+    profileMaxMarginPct,
+    sourceMaxMarginPct,
+    supportMaxMarginPct,
+    priceMaxMarginPct
+  );
   const marginLifecycleKey = repricerLifecycleKey(productLifecycle?.key || productLifecycle?.status || status);
   const requiredMarginGap = repricerRequiredMarginGap(articleKey, platform);
   const marginGuardRequired = requiredMarginGap || ['active', 'new', 'relaunch'].includes(marginLifecycleKey);
+  const marginBandInvalid = perSkuMarginPct > 0
+    && maximumMarginPct > 0
+    && maximumMarginPct <= perSkuMarginPct;
   const marginPolicyMissing = marginGuardRequired && (
     requiredMarginGap
     || !(perSkuMarginPct > 0 && perSkuMarginPct < 1)
+    || !(maximumMarginPct > perSkuMarginPct && maximumMarginPct < 1)
   );
   const baseAllowedMarginPct = perSkuMarginPct;
   const requiredMarginPct = perSkuMarginPct > 0
     ? perSkuMarginPct
     : (marginGuardRequired ? 0 : numberOrZero(brandRule.minMarginPct) / 100);
-  const marginPolicySource = profileTargetMarginPct > 0
+  const marginPolicySource = profileMinMarginPct > 0
     ? 'sku_profile'
     : (sourceAllowedMarginPct > 0
       ? 'smart_price_workbench'
@@ -1642,6 +1677,11 @@ function buildRepricerSide(sourceRow, platform, settings, context = {}) {
   const economicFloorByFee = costRub > 0 && (1 - commissionPct - internalAdvertisingPct - requiredMarginPct) > 0
     ? Math.ceil((costRub + feeStackRub) / (1 - commissionPct - internalAdvertisingPct - requiredMarginPct))
     : 0;
+  const economicCapByFee = costRub > 0
+    && maximumMarginPct > 0
+    && (1 - commissionPct - internalAdvertisingPct - maximumMarginPct) > 0
+      ? Math.floor((costRub + feeStackRub) / (1 - commissionPct - internalAdvertisingPct - maximumMarginPct))
+      : 0;
   const economicFloorFallback = Math.max(
     numberOrZero(sourceRow.requiredPriceForProfitability),
     numberOrZero(sourceRow.minPrice),
@@ -1659,14 +1699,20 @@ function buildRepricerSide(sourceRow, platform, settings, context = {}) {
     skuMinPrice,
     numberOrZero(liveSide?.minPrice)
   );
-  const economicFloor = Math.max(economicFloorByFee, economicFloorFallback);
+  const economicFloorUnbounded = Math.max(economicFloorByFee, economicFloorFallback);
+  const economicFloor = economicCapByFee > 0
+    ? Math.min(economicFloorUnbounded, economicCapByFee)
+    : economicFloorUnbounded;
   const economicFloorSource = economicFloorByFee > 0
     ? (economicFloorByFee >= economicFloorFallback ? 'fee_stack' : 'snapshot_guard')
     : 'snapshot_fallback';
   const economicFloorSourceLabel = economicFloorSource === 'fee_stack'
     ? 'economic_fee_stack'
     : (economicFloorSource === 'snapshot_guard' ? 'economic_snapshot_guard' : 'economic_snapshot_fallback');
-  const effectiveFloor = Math.max(hardFloor, b2bFloor, economicFloor, numberOrZero(override?.floorPrice));
+  const effectiveFloorUnbounded = Math.max(hardFloor, b2bFloor, economicFloor, numberOrZero(override?.floorPrice));
+  const effectiveFloor = economicCapByFee > 0
+    ? Math.min(effectiveFloorUnbounded, economicCapByFee)
+    : effectiveFloorUnbounded;
   const manualPromoRequestedPrice = numberOrZero(override?.promoPrice);
   const manualPromoWindow = repricerPromoWindow(override);
   const manualPromoConfigured = Boolean(override?.promoActive) && manualPromoRequestedPrice > 0;
@@ -1793,9 +1839,13 @@ function buildRepricerSide(sourceRow, platform, settings, context = {}) {
     derivedStretchCap
   );
   const manualCapPrice = numberOrZero(override?.capPrice);
-  const capPrice = manualCapPrice > 0
+  const priceCap = manualCapPrice > 0
     ? (stretchCap > 0 ? Math.min(manualCapPrice, stretchCap) : manualCapPrice)
     : Math.max(stretchCap, 0);
+  const marginBoundedCap = economicCapByFee > 0
+    ? (priceCap > 0 ? Math.min(priceCap, economicCapByFee) : economicCapByFee)
+    : priceCap;
+  const capPrice = Math.max(marginBoundedCap, effectiveFloor);
   const marginPriorityApplied = Boolean(
     marginGuardRequired
     && economicFloorByFee > 0
@@ -1806,6 +1856,14 @@ function buildRepricerSide(sourceRow, platform, settings, context = {}) {
     && economicFloorByFee > 0
     && capPrice > 0
     && capPrice + 0.001 < economicFloorByFee
+  );
+  const floorLoweredByMaxMargin = Boolean(
+    economicCapByFee > 0
+    && effectiveFloorUnbounded > economicCapByFee + 0.001
+  );
+  const capLoweredByMaxMargin = Boolean(
+    economicCapByFee > 0
+    && priceCap > economicCapByFee + 0.001
   );
   const managedBasePrice = capPrice > 0
     ? Math.min(rawManagedBasePrice, Math.max(capPrice, effectiveFloor))
@@ -1936,7 +1994,7 @@ function buildRepricerSide(sourceRow, platform, settings, context = {}) {
   }
   if (marginPolicyMissing && !outOfSpec) {
     criticalGate = 'BLOCK';
-    reasons.push('нет обязательной маржи SKU');
+    reasons.push('нет полной пары MIN/MAX маржи SKU');
   }
 
   if (!String(status || '').trim()) reasons.push('status not set');
@@ -2172,15 +2230,20 @@ function buildRepricerSide(sourceRow, platform, settings, context = {}) {
         : numberOrZero(legacySide.marginPct))
       : numberOrZero(sourceRow.marginTotalPct),
     requiredMarginPct,
+    maximumMarginPct,
     marginPolicySource,
     perSkuMarginPct,
     marginGuardRequired,
     marginPolicyMissing,
+    marginBandInvalid,
     marginPriorityApplied,
     capLiftedByMargin,
+    floorLoweredByMaxMargin,
+    capLoweredByMaxMargin,
     minMaxFloor: hardFloor,
     minMaxCap: capPrice,
     marginFloor: marginGuardRequired ? economicFloorByFee : 0,
+    marginCap: marginGuardRequired ? economicCapByFee : 0,
     strategy,
     reason: reasons.join(' · ') || sourceRow.seedReason || 'Без пояснения',
     currentPriceDate: sourceRow.currentPriceDate || priceRow?.currentPriceDate || supportRow?.currentPriceDate || legacySide?.currentPriceDate || liveSide?.currentPriceDate || '',
@@ -2473,7 +2536,7 @@ function repricerRowsCacheSignature() {
     JSON.stringify(storage.repricerSettings || {}),
     repricerCacheListSignature(storage.repricerOverrides, ['articleKey', 'platform', 'mode', 'floorPrice', 'capPrice', 'forcePrice', 'promoActive', 'promoPrice', 'updatedAt']),
     repricerCacheListSignature(storage.repricerCorridors, ['articleKey', 'platform', 'hardFloor', 'basePrice', 'stretchCap', 'promoFloor', 'updatedAt']),
-    repricerCacheListSignature(storage.repricerSkuProfiles, ['articleKey', 'status', 'role', 'launchReady', 'updatedAt']),
+    repricerCacheListSignature(storage.repricerSkuProfiles, ['articleKey', 'status', 'role', 'launchReady', 'targetMarginPct', 'minMarginPct', 'maxMarginPct', 'updatedAt']),
     repricerCacheListSignature(storage.skuDecisionApprovals, ['articleKey', 'platform', 'type', 'status', 'proposedValue', 'updatedAt'])
   ].join('||');
 }
@@ -2617,14 +2680,26 @@ function canonicalRepricerRuntimeSide(canonical = {}) {
   const approvedOverrideApplied = canonicalReady && approvedRequestedPrice > 0;
   const ready = canonicalReady && proposedPrice != null;
   const cutoverAllowed = canonicalRepricerCutoverAllowed();
-  const auditReady = ready && !cutoverAllowed;
-  const exportReady = ready && cutoverAllowed;
   const approvalGateType = String(canonical.approval_gate?.type || '').trim().toUpperCase();
   const policyReviewRequired = approvalGateType === 'MARGIN_POLICY_REVIEW';
   const waitingRop = recommendation.status === 'waiting_rop'
     || (approvalGateType === 'SHARP_PRICE_CHANGE' && Boolean(canonical.approval_gate?.required));
   const reasonCodes = Array.isArray(recommendation.reason_codes) ? recommendation.reason_codes : [];
   const runtimeReasonCodes = [...reasonCodes];
+  const marginBoundsMissing = Boolean(
+    policy.margin_guard_required
+    && (
+      policy.target_margin_pct == null
+      || policy.max_margin_pct == null
+      || numberOrZero(policy.max_margin_pct) <= numberOrZero(policy.target_margin_pct)
+    )
+  );
+  if (marginBoundsMissing && !runtimeReasonCodes.includes('missing_margin_bounds')) {
+    runtimeReasonCodes.push('missing_margin_bounds');
+  }
+  const runtimeReady = ready && !marginBoundsMissing;
+  const auditReady = runtimeReady && !cutoverAllowed;
+  const exportReady = runtimeReady && cutoverAllowed;
   if (approvedOverrideApplied && !runtimeReasonCodes.includes('approved_override')) {
     runtimeReasonCodes.push('approved_override');
   }
@@ -2670,7 +2745,7 @@ function canonicalRepricerRuntimeSide(canonical = {}) {
     stock: facts.stock == null ? null : numberOrZero(facts.stock),
     inboundUnits: facts.inbound == null ? null : numberOrZero(facts.inbound),
     stockStatus: facts.stock_status || '',
-    stockGateBlocksAutoprice: !ready,
+    stockGateBlocksAutoprice: !runtimeReady,
     currentPriceDate: facts.as_of || '',
     sourceAsOf: facts.as_of || '',
     currentPriceAgeDays: facts.price_age_days == null ? null : numberOrZero(facts.price_age_days),
@@ -2706,10 +2781,13 @@ function canonicalRepricerRuntimeSide(canonical = {}) {
     minMaxFloor: policy.min_max_floor == null ? null : numberOrZero(policy.min_max_floor),
     minMaxCap: policy.min_max_cap == null ? null : numberOrZero(policy.min_max_cap),
     marginFloor: policy.margin_floor == null ? null : numberOrZero(policy.margin_floor),
+    marginCap: policy.margin_cap == null ? null : numberOrZero(policy.margin_cap),
     marginPolicySource,
     marginGuardRequired: Boolean(policy.margin_guard_required),
     marginPriorityApplied: Boolean(policy.margin_priority_applied),
     capLiftedByMargin: Boolean(policy.cap_lifted_by_margin),
+    floorLoweredByMaxMargin: Boolean(policy.floor_lowered_by_max_margin),
+    capLoweredByMaxMargin: Boolean(policy.cap_lowered_by_max_margin),
     productLifecycleKey: policy.lifecycle_key || facts.lifecycle_key || '',
     productLifecycleLabel: facts.product_status || policy.lifecycle_key || '',
     finalGuardFloor: floor,
@@ -2727,9 +2805,15 @@ function canonicalRepricerRuntimeSide(canonical = {}) {
       : (recommendation.margin_pct == null ? null : numberOrZero(recommendation.margin_pct)),
     currentMarginPct: recommendation.current_margin_pct == null ? null : numberOrZero(recommendation.current_margin_pct),
     requiredMarginPct: policy.target_margin_pct == null ? null : numberOrZero(policy.target_margin_pct),
+    maximumMarginPct: policy.max_margin_pct == null ? null : numberOrZero(policy.max_margin_pct),
     marginPolicyMissing: Boolean(
       policy.margin_guard_required
-      && (policy.target_margin_pct == null || runtimeReasonCodes.includes('missing_target_margin'))
+      && (
+        policy.target_margin_pct == null
+        || policy.max_margin_pct == null
+        || runtimeReasonCodes.includes('missing_target_margin')
+        || runtimeReasonCodes.includes('invalid_margin_band')
+      )
     ),
     changeRub: price != null && finalPrice != null ? numberOrZero(finalPrice) - numberOrZero(price) : null,
     changePct: approvedOverrideApplied && price > 0
@@ -2738,7 +2822,7 @@ function canonicalRepricerRuntimeSide(canonical = {}) {
     changed,
     belowFloorNow: price != null && floor > 0 && numberOrZero(price) + 0.001 < floor,
     confidence: exportReady ? 'green' : (auditReady ? 'yellow' : 'red'),
-    criticalGate: ready ? '' : 'BLOCK',
+    criticalGate: runtimeReady ? '' : 'BLOCK',
     finalReasonCode: exportReady ? 'CANONICAL_READY' : (auditReady ? 'CANONICAL_SHADOW_AUDIT' : 'CANONICAL_BLOCKED'),
     reasonCode: exportReady ? 'CANONICAL_READY' : (auditReady ? 'CANONICAL_SHADOW_AUDIT' : 'CANONICAL_BLOCKED'),
     decisionMode: exportReady ? 'ready' : (auditReady ? 'audit' : 'blocked'),
@@ -2775,8 +2859,17 @@ function canonicalRepricerRuntimeSide(canonical = {}) {
     floorRaiseReady: false,
     floorRaiseSafeToExport: false,
     lowStockRisk: false,
-    marginRisk: recommendation.margin_pct != null && policy.target_margin_pct != null
-      && numberOrZero(recommendation.margin_pct) + 0.0001 < numberOrZero(policy.target_margin_pct),
+    marginRisk: recommendation.margin_pct != null
+      && (
+        (
+          policy.target_margin_pct != null
+          && numberOrZero(recommendation.margin_pct) + 0.0001 < numberOrZero(policy.target_margin_pct)
+        )
+        || (
+          policy.max_margin_pct != null
+          && numberOrZero(recommendation.margin_pct) - 0.0001 > numberOrZero(policy.max_margin_pct)
+        )
+      ),
     liveDeltaRub: null,
     liveDeltaPct: null,
     liveDrift: false,
@@ -3600,8 +3693,16 @@ function renderRepricerSide(title, side) {
     ? badge(`товар: ${side.productLifecycleLabel || side.productLifecycleKey}`, side.productLifecycleTone || 'warn')
     : '';
   const businessBadges = [
-    side.requiredMarginPct == null ? '' : badge(`Маржа ≥ ${fmt.pct(side.requiredMarginPct)}`, side.marginRisk ? 'danger' : 'ok'),
+    side.requiredMarginPct == null
+      ? ''
+      : badge(
+        side.maximumMarginPct == null
+          ? `Маржа ≥ ${fmt.pct(side.requiredMarginPct)}`
+          : `Маржа ${fmt.pct(side.requiredMarginPct)}–${fmt.pct(side.maximumMarginPct)}`,
+        side.marginRisk ? 'danger' : 'ok'
+      ),
     numberOrZero(side.marginFloor) > 0 ? badge(`floor маржи ${fmt.money(side.marginFloor)}`, side.marginPriorityApplied ? 'warn' : 'info') : '',
+    numberOrZero(side.marginCap) > 0 ? badge(`cap маржи ${fmt.money(side.marginCap)}`, side.capLoweredByMaxMargin ? 'warn' : 'info') : '',
     numberOrZero(side.costRub) > 0 ? badge(`себестоимость ${fmt.money(side.costRub)}`, 'info') : '',
     numberOrZero(side.platformCostsRub) > 0 ? badge(`площадка ${fmt.money(side.platformCostsRub)}`, 'info') : '',
     numberOrZero(side.internalAdvertisingPctValue) > 0 ? badge(`внутр. реклама ${fmt.pct(side.internalAdvertisingPctValue)}`, 'info') : '',
@@ -3835,12 +3936,30 @@ function saveRepricerSkuProfile(form) {
     window.alert('Статус здесь напрямую не меняется. Используйте блок «Статус товара» выше: он создаст задачу РОПу и применит статус только после подтверждения.');
     return false;
   }
+  const minMarginValue = form.minMarginPct?.value ?? form.targetMarginPct?.value ?? '';
+  const maxMarginValue = form.maxMarginPct?.value ?? '';
+  const minMarginRatio = repricerMarginRatio(minMarginValue);
+  const maxMarginRatio = repricerMarginRatio(maxMarginValue);
+  if (maxMarginRatio > 0 && !(minMarginRatio > 0)) {
+    window.alert('Сначала задайте MIN маржу SKU. MAX маржа без нижнего порога не применяется.');
+    return false;
+  }
+  if (minMarginRatio > 0 && !(maxMarginRatio > 0)) {
+    window.alert('Задайте MAX маржу SKU — пороги сохраняются только полной парой.');
+    return false;
+  }
+  if (minMarginRatio > 0 && maxMarginRatio > 0 && maxMarginRatio <= minMarginRatio) {
+    window.alert('MAX маржа SKU должна быть выше MIN маржи SKU.');
+    return false;
+  }
   const next = normalizeRepricerSkuProfile({
     articleKey,
     status: '',
     role: form.role.value,
     launchReady: form.launchReady.value,
-    targetMarginPct: form.targetMarginPct?.value,
+    targetMarginPct: minMarginValue,
+    minMarginPct: minMarginValue,
+    maxMarginPct: maxMarginValue,
     updatedAt: new Date().toISOString(),
     updatedBy: state.team?.member?.name || 'Команда'
   });
@@ -4174,7 +4293,7 @@ function repricerTemplateAction(side) {
 function repricerPrimaryStopReason(side) {
   if (!side) return 'нет стороны';
   if (side.outOfSpec || side.criticalGate === 'SKIP') return 'вне спецификации';
-  if (side.marginPolicyMissing) return 'нет маржи SKU';
+  if (side.marginPolicyMissing) return 'нет MIN/MAX маржи SKU';
   if (side.criticalGate === 'BLOCK') return 'нет входов';
   const flags = repricerIssueFlags(side);
   if (flags.missingPrice) return 'нет цены';
@@ -4364,7 +4483,7 @@ function repricerIssueBatch(side) {
 function repricerIssueBatchLabel(batch) {
   const map = {
     all: 'стоп-лист',
-    missing_margin: 'нет маржи SKU',
+    missing_margin: 'нет MIN/MAX маржи SKU',
     missing_min: 'нет MIN',
     missing_cost: 'нет себестоимости',
     below_min: 'ниже MIN',
@@ -4428,7 +4547,7 @@ function repricerHealthcheck(rows, platform = 'all') {
     ozon_change_rows: repricerCollectSides(rows, 'ozon').filter(({ side }) => repricerTemplateAction(side) === 'CHANGE').length
   };
   const issues = [];
-  if (metrics.missing_required_margin > 0) issues.push(`нет обязательной маржи SKU: ${fmt.int(metrics.missing_required_margin)}`);
+  if (metrics.missing_required_margin > 0) issues.push(`нет полной пары MIN/MAX маржи SKU: ${fmt.int(metrics.missing_required_margin)}`);
   if (metrics.blocked_gate > 0) issues.push(`BLOCK gate: ${fmt.int(metrics.blocked_gate)}`);
   if (metrics.missing_current_price_actionable > 0) issues.push(`пустая текущая цена в активном контуре: ${fmt.int(metrics.missing_current_price_actionable)}`);
   if (metrics.missing_cost_actionable > 0) issues.push(`нет себестоимости без защитного proxy: ${fmt.int(metrics.missing_cost_actionable)}`);
@@ -5103,6 +5222,7 @@ function repricerQueueTaskField(item = {}, bucket = '', type = '') {
   const rawField = String(item.field || item.apiField || '').trim().toLowerCase();
   if (normalizedType === 'UPDATE_COST' || bucket === 'repricerPendingCostFixes') return 'cost';
   if (normalizedType === 'ADD_SKU' || normalizedType === 'DELETE_SKU' || bucket === 'repricerPendingApiAdds' || bucket === 'repricerPendingApiDeletes') return 'sku';
+  if (normalizedType === 'UPDATE_SKU_MARGIN') return 'margin_bounds_pct';
   if (rawField) return rawField;
   return String(item.reason || '').trim().toLowerCase();
 }
@@ -5120,6 +5240,11 @@ function repricerQueuePayloadSignature(item = {}, bucket = '') {
   const type = String(item.type || item.action || repricerTaskTypeFromBucket(bucket, item)).trim().toUpperCase();
   const field = repricerQueueTaskField(item, bucket, type);
   const value = item.value ?? item.costRub ?? '';
+  if (type === 'UPDATE_SKU_MARGIN') {
+    const minMargin = item.minMarginPct ?? item.targetMarginPct ?? value;
+    const maxMargin = item.maxMarginPct ?? '';
+    return `${type}|${field}|${String(minMargin).trim()}|${String(maxMargin).trim()}`;
+  }
   return `${type}|${field}|${String(value).trim()}`;
 }
 
@@ -5239,6 +5364,7 @@ function repricerQueueApiTask(task = {}) {
   if (!articleKey) return null;
   const now = task.requestedAt || task.updatedAt || new Date().toISOString();
   const next = {
+    ...task,
     id: task.id || stableId('repricer-api', repricerQueueTaskKey(task)),
     type: String(task.type || task.action || 'API_TASK').trim().toUpperCase(),
     action: String(task.action || task.type || 'API_TASK').trim().toUpperCase(),
@@ -5329,6 +5455,8 @@ function repricerApiTaskRows() {
       owner: item.owner || '',
       field: patch.field || item.field || '',
       value: patch.value ?? item.value ?? item.costRub ?? '',
+      min_margin_pct: item.minMarginPct == null ? '' : repricerExportNumber(repricerMarginRatio(item.minMarginPct) * 100, 1),
+      max_margin_pct: item.maxMarginPct == null ? '' : repricerExportNumber(repricerMarginRatio(item.maxMarginPct) * 100, 1),
       status: patch.status || item.status || 'open',
       status_label: repricerStatusLabel(patch.status || item.status || 'open'),
       requested_at: item.requestedAt || item.updatedAt || '',
@@ -5378,6 +5506,8 @@ function repricerApiTaskColumns() {
     ['owner', 'Owner'],
     ['field', 'Поле'],
     ['value', 'Значение'],
+    ['min_margin_pct', 'MIN маржа SKU, %'],
+    ['max_margin_pct', 'MAX маржа SKU, %'],
     ['status', 'Статус'],
     ['status_label', 'Статус понятный'],
     ['requested_at', 'Создано'],
@@ -5555,9 +5685,18 @@ function repricerTaskResolvedByCurrentData(task, currentMap) {
   if (type === 'UPDATE_PRICE_SNAPSHOT') return Boolean(side && numberOrZero(side.currentPrice) > 0);
   if (type === 'UPDATE_SKU_PROFILE') return Boolean(row && (String(row.status || '').trim() || String(row.role || '').trim() || String(row.launchReady || '').trim()));
   if (type === 'UPDATE_SKU_MARGIN') {
-    const expected = repricerMarginRatio(task.targetMarginPct ?? task.value);
-    const actual = repricerMarginRatio(side?.requiredMarginPct);
-    return Boolean(expected > 0 && actual > 0 && Math.abs(expected - actual) < 0.0001);
+    const expectedMin = repricerMarginRatio(task.minMarginPct ?? task.targetMarginPct ?? task.value);
+    const expectedMax = repricerMarginRatio(task.maxMarginPct);
+    const actualMin = repricerMarginRatio(side?.requiredMarginPct);
+    const actualMax = repricerMarginRatio(side?.maximumMarginPct);
+    return Boolean(
+      expectedMin > 0
+      && expectedMax > expectedMin
+      && actualMin > 0
+      && actualMax > actualMin
+      && Math.abs(expectedMin - actualMin) < 0.0001
+      && Math.abs(expectedMax - actualMax) < 0.0001
+    );
   }
   return false;
 }
@@ -5638,8 +5777,11 @@ function repricerUpsertImportedProfile(next) {
 
 function repricerImportResultColumns() {
   return [
+    ['row_number', 'Строка'],
     ['article', 'Артикул'],
     ['marketplace', 'Площадка'],
+    ['field', 'Поле'],
+    ['entered_value', 'Введено'],
     ['command', 'Команда'],
     ['result', 'Результат'],
     ['details', 'Детали']
@@ -5651,6 +5793,68 @@ function repricerDownloadImportResult(rows) {
   repricerDownloadHtmlTable(repricerImportResultColumns(), rows, `repricer-import-result-${new Date().toISOString().slice(0, 10)}.xls`);
 }
 
+function repricerImportAttemptStatusLabel(status) {
+  const labels = {
+    applied: 'применено',
+    blocked: 'ошибка — не применено',
+    read_error: 'файл не прочитан',
+    awaiting_rop: 'ждёт РОП',
+    cancelled: 'отменено пользователем',
+    no_changes: 'нет изменений',
+    failed: 'системная ошибка'
+  };
+  return labels[String(status || '')] || String(status || 'проверено');
+}
+
+function repricerRecordImportAttempt(record = {}) {
+  const now = record.updatedAt || new Date().toISOString();
+  const id = String(record.id || stableId('repricer-import-attempt', `${record.fileName || 'file'}|${now}`));
+  const normalized = {
+    id,
+    articleKey: `import-${id}`,
+    fileName: String(record.fileName || '').trim(),
+    status: String(record.status || 'blocked').trim(),
+    uploadedAt: record.uploadedAt || now,
+    updatedAt: now,
+    rows: numberOrZero(record.rows),
+    actionable: numberOrZero(record.actionable),
+    applied: numberOrZero(record.applied),
+    skipped: numberOrZero(record.skipped),
+    errors: numberOrZero(record.errors),
+    warnings: numberOrZero(record.warnings),
+    awaitingRop: numberOrZero(record.awaitingRop),
+    sheetName: String(record.sheetName || '').trim(),
+    message: String(record.message || '').trim(),
+    errorRows: (Array.isArray(record.errorRows) ? record.errorRows : [])
+      .filter((item) => item && typeof item === 'object')
+      .slice(0, 100)
+      .map((item) => ({ ...item }))
+  };
+  const previous = (state.storage?.repricerImportHistory || []).find((item) => item.id === id) || {};
+  const next = { ...previous, ...normalized };
+  state.storage.repricerImportHistory = [
+    next,
+    ...(state.storage?.repricerImportHistory || []).filter((item) => item.id !== id)
+  ].slice(0, 50);
+  saveLocalStorage();
+  if (typeof persistRepricerControls === 'function') persistRepricerControls().catch((error) => console.error(error));
+  return next;
+}
+
+function downloadRepricerImportHistoryErrors(id = '') {
+  const history = state.storage?.repricerImportHistory || [];
+  const attempt = (id ? history.find((item) => item.id === id) : null)
+    || history.find((item) => Array.isArray(item.errorRows) && item.errorRows.length);
+  const rows = Array.isArray(attempt?.errorRows) ? attempt.errorRows : [];
+  if (!rows.length) {
+    return { ok: false, rows: 0, tone: 'ok', message: 'В истории нет ошибок для выгрузки.' };
+  }
+  const safeName = String(attempt.fileName || 'file').replace(/\.[^.]+$/, '').replace(/[^\p{L}\p{N}._-]+/gu, '-').slice(0, 60);
+  const filename = `repricer-import-errors-${safeName || 'file'}-${new Date().toISOString().slice(0, 10)}.xls`;
+  repricerDownloadHtmlTable(repricerImportResultColumns(), rows, filename);
+  return { ok: true, rows: rows.length, tone: 'ok', filename, message: `Ошибки загрузки выгружены: ${fmt.int(rows.length)} строк.` };
+}
+
 function repricerImportDraft(row = {}, fileName = '') {
   const article = repricerImportValue(row, ['article_key', 'article', 'Артикул', 'sku_code', 'SKU', 'Номенклатура']);
   const articleKey = String(article || '').trim();
@@ -5658,7 +5862,10 @@ function repricerImportDraft(row = {}, fileName = '') {
   const platform = repricerImportPlatform(marketplace);
   const commandRaw = repricerImportValue(row, ['import_command', 'Команда', 'Действие', 'action', 'cmd']);
   const price = repricerImportNumber(repricerImportValue(row, ['import_price_rub', 'Новая цена, ₽', 'Новая цена']));
-  const margin = repricerImportPercent(repricerImportValue(row, ['import_margin_pct', 'Новая маржа SKU, %', 'Маржа SKU, %', 'target_margin_pct', 'target_margin']));
+  const minMarginRaw = repricerImportValue(row, ['import_min_margin_pct', 'Новая MIN маржа SKU, %', 'min_margin_pct', 'import_margin_pct', 'Новая маржа SKU, %', 'Маржа SKU, %', 'target_margin_pct', 'target_margin']);
+  const maxMarginRaw = repricerImportValue(row, ['import_max_margin_pct', 'Новая MAX маржа SKU, %', 'max_margin_pct']);
+  const minMargin = repricerImportPercent(minMarginRaw);
+  const maxMargin = repricerImportPercent(maxMarginRaw);
   const min = repricerImportNumber(repricerImportValue(row, ['import_min_rub', 'Новый MIN, ₽', 'Новый MIN', 'new_min', 'minPrice', 'min_price', 'MIN рекомендованный, ₽']));
   const max = repricerImportNumber(repricerImportValue(row, ['import_max_rub', 'Новый MAX, ₽', 'Новый MAX', 'new_max', 'maxPrice', 'max_price', 'MAX рекомендованный, ₽']));
   const cost = repricerImportNumber(repricerImportValue(row, ['import_cost_rub', 'Новая себестоимость, ₽', 'Новая себестоимость']));
@@ -5667,9 +5874,29 @@ function repricerImportDraft(row = {}, fileName = '') {
   const launchReady = repricerImportValue(row, ['import_launch_ready', 'Новый launch ready']);
   const importNote = repricerImportValue(row, ['import_note', 'Комментарий для импорта']);
   const note = importNote || `Импорт аудита ${fileName || ''}`.trim();
-  const hasImportFields = Boolean(price || margin || min || max || cost || status || role || launchReady || importNote);
+  const hasImportFields = Boolean(price || minMarginRaw || maxMarginRaw || min || max || cost || status || role || launchReady || importNote);
   const command = commandRaw ? repricerImportCommand(commandRaw) : (hasImportFields ? 'fix' : '');
-  return { articleKey, platform, commandRaw, command, price, margin, min, max, cost, status, role, launchReady, importNote, note, hasImportFields };
+  return {
+    articleKey,
+    platform,
+    commandRaw,
+    command,
+    price,
+    margin: minMargin,
+    minMargin,
+    maxMargin,
+    minMarginRaw,
+    maxMarginRaw,
+    min,
+    max,
+    cost,
+    status,
+    role,
+    launchReady,
+    importNote,
+    note,
+    hasImportFields
+  };
 }
 
 function validateRepricerAuditImportRows(rows, fileName = '') {
@@ -5678,7 +5905,16 @@ function validateRepricerAuditImportRows(rows, fileName = '') {
   const summary = { fileName, validatedAt: new Date().toISOString(), rows: rows.length, actionable: 0, skipped: 0, errors: 0, warnings: 0, force: 0, fix: 0, hold: 0, off: 0, add: 0, clear: 0, resultRows: [] };
   rows.forEach((row, index) => {
     const draft = repricerImportDraft(row, fileName);
-    const result = { article: draft.articleKey, marketplace: draft.platform.toUpperCase(), command: draft.command || draft.commandRaw || 'skip', result: 'ok', details: '' };
+    const result = {
+      row_number: index + 2,
+      article: draft.articleKey,
+      marketplace: draft.platform.toUpperCase(),
+      field: '',
+      entered_value: '',
+      command: draft.command || draft.commandRaw || 'skip',
+      result: 'ok',
+      details: ''
+    };
     if (!draft.command && !draft.hasImportFields && !draft.commandRaw) {
       summary.skipped += 1;
       result.result = 'пропущено';
@@ -5701,6 +5937,47 @@ function validateRepricerAuditImportRows(rows, fileName = '') {
       summary.resultRows.push(result);
       return;
     }
+    if (draft.minMarginRaw && !draft.minMargin) {
+      summary.errors += 1;
+      result.result = 'ошибка';
+      result.field = 'MIN маржа SKU, %';
+      result.entered_value = draft.minMarginRaw;
+      result.details = `строка ${index + 2}: MIN маржа должна быть больше 0% и меньше 100%`;
+      summary.resultRows.push(result);
+      return;
+    }
+    if (draft.maxMarginRaw && !draft.maxMargin) {
+      summary.errors += 1;
+      result.result = 'ошибка';
+      result.field = 'MAX маржа SKU, %';
+      result.entered_value = draft.maxMarginRaw;
+      result.details = `строка ${index + 2}: MAX маржа должна быть больше 0% и меньше 100%`;
+      summary.resultRows.push(result);
+      return;
+    }
+    if (draft.minMarginRaw || draft.maxMarginRaw) {
+      const previousProfile = repricerFindSkuProfile(draft.articleKey) || {};
+      const resultingMinMargin = draft.minMargin || repricerMarginRatio(previousProfile.minMarginPct ?? previousProfile.targetMarginPct);
+      const resultingMaxMargin = draft.maxMargin || repricerMarginRatio(previousProfile.maxMarginPct);
+      if (!(resultingMinMargin > 0) || !(resultingMaxMargin > 0)) {
+        summary.errors += 1;
+        result.result = 'ошибка';
+        result.field = !(resultingMinMargin > 0) ? 'MIN маржа SKU, %' : 'MAX маржа SKU, %';
+        result.entered_value = !(resultingMinMargin > 0) ? draft.minMarginRaw : draft.maxMarginRaw;
+        result.details = `строка ${index + 2}: MIN и MAX маржа задаются полной парой`;
+        summary.resultRows.push(result);
+        return;
+      }
+      if (resultingMaxMargin <= resultingMinMargin) {
+        summary.errors += 1;
+        result.result = 'ошибка';
+        result.field = 'MAX маржа SKU, %';
+        result.entered_value = draft.maxMarginRaw || repricerExportNumber(resultingMaxMargin * 100, 1);
+        result.details = `строка ${index + 2}: MAX маржа должна быть выше MIN маржи`;
+        summary.resultRows.push(result);
+        return;
+      }
+    }
     if (draft.command === 'force' && !draft.price) {
       summary.errors += 1;
       result.result = 'ошибка';
@@ -5708,7 +5985,7 @@ function validateRepricerAuditImportRows(rows, fileName = '') {
       summary.resultRows.push(result);
       return;
     }
-    if (draft.command === 'fix' && !(draft.price || draft.margin || draft.min || draft.max || draft.cost || draft.status || draft.role || draft.launchReady)) {
+    if (draft.command === 'fix' && !(draft.price || draft.minMargin || draft.maxMargin || draft.min || draft.max || draft.cost || draft.status || draft.role || draft.launchReady)) {
       summary.warnings += 1;
       result.result = 'предупреждение';
       result.details = `строка ${index + 2}: FIX без заполняемых полей`;
@@ -5795,9 +6072,18 @@ async function repricerApplyAuditImportRows(rows, fileName = '') {
   const currentRows = buildRepricerRows();
   const currentMap = new Map(currentRows.map((row) => [repricerNormalizeArticleKey(row.articleKey || row.article), row]));
   const summary = { applied: 0, skipped: 0, errors: 0, overrides: 0, corridors: 0, profiles: 0, pendingAdds: 0, pendingDeletes: 0, pendingCosts: 0, pendingTasks: 0, history: 0, resultRows: [] };
-  for (const row of rows) {
-    const { articleKey, platform, commandRaw, command, price, margin, min, max, cost, status, role, launchReady, note } = repricerImportDraft(row, fileName);
-    const result = { article: articleKey, marketplace: platform.toUpperCase(), command: command || 'skip', result: '', details: '' };
+  for (const [rowIndex, row] of rows.entries()) {
+    const { articleKey, platform, commandRaw, command, price, minMargin, maxMargin, min, max, cost, status, role, launchReady, note } = repricerImportDraft(row, fileName);
+    const result = {
+      row_number: rowIndex + 2,
+      article: articleKey,
+      marketplace: platform.toUpperCase(),
+      field: '',
+      entered_value: '',
+      command: command || 'skip',
+      result: '',
+      details: ''
+    };
     if (!articleKey) {
       summary.errors += 1;
       result.result = 'ошибка';
@@ -5918,26 +6204,46 @@ async function repricerApplyAuditImportRows(rows, fileName = '') {
           details.push(`статус уже «${status}»`);
         }
       }
-      if (role || launchReady || margin) {
+      if (role || launchReady || minMargin || maxMargin) {
         const previous = repricerFindSkuProfile(articleKey) || {};
+        const resultingMinMargin = minMargin || repricerMarginRatio(previous.minMarginPct ?? previous.targetMarginPct);
+        const resultingMaxMargin = maxMargin || repricerMarginRatio(previous.maxMarginPct);
         repricerUpsertImportedProfile({
           ...previous,
           articleKey,
           status: '',
           role: role || previous.role || '',
           launchReady: launchReady || previous.launchReady || '',
-          targetMarginPct: margin || previous.targetMarginPct || '',
+          targetMarginPct: resultingMinMargin || '',
+          minMarginPct: resultingMinMargin || '',
+          maxMarginPct: resultingMaxMargin || '',
           updatedAt: now,
           updatedBy: state.team?.member?.name || 'Команда'
         });
         summary.profiles += 1;
-        details.push(margin ? `маржа SKU ≥ ${repricerExportNumber(margin * 100, 1)}%` : 'обновлен профиль SKU');
+        details.push(
+          minMargin || maxMargin
+            ? `маржа SKU ${repricerExportNumber(resultingMinMargin * 100, 1)}–${repricerExportNumber(resultingMaxMargin * 100, 1)}%`
+            : 'обновлен профиль SKU'
+        );
         if (role || launchReady) {
           repricerQueueApiTask({ type: 'UPDATE_SKU_PROFILE', action: 'UPDATE_SKU_PROFILE', articleKey, platform: 'all', field: 'role_launch', value: [role, launchReady].filter(Boolean).join(' / '), note, requestedAt: now });
           summary.pendingTasks += 1;
         }
-        if (margin) {
-          repricerQueueApiTask({ type: 'UPDATE_SKU_MARGIN', action: 'UPDATE_SKU_MARGIN', articleKey, platform: 'all', field: 'target_margin_pct', value: margin, targetMarginPct: margin, note, requestedAt: now });
+        if (minMargin || maxMargin) {
+          repricerQueueApiTask({
+            type: 'UPDATE_SKU_MARGIN',
+            action: 'UPDATE_SKU_MARGIN',
+            articleKey,
+            platform: 'all',
+            field: 'margin_bounds_pct',
+            value: resultingMinMargin,
+            targetMarginPct: resultingMinMargin,
+            minMarginPct: resultingMinMargin,
+            maxMarginPct: resultingMaxMargin,
+            note,
+            requestedAt: now
+          });
           summary.pendingTasks += 1;
         }
       }
@@ -5991,58 +6297,150 @@ async function repricerApplyAuditImportRows(rows, fileName = '') {
 
 async function importRepricerAuditFile(file) {
   if (!file) return;
-  const isXlsx = /\.xlsx$/i.test(file.name || '')
-    || String(file.type || '').includes('openxmlformats-officedocument.spreadsheetml.sheet');
-  const rows = isXlsx
-    ? repricerParseXlsxArrayBuffer(await repricerReadFileAsArrayBuffer(file))
-    : repricerParseAuditImportText(await repricerReadFileAsText(file));
-  if (!rows.length) {
-    window.alert('Не удалось прочитать таблицу. Используйте XLSX/XLS/CSV, скачанный из репрайсера.');
-    return;
-  }
-  const workbookMeta = rows.__workbookMeta || {};
-  const validation = validateRepricerAuditImportRows(rows, file.name || '');
-  state.storage.repricerLastImportValidation = {
-    fileName: file.name || '',
-    validatedAt: validation.validatedAt,
-    rows: validation.rows,
-    actionable: validation.actionable,
-    skipped: validation.skipped,
-    errors: validation.errors,
-    warnings: validation.warnings,
-    canApply: validation.canApply,
-    sheetName: workbookMeta.sheetName || '',
-    awaitingRop: numberOrZero(workbookMeta.awaitingRop),
-    blockedByWorkbook: numberOrZero(workbookMeta.blocked),
-    approvedByWorkbook: numberOrZero(workbookMeta.approved)
-  };
-  saveLocalStorage();
-  if (!validation.actionable && numberOrZero(workbookMeta.awaitingRop) > 0) {
+  const fileName = file.name || '';
+  const uploadedAt = new Date().toISOString();
+  const attemptId = stableId('repricer-import-attempt', `${fileName}|${uploadedAt}|${file.size || 0}`);
+  try {
+    const isXlsx = /\.xlsx$/i.test(fileName)
+      || String(file.type || '').includes('openxmlformats-officedocument.spreadsheetml.sheet');
+    const rows = isXlsx
+      ? repricerParseXlsxArrayBuffer(await repricerReadFileAsArrayBuffer(file))
+      : repricerParseAuditImportText(await repricerReadFileAsText(file));
+    if (!rows.length) {
+      const message = 'Не удалось прочитать таблицу. Используйте XLSX/XLS/CSV, скачанный из репрайсера.';
+      repricerRecordImportAttempt({ id: attemptId, fileName, uploadedAt, status: 'read_error', errors: 1, message });
+      renderRepricer();
+      window.alert(message);
+      return;
+    }
+    const workbookMeta = rows.__workbookMeta || {};
+    const validation = validateRepricerAuditImportRows(rows, fileName);
+    const errorRows = validation.resultRows.filter((item) => item.result === 'ошибка');
+    state.storage.repricerLastImportValidation = {
+      fileName,
+      validatedAt: validation.validatedAt,
+      rows: validation.rows,
+      actionable: validation.actionable,
+      skipped: validation.skipped,
+      errors: validation.errors,
+      warnings: validation.warnings,
+      canApply: validation.canApply,
+      sheetName: workbookMeta.sheetName || '',
+      awaitingRop: numberOrZero(workbookMeta.awaitingRop),
+      blockedByWorkbook: numberOrZero(workbookMeta.blocked),
+      approvedByWorkbook: numberOrZero(workbookMeta.approved)
+    };
+    saveLocalStorage();
+    if (!validation.actionable && numberOrZero(workbookMeta.awaitingRop) > 0) {
+      repricerRecordImportAttempt({
+        id: attemptId,
+        fileName,
+        uploadedAt,
+        status: 'awaiting_rop',
+        rows: validation.rows,
+        actionable: validation.actionable,
+        skipped: validation.skipped,
+        errors: validation.errors,
+        warnings: validation.warnings,
+        awaitingRop: workbookMeta.awaitingRop,
+        sheetName: workbookMeta.sheetName || '',
+        errorRows,
+        message: 'Строки заполнены, но ждут решения РОП.'
+      });
+      renderRepricer();
+      window.alert(
+        `Файл прочитан: ${fmt.int(workbookMeta.awaitingRop)} строк заполнены, но ждут решения РОП.\n\n`
+        + 'На листе «Согласование РОП» выберите «Согласовано» для разрешённых строк, сохраните XLSX и загрузите его повторно. До этого маржа и MIN/MAX не применяются.'
+      );
+      return;
+    }
+    if (validation.resultRows.length && (validation.errors || validation.warnings)) {
+      repricerDownloadHtmlTable(repricerImportResultColumns(), validation.resultRows, `repricer-import-validation-${new Date().toISOString().slice(0, 10)}.xls`);
+    }
+    const validationText = repricerImportValidationMessage(validation);
+    if (!validation.canApply) {
+      repricerRecordImportAttempt({
+        id: attemptId,
+        fileName,
+        uploadedAt,
+        status: 'blocked',
+        rows: validation.rows,
+        actionable: validation.actionable,
+        skipped: validation.skipped,
+        errors: validation.errors,
+        warnings: validation.warnings,
+        sheetName: workbookMeta.sheetName || '',
+        errorRows,
+        message: 'Критичные ошибки: рабочие данные не изменены.'
+      });
+      renderRepricer();
+      window.alert(`${validationText}\n\nКритичные ошибки есть, импорт не применён. Скачан файл проверки, попытка сохранена в истории.`);
+      return;
+    }
+    if (!validation.actionable) {
+      repricerRecordImportAttempt({
+        id: attemptId,
+        fileName,
+        uploadedAt,
+        status: 'no_changes',
+        rows: validation.rows,
+        skipped: validation.skipped,
+        warnings: validation.warnings,
+        sheetName: workbookMeta.sheetName || '',
+        message: 'Заполняемые поля пустые; рабочие данные не изменены.'
+      });
+      renderRepricer();
+      window.alert(`${validationText}\n\nИзменений для применения нет.`);
+      return;
+    }
+    const shouldApply = window.confirm(`${validationText}\n\nПрименить эти решения? Перед применением будет сохранён откат.`);
+    if (!shouldApply) {
+      repricerRecordImportAttempt({
+        id: attemptId,
+        fileName,
+        uploadedAt,
+        status: 'cancelled',
+        rows: validation.rows,
+        actionable: validation.actionable,
+        skipped: validation.skipped,
+        warnings: validation.warnings,
+        sheetName: workbookMeta.sheetName || '',
+        message: 'Проверка пройдена, применение отменено пользователем.'
+      });
+      renderRepricer();
+      return;
+    }
+    repricerCreateRepairSnapshot('import', `Перед импортом ${fileName || 'аудита'}`);
+    const summary = await repricerApplyAuditImportRows(rows, fileName);
+    repricerRecordImportAttempt({
+      id: attemptId,
+      fileName,
+      uploadedAt,
+      status: summary.errors ? 'failed' : 'applied',
+      rows: validation.rows,
+      actionable: validation.actionable,
+      applied: summary.applied,
+      skipped: summary.skipped,
+      errors: summary.errors,
+      warnings: validation.warnings,
+      sheetName: workbookMeta.sheetName || '',
+      errorRows: summary.resultRows.filter((item) => item.result === 'ошибка'),
+      message: summary.errors ? 'Часть строк завершилась ошибкой.' : 'Решения применены.'
+    });
+    repricerDownloadImportResult(summary.resultRows);
+    window.alert(`Импорт решений: применено ${summary.applied}, пропущено ${summary.skipped}, ошибок ${summary.errors}. Очередь API: добавить ${summary.pendingAdds}, удалить ${summary.pendingDeletes}, себестоимость ${summary.pendingCosts}, прочие задачи ${summary.pendingTasks}.`);
+  } catch (error) {
+    repricerRecordImportAttempt({
+      id: attemptId,
+      fileName,
+      uploadedAt,
+      status: 'failed',
+      errors: 1,
+      message: error?.message || String(error)
+    });
     renderRepricer();
-    window.alert(
-      `Файл прочитан: ${fmt.int(workbookMeta.awaitingRop)} строк заполнены, но ждут решения РОП.\n\n`
-      + 'На листе «Согласование РОП» выберите «Согласовано» для разрешённых строк, сохраните XLSX и загрузите его повторно. До этого маржа и MIN/MAX не применяются.'
-    );
-    return;
+    throw error;
   }
-  if (validation.resultRows.length && (validation.errors || validation.warnings)) {
-    repricerDownloadHtmlTable(repricerImportResultColumns(), validation.resultRows, `repricer-import-validation-${new Date().toISOString().slice(0, 10)}.xls`);
-  }
-  const validationText = repricerImportValidationMessage(validation);
-  if (!validation.canApply) {
-    renderRepricer();
-    window.alert(`${validationText}\n\nКритичные ошибки есть, импорт не применён. Скачан файл проверки.`);
-    return;
-  }
-  const shouldApply = window.confirm(`${validationText}\n\nПрименить эти решения? Перед применением будет сохранён откат.`);
-  if (!shouldApply) {
-    renderRepricer();
-    return;
-  }
-  repricerCreateRepairSnapshot('import', `Перед импортом ${file.name || 'аудита'}`);
-  const summary = await repricerApplyAuditImportRows(rows, file.name || '');
-  repricerDownloadImportResult(summary.resultRows);
-  window.alert(`Импорт решений: применено ${summary.applied}, пропущено ${summary.skipped}, ошибок ${summary.errors}. Очередь API: добавить ${summary.pendingAdds}, удалить ${summary.pendingDeletes}, себестоимость ${summary.pendingCosts}, прочие задачи ${summary.pendingTasks}.`);
 }
 
 function previewRepricerSafeFixes(rows = buildRepricerRows()) {
@@ -6202,6 +6600,22 @@ function applyRepricerSafeFixes() {
   return summary;
 }
 
+function repricerHistoricalMarginSnapshot(row = {}, side = {}) {
+  const planFact = row.skuFact?.planFact || row.planFact || {};
+  const candidates = [
+    ['SKU plan-fact · факт Apr16', planFact.factApr16MarginPct],
+    ['SKU plan-fact · факт Apr to date', planFact.factAprToDateMarginPct],
+    ['SKU plan-fact · факт Feb26', planFact.factFeb26MarginPct],
+    ['история площадки', side.historicalMarginPct],
+    ['live history', side.liveMarginPct]
+  ];
+  for (const [source, value] of candidates) {
+    const ratio = repricerMarginRatio(value);
+    if (ratio > 0 && ratio < 1) return { value: ratio, source };
+  }
+  return { value: null, source: '' };
+}
+
 function repricerExportRows(platform = 'all', sourceRows = null) {
   const rows = Array.isArray(sourceRows) ? sourceRows : buildRepricerRows();
   return rows.flatMap((row) => {
@@ -6209,6 +6623,7 @@ function repricerExportRows(platform = 'all', sourceRows = null) {
     if ((platform === 'all' || platform === 'wb') && row.wb) sides.push(['WB', row.wb]);
     if ((platform === 'all' || platform === 'ozon') && row.ozon) sides.push(['Ozon', row.ozon]);
     return sides.map(([platformLabel, side]) => {
+      const historicalMargin = repricerHistoricalMarginSnapshot(row, side);
       const pricingBaseRub = numberOrZero(side.finalPrice) || numberOrZero(side.currentPrice);
       const revenueFactor = side.canonicalSource ? 1 : (numberOrZero(side.buyerDiscountFactor) || 1);
       const revenueBaseRub = pricingBaseRub * revenueFactor;
@@ -6233,7 +6648,8 @@ function repricerExportRows(platform = 'all', sourceRows = null) {
         + advertisingAppliedRub
         + commissionAppliedRub;
       return {
-      import_margin_pct: '',
+      import_min_margin_pct: '',
+      import_max_margin_pct: '',
       import_command: '',
       import_price_rub: '',
       import_min_rub: '',
@@ -6328,12 +6744,18 @@ function repricerExportRows(platform = 'all', sourceRows = null) {
       alignment_follow_score: repricerExportNumber(side.followScore, 0),
       alignment_follow_price_rub: repricerExportNumber(side.followPrice),
       margin_pct: side.marginPct == null ? '' : repricerExportNumber(side.marginPct * 100, 1),
+      historical_margin_pct: historicalMargin.value == null ? '' : repricerExportNumber(historicalMargin.value * 100, 1),
+      historical_margin_source: historicalMargin.source,
       required_margin_pct: side.requiredMarginPct == null ? '' : repricerExportNumber(side.requiredMarginPct * 100, 1),
+      maximum_margin_pct: side.maximumMarginPct == null ? '' : repricerExportNumber(side.maximumMarginPct * 100, 1),
       margin_floor_rub: repricerExportNumber(side.marginFloor),
+      margin_cap_rub: repricerExportNumber(side.marginCap),
       margin_policy_source: side.marginPolicySource || '',
       margin_guard_required: side.marginGuardRequired ? 'yes' : 'no',
       margin_priority_applied: side.marginPriorityApplied ? 'yes' : 'no',
       cap_lifted_by_margin: side.capLiftedByMargin ? 'yes' : 'no',
+      floor_lowered_by_max_margin: side.floorLoweredByMaxMargin ? 'yes' : 'no',
+      cap_lowered_by_max_margin: side.capLoweredByMaxMargin ? 'yes' : 'no',
       live_rec_price_rub: repricerExportNumber(side.liveReferencePrice),
       live_delta_rub: side.liveDeltaRub == null ? '' : repricerExportNumber(side.liveDeltaRub),
       live_delta_pct: side.liveDeltaPct == null ? '' : repricerExportNumber(side.liveDeltaPct * 100, 1),
@@ -6386,7 +6808,8 @@ function downloadRepricerExcel(platform = 'all', sourceRows = null) {
   const rows = repricerExportRows(platform, sourceRows);
   if (!rows.length) return { ok: false, rows: 0, tone: 'warn', message: 'В рабочем Excel нет строк для выгрузки.' };
   const columns = [
-    ['import_margin_pct', 'Новая маржа SKU, %'],
+    ['import_min_margin_pct', 'Новая MIN маржа SKU, %'],
+    ['import_max_margin_pct', 'Новая MAX маржа SKU, %'],
     ['import_command', 'Команда'],
     ['import_price_rub', 'Новая цена, ₽'],
     ['import_min_rub', 'Новый MIN, ₽'],
@@ -6476,13 +6899,19 @@ function downloadRepricerExcel(platform = 'all', sourceRows = null) {
     ['alignment_keep_score', 'Keep score'],
     ['alignment_follow_score', 'Follow score'],
     ['alignment_follow_price_rub', 'Follow price, ₽'],
-    ['margin_pct', 'Маржа, %'],
-    ['required_margin_pct', 'Порог маржи, %'],
+    ['margin_pct', 'Фактическая маржа сейчас, %'],
+    ['historical_margin_pct', 'Историческая маржа, %'],
+    ['historical_margin_source', 'Источник исторической маржи'],
+    ['required_margin_pct', 'MIN маржа SKU, %'],
+    ['maximum_margin_pct', 'MAX маржа SKU, %'],
     ['margin_floor_rub', 'Floor маржи, ₽'],
+    ['margin_cap_rub', 'Cap маржи, ₽'],
     ['margin_policy_source', 'Источник маржи'],
     ['margin_guard_required', 'Маржа обязательна'],
     ['margin_priority_applied', 'Маржа приоритетна'],
     ['cap_lifted_by_margin', 'MAX поднят маржой'],
+    ['floor_lowered_by_max_margin', 'MIN снижен MAX маржой'],
+    ['cap_lowered_by_max_margin', 'MAX снижен MAX маржой'],
     ['live_rec_price_rub', 'Live rec, ₽'],
     ['live_delta_rub', 'vs live, ₽'],
     ['live_delta_pct', 'vs live, %'],
@@ -6535,27 +6964,42 @@ function repricerSkuMarginExportRows(sourceRows = null) {
       row.ozon ? ['Ozon', row.ozon] : null
     ].filter(Boolean);
     const profile = repricerFindSkuProfile(articleKey) || {};
-    const sideMargin = sides
+    const sideMinMargin = sides
       .map(([, side]) => side?.requiredMarginPct)
       .find((value) => Number.isFinite(Number(value)) && Number(value) > 0);
-    const currentMargin = Number(profile.targetMarginPct) > 0
-      ? Number(profile.targetMarginPct)
-      : (Number(sideMargin) > 0 ? Number(sideMargin) : null);
+    const sideMaxMargin = sides
+      .map(([, side]) => side?.maximumMarginPct)
+      .find((value) => Number.isFinite(Number(value)) && Number(value) > 0);
+    const currentMinMargin = repricerMarginRatio(profile.minMarginPct ?? profile.targetMarginPct)
+      || (Number(sideMinMargin) > 0 ? Number(sideMinMargin) : null);
+    const currentMaxMargin = repricerMarginRatio(profile.maxMarginPct)
+      || (Number(sideMaxMargin) > 0 ? Number(sideMaxMargin) : null);
+    const currentFactMargin = sides
+      .map(([, side]) => repricerMarginRatio(side?.marginPct))
+      .find((value) => Number.isFinite(Number(value)) && Number(value) > 0) || null;
+    const historicalMargin = sides
+      .map(([, side]) => repricerHistoricalMarginSnapshot(row, side))
+      .find((item) => item.value != null) || { value: null, source: '' };
     const marginRequired = sides.some(([, side]) => side?.marginGuardRequired);
     const marginMissing = sides.some(([, side]) => side?.marginPolicyMissing);
     const lifecycle = row.productLifecycle || repricerProductLifecycleForRecord(row, row.status || '', articleKey);
     return {
-      import_margin_pct: '',
+      import_min_margin_pct: '',
+      import_max_margin_pct: '',
       article_key: articleKey,
       article: row.article || articleKey,
       name: row.name || '',
       status: lifecycle?.label || lifecycle?.status || row.status || '',
-      current_margin_pct: currentMargin == null ? '' : repricerExportNumber(currentMargin * 100, 1),
+      current_min_margin_pct: currentMinMargin == null ? '' : repricerExportNumber(currentMinMargin * 100, 1),
+      current_max_margin_pct: currentMaxMargin == null ? '' : repricerExportNumber(currentMaxMargin * 100, 1),
+      current_fact_margin_pct: currentFactMargin == null ? '' : repricerExportNumber(currentFactMargin * 100, 1),
+      historical_margin_pct: historicalMargin.value == null ? '' : repricerExportNumber(historicalMargin.value * 100, 1),
+      historical_margin_source: historicalMargin.source,
       margin_guard_required: marginRequired ? 'да' : 'нет',
       margin_missing: marginMissing ? 'нужно заполнить' : '',
       marketplaces: sides.map(([label]) => label).join(' + '),
       import_note: '',
-      fill_hint: 'Заполните только «Новая маржа SKU, %»: 25, 25% или 0,25. Пусто = не менять.'
+      fill_hint: 'Заполните оба порога: MIN и MAX. Например 25 и 40. MAX должен быть выше MIN.'
     };
   }).filter((row) => row.article_key)
     .sort((left, right) => Number(Boolean(right.margin_missing)) - Number(Boolean(left.margin_missing))
@@ -6566,12 +7010,17 @@ function downloadRepricerSkuMarginExcel(sourceRows = null) {
   const rows = repricerSkuMarginExportRows(sourceRows);
   if (!rows.length) return { ok: false, rows: 0, tone: 'warn', message: 'Нет SKU для заполнения маржи.' };
   const columns = [
-    ['import_margin_pct', 'Новая маржа SKU, %'],
+    ['import_min_margin_pct', 'Новая MIN маржа SKU, %'],
+    ['import_max_margin_pct', 'Новая MAX маржа SKU, %'],
     ['article_key', 'article_key'],
     ['article', 'Артикул'],
     ['name', 'Название'],
     ['status', 'Статус товара'],
-    ['current_margin_pct', 'Текущая маржа SKU, %'],
+    ['current_min_margin_pct', 'Текущая MIN маржа SKU, %'],
+    ['current_max_margin_pct', 'Текущая MAX маржа SKU, %'],
+    ['current_fact_margin_pct', 'Фактическая маржа сейчас, %'],
+    ['historical_margin_pct', 'Историческая маржа, %'],
+    ['historical_margin_source', 'Источник исторической маржи'],
     ['margin_guard_required', 'Маржа обязательна'],
     ['margin_missing', 'Что сделать'],
     ['marketplaces', 'Площадки'],
@@ -6585,7 +7034,7 @@ function downloadRepricerSkuMarginExcel(sourceRows = null) {
     rows: rows.length,
     tone: 'ok',
     filename,
-    message: `Файл маржи SKU подготовлен: ${fmt.int(rows.length)} товаров. Заполните «Новая маржа SKU, %» и загрузите файл обратно.`
+    message: `Файл маржи SKU подготовлен: ${fmt.int(rows.length)} товаров. Заполните оба порога — «Новая MIN маржа» и «Новая MAX маржа» — и загрузите файл обратно.`
   };
 }
 
@@ -6861,6 +7310,9 @@ function renderRepricerRepairStatusCard() {
   const lastValidation = state.storage?.repricerLastImportValidation || null;
   const lastReconcile = state.storage?.repricerLastApiReconcile || null;
   const lastSnapshot = (state.storage?.repricerRepairSnapshots || [])[0] || null;
+  const importHistory = (state.storage?.repricerImportHistory || []).slice(0, 5);
+  const lastImportWithErrors = (state.storage?.repricerImportHistory || [])
+    .find((item) => Array.isArray(item.errorRows) && item.errorRows.length) || null;
   const lastImportText = lastImport?.importedAt
     ? `Импорт: ${fmt.date(lastImport.importedAt)} · применено ${fmt.int(lastImport.applied)} · ошибок ${fmt.int(lastImport.errors)}`
     : 'Импортов пока не было';
@@ -6877,6 +7329,18 @@ function renderRepricerRepairStatusCard() {
   const reconcileText = lastReconcile?.checkedAt
     ? `Сверка API: ${fmt.date(lastReconcile.checkedAt)} · принято ${fmt.int(lastReconcile.accepted)} · ждёт источника ${fmt.int(lastReconcile.waiting)} · ошибок ${fmt.int(lastReconcile.error)}`
     : 'API ещё не сверяли';
+  const importHistoryMarkup = importHistory.map((item) => {
+    const status = String(item.status || '');
+    const tone = ['blocked', 'read_error', 'failed'].includes(status)
+      ? 'danger'
+      : (['awaiting_rop', 'cancelled'].includes(status) ? 'warn' : 'ok');
+    const counters = [
+      numberOrZero(item.applied) > 0 ? `применено ${fmt.int(item.applied)}` : '',
+      numberOrZero(item.errors) > 0 ? `ошибок ${fmt.int(item.errors)}` : '',
+      numberOrZero(item.awaitingRop) > 0 ? `ждёт РОП ${fmt.int(item.awaitingRop)}` : ''
+    ].filter(Boolean).join(' · ');
+    return `<div class="muted small" style="display:flex;gap:8px;align-items:center;flex-wrap:wrap">${badge(repricerImportAttemptStatusLabel(status), tone)}<strong>${escapeHtml(item.fileName || 'файл')}</strong><span>${escapeHtml(fmt.date(item.uploadedAt || item.updatedAt))}${counters ? ` · ${escapeHtml(counters)}` : ''}</span>${item.message ? `<span>· ${escapeHtml(item.message)}</span>` : ''}</div>`;
+  }).join('');
   return `
     <div class="repricer-operator-focus-card repricer-repair-card" style="margin-top:14px">
       <div class="section-subhead">
@@ -6903,11 +7367,16 @@ function renderRepricerRepairStatusCard() {
         <div><strong>${escapeHtml(validationText)}</strong></div>
         <div><strong>${escapeHtml(reconcileText)}</strong></div>
       </div>
+      <details style="margin-top:12px" ${importHistory.some((item) => numberOrZero(item.errors) > 0) ? 'open' : ''}>
+        <summary class="small muted" style="cursor:pointer">История загрузок · ${fmt.int((state.storage?.repricerImportHistory || []).length)}</summary>
+        <div style="display:grid;gap:8px;margin-top:10px">${importHistoryMarkup || '<div class="muted small">Файлы ещё не загружали.</div>'}</div>
+      </details>
       <div class="quick-actions" style="margin-top:12px">
         <button type="button" class="quick-chip" data-repricer-auto-fix>Починить безопасное</button>
         <button type="button" class="quick-chip" data-repricer-export="api:tasks" ${api.total ? '' : 'disabled aria-disabled="true"'}>Задачи API</button>
         <button type="button" class="quick-chip" data-repricer-api-mark-sent ${api.open ? '' : 'disabled aria-disabled="true"'}>API отправлено</button>
         <button type="button" class="quick-chip" data-repricer-api-reconcile ${api.total ? '' : 'disabled aria-disabled="true"'}>Сверить после API</button>
+        <button type="button" class="quick-chip" data-repricer-import-errors-download ${lastImportWithErrors ? `data-import-attempt-id="${escapeHtml(lastImportWithErrors.id)}"` : 'disabled aria-disabled="true"'}>Ошибки последней загрузки</button>
         <button type="button" class="quick-chip" data-repricer-undo-last ${lastSnapshot ? '' : 'disabled aria-disabled="true"'}>Отменить последнее</button>
       </div>
     </div>
@@ -7493,9 +7962,9 @@ function repricerOperatorTaskPlan(health, stats = {}) {
   const metrics = health?.metrics || {};
   const tasks = [
     {
-      title: 'Заполнить маржу SKU',
+      title: 'Заполнить MIN/MAX маржу SKU',
       count: metrics.missing_required_margin || 0,
-      hint: 'Активные товары и новинки без собственной маржи не попадут в выгрузку.',
+      hint: 'Активные товары и новинки без собственной пары порогов MIN/MAX не попадут в выгрузку.',
       mode: 'blocked',
       tone: 'danger',
       source: 'SKU / маржа'
@@ -7717,7 +8186,7 @@ function attachRepricerEvents(root) {
       setRepricerExportStatus(
         root,
         importKind === 'margin'
-          ? 'Выберите файл «Маржа SKU Excel», в котором заполнена колонка «Новая маржа SKU, %».'
+          ? 'Выберите файл «Маржа SKU Excel», в котором заполнены «Новая MIN маржа SKU, %» и «Новая MAX маржа SKU, %».'
           : 'Выберите рабочий Excel, который скачали из репрайсера и заполнили.',
         'info'
       );
@@ -7737,6 +8206,10 @@ function attachRepricerEvents(root) {
   });
   root.querySelector('[data-repricer-api-reconcile]')?.addEventListener('click', () => {
     reconcileRepricerApiTasks();
+  });
+  root.querySelector('[data-repricer-import-errors-download]')?.addEventListener('click', (event) => {
+    const id = event.currentTarget.getAttribute('data-import-attempt-id') || '';
+    runRepricerExport(event.currentTarget, () => downloadRepricerImportHistoryErrors(id));
   });
   auditImportInput?.addEventListener('change', (event) => {
     const file = event.target.files?.[0];
@@ -8078,7 +8551,7 @@ function renderRepricer() {
   if (operatorSimple) {
     const batchCounts = repricerIssueBatchCounts(sourceRows);
     const batchButtons = [
-      ['missing_margin', 'нет маржи SKU', batchCounts.missing_margin, 'danger'],
+      ['missing_margin', 'нет MIN/MAX маржи SKU', batchCounts.missing_margin, 'danger'],
       ['missing_min', 'нет MIN', batchCounts.missing_min, 'danger'],
       ['missing_cost', 'нет себестоимости', batchCounts.missing_cost, 'warn'],
       ['below_min', 'ниже MIN вручную', batchCounts.below_min, 'danger'],
@@ -8125,7 +8598,7 @@ function renderRepricer() {
     const wbCheckCount = safeCount(wbTemplate.yellow) + safeCount(wbTemplate.red);
     const ozonCheckCount = safeCount(ozonTemplate.yellow) + safeCount(ozonTemplate.red);
     const emptyExportReasons = [
-      ['нет маржи SKU', safeCount(wbTemplate.missingMargin) + safeCount(ozonTemplate.missingMargin), 'Заполнить утверждённую маржу через аудит'],
+      ['нет MIN/MAX маржи SKU', safeCount(wbTemplate.missingMargin) + safeCount(ozonTemplate.missingMargin), 'Заполнить утверждённые пороги MIN/MAX через аудит'],
       ['нет MIN', safeCount(wbTemplate.missingMin) + safeCount(ozonTemplate.missingMin), 'Заполнить MIN/MAX в Ценах или через аудит'],
       ['ниже MIN вручную', safeCount(wbTemplate.belowMin) + safeCount(ozonTemplate.belowMin), 'Проверить цену и рабочий порог'],
       ['нет себестоимости', safeCount(wbTemplate.missingCost) + safeCount(ozonTemplate.missingCost), 'Добавить себестоимость или fee-контур'],
@@ -8439,13 +8912,15 @@ function renderRepricer() {
     <div class="repricer-stack">
       ${visibleRows.map((row) => {
         const displayOwner = repricerOwnerForPlatform(row, state.repricerFilters.platform || 'all');
-        const profileMarginRatio = repricerMarginRatio(row.profile?.targetMarginPct);
-        const profileMarginPercent = profileMarginRatio > 0 ? repricerExportNumber(profileMarginRatio * 100, 1) : '';
+        const profileMinMarginRatio = repricerMarginRatio(row.profile?.minMarginPct ?? row.profile?.targetMarginPct);
+        const profileMaxMarginRatio = repricerMarginRatio(row.profile?.maxMarginPct);
+        const profileMinMarginPercent = profileMinMarginRatio > 0 ? repricerExportNumber(profileMinMarginRatio * 100, 1) : '';
+        const profileMaxMarginPercent = profileMaxMarginRatio > 0 ? repricerExportNumber(profileMaxMarginRatio * 100, 1) : '';
         const duplicateEntry = duplicateNames.byArticle.get(String(row.articleKey || '').trim());
         const duplicatePeers = (duplicateEntry?.articles || [])
           .filter((article) => article !== String(row.article || row.articleKey || '').trim())
           .slice(0, 4);
-        return `<div class="card repricer-card"><div class="head"><div><strong>${linkToSku(row.articleKey, row.article || row.articleKey)}</strong><div class="muted small">${escapeHtml(row.name || 'Без названия')} · ${escapeHtml(displayOwner || 'Без owner')}</div>${duplicatePeers.length ? `<div class="muted small" style="margin-top:6px">Похожие карточки: ${escapeHtml(duplicatePeers.join(', '))}</div>` : ''}</div><div class="badge-stack">${row.brand ? badge(row.brand, 'info') : ''}${badge(row.status || 'Статус не указан')}${row.productLifecycle?.key && row.productLifecycle.key !== 'active' ? badge(`товар: ${row.productLifecycle.label || row.productLifecycle.status || row.productLifecycle.key}`, row.productLifecycle.tone || 'warn') : ''}${badge(`роль ${row.role || '—'}`, 'info')}${badge(row.launchReady === 'READY' ? 'готов к запуску' : 'hold до запуска', row.launchReady === 'READY' ? 'ok' : 'warn')}${row.segment ? badge(row.segment, 'info') : ''}${row.abc ? badge(`ABC ${row.abc}`) : ''}${row.hasManagedProfile ? badge('профиль SKU', 'ok') : ''}${row.hasCorridor ? badge('коридор', 'info') : ''}${row.hasManualOverride ? badge('ручное решение', 'warn') : ''}${duplicateEntry ? badge(`дубль названия x${fmt.int(duplicateEntry.count)}`, 'warn') : ''}</div></div>${repricerProductLifecycleEditorHtml(row)}<details style="margin:10px 0"><summary class="small muted" style="cursor:pointer">Настроить профиль SKU</summary><form class="repricer-sku-form" data-article-key="${escapeHtml(row.articleKey)}" style="margin-top:10px"><div class="filters repricer-filters"><select name="status">${statuses.map((status) => `<option value="${escapeHtml(status)}" ${row.status === status ? 'selected' : ''}>${escapeHtml(status)}</option>`).join('')}</select><select name="role">${roles.map((role) => `<option value="${escapeHtml(role)}" ${row.role === role ? 'selected' : ''}>${escapeHtml(role)}</option>`).join('')}</select><select name="launchReady"><option value="READY" ${row.launchReady === 'READY' ? 'selected' : ''}>READY</option><option value="HOLD" ${row.launchReady !== 'READY' ? 'selected' : ''}>HOLD</option></select><input type="number" step="0.1" min="0.1" max="99.9" name="targetMarginPct" value="${escapeHtml(profileMarginPercent)}" placeholder="Маржа SKU, %"></div><div class="muted small" style="margin-top:8px">Маржа SKU — первое ограничение цены. Для актуального товара, новинки и перезапуска итог не может быть ниже этого порога; затем применяются MIN/MAX.</div><div class="quick-actions" style="margin-top:10px"><button type="submit" class="quick-chip">Сохранить профиль</button><button type="button" class="quick-chip" data-repricer-sku-reset data-article-key="${escapeHtml(row.articleKey)}">Сбросить профиль</button></div></form></details><div class="repricer-side-grid ${state.repricerFilters.platform !== 'all' ? 'single' : ''}">${state.repricerFilters.platform !== 'ozon' ? renderRepricerSide('WB', row.wb) : ''}${state.repricerFilters.platform !== 'wb' ? renderRepricerSide('Ozon', row.ozon) : ''}</div></div>`;
+        return `<div class="card repricer-card"><div class="head"><div><strong>${linkToSku(row.articleKey, row.article || row.articleKey)}</strong><div class="muted small">${escapeHtml(row.name || 'Без названия')} · ${escapeHtml(displayOwner || 'Без owner')}</div>${duplicatePeers.length ? `<div class="muted small" style="margin-top:6px">Похожие карточки: ${escapeHtml(duplicatePeers.join(', '))}</div>` : ''}</div><div class="badge-stack">${row.brand ? badge(row.brand, 'info') : ''}${badge(row.status || 'Статус не указан')}${row.productLifecycle?.key && row.productLifecycle.key !== 'active' ? badge(`товар: ${row.productLifecycle.label || row.productLifecycle.status || row.productLifecycle.key}`, row.productLifecycle.tone || 'warn') : ''}${badge(`роль ${row.role || '—'}`, 'info')}${badge(row.launchReady === 'READY' ? 'готов к запуску' : 'hold до запуска', row.launchReady === 'READY' ? 'ok' : 'warn')}${row.segment ? badge(row.segment, 'info') : ''}${row.abc ? badge(`ABC ${row.abc}`) : ''}${row.hasManagedProfile ? badge('профиль SKU', 'ok') : ''}${row.hasCorridor ? badge('коридор', 'info') : ''}${row.hasManualOverride ? badge('ручное решение', 'warn') : ''}${duplicateEntry ? badge(`дубль названия x${fmt.int(duplicateEntry.count)}`, 'warn') : ''}</div></div>${repricerProductLifecycleEditorHtml(row)}<details style="margin:10px 0"><summary class="small muted" style="cursor:pointer">Настроить профиль SKU</summary><form class="repricer-sku-form" data-article-key="${escapeHtml(row.articleKey)}" style="margin-top:10px"><div class="filters repricer-filters"><select name="status">${statuses.map((status) => `<option value="${escapeHtml(status)}" ${row.status === status ? 'selected' : ''}>${escapeHtml(status)}</option>`).join('')}</select><select name="role">${roles.map((role) => `<option value="${escapeHtml(role)}" ${row.role === role ? 'selected' : ''}>${escapeHtml(role)}</option>`).join('')}</select><select name="launchReady"><option value="READY" ${row.launchReady === 'READY' ? 'selected' : ''}>READY</option><option value="HOLD" ${row.launchReady !== 'READY' ? 'selected' : ''}>HOLD</option></select><input type="number" step="0.1" min="0.1" max="99.9" name="minMarginPct" value="${escapeHtml(profileMinMarginPercent)}" placeholder="MIN маржа SKU, %"><input type="number" step="0.1" min="0.1" max="99.9" name="maxMarginPct" value="${escapeHtml(profileMaxMarginPercent)}" placeholder="MAX маржа SKU, %"></div><div class="muted small" style="margin-top:8px">Сначала действует коридор маржи: цена не ниже MIN маржи и, если MAX задан, не выше MAX маржи. Затем внутри него применяются ценовые MIN/MAX.</div><div class="quick-actions" style="margin-top:10px"><button type="submit" class="quick-chip">Сохранить профиль</button><button type="button" class="quick-chip" data-repricer-sku-reset data-article-key="${escapeHtml(row.articleKey)}">Сбросить профиль</button></div></form></details><div class="repricer-side-grid ${state.repricerFilters.platform !== 'all' ? 'single' : ''}">${state.repricerFilters.platform !== 'ozon' ? renderRepricerSide('WB', row.wb) : ''}${state.repricerFilters.platform !== 'wb' ? renderRepricerSide('Ozon', row.ozon) : ''}</div></div>`;
       }).join('') || '<div class="empty">По выбранным фильтрам репрайсер ничего не показал.</div>'}
     </div>
   `;

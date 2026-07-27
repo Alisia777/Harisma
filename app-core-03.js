@@ -581,6 +581,7 @@ function buildRepricerControlsPayload() {
     pendingApiTasks: repricerControlsQueueItems(state.storage?.repricerPendingApiTasks),
     skuDecisionApprovals: repricerControlsQueueItems(state.storage?.skuDecisionApprovals).slice(0, 1000),
     repairHistory: repricerControlsQueueItems(state.storage?.repricerRepairHistory).slice(0, 400),
+    importHistory: repricerControlsQueueItems(state.storage?.repricerImportHistory).slice(0, 50),
     repairSnapshots: repricerControlsQueueItems(state.storage?.repricerRepairSnapshots).slice(0, 10),
     apiReconcileHistory: repricerControlsQueueItems(state.storage?.repricerApiReconcileHistory).slice(0, 100),
     lastAuditImport: state.storage?.repricerLastAuditImport && typeof state.storage.repricerLastAuditImport === 'object' ? state.storage.repricerLastAuditImport : null,
@@ -625,6 +626,7 @@ function applyRepricerControlsPayload(payload) {
   if (Array.isArray(payload.skuDecisionApprovals)) state.storage.skuDecisionApprovals = repricerControlsQueueItems(payload.skuDecisionApprovals).slice(0, 1000);
   if (typeof window.skuDecisionApprovals === 'function') window.skuDecisionApprovals();
   if (Array.isArray(payload.repairHistory || payload.repricerRepairHistory)) state.storage.repricerRepairHistory = repricerControlsQueueItems(payload.repairHistory || payload.repricerRepairHistory).slice(0, 400);
+  if (Array.isArray(payload.importHistory || payload.repricerImportHistory)) state.storage.repricerImportHistory = repricerControlsQueueItems(payload.importHistory || payload.repricerImportHistory).slice(0, 50);
   if (Array.isArray(payload.repairSnapshots || payload.repricerRepairSnapshots)) state.storage.repricerRepairSnapshots = repricerControlsQueueItems(payload.repairSnapshots || payload.repricerRepairSnapshots).slice(0, 10);
   if (Array.isArray(payload.apiReconcileHistory || payload.repricerApiReconcileHistory)) state.storage.repricerApiReconcileHistory = repricerControlsQueueItems(payload.apiReconcileHistory || payload.repricerApiReconcileHistory).slice(0, 100);
   if (payload.lastAuditImport && typeof payload.lastAuditImport === 'object') state.storage.repricerLastAuditImport = payload.lastAuditImport;
@@ -663,6 +665,7 @@ function repricerQueueField(item, type = repricerQueueType(item)) {
   const raw = String(item?.field || item?.apiField || '').trim().toLowerCase();
   if (type === 'UPDATE_COST') return 'cost';
   if (type === 'ADD_SKU' || type === 'DELETE_SKU') return 'sku';
+  if (type === 'UPDATE_SKU_MARGIN') return 'margin_bounds_pct';
   return raw || String(item?.reason || '').trim().toLowerCase();
 }
 
@@ -670,6 +673,11 @@ function repricerQueuePayloadSignature(item) {
   const type = repricerQueueType(item);
   const field = repricerQueueField(item, type);
   const value = item?.value ?? item?.costRub ?? item?.cost ?? '';
+  if (type === 'UPDATE_SKU_MARGIN') {
+    const minMargin = item?.minMarginPct ?? item?.targetMarginPct ?? value;
+    const maxMargin = item?.maxMarginPct ?? '';
+    return `${type}|${field}|${String(minMargin).trim()}|${String(maxMargin).trim()}`;
+  }
   return `${type}|${field}|${String(value).trim()}`;
 }
 
@@ -827,6 +835,7 @@ function mergeRepricerControlsPayload(remotePayload, localPayload) {
   merged.pendingApiTasks = mergeRepricerQueueItems(remote.pendingApiTasks || remote.repricerPendingApiTasks, local.pendingApiTasks || local.repricerPendingApiTasks);
   merged.skuDecisionApprovals = mergeRepricerQueueItems(remote.skuDecisionApprovals, local.skuDecisionApprovals, 1000);
   merged.repairHistory = mergeRepricerQueueItems(remote.repairHistory || remote.repricerRepairHistory, local.repairHistory || local.repricerRepairHistory, 400);
+  merged.importHistory = mergeRepricerQueueItems(remote.importHistory || remote.repricerImportHistory, local.importHistory || local.repricerImportHistory, 50);
   merged.repairSnapshots = mergeRepricerQueueItems(remote.repairSnapshots || remote.repricerRepairSnapshots, local.repairSnapshots || local.repricerRepairSnapshots, 10);
   merged.apiReconcileHistory = mergeRepricerQueueItems(remote.apiReconcileHistory || remote.repricerApiReconcileHistory, local.apiReconcileHistory || local.repricerApiReconcileHistory, 100);
   merged.lastAuditImport = repricerLatestObject(remote.lastAuditImport, local.lastAuditImport || local.repricerLastAuditImport, ['importedAt', 'updatedAt']);

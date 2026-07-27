@@ -122,6 +122,7 @@
       repricerPendingCostFixes: compactArray(parsed.repricerPendingCostFixes, 300, 2),
       repricerPendingApiTasks: compactArray(parsed.repricerPendingApiTasks, 300, 2),
       repricerRepairHistory: compactArray(parsed.repricerRepairHistory, MAX_REPAIR_ITEMS, 2),
+      repricerImportHistory: compactArray(parsed.repricerImportHistory, 50, 3),
       repricerRepairSnapshots: compactArray(parsed.repricerRepairSnapshots, MAX_SNAPSHOT_ITEMS, 1),
       repricerApiReconcileHistory: compactArray(parsed.repricerApiReconcileHistory, MAX_REPAIR_ITEMS, 2),
       repricerLastAuditImport: compactLastImport(parsed.repricerLastAuditImport),
@@ -142,6 +143,7 @@
     if (text.length <= MAX_RAW_CHARS) return text;
 
     compacted.repricerRepairHistory = [];
+    compacted.repricerImportHistory = [];
     compacted.repricerApiReconcileHistory = [];
     compacted.repricerLastAuditImport = null;
     compacted.repricerLastAutoFix = null;

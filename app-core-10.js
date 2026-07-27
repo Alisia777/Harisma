@@ -3316,6 +3316,7 @@ async function init() {
       repricerPendingCostFixes: Array.isArray(local.repricerPendingCostFixes) ? local.repricerPendingCostFixes.filter((item) => item && typeof item === 'object') : [],
       repricerPendingApiTasks: Array.isArray(local.repricerPendingApiTasks) ? local.repricerPendingApiTasks.filter((item) => item && typeof item === 'object') : [],
       repricerRepairHistory: Array.isArray(local.repricerRepairHistory) ? local.repricerRepairHistory.filter((item) => item && typeof item === 'object').slice(0, 400) : [],
+      repricerImportHistory: Array.isArray(local.repricerImportHistory) ? local.repricerImportHistory.filter((item) => item && typeof item === 'object').slice(0, 50) : [],
       repricerRepairSnapshots: Array.isArray(local.repricerRepairSnapshots) ? local.repricerRepairSnapshots.filter((item) => item && typeof item === 'object').slice(0, 10) : [],
       repricerApiReconcileHistory: Array.isArray(local.repricerApiReconcileHistory) ? local.repricerApiReconcileHistory.filter((item) => item && typeof item === 'object').slice(0, 100) : [],
       repricerLastAuditImport: local.repricerLastAuditImport && typeof local.repricerLastAuditImport === 'object' ? local.repricerLastAuditImport : null,

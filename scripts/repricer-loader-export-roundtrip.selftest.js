@@ -126,7 +126,8 @@ function csvCell(value) {
 function writeEditedCsv(filePath, headers, sourceRow) {
   const values = headers.map((header, index) => {
     if (header === 'Команда') return 'FIX';
-    if (header === 'Новая маржа SKU, %') return '35';
+    if (header === 'Новая MIN маржа SKU, %') return '35';
+    if (header === 'Новая MAX маржа SKU, %') return '45';
     if (header === 'Комментарий для импорта') return 'round-trip browser selftest';
     return sourceRow[index] ?? '';
   });
@@ -137,17 +138,19 @@ function writeEditedTsv(filePath, headers, sourceRow) {
   const clean = (value) => String(value ?? '').replace(/[\t\r\n]+/g, ' ');
   const values = headers.map((header, index) => {
     if (header === 'Команда') return 'FIX';
-    if (header === 'Новая маржа SKU, %') return '36%';
+    if (header === 'Новая MIN маржа SKU, %') return '36%';
+    if (header === 'Новая MAX маржа SKU, %') return '46%';
     if (header === 'Комментарий для импорта') return 'round-trip TSV browser selftest';
     return sourceRow[index] ?? '';
   });
   fs.writeFileSync(filePath, `\uFEFF${headers.map(clean).join('\t')}\n${values.map(clean).join('\t')}\n`, 'utf8');
 }
 
-function writeEditedXlsx(filePath, headers, sourceRow, margin = '37%') {
+function writeEditedXlsx(filePath, headers, sourceRow, minMargin = '37%', maxMargin = '47%') {
   const values = headers.map((header, index) => {
     if (header === 'Команда') return 'FIX';
-    if (header === 'Новая маржа SKU, %') return margin;
+    if (header === 'Новая MIN маржа SKU, %') return minMargin;
+    if (header === 'Новая MAX маржа SKU, %') return maxMargin;
     if (header === 'Комментарий для импорта') return 'round-trip XLSX browser selftest';
     return sourceRow[index] ?? '';
   });
@@ -161,6 +164,17 @@ function writeEditedXlsx(filePath, headers, sourceRow, margin = '37%') {
   const workbook = XLSX.utils.book_new();
   XLSX.utils.book_append_sheet(workbook, sheet, 'Импорт в портал');
   XLSX.writeFile(workbook, filePath);
+}
+
+function writeInvalidMarginCsv(filePath, headers, sourceRow) {
+  const values = headers.map((header, index) => {
+    if (header === 'Команда') return 'FIX';
+    if (header === 'Новая MIN маржа SKU, %') return '45';
+    if (header === 'Новая MAX маржа SKU, %') return '35';
+    if (header === 'Комментарий для импорта') return 'invalid margin band browser selftest';
+    return sourceRow[index] ?? '';
+  });
+  fs.writeFileSync(filePath, `\uFEFF${headers.map(csvCell).join(',')}\n${values.map(csvCell).join(',')}\n`, 'utf8');
 }
 
 function writePendingRopXlsx(filePath) {
@@ -435,7 +449,8 @@ async function main() {
     const audit = workbookMatrix(auditPath);
     const auditHeaders = assertHeaders(audit, [
       'Команда',
-      'Новая маржа SKU, %',
+      'Новая MIN маржа SKU, %',
+      'Новая MAX маржа SKU, %',
       'Новый MIN, ₽',
       'Новый MAX, ₽',
       'Новая себестоимость, ₽',
@@ -445,9 +460,13 @@ async function main() {
       'Комментарий для импорта',
       'Площадка',
       'Артикул',
-      'Маржа, %',
-      'Порог маржи, %',
+      'Фактическая маржа сейчас, %',
+      'Историческая маржа, %',
+      'Источник исторической маржи',
+      'MIN маржа SKU, %',
+      'MAX маржа SKU, %',
       'Floor маржи, ₽',
+      'Cap маржи, ₽',
       'Источник маржи',
       'Маржа обязательна',
       'Маржа приоритетна',
@@ -462,13 +481,15 @@ async function main() {
       'Реклама актуальна на',
       'Себестоимость + комиссия + издержки + реклама, ₽'
     ]);
-    assert.strictEqual(auditHeaders[0], 'Новая маржа SKU, %', 'SKU margin input must be the leftmost audit column');
+    assert.strictEqual(auditHeaders[0], 'Новая MIN маржа SKU, %', 'SKU minimum margin input must be the leftmost audit column');
+    assert.strictEqual(auditHeaders[1], 'Новая MAX маржа SKU, %', 'SKU maximum margin input must follow the minimum margin');
     assert(audit.length > 1, 'audit export must contain data rows');
     assert.strictEqual(audit.length - 1, downloadExpectations.auditRows, 'downloaded audit row count must match the repricer');
     const inputColumns = [
       'Команда',
       'Новая цена, ₽',
-      'Новая маржа SKU, %',
+      'Новая MIN маржа SKU, %',
+      'Новая MAX маржа SKU, %',
       'Новый MIN, ₽',
       'Новый MAX, ₽',
       'Новая себестоимость, ₽',
@@ -482,6 +503,13 @@ async function main() {
       row.forEach((value, index) => {
         assert(!String(value || '').includes('[object Object]'), `audit export must serialize source labels as text: ${auditHeaders[index]}`);
       });
+    });
+    const historicalMarginIndex = auditHeaders.indexOf('Историческая маржа, %');
+    const historicalMarginSourceIndex = auditHeaders.indexOf('Источник исторической маржи');
+    const historicalMarginRows = audit.slice(1).filter((row) => numericCell(row[historicalMarginIndex]) > 0);
+    assert(historicalMarginRows.length > 0, 'working Excel must keep historical margin values for threshold decisions');
+    historicalMarginRows.forEach((row) => {
+      assert(String(row[historicalMarginSourceIndex] || '').trim(), 'every historical margin value must identify its source');
     });
     const advertisingColumns = {
       marketplace: auditHeaders.indexOf('Площадка'),
@@ -539,6 +567,33 @@ async function main() {
     const firstDataRow = audit.slice(1).find((row) => String(row[auditHeaders.indexOf('Артикул')] || '').trim());
     assert(firstDataRow, 'audit export must contain at least one SKU row');
     const article = String(firstDataRow[auditHeaders.indexOf('article_key')] || firstDataRow[auditHeaders.indexOf('Артикул')] || '').trim();
+    const profileBeforeInvalid = await page.evaluate((articleKey) => {
+      const profile = (window.__alteaAppState.storage.repricerSkuProfiles || [])
+        .find((item) => String(item.articleKey || '') === articleKey);
+      return profile ? JSON.stringify(profile) : '';
+    }, article);
+    const invalidMarginPath = path.join(tempDir, 'repricer-audit-invalid-margin.csv');
+    writeInvalidMarginCsv(invalidMarginPath, auditHeaders, firstDataRow);
+    await page.locator('[data-repricer-audit-import]').first().setInputFiles(invalidMarginPath);
+    await page.waitForFunction(
+      (fileName) => window.__alteaAppState?.storage?.repricerImportHistory?.[0]?.fileName === fileName,
+      path.basename(invalidMarginPath),
+      { timeout: 30000 }
+    );
+    const invalidAttempt = await page.evaluate((articleKey) => {
+      const storage = window.__alteaAppState.storage;
+      const profile = (storage.repricerSkuProfiles || []).find((item) => String(item.articleKey || '') === articleKey);
+      return {
+        attempt: storage.repricerImportHistory?.[0] || null,
+        profile: profile ? JSON.stringify(profile) : ''
+      };
+    }, article);
+    assert.strictEqual(invalidAttempt.attempt?.status, 'blocked', JSON.stringify(invalidAttempt));
+    assert.strictEqual(invalidAttempt.attempt?.errors, 1, JSON.stringify(invalidAttempt));
+    assert.strictEqual(invalidAttempt.attempt?.errorRows?.[0]?.field, 'MAX маржа SKU, %', JSON.stringify(invalidAttempt));
+    assert.match(String(invalidAttempt.attempt?.errorRows?.[0]?.details || ''), /выше MIN маржи/);
+    assert.strictEqual(invalidAttempt.profile, profileBeforeInvalid, 'invalid margin band must not change the SKU profile');
+
     const editedCsvPath = path.join(tempDir, 'repricer-audit-edited.csv');
     writeEditedCsv(editedCsvPath, auditHeaders, firstDataRow);
     approveNextImport = true;
@@ -560,8 +615,14 @@ async function main() {
     assert.strictEqual(applied.summary.pendingTasks, 1);
     assert(applied.profile, 'edited margin import must update the SKU profile');
     assert(Math.abs(Number(applied.profile.targetMarginPct) - 0.35) < 0.0001);
+    assert(Math.abs(Number(applied.profile.minMarginPct) - 0.35) < 0.0001);
+    assert(Math.abs(Number(applied.profile.maxMarginPct) - 0.45) < 0.0001);
     assert(applied.task, 'edited margin import must create UPDATE_SKU_MARGIN API task');
     assert(Math.abs(Number(applied.task.targetMarginPct ?? applied.task.value) - 0.35) < 0.0001);
+    assert(Math.abs(Number(applied.task.maxMarginPct) - 0.45) < 0.0001);
+    const appliedHistory = await page.evaluate(() => window.__alteaAppState.storage.repricerImportHistory || []);
+    assert.strictEqual(appliedHistory[0]?.status, 'applied');
+    assert(appliedHistory.some((item) => item.status === 'blocked' && item.errors === 1), 'failed attempt must remain in import history after a successful retry');
 
     const editedTsvPath = path.join(tempDir, 'repricer-audit-edited.tsv');
     writeEditedTsv(editedTsvPath, auditHeaders, firstDataRow);
@@ -581,6 +642,7 @@ async function main() {
     assert.strictEqual(tsvApplied.summary.applied, 1);
     assert(tsvApplied.profile, 'edited TSV margin import must update the SKU profile');
     assert(Math.abs(Number(tsvApplied.profile.targetMarginPct) - 0.36) < 0.0001);
+    assert(Math.abs(Number(tsvApplied.profile.maxMarginPct) - 0.46) < 0.0001);
     assert(tsvApplied.task, 'edited TSV margin import must update the margin API task');
     assert(Math.abs(Number(tsvApplied.task.targetMarginPct ?? tsvApplied.task.value) - 0.36) < 0.0001);
 
@@ -616,6 +678,7 @@ async function main() {
     assert.strictEqual(xlsxApplied.summary.applied, 1);
     assert(xlsxApplied.profile, 'edited XLSX margin import must update the SKU profile');
     assert(Math.abs(Number(xlsxApplied.profile.targetMarginPct) - 0.37) < 0.0001);
+    assert(Math.abs(Number(xlsxApplied.profile.maxMarginPct) - 0.47) < 0.0001);
     assert(xlsxApplied.task, 'edited XLSX margin import must update the margin API task');
 
     const currentStatusKey = await page.evaluate((articleKey) => {

@@ -438,6 +438,18 @@ function targetMarginFloor(economics = {}, targetMarginPct = null) {
   return Math.ceil(((economics.cost || 0) + economicsFixedCostsPerUnit(economics)) / denominator);
 }
 
+function targetMarginCap(economics = {}, maximumMarginPct = null) {
+  const maximum = normalizePolicyPct(maximumMarginPct);
+  if (!economics.complete || maximum === null || maximum <= 0 || maximum >= 1) return null;
+  const denominator = 1
+    - (economics.commission_pct || 0)
+    - (economics.internal_advertising_pct || 0)
+    - (economics.tax_pct || 0)
+    - maximum;
+  if (denominator <= 0) return null;
+  return Math.floor(((economics.cost || 0) + economicsFixedCostsPerUnit(economics)) / denominator);
+}
+
 function economicsFixedCostsPerUnit(economics = {}) {
   const platformCosts = firstConfiguredNumber(economics.platform_costs_per_unit);
   const internalAdvertising = firstConfiguredNumber(economics.internal_advertising_per_unit);
@@ -759,19 +771,42 @@ function resolvePolicy(
     supportRow.historicalMaxPrice
   );
   const registryTargetMargin = normalizePolicyPct(
-    minMaxRecord?.targetMarginPct
+    minMaxRecord?.minMarginPct
+      ?? minMaxRecord?.min_margin_pct
+      ?? minMaxRecord?.targetMarginPct
       ?? minMaxRecord?.marginPct
       ?? minMaxRecord?.allowedMarginPct
   );
+  const registryMaximumMargin = normalizePolicyPct(
+    minMaxRecord?.maxMarginPct
+      ?? minMaxRecord?.max_margin_pct
+      ?? minMaxRecord?.allowedMaxMarginPct
+  );
   const sourceTargetMargin = normalizePolicyPct(
-    sourceRow.manualMarginPct
+    sourceRow.manualMinMarginPct
+      ?? sourceRow.minMarginPct
+      ?? sourceRow.manualMarginPct
       ?? sourceRow.targetMarginPct
       ?? sourceRow.allowedMarginPct
+      ?? supportRow.manualMinMarginPct
+      ?? supportRow.minMarginPct
       ?? supportRow.manualMarginPct
       ?? supportRow.targetMarginPct
       ?? supportRow.allowedMarginPct
   );
   const targetMargin = registryTargetMargin ?? sourceTargetMargin;
+  const sourceMaximumMargin = normalizePolicyPct(
+    sourceRow.manualMaxMarginPct
+      ?? sourceRow.maxMarginPct
+      ?? sourceRow.allowedMaxMarginPct
+      ?? supportRow.manualMaxMarginPct
+      ?? supportRow.maxMarginPct
+      ?? supportRow.allowedMaxMarginPct
+  );
+  const maximumMargin = registryMaximumMargin ?? sourceMaximumMargin;
+  const marginBandInvalid = maximumMargin !== null
+    && targetMargin !== null
+    && maximumMargin <= targetMargin;
   const guardRequired = marginGuardRequired(lifecycleKey);
   const marginResidualPct = targetMarginResidualPct(economics, targetMargin);
   const minimumResidualPct = minimumResidualContributionPct(economicsPolicy);
@@ -781,14 +816,34 @@ function resolvePolicy(
   const marginFloor = guardRequired && targetMarginFeasible
     ? targetMarginFloor(economics, targetMargin)
     : null;
-  const floor = Math.max(minMaxFloor || 0, marginFloor || 0) || null;
+  const maximumMarginCap = guardRequired && !marginBandInvalid
+    ? targetMarginCap(economics, maximumMargin)
+    : null;
+  const unboundedFloor = Math.max(minMaxFloor || 0, marginFloor || 0) || null;
+  const floorLoweredByMaximumMargin = Boolean(
+    maximumMarginCap !== null
+    && unboundedFloor !== null
+    && unboundedFloor > maximumMarginCap
+  );
+  const floor = floorLoweredByMaximumMargin ? maximumMarginCap : unboundedFloor;
   const capLiftedByMargin = Boolean(
     guardRequired
     && marginFloor !== null
     && minMaxCap !== null
     && minMaxCap + 1e-9 < marginFloor
   );
-  const cap = capLiftedByMargin ? marginFloor : minMaxCap;
+  const minMaxCapAfterFloor = capLiftedByMargin ? marginFloor : minMaxCap;
+  const capLoweredByMaximumMargin = Boolean(
+    maximumMarginCap !== null
+    && minMaxCapAfterFloor !== null
+    && minMaxCapAfterFloor > maximumMarginCap
+  );
+  const capBeforeFloorGuard = maximumMarginCap !== null
+    ? (minMaxCapAfterFloor !== null ? Math.min(minMaxCapAfterFloor, maximumMarginCap) : maximumMarginCap)
+    : minMaxCapAfterFloor;
+  const cap = capBeforeFloorGuard !== null && floor !== null
+    ? Math.max(capBeforeFloorGuard, floor)
+    : capBeforeFloorGuard;
   const registrySource = (record) => ({
     sourceStore: record.sourceStore || 'server_upload',
     sourceFile: record.sourceFile || '',
@@ -802,11 +857,17 @@ function resolvePolicy(
     min_max_floor: minMaxFloor,
     min_max_cap: minMaxCap,
     margin_floor: marginFloor,
+    margin_cap: maximumMarginCap,
     margin_guard_required: guardRequired,
     margin_priority_applied: Boolean(marginFloor !== null && marginFloor >= (minMaxFloor || 0)),
     cap_lifted_by_margin: capLiftedByMargin,
+    floor_lowered_by_max_margin: floorLoweredByMaximumMargin,
+    cap_lowered_by_max_margin: capLoweredByMaximumMargin,
     lifecycle_key: lifecycleKey,
     target_margin_pct: targetMargin,
+    min_margin_pct: targetMargin,
+    max_margin_pct: maximumMargin,
+    margin_band_invalid: marginBandInvalid,
     target_margin_feasible: targetMarginFeasible,
     margin_residual_pct: marginResidualPct,
     minimum_margin_residual_pct: minimumResidualPct,
@@ -817,7 +878,10 @@ function resolvePolicy(
       cap: minMaxRecord ? registrySource(minMaxRecord) : (firstPositive(sourceRow.manualMaxPrice, supportRow.manualMaxPrice) !== null ? 'approved_min_max_import' : 'price_policy_json'),
       margin: registryTargetMargin !== null
         ? registrySource(minMaxRecord)
-        : (sourceTargetMargin !== null ? 'price_policy_json' : '')
+        : (sourceTargetMargin !== null ? 'price_policy_json' : ''),
+      max_margin: registryMaximumMargin !== null
+        ? registrySource(minMaxRecord)
+        : (sourceMaximumMargin !== null ? 'price_policy_json' : '')
     }
   };
 }
@@ -850,11 +914,11 @@ function chooseProposedPrice(currentPrice, policy = {}, approval = null) {
   }
   if (cap !== null && cap >= (floor || 0) && price > cap) {
     price = cap;
-    guard = 'max_cap';
+    guard = policy.cap_lowered_by_max_margin ? 'max_margin_cap' : 'max_cap';
   }
   const roundedPrice = guard === 'margin_floor' || guard === 'min_floor'
     ? Math.ceil(price)
-    : (guard === 'max_cap' ? Math.floor(price) : Math.round(price));
+    : (guard === 'max_cap' || guard === 'max_margin_cap' ? Math.floor(price) : Math.round(price));
   return {
     price: roundedPrice,
     source: approvedPrice !== null ? 'approved_override_guarded' : 'canonical_keep_inside_corridor',
@@ -1009,10 +1073,12 @@ function buildCanonicalSide({
   if (!economics.complete) reasonCodes.push('economics_incomplete');
   if (policy.floor === null) reasonCodes.push('missing_floor');
   if (policy.margin_guard_required && policy.target_margin_pct === null) reasonCodes.push('missing_target_margin');
+  if (policy.margin_guard_required && policy.max_margin_pct === null) reasonCodes.push('missing_max_margin');
   if (policy.margin_guard_required && policy.target_margin_pct !== null && policy.target_margin_feasible === false) {
     reasonCodes.push('target_margin_not_economically_feasible');
   }
   if (policy.margin_guard_required && policy.target_margin_pct !== null && policy.margin_floor === null) reasonCodes.push('invalid_target_margin_policy');
+  if (policy.margin_band_invalid) reasonCodes.push('invalid_margin_band');
   if (lifecycleKey === 'not_listed') reasonCodes.push('platform_not_listed');
   if (policy.cap_lifted_by_margin) reasonCodes.push('cap_lifted_by_margin_floor');
   if (policy.cap !== null && policy.floor !== null && policy.cap + 1e-9 < policy.floor) reasonCodes.push('cap_below_floor');
@@ -1033,13 +1099,22 @@ function buildCanonicalSide({
   if (liveSignalsRequired && !liveSignalBucket?.snapshotAvailable) reasonCodes.push('live_stock_snapshot_missing');
   if (liveSignalsRequired && policy.margin_guard_required && !selectedStockDirect) reasonCodes.push('direct_stock_required');
 
-  const corridorValid = !(policy.cap !== null && policy.floor !== null && policy.cap + 1e-9 < policy.floor);
+  const corridorValid = !policy.margin_band_invalid
+    && !(policy.cap !== null && policy.floor !== null && policy.cap + 1e-9 < policy.floor);
   const canRecommend = price !== null
     && current.asOf
     && !currentPriceStale
     && economics.complete
     && policy.floor !== null
     && (!policy.margin_guard_required || policy.margin_floor !== null)
+    && (
+      !policy.margin_guard_required
+      || (
+        policy.max_margin_pct !== null
+        && policy.target_margin_pct !== null
+        && policy.max_margin_pct > policy.target_margin_pct
+      )
+    )
     && corridorValid
     && !reasonCodes.includes('stock_snapshot_missing')
     && !reasonCodes.includes('stock_unknown')
@@ -1052,6 +1127,7 @@ function buildCanonicalSide({
   if (proposed.guard === 'margin_floor') reasonCodes.push('margin_floor_applied');
   if (proposed.guard === 'min_floor') reasonCodes.push('min_floor_applied');
   if (proposed.guard === 'max_cap') reasonCodes.push('max_cap_applied');
+  if (proposed.guard === 'max_margin_cap') reasonCodes.push('max_margin_cap_applied');
   const oosRiskStatus = String(selectedStock?.oosRiskStatus || '').trim().toLowerCase();
   const oosDemandGuardActive = policy.margin_guard_required
     && (Boolean(selectedStock?.partialOos) || ['risk', 'watch'].includes(oosRiskStatus));
@@ -1083,9 +1159,16 @@ function buildCanonicalSide({
       policy.target_margin_pct !== null
       && proposedMargin !== null
       && proposedMargin + 1e-9 >= policy.target_margin_pct
+      && (
+        policy.max_margin_pct === null
+        || proposedMargin <= policy.max_margin_pct + 1e-9
+      )
     );
   if (policy.margin_guard_required && currentMargin !== null && policy.target_margin_pct !== null && currentMargin + 1e-9 < policy.target_margin_pct) {
     reasonCodes.push('current_margin_below_target');
+  }
+  if (policy.margin_guard_required && currentMargin !== null && policy.max_margin_pct !== null && currentMargin > policy.max_margin_pct + 1e-9) {
+    reasonCodes.push('current_margin_above_maximum');
   }
   if (proposed.price !== null && !marginSafe) reasonCodes.push('margin_guard_violation');
   const insideCorridor = proposed.price === null
@@ -1522,6 +1605,7 @@ module.exports = {
   normalizeLifecycleKey,
   resolveEconomics,
   targetMarginFloor,
+  targetMarginCap,
   featureReadiness,
   buildSharedProductCostMap
 };

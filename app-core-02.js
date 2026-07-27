@@ -318,6 +318,7 @@ function normalizePortalStorageSnapshot(source = {}) {
     repricerPendingCostFixes: Array.isArray(parsed.repricerPendingCostFixes) ? parsed.repricerPendingCostFixes.filter((item) => item && typeof item === 'object') : [],
     repricerPendingApiTasks: Array.isArray(parsed.repricerPendingApiTasks) ? parsed.repricerPendingApiTasks.filter((item) => item && typeof item === 'object') : [],
     repricerRepairHistory: Array.isArray(parsed.repricerRepairHistory) ? parsed.repricerRepairHistory.filter((item) => item && typeof item === 'object').slice(0, 400) : [],
+    repricerImportHistory: Array.isArray(parsed.repricerImportHistory) ? parsed.repricerImportHistory.filter((item) => item && typeof item === 'object').slice(0, 50) : [],
     repricerRepairSnapshots: Array.isArray(parsed.repricerRepairSnapshots) ? parsed.repricerRepairSnapshots.filter((item) => item && typeof item === 'object').slice(0, 10) : [],
     repricerApiReconcileHistory: Array.isArray(parsed.repricerApiReconcileHistory) ? parsed.repricerApiReconcileHistory.filter((item) => item && typeof item === 'object').slice(0, 100) : [],
     repricerLastAuditImport: parsed.repricerLastAuditImport && typeof parsed.repricerLastAuditImport === 'object' ? parsed.repricerLastAuditImport : null,

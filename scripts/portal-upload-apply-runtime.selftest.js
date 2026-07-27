@@ -42,7 +42,7 @@ function writeCsv(filePath, rows, delimiter = ',') {
 function writeRefWorkbook(filePath) {
   const workbook = XLSX.utils.book_new();
   const sheet = XLSX.utils.json_to_sheet([
-    { articleKey: 'sku-1', platform: 'wb', 'Маржа, %': 25, minPrice: 90, maxPrice: 150, effectiveFrom: '2026-06-20', author: 'Codex', role: 'admin', reason: 'test' }
+    { articleKey: 'sku-1', platform: 'wb', 'MIN маржа, %': 25, 'MAX маржа, %': 40, minPrice: 90, maxPrice: 150, effectiveFrom: '2026-06-20', author: 'Codex', role: 'admin', reason: 'test' }
   ]);
   sheet.D2 = { t: 'e', v: 23, w: '#REF!', f: 'Z999+#REF!' };
   XLSX.utils.book_append_sheet(workbook, sheet, 'Upload');
@@ -159,14 +159,18 @@ function main() {
   fs.mkdirSync(uploadDir, { recursive: true });
 
   const validMinMax = writeWorkbook(path.join(uploadDir, 'minmax.xlsx'), [
-    { articleKey: 'sku-1', platform: 'wb', 'Маржа, %': 25, minPrice: 90, maxPrice: 150, effectiveFrom: '2026-06-20', author: 'Codex', role: 'admin', reason: 'approved corridor' }
+    { articleKey: 'sku-1', platform: 'wb', 'MIN маржа, %': 25, 'MAX маржа, %': 40, minPrice: 90, maxPrice: 150, effectiveFrom: '2026-06-20', author: 'Codex', role: 'admin', reason: 'approved corridor' }
   ]);
   const minmaxReport = applyUpload(uploadOptions(dataDir, outDir, { dataset: 'min_max', file: validMinMax }));
   assert.strictEqual(minmaxReport.e2e.status, 'ok');
   let row = canonicalRow(dataDir, outDir);
   assert.strictEqual(row.policy.floor, 90);
-  assert.strictEqual(row.policy.cap, 150);
+  assert.strictEqual(row.policy.min_max_cap, 150);
+  assert.strictEqual(row.policy.margin_cap, 102);
+  assert.strictEqual(row.policy.cap, 102);
+  assert.strictEqual(row.policy.cap_lowered_by_max_margin, true);
   assert.strictEqual(row.policy.target_margin_pct, 0.25);
+  assert.strictEqual(row.policy.max_margin_pct, 0.4);
   assert.strictEqual(row.policy.sources.floor.sourceStore, 'server_upload');
   assert.strictEqual(row.policy.sources.margin.sourceStore, 'server_upload');
   assert.strictEqual(row.facts.price_freshness, 'fresh');
@@ -189,7 +193,7 @@ function main() {
   assert.strictEqual(registryAfter, registryBefore, 'reimporting the same approved batch must be idempotent');
 
   const marginPriority = writeWorkbook(path.join(uploadDir, 'margin-priority.xlsx'), [
-    { articleKey: 'sku-1', platform: 'wb', 'Маржа, %': 40, minPrice: 90, maxPrice: 100, effectiveFrom: '2026-06-21', author: 'Codex', role: 'admin', reason: 'margin must win over max' }
+    { articleKey: 'sku-1', platform: 'wb', 'MIN маржа, %': 40, 'MAX маржа, %': 50, minPrice: 90, maxPrice: 100, effectiveFrom: '2026-06-21', author: 'Codex', role: 'admin', reason: 'margin must win over max' }
   ]);
   assert.strictEqual(applyUpload(uploadOptions(dataDir, outDir, { dataset: 'min_max', file: marginPriority })).e2e.status, 'ok');
   row = canonicalRow(dataDir, outDir);
@@ -202,13 +206,25 @@ function main() {
   assert(row.recommendation.reason_codes.includes('margin_floor_applied'));
   assert(row.recommendation.reason_codes.includes('cap_lifted_by_margin_floor'));
 
+  const maxMarginPriority = writeWorkbook(path.join(uploadDir, 'max-margin-priority.xlsx'), [
+    { articleKey: 'sku-1', platform: 'wb', 'MIN маржа, %': 25, 'MAX маржа, %': 40, minPrice: 140, maxPrice: 180, effectiveFrom: '2026-06-22', author: 'Codex', role: 'admin', reason: 'maximum margin must win over price min' }
+  ]);
+  assert.strictEqual(applyUpload(uploadOptions(dataDir, outDir, { dataset: 'min_max', file: maxMarginPriority })).e2e.status, 'ok');
+  row = canonicalRow(dataDir, outDir);
+  assert.strictEqual(row.policy.margin_cap, 102);
+  assert.strictEqual(row.policy.floor, 102);
+  assert.strictEqual(row.policy.cap, 102);
+  assert.strictEqual(row.policy.floor_lowered_by_max_margin, true);
+  assert.strictEqual(row.recommendation.price, 102);
+  assert(row.recommendation.margin_pct <= 0.4 + 1e-9, 'final price must not exceed per-SKU maximum margin');
+
   const validTsv = writeCsv(path.join(uploadDir, 'minmax.tsv'), [
-    { articleKey: 'sku-alias-1', platform: 'wb', margin: '25%', minPrice: 91, maxPrice: 151, effectiveFrom: '2026-06-20', author: 'Codex', role: 'admin', reason: 'tsv alias' }
+    { articleKey: 'sku-alias-1', platform: 'wb', margin: '25%', maxMarginPct: '40%', minPrice: 91, maxPrice: 151, effectiveFrom: '2026-06-20', author: 'Codex', role: 'admin', reason: 'tsv alias' }
   ], '\t');
   assert.strictEqual(applyUpload(uploadOptions(dataDir, outDir, { dataset: 'min_max', file: validTsv })).e2e.status, 'ok');
 
   const validLegacyXls = writeWorkbook(path.join(uploadDir, 'minmax-legacy.xls'), [
-    { articleKey: 'sku-alias-1', platform: 'ozon', 'Маржа, %': '27%', minPrice: 93, maxPrice: 161, effectiveFrom: '2026-06-23', author: 'Codex', role: 'admin', reason: 'legacy xls round-trip' }
+    { articleKey: 'sku-alias-1', platform: 'ozon', 'MIN маржа, %': '27%', 'MAX маржа, %': '42%', minPrice: 93, maxPrice: 161, effectiveFrom: '2026-06-23', author: 'Codex', role: 'admin', reason: 'legacy xls round-trip' }
   ]);
   assert.strictEqual(applyUpload(uploadOptions(dataDir, outDir, { dataset: 'min_max', file: validLegacyXls })).e2e.status, 'ok');
   const legacyXlsRecord = readJson(path.join(dataDir, 'repricer_minmax_registry.json')).rows
@@ -217,12 +233,20 @@ function main() {
   assert.strictEqual(legacyXlsRecord.articleKey, 'sku-1');
   assert.strictEqual(legacyXlsRecord.platform, 'ozon');
   assert.strictEqual(legacyXlsRecord.targetMarginPct, 0.27);
+  assert.strictEqual(legacyXlsRecord.maxMarginPct, 0.42);
   assert.strictEqual(legacyXlsRecord.effectiveFrom, '2026-06-23');
 
   const invalidMinMax = writeWorkbook(path.join(uploadDir, 'minmax-bad.xlsx'), [
-    { articleKey: 'sku-1', platform: 'wb', 'Маржа, %': 25, minPrice: 200, maxPrice: 150, effectiveFrom: '2026-06-20', author: 'Codex', role: 'admin', reason: 'bad corridor' }
+    { articleKey: 'sku-1', platform: 'wb', 'MIN маржа, %': 25, 'MAX маржа, %': 40, minPrice: 200, maxPrice: 150, effectiveFrom: '2026-06-20', author: 'Codex', role: 'admin', reason: 'bad corridor' }
   ]);
   assert.strictEqual(applyUpload(uploadOptions(dataDir, outDir, { dataset: 'min_max', file: invalidMinMax })).e2e.status, 'blocked');
+
+  const invalidMarginBand = writeWorkbook(path.join(uploadDir, 'margin-band-bad.xlsx'), [
+    { articleKey: 'sku-1', platform: 'wb', 'MIN маржа, %': 45, 'MAX маржа, %': 35, minPrice: 90, maxPrice: 150, effectiveFrom: '2026-06-20', author: 'Codex', role: 'admin', reason: 'bad margin band' }
+  ]);
+  const invalidMarginBandReport = applyUpload(uploadOptions(dataDir, outDir, { dataset: 'min_max', file: invalidMarginBand }));
+  assert.strictEqual(invalidMarginBandReport.e2e.status, 'blocked');
+  assert(invalidMarginBandReport.minmax.rejectedRows.some((item) => item.errors.includes('max_margin_lte_min_margin')));
 
   const missingMargin = writeWorkbook(path.join(uploadDir, 'missing-margin.xlsx'), [
     { articleKey: 'sku-1', platform: 'wb', minPrice: 90, maxPrice: 150, effectiveFrom: '2026-06-20', author: 'Codex', role: 'admin', reason: 'missing margin' }
@@ -232,7 +256,7 @@ function main() {
   assert(missingMarginReport.minmax.errors.some((error) => error.code === 'missing_columns'));
 
   const unknownSku = writeWorkbook(path.join(uploadDir, 'unknown.xlsx'), [
-    { articleKey: 'missing-sku', platform: 'wb', 'Маржа, %': 25, minPrice: 90, maxPrice: 150, effectiveFrom: '2026-06-20', author: 'Codex', role: 'admin', reason: 'bad sku' }
+    { articleKey: 'missing-sku', platform: 'wb', 'MIN маржа, %': 25, 'MAX маржа, %': 40, minPrice: 90, maxPrice: 150, effectiveFrom: '2026-06-20', author: 'Codex', role: 'admin', reason: 'bad sku' }
   ]);
   assert.strictEqual(applyUpload(uploadOptions(dataDir, outDir, { dataset: 'min_max', file: unknownSku })).e2e.status, 'blocked');
 
@@ -240,7 +264,7 @@ function main() {
   assert.strictEqual(applyUpload(uploadOptions(dataDir, outDir, { dataset: 'min_max', file: refWorkbook })).e2e.status, 'blocked');
 
   const pendingMinMax = writeWorkbook(path.join(uploadDir, 'pending.xlsx'), [
-    { articleKey: 'sku-1', platform: 'wb', 'Маржа, %': 30, minPrice: 300, maxPrice: 400, effectiveFrom: '2026-06-20', author: 'Codex', role: 'admin', reason: 'pending' }
+    { articleKey: 'sku-1', platform: 'wb', 'MIN маржа, %': 30, 'MAX маржа, %': 45, minPrice: 300, maxPrice: 400, effectiveFrom: '2026-06-20', author: 'Codex', role: 'admin', reason: 'pending' }
   ]);
   assert.strictEqual(applyUpload(uploadOptions(dataDir, outDir, { dataset: 'min_max', file: pendingMinMax, canApprove: false })).e2e.status, 'pending_review');
   row = canonicalRow(dataDir, outDir);
@@ -297,14 +321,15 @@ function main() {
     '\u041e\u0448\u0438\u0431\u043a\u0438_\u043f\u0440\u0435\u0434\u044b\u0434\u0443\u0449\u0435\u0439_\u0437\u0430\u0433\u0440\u0443\u0437\u043a\u0438'
   ]);
   const templateHeaders = XLSX.utils.sheet_to_json(template.Sheets[template.SheetNames[0]], { header: 1, defval: '' })[0];
-  assert.deepStrictEqual(templateHeaders.slice(0, 5), ['Маржа, %', 'articleKey', 'platform', 'minPrice', 'maxPrice']);
+  assert.deepStrictEqual(templateHeaders.slice(0, 6), ['MIN маржа, %', 'MAX маржа, %', 'articleKey', 'platform', 'minPrice', 'maxPrice']);
 
   const templateRoundTripPath = path.join(uploadDir, 'portal-min-max-template-filled.xlsx');
   const templateSheet = template.Sheets[template.SheetNames[0]];
   const templateValues = {
     articleKey: 'sku-1',
     platform: 'wb',
-    'Маржа, %': 0.35,
+    'MIN маржа, %': 0.35,
+    'MAX маржа, %': 0.5,
     minPrice: 92,
     maxPrice: 160,
     effectiveFrom: '2026-06-22',
@@ -319,12 +344,13 @@ function main() {
   assert.strictEqual(templateRoundTripReport.e2e.status, 'ok');
   row = canonicalRow(dataDir, outDir);
   assert.strictEqual(row.policy.target_margin_pct, 0.35);
+  assert.strictEqual(row.policy.max_margin_pct, 0.5);
   assert.strictEqual(row.policy.min_max_floor, 92);
   assert.strictEqual(row.policy.min_max_cap, 160);
   assert.strictEqual(row.policy.sources.margin.sourceFile, 'portal-min-max-template-filled.xlsx');
 
   const validCsv = writeCsv(path.join(uploadDir, 'minmax.csv'), [
-    { articleKey: 'sku-alias-1', platform: 'wb', margin: '26%', minPrice: 93, maxPrice: 161, effectiveFrom: '2026-06-23', author: 'Codex', role: 'admin', reason: 'csv round-trip' }
+    { articleKey: 'sku-alias-1', platform: 'wb', margin: '26%', maxMarginPct: '41%', minPrice: 93, maxPrice: 161, effectiveFrom: '2026-06-23', author: 'Codex', role: 'admin', reason: 'csv round-trip' }
   ]);
   assert.strictEqual(applyUpload(uploadOptions(dataDir, outDir, { dataset: 'min_max', file: validCsv })).e2e.status, 'ok');
   row = canonicalRow(dataDir, outDir);
@@ -334,7 +360,7 @@ function main() {
   assert.strictEqual(row.policy.sources.margin.sourceFile, 'minmax.csv');
 
   const sharpMinMax = writeWorkbook(path.join(uploadDir, 'sharp-minmax.xlsx'), [
-    { articleKey: 'sku-1', platform: 'wb', 'Маржа, %': 26, minPrice: 150, maxPrice: 160, effectiveFrom: '2026-06-24', author: 'Codex', role: 'admin', reason: 'sharp recommendation needs ROP' }
+    { articleKey: 'sku-1', platform: 'wb', 'MIN маржа, %': 26, 'MAX маржа, %': 45, minPrice: 150, maxPrice: 160, effectiveFrom: '2026-06-24', author: 'Codex', role: 'admin', reason: 'sharp recommendation needs ROP' }
   ]);
   assert.strictEqual(applyUpload(uploadOptions(dataDir, outDir, { dataset: 'min_max', file: sharpMinMax })).e2e.status, 'ok');
   row = canonicalRow(dataDir, outDir);

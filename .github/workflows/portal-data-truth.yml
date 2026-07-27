@@ -139,6 +139,7 @@ jobs:
           node scripts/portal-designers-access-history.selftest.js
           node scripts/sync-design-workspace-memberships.selftest.js
           node scripts/portal-auth-invite-browser.selftest.js
+          node scripts/portal-auth-guest-fallback.selftest.js
           node scripts/provision-portal-designers.selftest.js
           node scripts/import-design-tasks-to-workspace.selftest.js
           node scripts/portal-designers-permissions.selftest.js

@@ -9,8 +9,10 @@ from urllib import error, parse
 
 import sync_portal_generation_to_supabase as publisher
 from sync_portal_generation_to_supabase import (
+    ACTIVATION_SNAPSHOT_KEYS,
     build_rows,
     cleanup_stale_parts,
+    confirm_current_main,
     expected_base_keys,
     retry_delay_seconds,
     retryable_http_status,
@@ -53,6 +55,10 @@ with tempfile.TemporaryDirectory(prefix="portal-generation-publish-") as tmp:
     protected_key = "iu" + "_drr_summary"
     assert protected_key not in keys
     assert len(hashes) == len(keys)
+    staging_rows = [row for row in rows if row["snapshot_key"] not in ACTIVATION_SNAPSHOT_KEYS]
+    activation_rows = [row for row in rows if row["snapshot_key"] in ACTIVATION_SNAPSHOT_KEYS]
+    assert {row["snapshot_key"] for row in activation_rows} == ACTIVATION_SNAPSHOT_KEYS
+    assert all(row["snapshot_key"] not in ACTIVATION_SNAPSHOT_KEYS for row in staging_rows)
     assert "dashboard" in expected_base_keys(hashes)
     assert stale_part_keys(hashes, ["dashboard__part__0001", "dashboard__part__0002"]) == [
         "dashboard__part__0001",
@@ -223,5 +229,45 @@ try:
     assert "cleanup lookup timed out" in cleanup["deferredReason"]
 finally:
     publisher.rest_request = original_rest_request
+
+
+git_commands = []
+
+
+def fake_git_run(command, **kwargs):
+    git_commands.append((command, kwargs))
+
+
+def fake_git_check_output(command, **_kwargs):
+    if command[-1] == "FETCH_HEAD":
+        return "abc123\n"
+    return "abc123\n"
+
+
+original_subprocess_run = publisher.subprocess.run
+original_check_output = publisher.subprocess.check_output
+publisher.subprocess.run = fake_git_run
+publisher.subprocess.check_output = fake_git_check_output
+try:
+    guard = confirm_current_main(Path("/tmp/selftest-repo"))
+    assert guard == {"status": "passed", "closeSha": "abc123", "currentMainSha": "abc123"}
+    assert git_commands[0][0] == ["git", "fetch", "--no-tags", "--depth=1", "origin", "main", "--quiet"]
+    assert git_commands[0][1]["check"] is True
+finally:
+    publisher.subprocess.run = original_subprocess_run
+    publisher.subprocess.check_output = original_check_output
+
+
+publisher.subprocess.run = fake_git_run
+publisher.subprocess.check_output = lambda command, **_kwargs: "new-main\n" if command[-1] == "FETCH_HEAD" else "old-close\n"
+try:
+    try:
+        confirm_current_main(Path("/tmp/selftest-repo"))
+        raise AssertionError("obsolete close must be rejected")
+    except RuntimeError as exc:
+        assert "refusing to activate" in str(exc)
+finally:
+    publisher.subprocess.run = original_subprocess_run
+    publisher.subprocess.check_output = original_check_output
 
 print("[sync_portal_generation_to_supabase.selftest] OK")

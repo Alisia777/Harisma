@@ -23,11 +23,12 @@ concurrency:
   # scheduled Portal data truth workflow therefore used to cancel a healthy
   # production close even though its replacement close was immediately
   # skipped. Give ineligible workflow_run events an isolated group; only a
-  # successful, non-scheduled main truth gate may supersede an active close.
+  # successful, non-scheduled main truth gate may enter the production queue.
   group: ${{ github.event_name == 'workflow_run' && (github.event.workflow_run.conclusion != 'success' || github.event.workflow_run.head_branch != 'main' || github.event.workflow_run.event == 'schedule') && format('portal-daily-close-ignored-{0}', github.run_id) || 'portal-daily-close' }}
-  # A close for an older main SHA must never finish after a newer, already
-  # truth-gated SHA and overwrite the active generation with obsolete code.
-  cancel-in-progress: true
+  # Never interrupt an in-flight refresh or a multi-batch Supabase publish.
+  # GitHub keeps the running close plus the newest pending close; explicit
+  # current-main guards below prevent an obsolete SHA from being activated.
+  cancel-in-progress: false
 
 permissions:
   contents: read
@@ -393,10 +394,32 @@ jobs:
           python scripts/d1_close_gate.py --policy data/portal_daily_source_policy.json --input-dir data --base-data-dir data --output-dir .portal-truth-output --expected-date '${{ steps.cutoff.outputs.value }}' --skip-protected-scope
           node scripts/portal-daily-layer-guard.js --input-dir data --base-data-dir data --output-dir .portal-truth-output --expected-date '${{ steps.cutoff.outputs.value }}' --expected-run-date '${{ steps.cutoff.outputs.run_date }}'
 
+      - name: Confirm current main before package
+        shell: bash
+        run: |
+          git fetch --no-tags --depth=1 origin main --quiet
+          CURRENT_MAIN_SHA="$(git rev-parse FETCH_HEAD)"
+          CLOSE_SHA="$(git rev-parse HEAD)"
+          if [[ "$CURRENT_MAIN_SHA" != "$CLOSE_SHA" ]]; then
+            echo "::error title=Obsolete daily close::Close SHA $CLOSE_SHA is no longer current main ($CURRENT_MAIN_SHA); refusing to package or activate it."
+            exit 1
+          fi
+
       - name: Package active generation
         run: |
           node scripts/portal-atomic-snapshot-finalize.js --data-dir data --output-dir .portal-truth-output
           python scripts/verify_snapshot_manifest.py --repo . --manifest data/active_snapshot.json --inventory data/runtime_snapshot_inventory.json
+
+      - name: Confirm current main before activation
+        shell: bash
+        run: |
+          git fetch --no-tags --depth=1 origin main --quiet
+          CURRENT_MAIN_SHA="$(git rev-parse FETCH_HEAD)"
+          CLOSE_SHA="$(git rev-parse HEAD)"
+          if [[ "$CURRENT_MAIN_SHA" != "$CLOSE_SHA" ]]; then
+            echo "::error title=Obsolete daily close::Close SHA $CLOSE_SHA is no longer current main ($CURRENT_MAIN_SHA); refusing to activate it."
+            exit 1
+          fi
 
       - name: Publish generation and verify readback
         env:
@@ -407,6 +430,7 @@ jobs:
           --manifest data/active_snapshot.json
           --supabase-url "$SUPABASE_URL"
           --supabase-key "$SUPABASE_SERVICE_ROLE_KEY"
+          --require-current-main
           --verify-readback
 
       - uses: actions/upload-artifact@v4

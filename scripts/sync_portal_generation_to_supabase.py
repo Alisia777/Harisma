@@ -7,6 +7,7 @@ import json
 import os
 import re
 import socket
+import subprocess
 import sys
 from datetime import datetime, timezone
 from email.utils import parsedate_to_datetime
@@ -27,6 +28,7 @@ CLEANUP_REQUEST_ATTEMPTS = 2
 CLEANUP_PAGE_SIZE = 1000
 MAX_RETRY_DELAY_SECONDS = 120.0
 REPORT_NAME = "portal_supabase_generation_publish.json"
+ACTIVATION_SNAPSHOT_KEYS = frozenset({"active_snapshot", "active_snapshot_manifest"})
 
 
 def utc_now_iso() -> str:
@@ -212,6 +214,35 @@ def upsert_rows(
             timeout_seconds=timeout_seconds,
         )
     return len(batches)
+
+
+def confirm_current_main(repo_dir: Path) -> dict[str, str]:
+    try:
+        subprocess.run(
+            ["git", "fetch", "--no-tags", "--depth=1", "origin", "main", "--quiet"],
+            cwd=repo_dir,
+            check=True,
+            capture_output=True,
+            text=True,
+        )
+        current_main_sha = subprocess.check_output(
+            ["git", "rev-parse", "FETCH_HEAD"],
+            cwd=repo_dir,
+            text=True,
+        ).strip()
+        close_sha = subprocess.check_output(
+            ["git", "rev-parse", "HEAD"],
+            cwd=repo_dir,
+            text=True,
+        ).strip()
+    except (OSError, subprocess.CalledProcessError) as exc:
+        raise RuntimeError(f"Unable to verify current main before activation: {exc}") from exc
+    if not current_main_sha or current_main_sha != close_sha:
+        raise RuntimeError(
+            f"Close SHA {close_sha or '<unknown>'} is no longer current main "
+            f"({current_main_sha or '<unknown>'}); refusing to activate it"
+        )
+    return {"status": "passed", "closeSha": close_sha, "currentMainSha": current_main_sha}
 
 
 def fetch_hashes(base_url: str, api_key: str, table: str, brand: str, keys: list[str], timeout_seconds: float) -> dict[str, str]:
@@ -435,6 +466,11 @@ def resolve_options() -> argparse.Namespace:
     parser.add_argument("--output-dir", default=".portal-truth-output")
     parser.add_argument("--dry-run", action="store_true")
     parser.add_argument("--verify-readback", action="store_true")
+    parser.add_argument(
+        "--require-current-main",
+        action="store_true",
+        help="Re-fetch origin/main after staging rows and reject obsolete generation activation",
+    )
     parser.add_argument("--batch-size", type=int, default=20)
     parser.add_argument("--max-batch-bytes", type=int, default=int(os.getenv("ALTEA_SUPABASE_MAX_BATCH_BYTES") or DEFAULT_MAX_BATCH_BYTES))
     parser.add_argument(
@@ -486,6 +522,10 @@ def main() -> int:
             "batches": 0,
             "rows": len(rows),
         },
+        "activationGuard": {
+            "required": bool(args.require_current_main),
+            "status": "pending" if args.require_current_main else "not_requested",
+        },
         "cleanup": {
             "status": "pending",
             "stalePartRowsDeleted": 0,
@@ -508,11 +548,27 @@ def main() -> int:
         try:
             timeout_seconds = max(1.0, args.request_timeout_seconds)
             max_batch_bytes = max(1, args.max_batch_bytes)
+            staging_rows = [row for row in rows if row["snapshot_key"] not in ACTIVATION_SNAPSHOT_KEYS]
+            activation_rows = [row for row in rows if row["snapshot_key"] in ACTIVATION_SNAPSHOT_KEYS]
             report["upsert"]["batches"] = upsert_rows(
                 supabase_url,
                 supabase_key,
                 args.table,
-                rows,
+                staging_rows,
+                max(1, args.batch_size),
+                max_batch_bytes,
+                timeout_seconds,
+            )
+            if args.require_current_main:
+                report["activationGuard"] = {
+                    "required": True,
+                    **confirm_current_main(repo_dir),
+                }
+            report["upsert"]["batches"] += upsert_rows(
+                supabase_url,
+                supabase_key,
+                args.table,
+                activation_rows,
                 max(1, args.batch_size),
                 max_batch_bytes,
                 timeout_seconds,

@@ -75,6 +75,7 @@ async function run() {
   page.setDefaultTimeout(90000);
 
   let syncRequested = false;
+  let snapshotReady = false;
   let dispatchCalls = 0;
   let snapshotCalls = 0;
   let authorizationHeader = '';
@@ -182,7 +183,7 @@ async function run() {
     if (requestUrl.pathname.includes('/rest/v1/portal_data_snapshots')) {
       snapshotCalls += 1;
       const rows = [];
-      if (syncRequested) {
+      if (syncRequested && snapshotReady) {
         rows.push({
           snapshot_key: 'repricer_live_prices',
           payload: nextFixture,
@@ -303,7 +304,40 @@ async function run() {
       'repricer topbar action must proxy to the protected price refresh'
     );
     await topbarPriceAction.click();
-    await page.waitForTimeout(1000);
+    await page.waitForFunction(
+      () => {
+        const button = document.querySelector('[data-premium-primary-action]');
+        return button?.disabled
+          && button.dataset.repricerPriceSyncBusy === '1'
+          && button.textContent.includes('Обновление идёт');
+      },
+      null,
+      { timeout: 5000 }
+    );
+    await page.evaluate(() => document.querySelector('[data-premium-primary-action]')?.click());
+    await page.waitForTimeout(100);
+    assert.strictEqual(dispatchCalls, 1, 'a repeated click while refresh is running must not cancel and restart the job');
+    await page.evaluate(() => window.setView('dashboard'));
+    await page.waitForFunction(
+      () => {
+        const button = document.querySelector('[data-premium-primary-action]');
+        return button?.getAttribute('data-premium-proxy') === 'pullRemoteBtn' && !button.disabled;
+      },
+      null,
+      { timeout: 5000 }
+    );
+    await page.evaluate(() => window.setView('repricer'));
+    await page.waitForFunction(
+      () => {
+        const button = document.querySelector('[data-premium-primary-action]');
+        return button?.getAttribute('data-premium-proxy') === 'repricerPriceSync'
+          && button.disabled
+          && button.dataset.repricerPriceSyncBusy === '1';
+      },
+      null,
+      { timeout: 5000 }
+    );
+    snapshotReady = true;
     const dispatchDiagnostic = await page.evaluate(() => ({
       status: document.querySelector('[data-repricer-price-sync-status]')?.textContent || '',
       generatedAt: window.__alteaAppState.repricerLivePrices?.generatedAt || '',

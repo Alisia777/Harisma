@@ -613,8 +613,9 @@
     const cleanKeys = (Array.isArray(keys) ? keys : [])
       .map((key) => String(key || '').trim())
       .filter(Boolean);
-    for (let index = 0; index < cleanKeys.length; index += 40) {
-      const batch = cleanKeys.slice(index, index + 40);
+    const batchSize = 8;
+    for (let index = 0; index < cleanKeys.length; index += batchSize) {
+      const batch = cleanKeys.slice(index, index + batchSize);
       const url = buildSnapshotUrl(activeCfg);
       url.searchParams.set('snapshot_key', batch.length === 1 ? `eq.${batch[0]}` : `in.(${batch.join(',')})`);
       result.push(...await requestSnapshotRows(activeCfg, url));

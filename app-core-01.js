@@ -1406,7 +1406,11 @@ function getPortalSnapshotRequestConfig() {
     url: url.toString(),
     headers: {
       apikey: cfg.supabase.anonKey,
-      Authorization: `Bearer ${state.team?.accessToken || window.__ALTEA_AUTH_SESSION__?.access_token || cfg.supabase.anonKey}`,
+      // Published portal snapshots are a read-only public projection. Always use
+      // the configured anon key here: a local guest session is intentionally not
+      // a Supabase JWT, and an expired employee JWT must not make fresh data fall
+      // back to the bundled static files.
+      Authorization: `Bearer ${cfg.supabase.anonKey}`,
       Accept: 'application/json'
     }
   };
@@ -1548,24 +1552,27 @@ function portalSnapshotRequestBaseUrl() {
   if (!cfg.supabase?.url || !cfg.supabase?.anonKey || typeof fetch !== 'function') return null;
   const brand = currentBrand();
   const baseUrl = String(cfg.supabase.url || '').replace(/\/+$/, '');
-  const authToken = state.team?.accessToken || window.alteaPortalAuthGate?.getSession?.()?.access_token || window.__ALTEA_AUTH_SESSION__?.access_token || cfg.supabase.anonKey;
   return {
     brand,
     url: `${baseUrl}/rest/v1/${PORTAL_SNAPSHOT_TABLE}`,
     headers: {
       apikey: cfg.supabase.anonKey,
-      Authorization: `Bearer ${authToken}`,
+      Authorization: `Bearer ${cfg.supabase.anonKey}`,
       Accept: 'application/json'
     }
   };
 }
+
+const PORTAL_SNAPSHOT_KEY_BATCH_SIZE = 8;
 
 async function fetchPortalSnapshotRowsByKeys(snapshotKeys) {
   const requestConfig = portalSnapshotRequestBaseUrl();
   if (!requestConfig || !Array.isArray(snapshotKeys) || !snapshotKeys.length) return [];
   const rows = [];
   const chunks = [];
-  for (let index = 0; index < snapshotKeys.length; index += 80) chunks.push(snapshotKeys.slice(index, index + 80));
+  for (let index = 0; index < snapshotKeys.length; index += PORTAL_SNAPSHOT_KEY_BATCH_SIZE) {
+    chunks.push(snapshotKeys.slice(index, index + PORTAL_SNAPSHOT_KEY_BATCH_SIZE));
+  }
   for (const batch of chunks) {
     const url = new URL(requestConfig.url);
     url.searchParams.set('select', 'snapshot_key,payload,generated_at,updated_at,payload_hash');

@@ -6,6 +6,7 @@ const vm = require('vm');
 
 const root = path.resolve(__dirname, '..');
 const source = fs.readFileSync(path.join(root, 'portal-snapshot-refresh-hotfix.js'), 'utf8');
+const supabaseSource = fs.readFileSync(path.join(root, 'portal-supabase-snapshot-hotfix.js'), 'utf8');
 
 function extractAsyncFunction(name) {
   const start = source.indexOf(`async function ${name}`);
@@ -62,6 +63,33 @@ result = loadSnapshotAwareJson('data/platform_trends.json', null, false);`, sand
   }
   if (result.source !== 'snapshot') {
     throw new Error('Newer published snapshot must win over stale local JSON.');
+  }
+
+  const requestFilters = [];
+  const batchSandbox = {
+    URL,
+    buildSnapshotUrl: () => new URL('https://example.supabase.co/rest/v1/portal_data_snapshots'),
+    requestSnapshotRows: async (url) => {
+      requestFilters.push(url.searchParams.get('snapshot_key') || '');
+      return [];
+    },
+    result: null
+  };
+  vm.createContext(batchSandbox);
+  vm.runInContext(`${extractAsyncFunction('requestRowsForExactKeys')}
+result = requestRowsForExactKeys({}, '', 'Алтея', Array.from({ length: 19 }, (_, index) => 'part_' + (index + 1)));`, batchSandbox);
+  await batchSandbox.result;
+  const batchLengths = requestFilters.map((filter) => (
+    filter.replace(/^in\.\(|\)$/g, '').replace(/^eq\./, '').split(',').filter(Boolean).length
+  ));
+  if (JSON.stringify(batchLengths) !== JSON.stringify([8, 8, 3])) {
+    throw new Error(`Snapshot refresh must use safe batches of eight, received ${JSON.stringify(batchLengths)}.`);
+  }
+  if (!supabaseSource.includes('const batchSize = 8;')) {
+    throw new Error('Live Supabase refresh must use the same safe eight-key batch size.');
+  }
+  if (source.includes('index += 40') || supabaseSource.includes('index += 40')) {
+    throw new Error('Legacy forty-key snapshot queries must not remain in active refresh loaders.');
   }
 
   console.log('portal-snapshot-refresh-hotfix selftest ok');

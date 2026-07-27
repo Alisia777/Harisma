@@ -3,6 +3,7 @@
 const fs = require('fs');
 const path = require('path');
 const vm = require('vm');
+const assert = require('assert');
 
 const root = path.resolve(__dirname, '..');
 const source = fs.readFileSync(path.join(root, 'app-core-01.js'), 'utf8');
@@ -12,7 +13,8 @@ if (source.includes('LOCAL_FIRST_SNAPSHOT_KEYS')) {
 }
 
 function extractFunction(name) {
-  const start = source.indexOf(`function ${name}`);
+  const asyncStart = source.indexOf(`async function ${name}`);
+  const start = asyncStart >= 0 ? asyncStart : source.indexOf(`function ${name}`);
   if (start < 0) throw new Error(`Missing function ${name}`);
   const bodyStart = source.indexOf('{', start);
   let depth = 0;
@@ -74,4 +76,84 @@ if (sandbox.result.protectedTie !== 'local') {
   throw new Error('Protected summary tie behavior must stay local-first.');
 }
 
-console.log('portal-runtime-snapshot-choice selftest ok');
+async function verifySnapshotTransport() {
+  const requests = [];
+  const anonKey = 'public-anon-key';
+  const transportSandbox = {
+    URL,
+    PORTAL_SNAPSHOT_TABLE: 'portal_data_snapshots',
+    PORTAL_SNAPSHOT_REQUEST_TIMEOUT_MS: 30000,
+    PORTAL_SNAPSHOT_KEY_BATCH_SIZE: 8,
+    portalSnapshotState: { brand: '' },
+    state: { team: { accessToken: 'guest-local-session' } },
+    window: {
+      __ALTEA_AUTH_SESSION__: { access_token: 'guest-local-session' },
+      alteaPortalAuthGate: {
+        getSession: () => ({ access_token: 'guest-local-session' })
+      }
+    },
+    currentBrand: () => 'Алтея',
+    currentConfig: () => ({
+      brand: 'Алтея',
+      supabase: {
+        url: 'https://example.supabase.co',
+        anonKey
+      }
+    }),
+    withTimeout: async (promise) => promise,
+    fetch: async (url, options) => {
+      requests.push({ url: String(url), options });
+      return {
+        ok: true,
+        json: async () => []
+      };
+    },
+    result: null
+  };
+
+  vm.createContext(transportSandbox);
+  vm.runInContext([
+    extractFunction('getPortalSnapshotRequestConfig'),
+    extractFunction('portalSnapshotRequestBaseUrl'),
+    extractFunction('fetchPortalSnapshotRowsByKeys'),
+    'result = {',
+    '  fullConfig: getPortalSnapshotRequestConfig(),',
+    '  baseConfig: portalSnapshotRequestBaseUrl(),',
+    '  read: fetchPortalSnapshotRowsByKeys(Array.from({ length: 19 }, (_, index) => `key_${index + 1}`))',
+    '};'
+  ].join('\n'), transportSandbox);
+
+  await transportSandbox.result.read;
+  assert.strictEqual(
+    transportSandbox.result.fullConfig.headers.Authorization,
+    `Bearer ${anonKey}`,
+    'Full snapshot read must not send the local guest placeholder as a Supabase bearer token.'
+  );
+  assert.strictEqual(
+    transportSandbox.result.baseConfig.headers.Authorization,
+    `Bearer ${anonKey}`,
+    'Keyed snapshot read must use the stable public read credential.'
+  );
+  assert.strictEqual(requests.length, 3, 'Nineteen snapshot keys must be split into three safe requests.');
+  assert.deepStrictEqual(
+    requests.map(({ url }) => {
+      const filter = new URL(url).searchParams.get('snapshot_key') || '';
+      return filter === '' ? 0 : filter.replace(/^in\.\(|\)$/g, '').split(',').length;
+    }),
+    [8, 8, 3],
+    'Snapshot key batches must never exceed the proven readback batch size of eight.'
+  );
+  assert.ok(
+    requests.every(({ options }) => options.headers.Authorization === `Bearer ${anonKey}`),
+    'Every keyed snapshot request must use the anon bearer token.'
+  );
+}
+
+verifySnapshotTransport()
+  .then(() => {
+    console.log('portal-runtime-snapshot-choice selftest ok');
+  })
+  .catch((error) => {
+    console.error(error);
+    process.exitCode = 1;
+  });

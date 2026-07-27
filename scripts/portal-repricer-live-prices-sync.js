@@ -75,6 +75,13 @@ function round(value, digits = 2) {
   return Math.round(parsed * factor) / factor;
 }
 
+function effectiveBuyerDiscountPct(sellerPrice, clientPrice) {
+  const seller = numberOrNull(sellerPrice);
+  const client = numberOrNull(clientPrice);
+  if (seller === null || client === null || seller <= 0 || client <= 0 || client > seller + 0.01) return null;
+  return round(Math.max(0, Math.min(0.95, 1 - client / seller)), 6);
+}
+
 function normalizedIdentifier(value) {
   return normalizeKey(String(value ?? '').trim().replace(/\.0$/, ''));
 }
@@ -233,18 +240,22 @@ async function fetchWbPricePages(options, fetchImpl = fetch) {
 
 function wbSizePrices(item = {}) {
   const sizes = Array.isArray(item?.sizes) && item.sizes.length ? item.sizes : [item];
-  return sizes.map((size) => ({
-    sizeId: String(size?.sizeID ?? size?.sizeId ?? ''),
-    techSizeName: String(size?.techSizeName ?? ''),
-    listPrice: firstPositive(size?.price, item?.price),
-    sellerPrice: firstPositive(size?.discountedPrice, item?.discountedPrice),
-    clientPrice: firstPositive(
+  return sizes.map((size) => {
+    const sellerPrice = firstPositive(size?.discountedPrice, item?.discountedPrice);
+    const clubClientPrice = firstPositive(
       size?.clubDiscountedPrice,
-      item?.clubDiscountedPrice,
-      size?.discountedPrice,
-      item?.discountedPrice
-    )
-  })).filter((row) => row.sellerPrice !== null);
+      item?.clubDiscountedPrice
+    );
+    const clientPrice = firstPositive(clubClientPrice, sellerPrice);
+    return {
+      sizeId: String(size?.sizeID ?? size?.sizeId ?? ''),
+      techSizeName: String(size?.techSizeName ?? ''),
+      listPrice: firstPositive(size?.price, item?.price),
+      sellerPrice,
+      clientPrice,
+      clientPriceSource: clubClientPrice !== null ? 'clubDiscountedPrice' : 'discountedPrice'
+    };
+  }).filter((row) => row.sellerPrice !== null);
 }
 
 function normalizeWbPrices(items, index, asOfDate) {
@@ -286,6 +297,7 @@ function normalizeWbPrices(items, index, asOfDate) {
       continue;
     }
     const price = sizes[0];
+    const buyerDiscountPct = effectiveBuyerDiscountPct(price.sellerPrice, price.clientPrice);
     rows.push({
       id: `wb|${normalizeKey(mapping.articleKey)}`,
       articleKey: mapping.articleKey,
@@ -295,6 +307,9 @@ function normalizeWbPrices(items, index, asOfDate) {
       currentPrice: round(price.sellerPrice),
       currentSellerPrice: round(price.sellerPrice),
       currentClientPrice: round(price.clientPrice),
+      currentClientPriceSource: `wb-prices-api:${price.clientPriceSource}`,
+      currentBuyerDiscountPct: buyerDiscountPct,
+      currentSppPct: buyerDiscountPct,
       currentListPrice: round(price.listPrice),
       currentPriceDate: asOfDate,
       valueDate: asOfDate,
@@ -306,7 +321,7 @@ function normalizeWbPrices(items, index, asOfDate) {
         date: asOfDate,
         price: round(price.sellerPrice),
         clientPrice: round(price.clientPrice),
-        sppPct: null
+        sppPct: buyerDiscountPct
       }],
       ...common
     });
@@ -400,6 +415,7 @@ function normalizeOzonPrices(items, index, asOfDate) {
       unresolved.push({ ...common, articleKey: mapping.articleKey, reason: 'missing_seller_price', rawPrice: price });
       continue;
     }
+    const buyerDiscountPct = effectiveBuyerDiscountPct(sellerPrice, clientPrice);
     rows.push({
       id: `ozon|${normalizeKey(mapping.articleKey)}`,
       articleKey: mapping.articleKey,
@@ -409,6 +425,9 @@ function normalizeOzonPrices(items, index, asOfDate) {
       currentPrice: round(sellerPrice),
       currentSellerPrice: round(sellerPrice),
       currentClientPrice: round(clientPrice),
+      currentClientPriceSource: 'ozon-prices-api-v5:marketing_price',
+      currentBuyerDiscountPct: buyerDiscountPct,
+      currentSppPct: buyerDiscountPct,
       currentListPrice: round(firstPositive(price?.old_price, item?.old_price, price?.retail_price)),
       currentPriceDate: asOfDate,
       valueDate: asOfDate,
@@ -420,7 +439,7 @@ function normalizeOzonPrices(items, index, asOfDate) {
         date: asOfDate,
         price: round(sellerPrice),
         clientPrice: round(clientPrice),
-        sppPct: null
+        sppPct: buyerDiscountPct
       }],
       ...common
     });
@@ -654,6 +673,7 @@ if (require.main === module) main();
 module.exports = {
   buildLivePrices,
   buildSkuIndexes,
+  effectiveBuyerDiscountPct,
   fetchOzonPricePages,
   fetchWbPricePages,
   normalizeOzonPrices,

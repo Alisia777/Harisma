@@ -85,6 +85,10 @@ async function main() {
   assert.strictEqual(wbNormalized.rows.length, 1);
   assert.strictEqual(wbNormalized.rows[0].currentSellerPrice, 700);
   assert.strictEqual(wbNormalized.rows[0].currentClientPrice, 665);
+  assert.strictEqual(wbNormalized.rows[0].currentSppPct, 0.05);
+  assert.strictEqual(wbNormalized.rows[0].currentBuyerDiscountPct, 0.05);
+  assert.strictEqual(wbNormalized.rows[0].currentClientPriceSource, 'wb-prices-api:clubDiscountedPrice');
+  assert.strictEqual(wbNormalized.rows[0].daily[0].sppPct, 0.05);
   assert.strictEqual(wbNormalized.rows[0].currentListPrice, 1000);
   assert.strictEqual(wbNormalized.unresolved[0].reason, 'different_size_prices');
 
@@ -103,6 +107,8 @@ async function main() {
   assert.strictEqual(ozonNormalized.rows.length, 1);
   assert.strictEqual(ozonNormalized.rows[0].currentSellerPrice, 910.5);
   assert.strictEqual(ozonNormalized.rows[0].currentClientPrice, 880.1);
+  assert.strictEqual(ozonNormalized.rows[0].currentSppPct, 0.033388);
+  assert.strictEqual(ozonNormalized.rows[0].currentClientPriceSource, 'ozon-prices-api-v5:marketing_price');
 
   const tempDir = fs.mkdtempSync(path.join(os.tmpdir(), 'repricer-live-price-test-'));
   fs.writeFileSync(path.join(tempDir, 'skus.json'), JSON.stringify([

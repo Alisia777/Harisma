@@ -1330,6 +1330,48 @@ function repricerApplyOutlierGuard(row) {
   return true;
 }
 
+function repricerApplyClientPriceProjection(side) {
+  if (!side) return side;
+  const sellerBefore = numberOrZero(side.currentPrice);
+  const sellerAfter = numberOrZero(side.finalPrice ?? side.recommendedPrice);
+  const clientCandidate = side.currentClientPrice ?? side.clientPriceBefore ?? side.buyerPrice;
+  const clientBefore = repricerHasValue(clientCandidate) && numberOrZero(clientCandidate) > 0
+    ? numberOrZero(clientCandidate)
+    : null;
+  const rawDiscount = repricerHasValue(side.currentBuyerDiscountPct ?? side.currentSppPct)
+    ? numberOrZero(side.currentBuyerDiscountPct ?? side.currentSppPct)
+    : null;
+  const explicitDiscount = rawDiscount != null && rawDiscount > 1 && rawDiscount <= 100
+    ? rawDiscount / 100
+    : rawDiscount;
+  let factor = null;
+  let source = String(side.clientPriceProjectionSource || '').trim();
+  if (sellerBefore > 0 && clientBefore != null && clientBefore <= sellerBefore + 0.01) {
+    factor = Math.max(0.05, Math.min(1, clientBefore / sellerBefore));
+    source = source || 'current_client_price_ratio';
+  } else if (explicitDiscount != null && explicitDiscount >= 0 && explicitDiscount <= 0.95) {
+    factor = 1 - explicitDiscount;
+    source = source || 'current_spp_pct';
+  }
+  side.clientPriceBefore = clientBefore;
+  side.sellerPriceToUpload = sellerAfter > 0 ? sellerAfter : null;
+  side.buyerDiscountFactor = factor == null ? null : Math.round(factor * 1000000) / 1000000;
+  side.currentBuyerDiscountPct = factor == null ? null : Math.round((1 - factor) * 1000000) / 1000000;
+  side.currentSppPct = side.currentBuyerDiscountPct;
+  side.expectedClientPriceAfter = factor == null || sellerAfter <= 0
+    ? null
+    : Math.round(sellerAfter * factor * 100) / 100;
+  side.clientPriceProjectionSource = source;
+  side.clientPriceProjectionAvailable = side.expectedClientPriceAfter != null;
+  side.clientPriceChangeRub = clientBefore != null && side.expectedClientPriceAfter != null
+    ? Math.round((side.expectedClientPriceAfter - clientBefore) * 100) / 100
+    : null;
+  side.clientPriceChangePct = clientBefore != null && clientBefore > 0 && side.expectedClientPriceAfter != null
+    ? Math.round(((side.expectedClientPriceAfter - clientBefore) / clientBefore) * 1000000) / 1000000
+    : null;
+  return side;
+}
+
 function repricerFinalizeSide(side) {
   if (!side) return null;
   if (side.stockGateBlocksAutoprice) {
@@ -1352,6 +1394,7 @@ function repricerFinalizeSide(side) {
       ? side.liveDeltaRub / numberOrZero(side.liveReferencePrice)
       : null;
     side.liveDrift = side.liveDeltaPct != null && Math.abs(side.liveDeltaPct) >= 0.03;
+    repricerApplyClientPriceProjection(side);
     repricerApplyConfidence(side);
     side.arrivalPriceSignal = repricerBuildArrivalPriceSignal(side, side.arrivalFact || {});
     return side;
@@ -1392,6 +1435,7 @@ function repricerFinalizeSide(side) {
     ? side.liveDeltaRub / numberOrZero(side.liveReferencePrice)
     : null;
   side.liveDrift = side.liveDeltaPct != null && Math.abs(side.liveDeltaPct) >= 0.03;
+  repricerApplyClientPriceProjection(side);
   repricerApplyConfidence(side);
   side.arrivalPriceSignal = repricerBuildArrivalPriceSignal(side, side.arrivalFact || {});
   return side;
@@ -1514,6 +1558,21 @@ function buildRepricerSide(sourceRow, platform, settings, context = {}) {
     legacySide?.currentClientPrice,
     liveSide?.buyerPrice
   );
+  const currentSppValue = [
+    priceRow?.currentBuyerDiscountPct,
+    priceRow?.currentSppPct,
+    sourceRow.currentBuyerDiscountPct,
+    sourceRow.currentSppPct,
+    legacySide?.currentBuyerDiscountPct,
+    legacySide?.currentSppPct,
+    liveSide?.currentBuyerDiscountPct,
+    liveSide?.currentSppPct
+  ].find(repricerHasValue);
+  const currentSppPct = currentSppValue == null
+    ? null
+    : (numberOrZero(currentSppValue) > 1 && numberOrZero(currentSppValue) <= 100
+      ? numberOrZero(currentSppValue) / 100
+      : numberOrZero(currentSppValue));
   const seedTargetCandidate = [
     { source: 'smart_seed', value: sourceRow.seedTargetFillPrice, present: sourceRow.seedTargetFillPrice != null },
     { source: 'smart_base', value: sourceRow.basePrice, present: sourceRow.basePrice != null },
@@ -2170,6 +2229,9 @@ function buildRepricerSide(sourceRow, platform, settings, context = {}) {
     launchReady,
     currentPrice,
       currentClientPrice,
+      currentSppPct,
+      currentBuyerDiscountPct: currentSppPct,
+      clientPriceProjectionSource: String(sourceRow.currentClientPriceSource || priceRow?.currentClientPriceSource || ''),
       sourceMode,
       recommendedPrice,
       arrivalFact,
@@ -2729,6 +2791,19 @@ function canonicalRepricerRuntimeSide(canonical = {}) {
   const feeStackRub = fixedCostsRub > 0
     ? fixedCostsRub
     : platformCostsRub + internalAdvertisingRub;
+  const canonicalClientPrice = facts.client_price_before == null
+    ? (facts.client_price == null ? null : numberOrZero(facts.client_price))
+    : numberOrZero(facts.client_price_before);
+  const canonicalBuyerFactor = facts.buyer_discount_factor != null
+    ? numberOrZero(facts.buyer_discount_factor)
+    : (
+      canonicalClientPrice != null && price > 0 && canonicalClientPrice <= price + 0.01
+        ? canonicalClientPrice / price
+        : null
+    );
+  const expectedClientPriceAfter = canonicalBuyerFactor != null && canonicalBuyerFactor > 0 && finalPrice > 0
+    ? Math.round(finalPrice * canonicalBuyerFactor * 100) / 100
+    : null;
   return {
     canonicalSource: true,
     sourceStore: 'canonical_repricer',
@@ -2739,9 +2814,26 @@ function canonicalRepricerRuntimeSide(canonical = {}) {
     articleKey: canonical.article_key,
     status: facts.product_status || policy.lifecycle_key || '',
     currentPrice: price,
-    buyerPrice: facts.client_price == null ? null : numberOrZero(facts.client_price),
-    currentClientPrice: facts.client_price == null ? null : numberOrZero(facts.client_price),
-    currentSppPct: facts.spp_pct == null ? null : numberOrZero(facts.spp_pct),
+    buyerPrice: canonicalClientPrice,
+    currentClientPrice: canonicalClientPrice,
+    clientPriceBefore: canonicalClientPrice,
+    currentSppPct: facts.effective_buyer_discount_pct == null
+      ? (facts.spp_pct == null ? null : numberOrZero(facts.spp_pct))
+      : numberOrZero(facts.effective_buyer_discount_pct),
+    currentBuyerDiscountPct: canonicalBuyerFactor == null ? null : 1 - canonicalBuyerFactor,
+    buyerDiscountFactor: canonicalBuyerFactor,
+    expectedClientPriceAfter,
+    clientPriceProjectionAvailable: expectedClientPriceAfter != null,
+    clientPriceProjectionSource: recommendation.client_price_projection_source
+      || facts.buyer_discount_source
+      || (canonicalBuyerFactor != null ? 'current_client_price_ratio' : ''),
+    sellerPriceToUpload: finalPrice,
+    clientPriceChangeRub: canonicalClientPrice != null && expectedClientPriceAfter != null
+      ? expectedClientPriceAfter - canonicalClientPrice
+      : null,
+    clientPriceChangePct: canonicalClientPrice != null && canonicalClientPrice > 0 && expectedClientPriceAfter != null
+      ? (expectedClientPriceAfter - canonicalClientPrice) / canonicalClientPrice
+      : null,
     stock: facts.stock == null ? null : numberOrZero(facts.stock),
     inboundUnits: facts.inbound == null ? null : numberOrZero(facts.inbound),
     stockStatus: facts.stock_status || '',
@@ -3743,10 +3835,13 @@ function renderRepricerSide(title, side) {
     <div class="repricer-side ${side.changed ? 'changed' : ''} confidence-${escapeHtml(side.confidence || '')}" data-lifecycle-key="${escapeHtml(side.productLifecycleKey || 'active')}" data-lifecycle-mode="${escapeHtml(side.engineMode || side.mode || 'auto')}">
       <div class="repricer-side-head">${escapeHtml(title)} <span class="badge-stack">${confidenceBadge}${lifecycleBadge}${badge(repricerModeLabel(side.mode), repricerModeTone(side.mode))}${side.arrivalPriceSignal?.needsCheck ? badge('пришёл: проверить цену', side.arrivalPriceSignal.tone || 'warn') : (side.arrivalPriceSignal?.hasMovement ? badge('товар на площадке', 'ok') : '')}${side.manualPromoConfigured ? badge(repricerPromoWindowLabel({ status: side.manualPromoWindowStatus }), side.manualPromoActive ? 'warn' : 'info') : ''}${side.promoOfferConfigured ? badge(repricerPromoWindowLabel({ status: side.promoOfferWindowStatus }, 'offer'), side.promoSource === 'promo_offer' && side.promoActive ? 'info' : 'warn') : ''}${side.promoSource === 'promo_offer' ? badge('акция ведёт цену', 'info') : ''}${side.hasOverride ? badge('ручное решение', 'warn') : ''}${side.hasCorridor ? badge('коридор', 'info') : ''}${side.alignmentApplied ? badge('выравнивание', 'info') : ''}</span></div>
       <div class="repricer-prices">
-        <div><span>Текущая</span><strong>${fmt.money(side.currentPrice)}</strong></div>
-        <div><span>Финал</span><strong>${fmt.money(side.finalPrice)}</strong></div>
-        <div><span>Δ</span><strong>${side.changePct == null ? '—' : fmt.pct(side.changePct)}</strong></div>
+        <div><span>Продавец сейчас</span><strong>${fmt.money(side.currentPrice)}</strong></div>
+        <div><span>Клиент сейчас</span><strong>${side.clientPriceBefore == null ? '—' : fmt.money(side.clientPriceBefore)}</strong></div>
+        <div><span>Заливаем продавцу</span><strong>${side.sellerPriceToUpload == null ? '—' : fmt.money(side.sellerPriceToUpload)}</strong></div>
+        <div><span>Клиент станет*</span><strong>${side.expectedClientPriceAfter == null ? '—' : fmt.money(side.expectedClientPriceAfter)}</strong></div>
+        <div><span>Δ клиент</span><strong>${side.clientPriceChangePct == null ? '—' : fmt.pct(side.clientPriceChangePct)}</strong></div>
       </div>
+      <div class="muted small" style="margin-top:6px">* Прогноз при текущей СПП/скидке покупателя${side.currentBuyerDiscountPct == null ? '; фактическая цена появится после API-сверки' : ` ${fmt.pct(side.currentBuyerDiscountPct)}`}. После загрузки портал показывает фактическую клиентскую цену площадки.</div>
       <div class="repricer-side-action ${escapeHtml(action.tone)}" style="margin-top:10px">
         <strong>${escapeHtml(action.title)}</strong>
         <span>${escapeHtml(side.decisionText || action.hint)}</span>
@@ -4447,10 +4542,12 @@ function repricerFixTeamLabel(team) {
 
 function repricerPriceTrace(row, side) {
   const parts = [
-    `текущая ${fmt.money(side?.currentPrice)}`,
+    `продавец сейчас ${fmt.money(side?.currentPrice)}`,
+    side?.clientPriceBefore == null ? '' : `клиент сейчас ${fmt.money(side.clientPriceBefore)}`,
     `MIN ${fmt.money(side?.effectiveFloor)}`,
     numberOrZero(side?.capPrice || side?.stretchCap) > 0 ? `MAX ${fmt.money(side.capPrice || side.stretchCap)}` : '',
-    `финал ${fmt.money(side?.finalPrice)}`,
+    `заливаем продавцу ${fmt.money(side?.sellerPriceToUpload ?? side?.finalPrice)}`,
+    side?.expectedClientPriceAfter == null ? '' : `клиент станет* ${fmt.money(side.expectedClientPriceAfter)}`,
     `confidence ${repricerConfidenceLabel(side?.confidence)} ${fmt.int(side?.confidenceScore)}`,
     side?.safeToExport || side?.promoSafeToExport ? 'в файл: да' : 'в файл: нет'
   ].filter(Boolean);
@@ -4869,8 +4966,14 @@ function repricerIssueRows(batch = 'all', sourceRows = null) {
         where_fix: repricerFixSource(side),
         what_to_fill: repricerFixAction(side),
         proposal_no_write: repricerFixProposal(side),
-        current_price_rub: repricerExportNumber(side.currentPrice),
-        final_price_rub: repricerExportNumber(side.finalPrice),
+        current_price_rub: repricerExportNumber(side.currentPrice, 2),
+        current_client_price_rub: side.clientPriceBefore == null ? '' : repricerExportNumber(side.clientPriceBefore, 2),
+        current_buyer_discount_pct: side.currentBuyerDiscountPct == null ? '' : repricerExportNumber(side.currentBuyerDiscountPct * 100, 2),
+        seller_price_to_upload_rub: side.sellerPriceToUpload == null ? '' : repricerExportNumber(side.sellerPriceToUpload, 2),
+        expected_client_price_after_rub: side.expectedClientPriceAfter == null ? '' : repricerExportNumber(side.expectedClientPriceAfter, 2),
+        client_price_change_rub: side.clientPriceChangeRub == null ? '' : repricerExportNumber(side.clientPriceChangeRub, 2),
+        client_price_change_pct: side.clientPriceChangePct == null ? '' : repricerExportNumber(side.clientPriceChangePct * 100, 2),
+        final_price_rub: repricerExportNumber(side.finalPrice, 2),
         min_rub: repricerExportNumber(side.effectiveFloor),
         cost_rub: repricerExportNumber(side.costRub),
         live_rec_price_rub: repricerExportNumber(side.liveReferencePrice),
@@ -4929,8 +5032,14 @@ function repricerIssueColumns() {
     ['where_fix', 'Где чинить'],
     ['what_to_fill', 'Что сделать'],
     ['proposal_no_write', 'Предложение без записи'],
-    ['current_price_rub', 'Текущая цена, ₽'],
-    ['final_price_rub', 'Финальная цена, ₽'],
+    ['current_price_rub', 'Цена продавца сейчас, ₽'],
+    ['current_client_price_rub', 'Клиентская цена сейчас, ₽'],
+    ['current_buyer_discount_pct', 'СПП / скидка покупателя сейчас, %'],
+    ['seller_price_to_upload_rub', 'Цена продавца к загрузке, ₽'],
+    ['expected_client_price_after_rub', 'Клиентская цена станет*, ₽'],
+    ['client_price_change_rub', 'Δ клиентская цена, ₽'],
+    ['client_price_change_pct', 'Δ клиентская цена, %'],
+    ['final_price_rub', 'Финальная цена продавца, ₽'],
     ['min_rub', 'MIN, ₽'],
     ['cost_rub', 'Себестоимость, ₽'],
     ['live_rec_price_rub', 'Live rec, ₽'],
@@ -6678,8 +6787,15 @@ function repricerExportRows(platform = 'all', sourceRows = null) {
       mode: repricerModeLabel(side.mode),
       engine_mode: repricerModeLabel(side.engineMode),
       critical_gate: side.criticalGate || '',
-      current_price_rub: repricerExportNumber(side.currentPrice),
-      final_price_rub: repricerExportNumber(side.finalPrice),
+      current_price_rub: repricerExportNumber(side.currentPrice, 2),
+      current_client_price_rub: side.clientPriceBefore == null ? '' : repricerExportNumber(side.clientPriceBefore, 2),
+      current_buyer_discount_pct: side.currentBuyerDiscountPct == null ? '' : repricerExportNumber(side.currentBuyerDiscountPct * 100, 2),
+      seller_price_to_upload_rub: side.sellerPriceToUpload == null ? '' : repricerExportNumber(side.sellerPriceToUpload, 2),
+      expected_client_price_after_rub: side.expectedClientPriceAfter == null ? '' : repricerExportNumber(side.expectedClientPriceAfter, 2),
+      client_price_change_rub: side.clientPriceChangeRub == null ? '' : repricerExportNumber(side.clientPriceChangeRub, 2),
+      client_price_change_pct: side.clientPriceChangePct == null ? '' : repricerExportNumber(side.clientPriceChangePct * 100, 2),
+      client_price_projection_source: side.clientPriceProjectionSource || '',
+      final_price_rub: repricerExportNumber(side.finalPrice, 2),
       delta_rub: repricerExportNumber(side.changeRub),
       delta_pct: side.changePct == null ? '' : repricerExportNumber(side.changePct * 100, 1),
       confidence: repricerConfidenceLabel(side.confidence),
@@ -6838,8 +6954,15 @@ function downloadRepricerExcel(platform = 'all', sourceRows = null) {
     ['mode', 'Режим'],
     ['engine_mode', 'Engine режим'],
     ['critical_gate', 'Gate'],
-    ['current_price_rub', 'Текущая цена, ₽'],
-    ['final_price_rub', 'Финальная цена, ₽'],
+    ['current_price_rub', 'Цена продавца сейчас, ₽'],
+    ['current_client_price_rub', 'Клиентская цена сейчас, ₽'],
+    ['current_buyer_discount_pct', 'СПП / скидка покупателя сейчас, %'],
+    ['seller_price_to_upload_rub', 'Цена продавца к загрузке, ₽'],
+    ['expected_client_price_after_rub', 'Клиентская цена станет*, ₽'],
+    ['client_price_change_rub', 'Δ клиентская цена, ₽'],
+    ['client_price_change_pct', 'Δ клиентская цена, %'],
+    ['client_price_projection_source', 'Источник прогноза клиентской цены'],
+    ['final_price_rub', 'Финальная цена продавца, ₽'],
     ['delta_rub', 'Δ, ₽'],
     ['delta_pct', 'Δ, %'],
     ['confidence', 'Confidence'],
@@ -7783,12 +7906,36 @@ function renderRepricerPriceApplyCard() {
   const headline = verified
     ? `Проверено: ${fmt.int(verification?.summary?.matched || 0)} цен`
     : (applyAllowed ? `Готов план: ${fmt.int(actions)} цен` : 'Загрузка цен заблокирована');
+  const verificationRows = Array.isArray(verification?.rows) ? verification.rows : [];
+  const planRows = Array.isArray(plan?.actions) ? plan.actions : [];
+  const priceFlowRows = (verificationRows.length ? verificationRows : planRows).slice(0, 12);
+  const priceFlowHtml = priceFlowRows.map((row) => {
+    const isFact = verificationRows.length > 0;
+    const sellerBefore = row.previousSellerPrice ?? row.currentSellerPrice;
+    const sellerAfter = isFact ? row.actualSellerPrice : row.expectedSellerPrice;
+    const clientBefore = row.previousClientPrice ?? row.currentClientPrice;
+    const clientAfter = isFact ? row.actualClientPrice : row.expectedClientPriceAfter;
+    const clientExpected = isFact ? row.expectedClientPrice : row.expectedClientPriceAfter;
+    const clientText = clientBefore == null
+      ? 'клиентская цена: нет исходного API-значения'
+      : `клиент ${fmt.money(clientBefore)} → ${clientAfter == null ? '—' : fmt.money(clientAfter)}${isFact ? ' факт' : ' прогноз'}`;
+    const forecastDelta = isFact && clientExpected != null
+      ? ` · прогноз был ${fmt.money(clientExpected)}`
+      : '';
+    return `
+      <div class="repricer-empty-reason">
+        <strong>${escapeHtml(`${String(row.platform || '').toUpperCase()} · ${row.articleKey || 'SKU'}`)}</strong>
+        <span>${escapeHtml(`${sellerBefore == null ? '—' : fmt.money(sellerBefore)} → ${sellerAfter == null ? '—' : fmt.money(sellerAfter)}`)}</span>
+        <em>${escapeHtml(`${clientText}${forecastDelta}`)}</em>
+      </div>
+    `;
+  }).join('');
   return `
     <div class="repricer-operator-focus-card repricer-price-apply-card" style="margin-top:14px">
       <div class="section-subhead">
         <div>
           <h3>Загрузка утверждённых цен</h3>
-          <p class="small muted">Сначала сервер строит неизменяемый план. Отправка доступна только для ready-строк с прямыми остатками, свежей API-ценой и пройденными шлюзами.</p>
+          <p class="small muted">Сервер отдельно показывает цену продавца к загрузке и клиентскую цену с текущей СПП/скидкой. После отправки прогноз заменяется фактом повторной API-сверки.</p>
         </div>
         ${badge(headline, tone)}
       </div>
@@ -7800,11 +7947,12 @@ function renderRepricerPriceApplyCard() {
         ${verified ? badge(`совпало ${fmt.int(verification?.summary?.matched || 0)}`, 'ok') : ''}
       </div>
       ${blockers.length ? `<div class="small muted" style="margin-top:8px">${escapeHtml(`Стоп: ${blockers.join(' · ')}`)}</div>` : ''}
+      ${priceFlowHtml ? `<div class="repricer-empty-reasons" style="margin-top:10px">${priceFlowHtml}</div>` : ''}
       <div class="quick-actions" style="margin-top:12px">
         <button type="button" class="quick-chip" data-repricer-price-apply="plan" ${endpoint ? '' : 'disabled aria-disabled="true"'}>Сформировать план загрузки</button>
-        <button type="button" class="quick-chip repricer-price-apply-primary" data-repricer-price-apply="apply" ${endpoint && applyAllowed ? '' : 'disabled aria-disabled="true"'}>Отправить ${fmt.int(actions)} утверждённых цен</button>
+        <button type="button" class="quick-chip repricer-price-apply-primary" data-repricer-price-apply="apply" ${endpoint && applyAllowed ? '' : 'disabled aria-disabled="true"'}>Загрузить ${fmt.int(actions)} цен продавца</button>
       </div>
-      <div class="small muted" style="margin-top:8px" data-repricer-price-apply-status>${endpoint ? 'Отправка потребует отдельного подтверждения и после API автоматически сверит фактические цены.' : 'Не настроен защищённый server endpoint применения цен.'}</div>
+      <div class="small muted" style="margin-top:8px" data-repricer-price-apply-status>${endpoint ? 'Клиентская цена «станет» до отправки — прогноз при текущей СПП/скидке; после API-сверки — фактическая цена.' : 'Не настроен защищённый server endpoint применения цен.'}</div>
     </div>
   `;
 }
@@ -7854,7 +8002,7 @@ function pollRepricerPriceApplySnapshot(root, mode, baselineStamp, attempt = 0, 
         setRepricerPriceApplyStatus(
           nextRoot,
           mode === 'apply'
-            ? (succeeded ? 'Готово: цены изменены и совпали с повторной API-выгрузкой.' : 'Сверка завершилась с расхождениями. Повторная отправка заблокирована.')
+            ? (succeeded ? 'Готово: цены продавца совпали, фактические клиентские цены с СПП получены повторной API-выгрузкой.' : 'Сверка завершилась с расхождениями. Повторная отправка заблокирована.')
             : (succeeded ? `План готов: ${fmt.int(target?.summary?.actions || 0)} цен. Проверьте и подтвердите отправку.` : 'План построен, но защитные шлюзы не позволяют отправку.'),
           succeeded ? 'ok' : 'danger'
         );

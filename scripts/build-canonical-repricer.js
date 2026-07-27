@@ -378,6 +378,32 @@ function normalizePct(value) {
   return parsed;
 }
 
+function clientPriceProjection(sellerBefore, clientBefore, sppPct, sellerAfter) {
+  const seller = firstPositive(sellerBefore);
+  const client = firstPositive(clientBefore);
+  const explicitDiscount = normalizePct(sppPct);
+  let factor = null;
+  let source = '';
+  if (seller !== null && client !== null && client <= seller + 0.01) {
+    factor = Math.max(0.05, Math.min(1, client / seller));
+    source = 'current_client_price_ratio';
+  } else if (explicitDiscount !== null && explicitDiscount >= 0 && explicitDiscount <= 0.95) {
+    factor = 1 - explicitDiscount;
+    source = 'current_spp_pct';
+  }
+  const after = firstPositive(sellerAfter);
+  const buyerDiscountPct = factor === null ? null : Number((1 - factor).toFixed(6));
+  return {
+    client_price_before: client,
+    buyer_discount_factor: factor === null ? null : Number(factor.toFixed(6)),
+    effective_buyer_discount_pct: buyerDiscountPct,
+    expected_client_price_after: factor === null || after === null
+      ? null
+      : Number((after * factor).toFixed(2)),
+    source
+  };
+}
+
 function normalizePolicyPct(value) {
   const parsed = normalizePct(value);
   return parsed !== null && parsed >= 0 ? parsed : null;
@@ -1140,6 +1166,12 @@ function buildCanonicalSide({
   if (oosRiskPriceDecreaseBlocked) reasonCodes.push('oos_risk_price_decrease_blocked');
   const proposedMargin = proposed.price !== null ? marginAtPrice(proposed.price, economics) : null;
   const currentMargin = price !== null ? marginAtPrice(price, economics) : null;
+  const clientProjection = clientPriceProjection(
+    price,
+    sourceRow.currentClientPrice,
+    sourceRow.currentBuyerDiscountPct ?? sourceRow.currentSppPct,
+    proposed.price
+  );
   const changePct = price !== null && proposed.price !== null
     ? Number(((proposed.price - price) / price).toFixed(6))
     : null;
@@ -1207,8 +1239,12 @@ function buildCanonicalSide({
     platform,
     facts: {
       seller_price: price,
-      client_price: firstPositive(sourceRow.currentClientPrice),
-      spp_pct: normalizePct(sourceRow.currentSppPct),
+      client_price: clientProjection.client_price_before,
+      client_price_before: clientProjection.client_price_before,
+      spp_pct: clientProjection.effective_buyer_discount_pct,
+      effective_buyer_discount_pct: clientProjection.effective_buyer_discount_pct,
+      buyer_discount_factor: clientProjection.buyer_discount_factor,
+      buyer_discount_source: clientProjection.source,
       lifecycle_key: lifecycleKey,
       product_status: String(
         lifecycleApproval?.productLifecycleStatus
@@ -1251,6 +1287,12 @@ function buildCanonicalSide({
           field: 'currentFillPrice/currentPrice',
           source_mode: current.source
         },
+        client_price: {
+          source_id: String(sourceRow.currentClientPriceSource || `${platform}-prices-api`),
+          file: current.file || 'repricer_live_prices.json',
+          field: 'currentClientPrice',
+          projection_mode: clientProjection.source
+        },
         stock: {
           source_id: preferLiveStock ? 'repricer_live_stock' : 'order_procurement_stock',
           file: preferLiveStock ? 'repricer_live_signals.json' : `order_procurement_${platform}.json`,
@@ -1270,6 +1312,18 @@ function buildCanonicalSide({
     policy,
     recommendation: {
       price: proposed.price,
+      seller_price_to_upload: proposed.price,
+      client_price_before: clientProjection.client_price_before,
+      expected_client_price_after: clientProjection.expected_client_price_after,
+      client_price_change_rub: clientProjection.client_price_before !== null && clientProjection.expected_client_price_after !== null
+        ? Number((clientProjection.expected_client_price_after - clientProjection.client_price_before).toFixed(2))
+        : null,
+      client_price_change_pct: clientProjection.client_price_before !== null
+        && clientProjection.client_price_before > 0
+        && clientProjection.expected_client_price_after !== null
+        ? Number(((clientProjection.expected_client_price_after - clientProjection.client_price_before) / clientProjection.client_price_before).toFixed(6))
+        : null,
+      client_price_projection_source: clientProjection.source,
       margin_pct: proposedMargin,
       current_margin_pct: currentMargin,
       change_pct: changePct,
@@ -1593,6 +1647,7 @@ if (require.main === module) main();
 
 module.exports = {
   buildCanonicalRepricer,
+  clientPriceProjection,
   resolveOptions,
   parseArgs,
   stableStringify,

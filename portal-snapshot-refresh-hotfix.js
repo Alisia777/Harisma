@@ -864,8 +864,6 @@
     "ads_summary",
     "iu_drr_summary",
     "wb_feedbacks_summary",
-    "wb_substitution_traffic",
-    "wb_substitution_traffic_history",
     "portal_sync_health",
     "portal_data_quarantine",
     "portal_data_quality",

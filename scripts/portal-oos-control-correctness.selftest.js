@@ -308,7 +308,7 @@ async function run() {
 
     ['index.html', 'live-index.html', 'docs/index.html'].forEach((fileName) => {
       const html = fs.readFileSync(path.join(ROOT, fileName), 'utf8');
-      assert.ok(html.includes('app-core-01.js?v=20260724allstatuses2ooscorrectness2planfactlazywb1'), `${fileName} must cache-bust OOS loading`);
+      assert.ok(html.includes('app-core-01.js?v=20260727repricermarginbounds1'), `${fileName} must cache-bust OOS loading`);
       assert.ok(html.includes('styles.css?v=20260727planfacttable1'), `${fileName} must cache-bust current portal styles`);
       assert.ok(html.includes('app-core-09.js?v=20260620premiumshell4procurement1'), `${fileName} must cache-bust procurement need logic`);
       assert.ok(html.includes('app-core-11.js?v=20260727planfacttable1'), `${fileName} must cache-bust current portal logic`);

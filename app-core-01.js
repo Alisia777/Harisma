@@ -1437,6 +1437,7 @@ function portalSnapshotRowStamp(row) {
 function decodeChunkedPortalSnapshots(data) {
   const rows = {};
   const rowFreshness = {};
+  const rowMetadata = {};
   const chunkGroups = new Map();
 
   const rememberRow = (snapshotKey, row) => {
@@ -1445,6 +1446,11 @@ function decodeChunkedPortalSnapshots(data) {
     if (rowFreshness[snapshotKey] !== undefined && rowFreshness[snapshotKey] > freshness) return;
     rowFreshness[snapshotKey] = freshness;
     rows[snapshotKey] = row?.payload;
+    rowMetadata[snapshotKey] = {
+      payloadHash: String(row?.payload_hash || '').trim(),
+      generatedAt: String(row?.generated_at || '').trim(),
+      updatedAt: String(row?.updated_at || '').trim()
+    };
   };
 
   for (const row of data || []) {
@@ -1499,6 +1505,12 @@ function decodeChunkedPortalSnapshots(data) {
     }
   }
 
+  Object.defineProperty(rows, '__snapshotMeta', {
+    value: rowMetadata,
+    configurable: false,
+    enumerable: false,
+    writable: false
+  });
   return rows;
 }
 

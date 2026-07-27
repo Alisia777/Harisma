@@ -7665,6 +7665,49 @@ function repricerPriceSyncAuthToken() {
   return sessionToken;
 }
 
+const REPRICER_PRICE_SYNC_MANIFEST_KEY = 'repricer_price_sync_manifest';
+const REPRICER_PRICE_SYNC_REQUIRED_SNAPSHOTS = Object.freeze([
+  'repricer_live_prices',
+  'repricer_live_signals',
+  'canonical_repricer',
+  'portal_repricing_reconciliation',
+  'repricer_team_policy_proposals',
+  'repricer_shadow_report',
+  'repricer_price_apply_plan',
+  'repricer'
+]);
+
+function repricerPriceSyncBundleStatus(snapshots = {}) {
+  const manifest = snapshots?.[REPRICER_PRICE_SYNC_MANIFEST_KEY] || {};
+  const metadata = snapshots?.__snapshotMeta || {};
+  const declaredSnapshots = Array.isArray(manifest?.requiredSnapshots)
+    ? manifest.requiredSnapshots.map((value) => String(value || '').trim()).filter(Boolean)
+    : [];
+  const missingDeclarations = REPRICER_PRICE_SYNC_REQUIRED_SNAPSHOTS
+    .filter((snapshotKey) => !declaredSnapshots.includes(snapshotKey));
+  const incompleteSnapshots = REPRICER_PRICE_SYNC_REQUIRED_SNAPSHOTS.filter((snapshotKey) => {
+    const expectedHash = String(manifest?.snapshots?.[snapshotKey]?.payloadHash || '').trim();
+    const actualHash = String(metadata?.[snapshotKey]?.payloadHash || '').trim();
+    return !snapshots?.[snapshotKey]
+      || !expectedHash
+      || !actualHash
+      || expectedHash !== actualHash;
+  });
+  const manifestStamp = Date.parse(manifest?.generatedAt || '');
+  const ready = manifest?.schema === 'portal-snapshot-bundle-manifest-v1'
+    && Boolean(String(manifest?.bundleId || '').trim())
+    && Number.isFinite(manifestStamp)
+    && missingDeclarations.length === 0
+    && incompleteSnapshots.length === 0;
+  return {
+    manifest,
+    manifestStamp: Number.isFinite(manifestStamp) ? manifestStamp : 0,
+    ready,
+    missingDeclarations,
+    incompleteSnapshots
+  };
+}
+
 function applyRepricerPriceSnapshotBundle(snapshots = {}) {
   const livePrices = snapshots.repricer_live_prices;
   let applied = false;
@@ -7707,11 +7750,34 @@ function applyRepricerPriceSnapshotBundle(snapshots = {}) {
     state.repricer = snapshots.repricer;
     applied = true;
   }
+  if (snapshots[REPRICER_PRICE_SYNC_MANIFEST_KEY]) {
+    state.repricerPriceSyncManifest = snapshots[REPRICER_PRICE_SYNC_MANIFEST_KEY];
+  }
   if (applied && typeof invalidateRepricerRowsCache === 'function') invalidateRepricerRowsCache();
   return applied;
 }
 
-function pollRepricerPriceSnapshot(root, baselineStamp, attempt = 0) {
+function setRepricerPriceApplyRefreshLock(root, locked) {
+  root?.querySelectorAll?.('[data-repricer-price-apply]').forEach((button) => {
+    if (locked) {
+      if (!button.hasAttribute('data-repricer-price-sync-lock')) {
+        button.dataset.repricerPriceSyncLock = button.disabled ? 'disabled' : 'enabled';
+      }
+      button.disabled = true;
+      button.setAttribute('aria-disabled', 'true');
+      return;
+    }
+    const previous = button.dataset.repricerPriceSyncLock;
+    if (!previous) return;
+    if (previous === 'enabled') {
+      button.disabled = false;
+      button.removeAttribute('aria-disabled');
+    }
+    delete button.dataset.repricerPriceSyncLock;
+  });
+}
+
+function pollRepricerPriceSnapshot(root, baselineManifestStamp, attempt = 0) {
   const maxAttempts = 60;
   const testPollDelay = Number(window.__ALTEA_REPRICER_PRICE_SYNC_TEST_POLL_MS__);
   const pollDelay = Number.isFinite(testPollDelay) && testPollDelay >= 0
@@ -7721,8 +7787,8 @@ function pollRepricerPriceSnapshot(root, baselineStamp, attempt = 0) {
     try {
       if (typeof resetPortalSnapshotState === 'function') resetPortalSnapshotState();
       const snapshots = typeof loadPortalSnapshotRows === 'function' ? await loadPortalSnapshotRows() : {};
-      const nextStamp = Date.parse(snapshots?.repricer_live_prices?.generatedAt || '');
-      if (Number.isFinite(nextStamp) && nextStamp > baselineStamp) {
+      const bundle = repricerPriceSyncBundleStatus(snapshots);
+      if (bundle.ready && bundle.manifestStamp > baselineManifestStamp) {
         applyRepricerPriceSnapshotBundle(snapshots);
         setRepricerPriceSyncRuntime({
           busy: false,
@@ -7733,18 +7799,21 @@ function pollRepricerPriceSnapshot(root, baselineStamp, attempt = 0) {
         delete root.dataset.repricerRenderSignature;
         renderRepricer();
         const nextRoot = document.getElementById('view-repricer') || root;
-        setRepricerPriceSyncStatus(nextRoot, 'Готово: свежие цены подставлены, рекомендации пересчитаны.', 'ok');
+        setRepricerPriceSyncStatus(nextRoot, 'Готово: единый пакет цен, рекламы, OOS, расчётов и плана загрузки принят без рассинхрона.', 'ok');
         return;
       }
       if (attempt + 1 < maxAttempts) {
-        setRepricerPriceSyncStatus(root, `Сервер собирает цены, рекламу и OOS, затем сопоставляет артикулы… проверка ${fmt.int(attempt + 1)}/${fmt.int(maxAttempts)}`, 'info');
+        const partialBundle = bundle.manifestStamp > baselineManifestStamp
+          ? ` Пакет ещё неполный: ${fmt.int(bundle.incompleteSnapshots.length + bundle.missingDeclarations.length)} частей.`
+          : '';
+        setRepricerPriceSyncStatus(root, `Сервер собирает цены, рекламу и OOS, затем сопоставляет артикулы…${partialBundle} Проверка ${fmt.int(attempt + 1)}/${fmt.int(maxAttempts)}`, 'info');
         setRepricerPriceSyncRuntime({
           busy: true,
           attempt: attempt + 1,
           maxAttempts,
           label: `Обновление идёт · ${fmt.int(attempt + 1)}/${fmt.int(maxAttempts)}`
         });
-        pollRepricerPriceSnapshot(root, baselineStamp, attempt + 1);
+        pollRepricerPriceSnapshot(root, baselineManifestStamp, attempt + 1);
         return;
       }
       setRepricerPriceSyncRuntime({
@@ -7753,11 +7822,12 @@ function pollRepricerPriceSnapshot(root, baselineStamp, attempt = 0) {
         maxAttempts,
         label: 'Получить актуальные цены'
       });
+      setRepricerPriceApplyRefreshLock(root, false);
       setRepricerPriceSyncStatus(root, 'Запуск принят, но новый снимок ещё не опубликован. Обновите раздел через несколько минут.', 'warn');
     } catch (error) {
       console.warn('[repricer.priceSync.poll]', error);
       if (attempt + 1 < maxAttempts) {
-        pollRepricerPriceSnapshot(root, baselineStamp, attempt + 1);
+        pollRepricerPriceSnapshot(root, baselineManifestStamp, attempt + 1);
       } else {
         setRepricerPriceSyncRuntime({
           busy: false,
@@ -7765,6 +7835,7 @@ function pollRepricerPriceSnapshot(root, baselineStamp, attempt = 0) {
           maxAttempts,
           label: 'Получить актуальные цены'
         });
+        setRepricerPriceApplyRefreshLock(root, false);
         setRepricerPriceSyncStatus(root, 'Не удалось прочитать результат синхронизации. Обновите страницу.', 'danger');
       }
     }
@@ -7833,9 +7904,17 @@ async function requestRepricerPriceSync(button) {
     maxAttempts: 60,
     label: 'Запускаю обновление…'
   });
+  setRepricerPriceApplyRefreshLock(root, true);
   setRepricerPriceSyncStatus(root, 'Отправляю защищённый запрос на сервер…', 'info');
   let accepted = false;
   try {
+    if (typeof resetPortalSnapshotState === 'function') resetPortalSnapshotState();
+    const baselineSnapshots = typeof loadPortalSnapshotRows === 'function' ? await loadPortalSnapshotRows() : {};
+    const baselineBundle = repricerPriceSyncBundleStatus(baselineSnapshots);
+    const baselineManifestStamp = Math.max(
+      baselineBundle.manifestStamp,
+      Date.parse(state.repricerPriceSyncManifest?.generatedAt || '') || 0
+    );
     const response = await fetch(endpoint, {
       method: 'POST',
       headers: {
@@ -7855,7 +7934,6 @@ async function requestRepricerPriceSync(button) {
         : (payload?.detail || payload?.error || `HTTP ${response.status}`);
       throw new Error(failureMessage);
     }
-    const baselineStamp = Date.parse((state.repricerLivePrices || {}).generatedAt || '') || 0;
     accepted = true;
     setRepricerPriceSyncRuntime({
       busy: true,
@@ -7864,7 +7942,7 @@ async function requestRepricerPriceSync(button) {
       label: 'Обновление идёт · 0/60'
     });
     setRepricerPriceSyncStatus(root, 'Запуск принят. Собираю цены, рекламу и OOS WB/Ozon, сопоставляю артикулы и пересчитываю репрайсер…', 'ok');
-    pollRepricerPriceSnapshot(root, baselineStamp);
+    pollRepricerPriceSnapshot(root, baselineManifestStamp);
   } catch (error) {
     console.error('[repricer.priceSync]', error);
     setRepricerPriceSyncRuntime({
@@ -7873,6 +7951,7 @@ async function requestRepricerPriceSync(button) {
       maxAttempts: 60,
       label: 'Получить актуальные цены'
     });
+    setRepricerPriceApplyRefreshLock(root, false);
     setRepricerPriceSyncStatus(root, `Не удалось запустить синхронизацию: ${error?.message || error}`, 'danger');
   } finally {
     if (accepted) return;
@@ -7898,7 +7977,8 @@ function renderRepricerPriceApplyCard() {
       || (cfg.supabase?.url ? `${String(cfg.supabase.url).replace(/\/+$/, '')}/functions/v1/repricer-price-apply` : '')
   ).trim();
   const actions = numberOrZero(plan?.summary?.actions);
-  const applyAllowed = plan?.applyAllowed === true && plan?.status === 'ready' && actions > 0;
+  const priceSyncBusy = repricerPriceSyncRuntime.busy === true;
+  const applyAllowed = !priceSyncBusy && plan?.applyAllowed === true && plan?.status === 'ready' && actions > 0;
   const blockers = Array.isArray(plan?.globalBlockers) ? plan.globalBlockers : [];
   const verified = verification?.status === 'verified';
   const submitted = receipt?.status === 'submitted_pending_verification';
@@ -7949,7 +8029,7 @@ function renderRepricerPriceApplyCard() {
       ${blockers.length ? `<div class="small muted" style="margin-top:8px">${escapeHtml(`Стоп: ${blockers.join(' · ')}`)}</div>` : ''}
       ${priceFlowHtml ? `<div class="repricer-empty-reasons" style="margin-top:10px">${priceFlowHtml}</div>` : ''}
       <div class="quick-actions" style="margin-top:12px">
-        <button type="button" class="quick-chip" data-repricer-price-apply="plan" ${endpoint ? '' : 'disabled aria-disabled="true"'}>Сформировать план загрузки</button>
+        <button type="button" class="quick-chip" data-repricer-price-apply="plan" ${endpoint && !priceSyncBusy ? '' : 'disabled aria-disabled="true"'}>${priceSyncBusy ? 'Ждём единый пакет…' : 'Сформировать план загрузки'}</button>
         <button type="button" class="quick-chip repricer-price-apply-primary" data-repricer-price-apply="apply" ${endpoint && applyAllowed ? '' : 'disabled aria-disabled="true"'}>Загрузить ${fmt.int(actions)} цен продавца</button>
       </div>
       <div class="small muted" style="margin-top:8px" data-repricer-price-apply-status>${endpoint ? 'Клиентская цена «станет» до отправки — прогноз при текущей СПП/скидке; после API-сверки — фактическая цена.' : 'Не настроен защищённый server endpoint применения цен.'}</div>
@@ -8039,6 +8119,10 @@ async function requestRepricerPriceApply(button) {
   const token = repricerPriceSyncAuthToken();
   const plan = state.repricerPriceApplyPlan || {};
   const confirmationHash = String(plan?.confirmationHash || '').trim();
+  if (repricerPriceSyncRuntime.busy) {
+    setRepricerPriceApplyStatus(root, 'Сначала дождитесь завершения обновления цен: старый план временно заблокирован.', 'warn');
+    return;
+  }
   if (!endpoint) {
     setRepricerPriceApplyStatus(root, 'Не настроен защищённый server endpoint.', 'danger');
     return;

@@ -130,6 +130,9 @@ jobs:
             --input-dir data \
             --output-dir data
           node scripts/build-legacy-repricer-layer.js
+          node scripts/portal-repricer-price-apply.js plan \
+            --input-dir data \
+            --output-dir data
 
       - name: Publish refreshed repricer snapshots
         env:
@@ -139,7 +142,9 @@ jobs:
         run: >-
           node scripts/portal-google-sheet-upload.js
           --input-dir data
-          --snapshot repricer_live_prices,repricer_live_signals,canonical_repricer,portal_repricing_reconciliation,repricer_team_policy_proposals,repricer_shadow_report,repricer
+          --snapshot repricer_live_prices,repricer_live_signals,canonical_repricer,portal_repricing_reconciliation,repricer_team_policy_proposals,repricer_shadow_report,repricer_price_apply_plan,repricer
+          --commit-manifest repricer_price_sync_manifest
+          --bundle-id "${{ github.run_id }}-${{ github.run_attempt }}"
           --source repricer-live-prices
 
       - uses: actions/upload-artifact@v4
@@ -154,6 +159,7 @@ jobs:
             data/portal_repricing_reconciliation.json
             data/repricer_team_policy_proposals.json
             data/repricer_shadow_report.json
+            data/repricer_price_apply_plan.json
             data/repricer.json
           if-no-files-found: warn
           retention-days: 14

@@ -86,12 +86,17 @@ function parseArgs(argv) {
 }
 
 function resolveOptions(args) {
+  const commitManifest = String(args['commit-manifest'] || '').trim();
   return {
     inputDir: path.resolve(args['input-dir'] || path.join(process.cwd(), '.altea-google-sheet-sync-output')),
     brand: args.brand || process.env.ALTEA_PORTAL_BRAND || DEFAULT_BRAND,
     supabaseUrl: args['supabase-url'] || process.env.ALTEA_SUPABASE_URL || DEFAULT_SUPABASE_URL,
     supabaseKey: args['supabase-key'] || process.env.ALTEA_SUPABASE_KEY || DEFAULT_SUPABASE_KEY,
     source: args.source || process.env.ALTEA_SNAPSHOT_SOURCE || SNAPSHOT_SOURCE,
+    commitManifest,
+    bundleId: commitManifest
+      ? String(args['bundle-id'] || process.env.ALTEA_SNAPSHOT_BUNDLE_ID || crypto.randomUUID()).trim()
+      : '',
     snapshots: args.snapshot
       ? String(args.snapshot).split(',').map((value) => value.trim()).filter(Boolean)
       : SNAPSHOT_KEYS,
@@ -99,8 +104,33 @@ function resolveOptions(args) {
   };
 }
 
+function snapshotGeneratedAt(payload) {
+  return payload?.generatedAt
+    || payload?.dataFreshness?.asOfDate
+    || payload?.window?.to
+    || new Date().toISOString();
+}
+
 function hashPayload(payload) {
   return crypto.createHash('sha256').update(typeof payload === 'string' ? payload : JSON.stringify(payload)).digest('hex');
+}
+
+function buildSnapshotBundleManifest(options, publishedSnapshots, generatedAt = new Date().toISOString()) {
+  const snapshots = Object.fromEntries(Object.entries(publishedSnapshots || {}).map(([snapshotKey, descriptor]) => [
+    snapshotKey,
+    {
+      payloadHash: String(descriptor?.payloadHash || '').trim(),
+      generatedAt: String(descriptor?.generatedAt || '').trim()
+    }
+  ]));
+  return {
+    schema: 'portal-snapshot-bundle-manifest-v1',
+    generatedAt,
+    bundleId: String(options?.bundleId || '').trim(),
+    source: String(options?.source || '').trim(),
+    requiredSnapshots: Object.keys(snapshots),
+    snapshots
+  };
 }
 
 function chunkUtf8String(text, maxBytes) {
@@ -164,10 +194,7 @@ async function postRow(row, options) {
 }
 
 async function uploadSnapshot(snapshotKey, payload, options) {
-  const generatedAt = payload?.generatedAt
-    || payload?.dataFreshness?.asOfDate
-    || payload?.window?.to
-    || new Date().toISOString();
+  const generatedAt = snapshotGeneratedAt(payload);
   const payloadHash = hashPayload(payload);
   const inlineRow = {
     brand: options.brand,
@@ -233,7 +260,11 @@ async function uploadSnapshot(snapshotKey, payload, options) {
 
 async function main() {
   const options = resolveOptions(parseArgs(process.argv));
+  if (options.commitManifest && options.snapshots.includes(options.commitManifest)) {
+    throw new Error(`Commit manifest key must not be included in --snapshot: ${options.commitManifest}`);
+  }
   const uploaded = {};
+  const publishedSnapshots = {};
   const skipped = [];
   for (const snapshotKey of options.snapshots) {
     const filePath = snapshotFilePath(options.inputDir, snapshotKey);
@@ -243,12 +274,42 @@ async function main() {
       continue;
     }
     const payload = readSnapshot(options.inputDir, snapshotKey);
-    uploaded[snapshotKey] = await uploadSnapshot(snapshotKey, payload, options);
+    const payloadHash = await uploadSnapshot(snapshotKey, payload, options);
+    uploaded[snapshotKey] = payloadHash;
+    publishedSnapshots[snapshotKey] = {
+      payloadHash,
+      generatedAt: snapshotGeneratedAt(payload)
+    };
   }
-  console.log(JSON.stringify({ uploaded, skipped }, null, 2));
+  if (options.commitManifest) {
+    const manifest = buildSnapshotBundleManifest(options, publishedSnapshots);
+    uploaded[options.commitManifest] = await uploadSnapshot(options.commitManifest, manifest, options);
+  }
+  console.log(JSON.stringify({
+    uploaded,
+    skipped,
+    bundle: options.commitManifest
+      ? {
+        manifest: options.commitManifest,
+        bundleId: options.bundleId,
+        snapshots: Object.keys(publishedSnapshots)
+      }
+      : null
+  }, null, 2));
 }
 
-main().catch((error) => {
-  console.error(error?.stack || String(error));
-  process.exitCode = 1;
-});
+if (require.main === module) {
+  main().catch((error) => {
+    console.error(error?.stack || String(error));
+    process.exitCode = 1;
+  });
+}
+
+module.exports = {
+  buildSnapshotBundleManifest,
+  hashPayload,
+  main,
+  parseArgs,
+  resolveOptions,
+  snapshotGeneratedAt
+};

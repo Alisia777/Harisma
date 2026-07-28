@@ -3287,11 +3287,9 @@
             rerender: true,
             reason: 'manual',
             view: 'wb-rating',
-            keys: ['wb_feedbacks_summary', 'iu_drr_summary']
+            keys: ['wb_feedbacks_summary']
           });
         } else if (typeof ensureViewData === 'function') {
-          if (appState().boot?.lazyReady) appState().boot.lazyReady.iuDrr = false;
-          if (appState().boot?.lazyLoads) delete appState().boot.lazyLoads.iuDrr;
           await ensureViewData('wb-rating');
         }
         modelCache = { signature: '', value: null };

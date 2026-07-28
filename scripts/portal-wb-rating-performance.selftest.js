@@ -77,17 +77,13 @@ async function run() {
 
     // The authenticated shell loads application scripts sequentially. On a busy
     // CI runner the legacy rating render can become visible a few milliseconds
-    // before the structured report and feedback-UX styles finish loading.
-    // Wait for the final table contract instead of sampling that transient DOM.
+    // before the structured report styles finish loading.
     await page.waitForFunction(() => {
       const table = document.querySelector('#view-wb-rating .rating-work-table');
       if (!table
-        || !document.getElementById('altea-wb-rating-structured-v6')
-        || !document.getElementById('altea-wb-rating-feedback-ux-style')) return false;
+        || !document.getElementById('altea-wb-rating-structured-v6')) return false;
       const style = getComputedStyle(table);
-      return ['none', 'max-content'].includes(style.maxHeight)
-        && ['auto', 'scroll'].includes(style.overflowX)
-        && ['visible', 'clip', 'auto'].includes(style.overflowY);
+      return table.clientWidth > 0 && ['auto', 'scroll'].includes(style.overflowX);
     });
     await page.waitForFunction(() => {
       const input = document.querySelector('#view-wb-rating [data-rating-search]');
@@ -100,22 +96,24 @@ async function run() {
       }
       return now - marker.since >= 900;
     });
-    const tableStyle = await page.locator('#view-wb-rating .rating-work-table').first().evaluate((element) => ({
-      maxHeight: getComputedStyle(element).maxHeight,
-      overflowX: getComputedStyle(element).overflowX,
-      overflowY: getComputedStyle(element).overflowY
-    }));
+    const tableLayout = await page.locator('#view-wb-rating .rating-work-table').first().evaluate((element) => {
+      const style = getComputedStyle(element);
+      return {
+        maxHeight: style.maxHeight,
+        overflowX: style.overflowX,
+        overflowY: style.overflowY,
+        clientHeight: element.clientHeight,
+        scrollHeight: element.scrollHeight,
+        hasNestedVerticalScroll: element.scrollHeight > element.clientHeight + 1
+      };
+    });
     assert(
-      ['none', 'max-content'].includes(tableStyle.maxHeight),
-      `rating table must not be vertically capped: ${JSON.stringify(tableStyle)}`
+      !tableLayout.hasNestedVerticalScroll,
+      `rating table must expand vertically instead of clipping rows: ${JSON.stringify(tableLayout)}`
     );
     assert(
-      ['auto', 'scroll'].includes(tableStyle.overflowX),
-      `rating table must retain horizontal scrolling: ${JSON.stringify(tableStyle)}`
-    );
-    assert(
-      ['visible', 'clip', 'auto'].includes(tableStyle.overflowY),
-      `rating table must not force nested vertical scrolling: ${JSON.stringify(tableStyle)}`
+      ['auto', 'scroll'].includes(tableLayout.overflowX),
+      `rating table must retain horizontal scrolling: ${JSON.stringify(tableLayout)}`
     );
 
     const search = page.locator('#view-wb-rating [data-rating-search]').first();

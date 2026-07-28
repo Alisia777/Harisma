@@ -5,7 +5,7 @@ const fs = require('fs');
 const os = require('os');
 const path = require('path');
 
-const { unzipArchive } = require('./portal-yandex-market-trends-sync.js');
+const { unzipArchive, yandexRequest } = require('./portal-yandex-market-trends-sync.js');
 
 function crc32(buffer) {
   const table = [];
@@ -100,4 +100,35 @@ try {
   fs.rmSync(tmpDir, { recursive: true, force: true });
 }
 
-console.log('portal-yandex-market-trends-sync selftest ok');
+async function assertTransportRetry() {
+  const originalFetch = global.fetch;
+  let calls = 0;
+  try {
+    global.fetch = async () => {
+      calls += 1;
+      if (calls === 1) throw new TypeError('fetch failed');
+      return {
+        ok: true,
+        status: 200,
+        text: async () => '{"campaigns":[]}'
+      };
+    };
+    const payload = await yandexRequest({
+      apiBaseUrl: 'https://api.partner.market.yandex.ru',
+      apiKey: 'test',
+      rateLimitAttempts: 3,
+      requestRetryDelayMs: 0
+    }, '/v2/campaigns');
+    assert.deepStrictEqual(payload, { campaigns: [] });
+    assert.strictEqual(calls, 2, 'transport failure must be retried');
+  } finally {
+    global.fetch = originalFetch;
+  }
+}
+
+assertTransportRetry()
+  .then(() => console.log('portal-yandex-market-trends-sync selftest ok'))
+  .catch((error) => {
+    console.error(error?.stack || String(error));
+    process.exit(1);
+  });

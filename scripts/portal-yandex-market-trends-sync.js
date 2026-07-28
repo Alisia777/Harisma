@@ -140,6 +140,7 @@ function resolveOptions(args) {
     pollIntervalMs: Math.max(1000, Math.trunc(numberOrZero(args['poll-interval-ms'] || 10000))),
     rateLimitAttempts: Math.max(1, Math.trunc(numberOrZero(args['rate-limit-attempts'] || process.env.ALTEA_YM_RATE_LIMIT_ATTEMPTS || 3))),
     rateLimitExtraDelayMs: Math.max(0, Math.trunc(numberOrZero(args['rate-limit-extra-delay-ms'] || process.env.ALTEA_YM_RATE_LIMIT_EXTRA_DELAY_MS || 30000))),
+    requestRetryDelayMs: Math.max(0, Math.trunc(numberOrZero(args['request-retry-delay-ms'] || process.env.ALTEA_YM_REQUEST_RETRY_DELAY_MS || 2000))),
     settlementHour,
     autoLagDays,
     explicitTo: Boolean(explicitTo),
@@ -398,15 +399,27 @@ async function yandexRequest(options, apiPath, requestOptions = {}) {
   });
   const attempts = Math.max(1, Math.trunc(numberOrZero(requestOptions.rateLimitAttempts || options.rateLimitAttempts || 1)));
   for (let attempt = 1; attempt <= attempts; attempt += 1) {
-    const response = await fetch(url, {
-      method: requestOptions.method || 'GET',
-      headers: {
-        'Api-Key': options.apiKey,
-        'Content-Type': 'application/json'
-      },
-      body: requestOptions.body === undefined ? undefined : JSON.stringify(requestOptions.body)
-    });
-    const text = await response.text();
+    let response;
+    let text;
+    try {
+      response = await fetch(url, {
+        method: requestOptions.method || 'GET',
+        headers: {
+          'Api-Key': options.apiKey,
+          'Content-Type': 'application/json'
+        },
+        body: requestOptions.body === undefined ? undefined : JSON.stringify(requestOptions.body)
+      });
+      text = await response.text();
+    } catch (error) {
+      if (attempt < attempts) {
+        const retryDelayMs = yandexTransportRetryDelayMs(attempt, requestOptions, options);
+        console.warn(`[ym] ${apiPath} transport error (${normalizeText(error?.message) || 'fetch failed'}). Waiting ${retryDelayMs}ms before retry ${attempt + 1}/${attempts}.`);
+        await sleep(retryDelayMs);
+        continue;
+      }
+      throw new Error(`Yandex Market API ${apiPath}: transport failed after ${attempts} attempts: ${normalizeText(error?.message) || 'fetch failed'}`);
+    }
     let payload = null;
     try {
       payload = text ? JSON.parse(text) : null;
@@ -416,14 +429,22 @@ async function yandexRequest(options, apiPath, requestOptions = {}) {
     if (response.ok) return payload;
 
     const retryDelayMs = yandexRateLimitDelayMs(response.status, apiPath, text, options);
-    if (retryDelayMs > 0 && attempt < attempts) {
-      console.warn(`[ym] ${apiPath} hit rate limit (HTTP ${response.status}). Waiting ${Math.round(retryDelayMs / 1000)} sec before retry ${attempt + 1}/${attempts}.`);
-      await sleep(retryDelayMs);
+    const retryableStatus = [408, 425].includes(Number(response.status)) || Number(response.status) >= 500;
+    if ((retryDelayMs > 0 || retryableStatus) && attempt < attempts) {
+      const waitMs = retryDelayMs || yandexTransportRetryDelayMs(attempt, requestOptions, options);
+      const reason = retryDelayMs > 0 ? 'rate limit' : 'temporary server error';
+      console.warn(`[ym] ${apiPath} hit ${reason} (HTTP ${response.status}). Waiting ${waitMs}ms before retry ${attempt + 1}/${attempts}.`);
+      await sleep(waitMs);
       continue;
     }
     throw new Error(`Yandex Market API ${apiPath}: HTTP ${response.status} ${text.slice(0, 700)}`);
   }
   throw new Error(`Yandex Market API ${apiPath}: request did not complete`);
+}
+
+function yandexTransportRetryDelayMs(attempt, requestOptions, options) {
+  const baseDelayMs = Math.max(0, numberOrZero(requestOptions?.requestRetryDelayMs ?? options?.requestRetryDelayMs ?? 2000));
+  return Math.min(30000, Math.round(baseDelayMs * (2 ** Math.max(0, attempt - 1))));
 }
 
 function yandexRateLimitDelayMs(status, apiPath, responseText, options) {
@@ -1332,5 +1353,6 @@ if (require.main === module) {
 module.exports = {
   normalizeKey,
   skuMaps,
-  unzipArchive
+  unzipArchive,
+  yandexRequest
 };

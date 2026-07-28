@@ -369,7 +369,10 @@ function latestEffectiveRecord(rows = [], articleKey = '', platform = '') {
   const platformKey = String(platform || '').trim().toLowerCase();
   return rows
     .filter((row) => normalizeKey(row?.articleKey || row?.article || row?.sku || '') === normalized)
-    .filter((row) => !platformKey || !row?.platform || String(row.platform).trim().toLowerCase() === platformKey)
+    .filter((row) => {
+      const rowPlatform = String(row?.platform || '').trim().toLowerCase();
+      return !platformKey || !rowPlatform || rowPlatform === 'all' || rowPlatform === platformKey;
+    })
     .filter(serverApprovedRegistryRecord)
     .sort((left, right) => String(right.effectiveFrom || right.createdAt || '').localeCompare(String(left.effectiveFrom || left.createdAt || '')))
     [0] || null;
@@ -502,11 +505,21 @@ function marginGuardRequired(lifecycleKey = '') {
 function targetMarginFloor(economics = {}, targetMarginPct = null) {
   const target = normalizePolicyPct(targetMarginPct);
   if (!economics.complete || target === null || target <= 0 || target >= 1) return null;
+  return marginFloorForRatio(economics, target);
+}
+
+function liquidationMarginFloor(economics = {}, minimumMarginPct = null) {
+  const minimum = normalizePolicyPct(minimumMarginPct);
+  if (!economics.complete || minimum === null || minimum < 0 || minimum >= 1) return null;
+  return marginFloorForRatio(economics, minimum);
+}
+
+function marginFloorForRatio(economics = {}, marginRatio = null) {
   const denominator = 1
     - (economics.commission_pct || 0)
     - (economics.internal_advertising_pct || 0)
     - (economics.tax_pct || 0)
-    - target;
+    - marginRatio;
   if (denominator <= 0) return null;
   return Math.ceil(((economics.cost || 0) + economicsFixedCostsPerUnit(economics)) / denominator);
 }
@@ -1403,6 +1416,29 @@ function resolvePolicy(
     && targetMargin !== null
     && maximumMargin <= targetMargin;
   const guardRequired = marginGuardRequired(lifecycleKey);
+  const liquidationPolicy = economicsPolicy?.liquidation || {};
+  const liquidationGuardRequired = String(lifecycleKey || '').trim().toLowerCase() === 'exit'
+    && liquidationPolicy.enabled !== false;
+  const registryLiquidationMargin = normalizePolicyPct(
+    minMaxRecord?.liquidationMinMarginPct
+      ?? minMaxRecord?.liquidation_min_margin_pct
+      ?? minMaxRecord?.exitMinMarginPct
+      ?? minMaxRecord?.exit_min_margin_pct
+  );
+  const sourceLiquidationMargin = normalizePolicyPct(
+    sourceRow.manualLiquidationMinMarginPct
+      ?? sourceRow.liquidationMinMarginPct
+      ?? sourceRow.exitMinMarginPct
+      ?? supportRow.manualLiquidationMinMarginPct
+      ?? supportRow.liquidationMinMarginPct
+      ?? supportRow.exitMinMarginPct
+  );
+  const defaultLiquidationMargin = normalizePolicyPct(
+    liquidationPolicy.defaultMinimumMarginPct ?? 0
+  );
+  const liquidationMinimumMargin = registryLiquidationMargin
+    ?? sourceLiquidationMargin
+    ?? defaultLiquidationMargin;
   const marginResidualPct = targetMarginResidualPct(economics, targetMargin);
   const minimumResidualPct = minimumResidualContributionPct(economicsPolicy);
   const targetMarginFeasible = !guardRequired
@@ -1414,7 +1450,11 @@ function resolvePolicy(
   const maximumMarginCap = guardRequired && !marginBandInvalid
     ? targetMarginCap(economics, maximumMargin)
     : null;
-  const unboundedFloor = Math.max(minMaxFloor || 0, marginFloor || 0) || null;
+  const liquidationFloor = liquidationGuardRequired
+    ? liquidationMarginFloor(economics, liquidationMinimumMargin)
+    : null;
+  const effectiveMarginFloor = Math.max(marginFloor || 0, liquidationFloor || 0) || null;
+  const unboundedFloor = Math.max(minMaxFloor || 0, effectiveMarginFloor || 0) || null;
   const floorLoweredByMaximumMargin = Boolean(
     maximumMarginCap !== null
     && unboundedFloor !== null
@@ -1422,12 +1462,12 @@ function resolvePolicy(
   );
   const floor = floorLoweredByMaximumMargin ? maximumMarginCap : unboundedFloor;
   const capLiftedByMargin = Boolean(
-    guardRequired
-    && marginFloor !== null
+    (guardRequired || liquidationGuardRequired)
+    && effectiveMarginFloor !== null
     && minMaxCap !== null
-    && minMaxCap + 1e-9 < marginFloor
+    && minMaxCap + 1e-9 < effectiveMarginFloor
   );
-  const minMaxCapAfterFloor = capLiftedByMargin ? marginFloor : minMaxCap;
+  const minMaxCapAfterFloor = capLiftedByMargin ? effectiveMarginFloor : minMaxCap;
   const capLoweredByMaximumMargin = Boolean(
     maximumMarginCap !== null
     && minMaxCapAfterFloor !== null
@@ -1454,7 +1494,13 @@ function resolvePolicy(
     margin_floor: marginFloor,
     margin_cap: maximumMarginCap,
     margin_guard_required: guardRequired,
-    margin_priority_applied: Boolean(marginFloor !== null && marginFloor >= (minMaxFloor || 0)),
+    liquidation_guard_required: liquidationGuardRequired,
+    liquidation_min_margin_pct: liquidationMinimumMargin,
+    liquidation_margin_floor: liquidationFloor,
+    liquidation_margin_source: registryLiquidationMargin !== null
+      ? 'approved_minmax_registry'
+      : (sourceLiquidationMargin !== null ? 'price_policy_json' : 'repricer_economics_policy'),
+    margin_priority_applied: Boolean(effectiveMarginFloor !== null && effectiveMarginFloor >= (minMaxFloor || 0)),
     cap_lifted_by_margin: capLiftedByMargin,
     floor_lowered_by_max_margin: floorLoweredByMaximumMargin,
     cap_lowered_by_max_margin: capLoweredByMaximumMargin,
@@ -1508,15 +1554,21 @@ function chooseProposedPrice(currentPrice, policy = {}, approval = null, demandI
   let guard = '';
   if (floor !== null && price < floor) {
     price = floor;
-    guard = policy.margin_floor !== null && policy.margin_floor >= (policy.min_max_floor || 0)
-      ? 'margin_floor'
-      : 'min_floor';
+    guard = policy.liquidation_guard_required
+      && policy.liquidation_margin_floor !== null
+      && policy.liquidation_margin_floor >= (policy.min_max_floor || 0)
+      ? 'liquidation_margin_floor'
+      : (
+        policy.margin_floor !== null && policy.margin_floor >= (policy.min_max_floor || 0)
+          ? 'margin_floor'
+          : 'min_floor'
+      );
   }
   if (cap !== null && cap >= (floor || 0) && price > cap) {
     price = cap;
     guard = policy.cap_lowered_by_max_margin ? 'max_margin_cap' : 'max_cap';
   }
-  const roundedPrice = guard === 'margin_floor' || guard === 'min_floor'
+  const roundedPrice = guard === 'margin_floor' || guard === 'liquidation_margin_floor' || guard === 'min_floor'
     ? Math.ceil(price)
     : (guard === 'max_cap' || guard === 'max_margin_cap' ? Math.floor(price) : Math.round(price));
   return {
@@ -1684,6 +1736,8 @@ function buildCanonicalSide({
     reasonCodes.push('target_margin_not_economically_feasible');
   }
   if (policy.margin_guard_required && policy.target_margin_pct !== null && policy.margin_floor === null) reasonCodes.push('invalid_target_margin_policy');
+  if (policy.liquidation_guard_required && policy.liquidation_min_margin_pct === null) reasonCodes.push('missing_liquidation_margin');
+  if (policy.liquidation_guard_required && policy.liquidation_margin_floor === null) reasonCodes.push('invalid_liquidation_margin_policy');
   if (policy.margin_band_invalid) reasonCodes.push('invalid_margin_band');
   if (lifecycleKey === 'not_listed') reasonCodes.push('platform_not_listed');
   if (policy.cap_lifted_by_margin) reasonCodes.push('cap_lifted_by_margin_floor');
@@ -1710,6 +1764,7 @@ function buildCanonicalSide({
     && economics.complete
     && policy.floor !== null
     && (!policy.margin_guard_required || policy.margin_floor !== null)
+    && (!policy.liquidation_guard_required || policy.liquidation_margin_floor !== null)
     && (
       !policy.margin_guard_required
       || (
@@ -1747,6 +1802,7 @@ function buildCanonicalSide({
     ? chooseProposedPrice(price, policy, approval, demandIntelligence)
     : { price: null, source: '' };
   if (proposed.guard === 'margin_floor') reasonCodes.push('margin_floor_applied');
+  if (proposed.guard === 'liquidation_margin_floor') reasonCodes.push('liquidation_margin_floor_applied');
   if (proposed.guard === 'min_floor') reasonCodes.push('min_floor_applied');
   if (proposed.guard === 'max_cap') reasonCodes.push('max_cap_applied');
   if (proposed.guard === 'max_margin_cap') reasonCodes.push('max_margin_cap_applied');
@@ -1798,20 +1854,36 @@ function buildCanonicalSide({
   if (sharpPriceApprovalRequired) reasonCodes.push('sharp_price_requires_rop');
   if (demandPriceReviewRequired) reasonCodes.push('demand_price_requires_rop');
   const marginSafe = !policy.margin_guard_required
-    || (
-      policy.target_margin_pct !== null
-      && proposedMargin !== null
-      && proposedMargin + 1e-9 >= policy.target_margin_pct
-      && (
-        policy.max_margin_pct === null
-        || proposedMargin <= policy.max_margin_pct + 1e-9
+    ? (
+      !policy.liquidation_guard_required
+      || (
+        policy.liquidation_min_margin_pct !== null
+        && proposedMargin !== null
+        && proposedMargin + 1e-9 >= policy.liquidation_min_margin_pct
       )
-    );
+    )
+    : (
+        policy.target_margin_pct !== null
+        && proposedMargin !== null
+        && proposedMargin + 1e-9 >= policy.target_margin_pct
+        && (
+          policy.max_margin_pct === null
+          || proposedMargin <= policy.max_margin_pct + 1e-9
+        )
+      );
   if (policy.margin_guard_required && currentMargin !== null && policy.target_margin_pct !== null && currentMargin + 1e-9 < policy.target_margin_pct) {
     reasonCodes.push('current_margin_below_target');
   }
   if (policy.margin_guard_required && currentMargin !== null && policy.max_margin_pct !== null && currentMargin > policy.max_margin_pct + 1e-9) {
     reasonCodes.push('current_margin_above_maximum');
+  }
+  if (
+    policy.liquidation_guard_required
+    && currentMargin !== null
+    && policy.liquidation_min_margin_pct !== null
+    && currentMargin + 1e-9 < policy.liquidation_min_margin_pct
+  ) {
+    reasonCodes.push('current_margin_below_liquidation_minimum');
   }
   if (proposed.price !== null && !marginSafe) reasonCodes.push('margin_guard_violation');
   const insideCorridor = proposed.price === null
@@ -2008,7 +2080,7 @@ function buildCanonicalSide({
       preserves_original_current_price: price,
       requested_price_before_guards: proposed.requested_price ?? price,
       calculated_price_before_policy_review: extremePricePolicyReviewRequired ? proposed.price : null,
-      margin_guard_has_priority: policy.margin_guard_required,
+      margin_guard_has_priority: policy.margin_guard_required || policy.liquidation_guard_required,
       demand_price_review_required: demandPriceReviewRequired,
       demand_auto_apply_allowed: demandIntelligence.auto_apply,
       demand_forecast_model: demandIntelligence.forecast_model,
@@ -2303,9 +2375,12 @@ module.exports = {
   lifecycleApprovalMap,
   lifecycleApprovalFor,
   economicsFixedCostsPerUnit,
+  liquidationMarginFloor,
   marginAtPrice,
   marginGuardRequired,
   normalizeLifecycleKey,
+  resolvePolicy,
+  serverApprovedRegistryRecord,
   resolveEconomics,
   targetMarginFloor,
   targetMarginCap,

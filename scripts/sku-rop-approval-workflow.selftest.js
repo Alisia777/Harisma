@@ -431,6 +431,108 @@ async function run() {
     );
     assert.strictEqual(demandApplied.task?.status, 'done', JSON.stringify(demandApplied));
 
+    const marginPolicyRequest = await page.evaluate(async () => {
+      const payload = {
+        type: 'MARGIN_POLICY_CHANGE',
+        articleKey: 'margin_policy_selftest',
+        platform: 'wb',
+        currentValue: 'маржа —; MIN —; MAX —',
+        proposedValue: 'маржа 25–40%; MIN 900 ₽; MAX 1 300 ₽',
+        reason: 'Команда согласовала пороги по полной экономике ИУ.',
+        payload: {
+          lifecycleKey: 'active',
+          minMarginPct: 0.25,
+          maxMarginPct: 0.4,
+          minPrice: 900,
+          maxPrice: 1300
+        },
+        metrics: {
+          currentSellerPrice: 850,
+          proposedSellerPrice: 900,
+          currentClientPrice: 800,
+          proposedClientPrice: 847,
+          currentMarginPct: 0.2,
+          proposedMarginPct: 0.25,
+          costRub: 300,
+          commissionPct: 0.3203,
+          internalAdvertisingPct: 0.0877,
+          platformCostsRub: 90
+        }
+      };
+      const beforeProfile = (window.__alteaAppState.storage.repricerSkuProfiles || [])
+        .find((item) => item.articleKey === payload.articleKey);
+      const beforeCorridor = (window.__alteaAppState.storage.repricerCorridors || [])
+        .find((item) => item.articleKey === payload.articleKey && item.platform === payload.platform);
+      const first = await window.requestSkuDecisionApproval(payload);
+      const duplicate = await window.requestSkuDecisionApproval(payload);
+      return { beforeProfile, beforeCorridor, first, duplicate };
+    });
+    assert.strictEqual(marginPolicyRequest.beforeProfile, undefined);
+    assert.strictEqual(marginPolicyRequest.beforeCorridor, undefined);
+    assert.strictEqual(marginPolicyRequest.first?.status, 'waiting_rop', JSON.stringify(marginPolicyRequest));
+    assert.strictEqual(marginPolicyRequest.first?.taskId, marginPolicyRequest.duplicate?.taskId, 'same margin policy must be deduplicated');
+    assert.strictEqual(marginPolicyRequest.duplicate?.duplicate, true, JSON.stringify(marginPolicyRequest));
+
+    await page.evaluate(async (taskId) => {
+      await window.approveTaskByRop(taskId, 'Пороги и экономика проверены.');
+    }, marginPolicyRequest.first.taskId);
+    const marginPolicyApplied = await page.evaluate(() => {
+      const articleKey = 'margin_policy_selftest';
+      const state = window.__alteaAppState;
+      const decision = (state.storage.skuDecisionApprovals || [])
+        .find((item) => item.articleKey === articleKey && item.type === 'MARGIN_POLICY_CHANGE');
+      const profile = (state.storage.repricerSkuProfiles || [])
+        .find((item) => item.articleKey === articleKey);
+      const corridor = (state.storage.repricerCorridors || [])
+        .find((item) => item.articleKey === articleKey && item.platform === 'wb');
+      const tasks = (state.storage.repricerPendingApiTasks || [])
+        .filter((item) => item.articleKey === articleKey);
+      const task = (state.storage.tasks || []).find((item) => item.id === decision?.taskId);
+      return { decision, profile, corridor, tasks, task };
+    });
+    assert.strictEqual(marginPolicyApplied.decision?.status, 'applied', JSON.stringify(marginPolicyApplied));
+    assert.strictEqual(Number(marginPolicyApplied.profile?.minMarginPct), 0.25, JSON.stringify(marginPolicyApplied));
+    assert.strictEqual(Number(marginPolicyApplied.profile?.maxMarginPct), 0.4, JSON.stringify(marginPolicyApplied));
+    assert.strictEqual(Number(marginPolicyApplied.corridor?.hardFloor), 900, JSON.stringify(marginPolicyApplied));
+    assert.strictEqual(Number(marginPolicyApplied.corridor?.stretchCap), 1300, JSON.stringify(marginPolicyApplied));
+    assert.strictEqual(marginPolicyApplied.corridor?.approvalStatus, 'approved', JSON.stringify(marginPolicyApplied));
+    assert.strictEqual(marginPolicyApplied.corridor?.sourceStore, 'portal_task_approval', JSON.stringify(marginPolicyApplied));
+    assert.strictEqual(marginPolicyApplied.task?.status, 'done', JSON.stringify(marginPolicyApplied));
+
+    const liquidationPolicy = await page.evaluate(async () => {
+      const decision = await window.requestSkuDecisionApproval({
+        type: 'MARGIN_POLICY_CHANGE',
+        articleKey: 'liquidation_policy_selftest',
+        platform: 'ozon',
+        currentValue: 'вывод без отдельного порога',
+        proposedValue: 'вывод ≥ 0%; MIN 500 ₽; MAX 800 ₽',
+        reason: 'Не продавать товар на вывод в отрицательную маржу.',
+        payload: {
+          lifecycleKey: 'exit',
+          liquidationMinMarginPct: 0,
+          minPrice: 500,
+          maxPrice: 800
+        }
+      });
+      return decision;
+    });
+    await page.evaluate(async (taskId) => {
+      await window.approveTaskByRop(taskId, 'Безубыточность подтверждена.');
+    }, liquidationPolicy.taskId);
+    const liquidationApplied = await page.evaluate(() => {
+      const articleKey = 'liquidation_policy_selftest';
+      const storage = window.__alteaAppState.storage;
+      const profile = (storage.repricerSkuProfiles || []).find((item) => item.articleKey === articleKey);
+      const apiTask = (storage.repricerPendingApiTasks || []).find((item) => (
+        item.articleKey === articleKey
+        && item.platform === 'ozon'
+        && item.field === 'liquidation_margin_pct'
+      ));
+      return { profile, apiTask };
+    });
+    assert.strictEqual(Number(liquidationApplied.profile?.liquidationMinMarginPct), 0, JSON.stringify(liquidationApplied));
+    assert.strictEqual(Number(liquidationApplied.apiTask?.liquidationMinMarginPct), 0, JSON.stringify(liquidationApplied));
+
     const concurrentDuplicate = await page.evaluate(async () => {
       const payload = {
         type: 'SHARP_PRICE_CHANGE',
@@ -475,7 +577,7 @@ async function run() {
       || /\[task-workflow-resilient\].*persist/i.test(message)
     ));
     assert.strictEqual(unexpectedErrors.length, 0, `browser errors: ${unexpectedErrors.join(' | ')}`);
-    console.log('[sku-rop-approval-workflow-selftest] OK: status, manual/automatic price tasks, concurrent deduplication and ROP-only application');
+    console.log('[sku-rop-approval-workflow-selftest] OK: status, price and margin-policy tasks, concurrent deduplication and ROP-only application');
   } finally {
     await browser.close();
     await new Promise((resolve) => server.close(resolve));

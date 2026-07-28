@@ -2,7 +2,7 @@
   'use strict';
 
   if (window.__ALTEA_SKU_DECISION_RUNTIME__) return;
-  window.__ALTEA_SKU_DECISION_RUNTIME__ = '20260727-demand-price-approval-4';
+  window.__ALTEA_SKU_DECISION_RUNTIME__ = '20260728-policy-workflow-3';
 
   function persistLifecycleControlsSafely() {
     try {
@@ -87,7 +87,7 @@
     }
     return deleteMarker;
   };
-const SKU_DECISION_TYPES = new Set(['PRODUCT_STATUS_CHANGE', 'SHARP_PRICE_CHANGE', 'DEMAND_PRICE_REVIEW']);
+const SKU_DECISION_TYPES = new Set(['PRODUCT_STATUS_CHANGE', 'SHARP_PRICE_CHANGE', 'DEMAND_PRICE_REVIEW', 'MARGIN_POLICY_CHANGE']);
 const SKU_DECISION_PENDING_STATUSES = new Set(['preparing', 'waiting_rop', 'changes_requested']);
 const SKU_DECISION_REQUESTS_IN_FLIGHT = new Map();
 
@@ -174,6 +174,19 @@ function skuDecisionTargetSignature(item = {}) {
   if (item.type === 'PRODUCT_STATUS_CHANGE') {
     return `${item.type}|${item.articleKey}|${payload.proposedStatusKey || item.proposedValue || ''}`;
   }
+  if (item.type === 'MARGIN_POLICY_CHANGE') {
+    return [
+      item.type,
+      item.articleKey,
+      item.platform,
+      payload.lifecycleKey || '',
+      payload.minMarginPct ?? '',
+      payload.maxMarginPct ?? '',
+      payload.liquidationMinMarginPct ?? '',
+      payload.minPrice ?? '',
+      payload.maxPrice ?? ''
+    ].join('|');
+  }
   return `${item.type}|${item.articleKey}|${item.platform}|${payload.requestedPrice || item.proposedValue || ''}`;
 }
 
@@ -191,6 +204,15 @@ function skuDecisionPersist(decision = null) {
 }
 
 function skuDecisionTaskCopy(decision = {}) {
+  if (decision.type === 'MARGIN_POLICY_CHANGE') {
+    return {
+      title: `Согласовать маржу и MIN/MAX · ${decision.articleKey}`,
+      entityLabel: `${decision.articleKey} · ${String(decision.platform || 'all').toUpperCase()}`,
+      type: 'price_margin',
+      priority: 'high',
+      nextAction: `РОП проверяет пороги: ${decision.currentValue || '—'} → ${decision.proposedValue || '—'}. До подтверждения маржа и ценовой коридор не меняются.`
+    };
+  }
   if (decision.type === 'DEMAND_PRICE_REVIEW') {
     const turnoverDays = Number(decision.payload?.demandIntelligence?.current_turnover_days);
     const targetDays = Number(decision.payload?.demandIntelligence?.target_turnover_days);
@@ -369,6 +391,16 @@ async function applySkuDecisionApproval(decision, comment = '') {
     });
     if (typeof upsertRepricerOverride !== 'function') throw new Error('Модуль репрайсера не готов применить подтверждённую цену.');
     upsertRepricerOverride(approvedOverride);
+  } else if (decision.type === 'MARGIN_POLICY_CHANGE') {
+    if (typeof window.applyRepricerMarginPolicyApproval !== 'function') {
+      throw new Error('Модуль репрайсера не готов применить подтверждённые пороги.');
+    }
+    await window.applyRepricerMarginPolicyApproval(decision, {
+      approvedAt,
+      approvedBy,
+      approvedRole,
+      comment: String(comment || '').trim()
+    });
   } else {
     throw new Error(`Неизвестный тип решения: ${decision.type}`);
   }

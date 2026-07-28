@@ -1052,6 +1052,7 @@
             const statusMeta = skuDecisionStatusMeta(item.status);
             const isDemandPrice = item.type === 'DEMAND_PRICE_REVIEW';
             const isPrice = item.type === 'SHARP_PRICE_CHANGE' || isDemandPrice;
+            const isMarginPolicy = item.type === 'MARGIN_POLICY_CHANGE';
             const deltaPct = Number(item.payload?.deltaPct);
             const demand = isDemandPrice ? item.payload?.demandIntelligence : null;
             const demandMeta = demand
@@ -1059,10 +1060,10 @@
               : '';
             return `
               <button type="button" class="sl-v1-decision-card ${escapeValue(statusMeta.tone)}" ${item.taskId ? `data-open-task="${escapeValue(item.taskId)}"` : ''}>
-                <span>${escapeValue(isPrice ? `${isDemandPrice ? 'Умная цена' : 'Резкая цена'} · ${String(item.platform || 'all').toUpperCase()}` : 'Статус товара')}</span>
+                <span>${escapeValue(isMarginPolicy ? `Маржа и MIN/MAX · ${String(item.platform || 'all').toUpperCase()}` : (isPrice ? `${isDemandPrice ? 'Умная цена' : 'Резкая цена'} · ${String(item.platform || 'all').toUpperCase()}` : 'Статус товара'))}</span>
                 <strong>${escapeValue(item.articleKey)}</strong>
                 <b>${escapeValue(String(item.currentValue || '—'))} → ${escapeValue(String(item.proposedValue || '—'))}${isPrice && Number.isFinite(deltaPct) ? ` · ${escapeValue(`${deltaPct > 0 ? '+' : ''}${Math.round(deltaPct * 1000) / 10}%`)}` : ''}</b>
-                <small>${escapeValue(statusMeta.label)}${escapeValue(demandMeta)} · ${escapeValue(item.reason || 'без основания')}</small>
+                <small>${escapeValue(statusMeta.label)}${escapeValue(demandMeta)} · ${escapeValue(item.reason || 'без основания')}${(isPrice || isMarginPolicy) && item.metrics ? ` · клиент ${escapeValue(formatMoney(item.metrics.currentClientPrice))} → ${escapeValue(formatMoney(item.metrics.proposedClientPrice))} · маржа ${escapeValue(formatPct(item.metrics.currentMarginPct))} → ${escapeValue(formatPct(item.metrics.proposedMarginPct))}` : ''}</small>
               </button>
             `;
           }).join('') || '<div class="sl-v1-empty">Нет решений, ожидающих РОПа.</div>'}

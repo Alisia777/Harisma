@@ -437,7 +437,7 @@ async function run() {
     ['index.html', 'live-index.html', 'docs/index.html'].forEach((fileName) => {
       const html = readSource(fileName);
       assert.ok(
-        html.includes('app-core-01.js?v=20260727snapshotretry1'),
+        html.includes('app-core-01.js?v=20260728policyworkflow3'),
         `${fileName} должен обновить кэш неблокирующей загрузки WB substitution`
       );
       assert.ok(

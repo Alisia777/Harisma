@@ -1,6 +1,6 @@
 {
   "schema": "repricer-economics-policy-v1",
-  "version": "2026-07-27.6-demand-forecast-v2-shadow",
+  "version": "2026-07-28.1-policy-workflow-v3",
   "liveSignals": {
     "requiredPlatforms": [
       "wb",
@@ -33,6 +33,13 @@
   "approval": {
     "sharpPriceChangePct": 10,
     "extremePriceChangePct": 100
+  },
+  "liquidation": {
+    "enabled": true,
+    "defaultMinimumMarginPct": 0,
+    "allowNegativeMargin": false,
+    "requireRopForLoss": true,
+    "guardRule": "Товары на вывод используют отдельный минимальный порог маржи. По умолчанию разрешена продажа до безубыточности, но не в отрицательную маржу; убыток требует отдельного явного решения РОП."
   },
   "demandPricing": {
     "enabled": true,

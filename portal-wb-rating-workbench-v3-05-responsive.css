@@ -1,0 +1,174 @@
+/* ---------- Responsive ---------- */
+@media (max-width: 1320px) {
+  body.v87-imperial.altea-premium-shell #view-wb-rating .rating-feedback-toolbar__main {
+    grid-template-columns: minmax(265px, 1fr) minmax(190px, 250px);
+    grid-template-areas:
+      "density workflow"
+      "refresh refresh"
+      "sync api";
+  }
+
+  body.v87-imperial.altea-premium-shell #view-wb-rating .rating-data-refresh {
+    grid-template-columns: minmax(210px, 30%) minmax(0, 1fr);
+  }
+
+  body.v87-imperial.altea-premium-shell #view-wb-rating .rating-smart-board {
+    grid-template-columns: 1fr;
+  }
+
+  body.v87-imperial.altea-premium-shell #view-wb-rating .rating-smart-board__summary {
+    max-width: none;
+  }
+
+  body.v87-imperial.altea-premium-shell #view-wb-rating .rating-queue-controls {
+    grid-template-columns: minmax(220px, 1fr) repeat(2, minmax(180px, 240px));
+  }
+
+  body.v87-imperial.altea-premium-shell #view-wb-rating .rating-queue-controls .badge-stack {
+    grid-column: 1 / -1;
+    justify-content: flex-start;
+  }
+}
+
+@media (max-width: 920px) {
+  @supports selector(body:has(#view-wb-rating.active)) {
+    body.v87-imperial.altea-premium-shell:has(#view-wb-rating.active)
+      .altea-premium-route-stage--legacy {
+      padding-inline: 5px !important;
+    }
+  }
+
+  body.v87-imperial.altea-premium-shell #view-wb-rating > .section-title {
+    grid-template-columns: 1fr;
+    align-items: start;
+  }
+
+  body.v87-imperial.altea-premium-shell #view-wb-rating > .section-title .badge-stack {
+    justify-content: flex-start;
+    max-width: 100%;
+  }
+
+  body.v87-imperial.altea-premium-shell #view-wb-rating .rating-feedback-toolbar__main {
+    grid-template-columns: 1fr;
+    grid-template-areas:
+      "density"
+      "workflow"
+      "refresh"
+      "sync"
+      "api";
+  }
+
+  body.v87-imperial.altea-premium-shell #view-wb-rating .rating-density-switch {
+    width: 100%;
+  }
+
+  body.v87-imperial.altea-premium-shell #view-wb-rating .rating-workflow-filter {
+    grid-template-columns: 1fr;
+  }
+
+  body.v87-imperial.altea-premium-shell #view-wb-rating .rating-data-refresh {
+    grid-template-columns: minmax(170px, 38%) minmax(0, 1fr);
+  }
+
+  body.v87-imperial.altea-premium-shell #view-wb-rating .rating-smart-kpis {
+    grid-template-columns: repeat(3, minmax(0, 1fr));
+  }
+
+  body.v87-imperial.altea-premium-shell #view-wb-rating .rating-queue-controls {
+    grid-template-columns: 1fr;
+  }
+
+  body.v87-imperial.altea-premium-shell #view-wb-rating .rating-work-card .rating-detail-head {
+    grid-template-columns: 1fr;
+  }
+
+  body.v87-imperial.altea-premium-shell #view-wb-rating .rating-work-table {
+    height: clamp(360px, 62dvh, 610px) !important;
+  }
+}
+
+@media (max-width: 620px) {
+  body.v87-imperial.altea-premium-shell #view-wb-rating {
+    --rw-first-col: 190px;
+    --rw-second-col: 0px;
+  }
+
+  body.v87-imperial.altea-premium-shell #view-wb-rating > .section-title h2 {
+    font-size: 30px;
+  }
+
+  body.v87-imperial.altea-premium-shell #view-wb-rating .rating-data-refresh {
+    grid-template-columns: 1fr;
+    grid-template-areas:
+      "button"
+      "meta"
+      "status";
+  }
+
+  body.v87-imperial.altea-premium-shell #view-wb-rating .rating-data-refresh button {
+    min-height: 46px;
+  }
+
+  body.v87-imperial.altea-premium-shell #view-wb-rating .rating-action-guide {
+    display: grid !important;
+  }
+
+  body.v87-imperial.altea-premium-shell #view-wb-rating .rating-smart-kpis {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+
+  body.v87-imperial.altea-premium-shell #view-wb-rating .rating-work-table
+    table.rating-ux-wide-table :is(th, td):nth-child(2) {
+    position: static !important;
+    left: auto !important;
+    box-shadow: none;
+  }
+
+  body.v87-imperial.altea-premium-shell #view-wb-rating .rating-work-table {
+    min-height: 330px;
+    height: calc(100dvh - 285px) !important;
+  }
+}
+
+/* Light shell bridge. */
+html[data-theme="porcelain-day"] body.v87-imperial.altea-premium-shell #view-wb-rating {
+  --rw-panel: rgba(255, 255, 255, .96);
+  --rw-panel-strong: rgba(246, 241, 232, .985);
+  --rw-control: rgba(35, 29, 22, .045);
+  --rw-line: rgba(48, 39, 27, .11);
+  --rw-line-accent: rgba(154, 112, 48, .26);
+}
+
+html[data-theme="porcelain-day"] body.v87-imperial.altea-premium-shell #view-wb-rating
+  :is(.rating-work-table td, .rating-work-table table.rating-ux-wide-table td:nth-child(1),
+      .rating-work-table table.rating-ux-wide-table td:nth-child(2)) {
+  background: #fbf8f2 !important;
+  color: var(--text) !important;
+}
+
+html[data-theme="porcelain-day"] body.v87-imperial.altea-premium-shell #view-wb-rating
+  :is(.rating-work-table thead th, .rating-work-table table.rating-ux-wide-table thead th:nth-child(1),
+      .rating-work-table table.rating-ux-wide-table thead th:nth-child(2)) {
+  background: #eee6da !important;
+  color: var(--text) !important;
+}
+
+@keyframes ratingWorkbenchSyncSweep {
+  from { transform: translateX(-120%); }
+  to { transform: translateX(300%); }
+}
+
+@keyframes ratingWorkbenchSpin {
+  to { transform: translateY(1px) rotate(360deg); }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  body.v87-imperial.altea-premium-shell #view-wb-rating *,
+  body.v87-imperial.altea-premium-shell #view-wb-rating *::before,
+  body.v87-imperial.altea-premium-shell #view-wb-rating *::after {
+    scroll-behavior: auto !important;
+    animation-duration: .01ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: .01ms !important;
+  }
+}

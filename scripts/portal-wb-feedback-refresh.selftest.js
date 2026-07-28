@@ -42,6 +42,14 @@ function main() {
   assert.match(workflow, /portal-wb-feedback-sync\.js sync/, 'workflow must collect current WB feedback data');
   assert.match(workflow, /--snapshot wb_feedbacks_summary/, 'workflow must publish only the WB feedback snapshot');
   assert.match(workflow, /ALTEA_WB_FEEDBACKS_TOKEN/, 'workflow must use the protected WB feedback token');
+  assert.match(workflow, /ALTEA_WB_API_TOKEN/, 'workflow must use the main WB token for seller rating');
+  const syncSource = source('scripts/portal-wb-feedback-sync.js');
+  assert.match(syncSource, /ratingToken:[\s\S]*ALTEA_WB_API_TOKEN/, 'seller rating must support a dedicated WB API token');
+  assert.match(
+    syncSource,
+    /api\/common\/v1\/rating'[\s\S]*token:\s*options\.ratingToken/,
+    'seller rating request must not reuse the restricted feedback token'
+  );
 
   const edge = source('supabase/functions/wb-feedback-sync/index.ts');
   assert.match(edge, /authenticatedUser\(request\)/, 'manual refresh must require an authenticated portal user');

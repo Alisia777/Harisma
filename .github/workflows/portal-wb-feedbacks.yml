@@ -57,6 +57,7 @@ jobs:
       - name: Collect current WB reviews and questions
         env:
           ALTEA_WB_FEEDBACKS_TOKEN: ${{ secrets.ALTEA_WB_FEEDBACKS_TOKEN || secrets.ALTEA_WB_PROMOTION_TOKEN || secrets.ALTEA_WB_API_TOKEN }}
+          ALTEA_WB_API_TOKEN: ${{ secrets.ALTEA_WB_API_TOKEN }}
         run: >-
           node scripts/portal-wb-feedback-sync.js sync
           --input-dir data

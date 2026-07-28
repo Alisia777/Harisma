@@ -238,6 +238,7 @@ async function main() {
     assert.match(await page.locator('[data-rating-data-freshness]').innerText(), /28\.07\.2026/);
 
     await page.setViewportSize({ width: 390, height: 844 });
+    await page.waitForTimeout(20);
     assert.equal(
       await page.locator('[data-rating-smart-board]').evaluate((node) => getComputedStyle(node).gridTemplateColumns.split(' ').length),
       1,

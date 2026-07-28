@@ -2,8 +2,9 @@
  * Reviews workbench v3 loader.
  * Split for predictable browser caching and easier rollback.
  */
-@import url("./portal-wb-rating-workbench-v3-01-shell.css?v=20260728ratingux3");
-@import url("./portal-wb-rating-workbench-v3-02-sync.css?v=20260728ratingux3");
-@import url("./portal-wb-rating-workbench-v3-03-workspace.css?v=20260728ratingux3");
-@import url("./portal-wb-rating-workbench-v3-04-table.css?v=20260728ratingux3");
-@import url("./portal-wb-rating-workbench-v3-05-responsive.css?v=20260728ratingux3");
+@import url("./portal-wb-rating-workbench-v3-01-shell.css?v=20260728ratingux4");
+@import url("./portal-wb-rating-workbench-v3-02-sync.css?v=20260728ratingux4");
+@import url("./portal-wb-rating-workbench-v3-03-workspace.css?v=20260728ratingux4");
+@import url("./portal-wb-rating-workbench-v3-04-table.css?v=20260728ratingux4");
+@import url("./portal-wb-rating-workbench-v3-05-responsive.css?v=20260728ratingux4");
+@import url("./portal-wb-rating-workbench-v3-06-theme.css?v=20260728ratingux4");

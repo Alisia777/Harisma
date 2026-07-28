@@ -1,0 +1,461 @@
+/*
+ * Reviews workbench v3 theme parity.
+ * Replaces late-injected night colors with shell tokens without changing
+ * data, filters, comments, table density or the v3 scroll contract.
+ */
+
+html[data-theme] body.v87-imperial.altea-premium-shell #view-wb-rating {
+  --rw-panel: var(--portal-theme-surface);
+  --rw-panel-strong: var(--portal-theme-surface-strong);
+  --rw-control: var(--portal-theme-control);
+  --rw-line: var(--line);
+  --rw-line-accent: color-mix(
+    in srgb,
+    var(--portal-theme-accent, var(--accent)) 34%,
+    var(--line)
+  );
+}
+
+html[data-theme] body.v87-imperial.altea-premium-shell #view-wb-rating,
+html[data-theme] body.v87-imperial.altea-premium-shell #view-wb-rating > *,
+html[data-theme] body.v87-imperial.altea-premium-shell #view-wb-rating :is(
+  .rating-feedback-toolbar,
+  .rating-feedback-toolbar__main,
+  .rating-smart-board,
+  .rating-smart-kpis,
+  .rating-planfact-board,
+  .rating-platform-grid,
+  .rating-platform-panel,
+  .rating-detail-panel,
+  .rating-work-card
+) {
+  min-width: 0 !important;
+  max-width: 100% !important;
+}
+
+html[data-theme] body.v87-imperial.altea-premium-shell #view-wb-rating :is(
+  .rating-feedback-toolbar,
+  .rating-platform-panel,
+  .rating-detail-panel,
+  .rating-work-card,
+  .rating-history-card,
+  .rating-empty-ozon .box
+) {
+  border-color: var(--line) !important;
+  background: var(--portal-theme-surface) !important;
+  color: var(--text) !important;
+  text-shadow: none !important;
+  box-shadow: none !important;
+}
+
+html[data-theme] body.v87-imperial.altea-premium-shell #view-wb-rating :is(
+  .rating-density-switch,
+  .rating-data-refresh,
+  .rating-action-guide,
+  .rating-queue-controls,
+  .rating-mini-metric,
+  .rating-team-comment-box
+) {
+  border-color: var(--line) !important;
+  background: var(--portal-theme-control) !important;
+  color: var(--text) !important;
+  text-shadow: none !important;
+}
+
+html[data-theme] body.v87-imperial.altea-premium-shell #view-wb-rating
+  .rating-data-refresh::before {
+  background: color-mix(in srgb, var(--line) 68%, transparent) !important;
+  box-shadow: none !important;
+}
+
+html[data-theme] body.v87-imperial.altea-premium-shell #view-wb-rating
+  .rating-smart-board {
+  border-color: color-mix(
+    in srgb,
+    var(--portal-theme-accent, var(--accent)) 42%,
+    var(--line)
+  ) !important;
+  background: var(--portal-theme-surface-strong) !important;
+  color: var(--text) !important;
+  text-shadow: none !important;
+  box-shadow: 0 18px 48px color-mix(in srgb, var(--bg) 18%, transparent) !important;
+}
+
+html[data-theme] body.v87-imperial.altea-premium-shell #view-wb-rating
+  .rating-smart-board::before {
+  background: var(--portal-theme-primary) !important;
+}
+
+html[data-theme] body.v87-imperial.altea-premium-shell #view-wb-rating :is(
+  .rating-smart-board h3,
+  .rating-smart-board__summary strong,
+  .rating-smart-kpi__value,
+  .rating-work-table .cell-main,
+  .rating-work-table .cell-text,
+  .rating-team-comment-preview
+) {
+  color: var(--text) !important;
+  text-shadow: none !important;
+}
+
+html[data-theme] body.v87-imperial.altea-premium-shell #view-wb-rating :is(
+  .rating-smart-board__summary,
+  .rating-smart-kpi__label,
+  .rating-smart-kpi__hint,
+  .rating-api-truth,
+  .rating-data-refresh__meta,
+  .rating-data-refresh__status,
+  .rating-team-comment-placeholder,
+  .rating-detail-head p,
+  .rating-platform-title p,
+  .rating-cell-muted,
+  .cell-muted
+) {
+  color: var(--muted) !important;
+  text-shadow: none !important;
+}
+
+html[data-theme] body.v87-imperial.altea-premium-shell #view-wb-rating :is(
+  .rating-smart-board__eyebrow,
+  .rating-api-truth strong,
+  .rating-action-guide strong
+) {
+  color: var(--portal-theme-accent, var(--accent)) !important;
+  text-shadow: none !important;
+}
+
+html[data-theme] body.v87-imperial.altea-premium-shell #view-wb-rating :is(
+  .rating-team-sync,
+  .rating-data-refresh__meta[data-tone="ok"],
+  .rating-data-refresh__status[data-tone="ok"],
+  .rating-team-comment-meta,
+  .rating-team-comment-head small
+) {
+  color: var(--ok) !important;
+}
+
+html[data-theme] body.v87-imperial.altea-premium-shell #view-wb-rating :is(
+  .rating-data-refresh__meta[data-tone="warn"],
+  .rating-data-refresh__status[data-tone="warn"]
+) {
+  color: var(--warn) !important;
+}
+
+html[data-theme] body.v87-imperial.altea-premium-shell #view-wb-rating
+  .rating-data-refresh__status[data-tone="danger"] {
+  color: var(--danger, var(--bad)) !important;
+}
+
+html[data-theme] body.v87-imperial.altea-premium-shell #view-wb-rating
+  .rating-smart-kpi {
+  border-color: var(--line) !important;
+  background: var(--portal-theme-control) !important;
+  color: var(--text) !important;
+  text-shadow: none !important;
+  box-shadow: none !important;
+}
+
+html[data-theme] body.v87-imperial.altea-premium-shell #view-wb-rating
+  .rating-smart-kpi:is(:hover, .is-active) {
+  border-color: color-mix(
+    in srgb,
+    var(--portal-theme-accent, var(--accent)) 58%,
+    var(--line)
+  ) !important;
+  background: var(--portal-theme-active) !important;
+}
+
+html[data-theme] body.v87-imperial.altea-premium-shell #view-wb-rating :is(
+  .rating-data-refresh button,
+  .rating-density-switch button,
+  .rating-copy-button,
+  .rating-note-button,
+  .rating-platform-selector button,
+  .rating-platform-action,
+  .rating-work-tabs button,
+  .rating-sort-control button,
+  .rating-more-row button,
+  .rating-ux-select,
+  .rating-inline-search
+) {
+  border-color: var(--line) !important;
+  background: var(--portal-theme-control) !important;
+  color: var(--text) !important;
+  text-shadow: none !important;
+  box-shadow: none !important;
+}
+
+html[data-theme] body.v87-imperial.altea-premium-shell #view-wb-rating :is(
+  .rating-data-refresh button,
+  .rating-density-switch button.active,
+  .rating-platform-selector button.active,
+  .rating-platform-action.active,
+  .rating-work-tabs button.active,
+  .rating-sort-control button.active
+) {
+  border-color: color-mix(
+    in srgb,
+    var(--portal-theme-accent, var(--accent)) 62%,
+    var(--line)
+  ) !important;
+  background: var(--portal-theme-primary) !important;
+  color: color-mix(in srgb, var(--bg) 14%, #000) !important;
+}
+
+html[data-theme] body.v87-imperial.altea-premium-shell #view-wb-rating
+  .rating-planfact-card .wb-rating-trend {
+  border-color: var(--line) !important;
+  background: var(--portal-theme-control) !important;
+  color: var(--text) !important;
+  text-shadow: none !important;
+  box-shadow: none !important;
+}
+
+html[data-theme] body.v87-imperial.altea-premium-shell #view-wb-rating
+  .rating-planfact-card .wb-rating-trend.up {
+  border-color: color-mix(in srgb, var(--ok) 44%, var(--line)) !important;
+  background: color-mix(in srgb, var(--ok) 10%, var(--surface)) !important;
+  color: var(--ok) !important;
+}
+
+html[data-theme] body.v87-imperial.altea-premium-shell #view-wb-rating
+  .rating-planfact-card .wb-rating-trend.down {
+  border-color: color-mix(
+    in srgb,
+    var(--danger, var(--bad)) 44%,
+    var(--line)
+  ) !important;
+  background: color-mix(
+    in srgb,
+    var(--danger, var(--bad)) 10%,
+    var(--surface)
+  ) !important;
+  color: var(--danger, var(--bad)) !important;
+}
+
+html[data-theme] body.v87-imperial.altea-premium-shell #view-wb-rating
+  .rating-planfact-card .wb-rating-trend.flat {
+  color: var(--muted) !important;
+}
+
+html[data-theme] body.v87-imperial.altea-premium-shell #view-wb-rating
+  .rating-work-table {
+  border-color: var(--line) !important;
+  background: var(--portal-theme-surface) !important;
+  scrollbar-color:
+    color-mix(in srgb, var(--portal-theme-accent, var(--accent)) 68%, var(--line))
+    var(--portal-theme-control) !important;
+}
+
+html[data-theme] body.v87-imperial.altea-premium-shell #view-wb-rating
+  .rating-work-table thead th {
+  height: auto !important;
+  min-height: 0 !important;
+  padding: 11px 42px 11px 11px !important;
+  border-color: var(--line) !important;
+  background: var(--portal-theme-surface-strong) !important;
+  color: var(--text) !important;
+  line-height: 1.25 !important;
+  vertical-align: top !important;
+  text-shadow: none !important;
+  white-space: normal !important;
+  box-shadow: 0 1px 0 var(--line) !important;
+}
+
+html[data-theme] body.v87-imperial.altea-premium-shell #view-wb-rating
+  .rating-work-table thead th .rating-th-sort {
+  display: inline-block !important;
+  width: auto !important;
+  max-width: 100% !important;
+  border: 0 !important;
+  background: transparent !important;
+  color: inherit !important;
+  line-height: 1.25 !important;
+  text-align: left !important;
+  white-space: normal !important;
+}
+
+html[data-theme] body.v87-imperial.altea-premium-shell #view-wb-rating
+  .rating-work-table thead th .rating-th-sort.active {
+  color: var(--portal-theme-accent, var(--accent)) !important;
+}
+
+html[data-theme] body.v87-imperial.altea-premium-shell #view-wb-rating
+  .rating-work-table thead th .altea-th-filter-btn {
+  position: absolute !important;
+  top: 10px !important;
+  right: 8px !important;
+  width: 24px !important;
+  min-width: 24px !important;
+  max-width: 24px !important;
+  height: 24px !important;
+  margin: 0 !important;
+  border-color: var(--line) !important;
+  background: var(--portal-theme-control) !important;
+  color: var(--portal-theme-accent, var(--accent)) !important;
+}
+
+html[data-theme] body.v87-imperial.altea-premium-shell #view-wb-rating
+  .rating-work-table td {
+  border-color: var(--line) !important;
+  background: var(--panel) !important;
+  color: var(--text) !important;
+  text-shadow: none !important;
+}
+
+html[data-theme] body.v87-imperial.altea-premium-shell #view-wb-rating
+  .rating-work-table tbody tr:hover td {
+  background: color-mix(
+    in srgb,
+    var(--portal-theme-accent, var(--accent)) 8%,
+    var(--panel)
+  ) !important;
+}
+
+html[data-theme] body.v87-imperial.altea-premium-shell #view-wb-rating
+  .rating-work-table table.rating-ux-wide-table :is(
+    th:nth-child(1),
+    td:nth-child(1),
+    th:nth-child(2),
+    td:nth-child(2)
+  ) {
+  background: var(--portal-theme-surface-strong) !important;
+}
+
+html[data-theme] body.v87-imperial.altea-premium-shell #view-wb-rating
+  .rating-work-table table.rating-ux-wide-table :is(
+    th:nth-child(1),
+    td:nth-child(1)
+  ) {
+  box-shadow:
+    1px 0 0 var(--line),
+    8px 0 16px color-mix(in srgb, var(--bg) 22%, transparent) !important;
+}
+
+html[data-theme] body.v87-imperial.altea-premium-shell #view-wb-rating
+  .rating-work-table table.rating-ux-wide-table :is(
+    th:nth-child(2),
+    td:nth-child(2)
+  ) {
+  box-shadow:
+    1px 0 0 var(--line),
+    8px 0 16px color-mix(in srgb, var(--bg) 18%, transparent) !important;
+}
+
+html[data-theme] body.v87-imperial.altea-premium-shell #view-wb-rating
+  .rating-team-comment-box .rating-note-button {
+  width: 100% !important;
+  max-width: 100% !important;
+  box-sizing: border-box !important;
+  overflow-wrap: anywhere !important;
+  white-space: normal !important;
+}
+
+html[data-theme] body.v87-imperial.altea-premium-shell .rating-note-backdrop {
+  background: color-mix(in srgb, var(--bg) 76%, transparent) !important;
+}
+
+html[data-theme] body.v87-imperial.altea-premium-shell .rating-note-dialog {
+  border-color: var(--line) !important;
+  background: var(--portal-theme-surface-strong) !important;
+  color: var(--text) !important;
+  text-shadow: none !important;
+  box-shadow: 0 28px 90px color-mix(in srgb, var(--bg) 54%, transparent) !important;
+}
+
+html[data-theme] body.v87-imperial.altea-premium-shell .rating-note-dialog :is(
+  .rating-note-dialog__head,
+  .rating-note-dialog__actions,
+  .rating-note-history__item
+) {
+  border-color: var(--line) !important;
+}
+
+html[data-theme] body.v87-imperial.altea-premium-shell .rating-note-dialog :is(
+  h3,
+  h4,
+  p,
+  .rating-note-history__item p
+) {
+  color: var(--text) !important;
+  text-shadow: none !important;
+}
+
+html[data-theme] body.v87-imperial.altea-premium-shell .rating-note-dialog :is(
+  label,
+  small,
+  .rating-note-history__meta,
+  .rating-note-sync-hint
+) {
+  color: var(--muted) !important;
+}
+
+html[data-theme] body.v87-imperial.altea-premium-shell .rating-note-dialog :is(
+  textarea,
+  select,
+  input,
+  .rating-note-history__item,
+  .rating-note-dialog__actions button
+) {
+  border-color: var(--line) !important;
+  background: var(--portal-theme-control) !important;
+  color: var(--text) !important;
+  text-shadow: none !important;
+  box-shadow: none !important;
+}
+
+html[data-theme] body.v87-imperial.altea-premium-shell
+  .rating-note-dialog__actions button[data-rating-note-save] {
+  border-color: color-mix(
+    in srgb,
+    var(--portal-theme-accent, var(--accent)) 58%,
+    var(--line)
+  ) !important;
+  background: var(--portal-theme-primary) !important;
+  color: color-mix(in srgb, var(--bg) 14%, #000) !important;
+}
+
+@media (max-width: 620px) {
+  html[data-theme] body.v87-imperial.altea-premium-shell #view-wb-rating
+    .rating-platform-selector {
+    display: grid !important;
+    grid-template-columns: minmax(0, 1fr) !important;
+    width: 100% !important;
+  }
+
+  html[data-theme] body.v87-imperial.altea-premium-shell #view-wb-rating
+    .rating-platform-selector button {
+    width: 100% !important;
+    min-width: 0 !important;
+    white-space: normal !important;
+  }
+
+  html[data-theme] body.v87-imperial.altea-premium-shell #view-wb-rating
+    .rating-work-tabs {
+    display: grid !important;
+    grid-template-columns: repeat(2, minmax(0, 1fr)) !important;
+  }
+
+  html[data-theme] body.v87-imperial.altea-premium-shell #view-wb-rating
+    .rating-work-tabs button {
+    width: 100% !important;
+    min-width: 0 !important;
+  }
+
+  html[data-theme] body.v87-imperial.altea-premium-shell .rating-note-backdrop {
+    align-items: end !important;
+    padding: 10px !important;
+  }
+
+  html[data-theme] body.v87-imperial.altea-premium-shell .rating-note-dialog {
+    width: 100% !important;
+    max-height: calc(100dvh - 20px) !important;
+    border-radius: 16px !important;
+  }
+
+  html[data-theme] body.v87-imperial.altea-premium-shell .rating-note-dialog__head,
+  html[data-theme] body.v87-imperial.altea-premium-shell .rating-note-dialog__body,
+  html[data-theme] body.v87-imperial.altea-premium-shell .rating-note-dialog__actions {
+    padding: 13px !important;
+  }
+}

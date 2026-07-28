@@ -9,7 +9,8 @@ const CSS_FILES = [
   'portal-wb-rating-workbench-v3-02-sync.css',
   'portal-wb-rating-workbench-v3-03-workspace.css',
   'portal-wb-rating-workbench-v3-04-table.css',
-  'portal-wb-rating-workbench-v3-05-responsive.css'
+  'portal-wb-rating-workbench-v3-05-responsive.css',
+  'portal-wb-rating-workbench-v3-06-theme.css'
 ];
 const css = CSS_FILES.map((file) => fs.readFileSync(path.join(ROOT, file), 'utf8')).join('\n');
 
@@ -22,7 +23,7 @@ const rows = Array.from({ length: 35 }, (_, r) => `<tr class="rating-work-row">$
 
 function html() {
   return `<!doctype html><html lang="ru"><head><meta charset="utf-8"><style>
-    :root{--text:#fff7e6;--muted:#aaa0a6;--line:rgba(255,255,255,.1)}
+    :root{--bg:#f3efe7;--surface:#fffdf9;--panel:#f8f3eb;--text:#fff7e6;--muted:#aaa0a6;--line:rgba(255,255,255,.1);--accent:#9b7953;--ok:#18794e;--warn:#a06416;--danger:#b42318;--portal-theme-accent:#9b7953;--portal-theme-control:#f8f3eb;--portal-theme-surface:#fffdf9;--portal-theme-surface-strong:#fffaf2;--portal-theme-active:#eadfc9;--portal-theme-primary:linear-gradient(180deg,#d7b98a,#9b7953);--portal-theme-primary-text:#fff1ca}
     *{box-sizing:border-box}html,body{margin:0;background:#09080a;color:var(--text);font-family:Arial,sans-serif;overflow-x:hidden}
     .altea-premium-route-stage--legacy{padding:22px 24px 64px}.badge-stack,.rating-team-sync{display:flex;gap:6px}.chip{border:1px solid var(--line);border-radius:999px;padding:5px 8px}.rating-team-sync:before{content:"";border-radius:50%;background:#61c99b}.rating-smart-board,.rating-smart-kpis{display:grid}.rating-smart-kpi{color:inherit;background:#18151a;border:1px solid var(--line)}.rating-detail-panel,.rating-work-card{border:1px solid var(--line);background:#0f1013}.rating-work-table table{min-width:2200px}.rating-work-table th,.rating-work-table td{border-right:1px solid rgba(255,255,255,.05)}button,select,input{font:inherit}.cell-main,.cell-muted{display:block}
     ${css}
@@ -80,9 +81,9 @@ async function main() {
       assert.equal(m.toolbar, 'relative', `${width}: toolbar must not float`);
       assert.equal(m.progressHeight, 5, `${width}: progress track visible`);
       assert.equal(m.progressAnimation, 'ratingWorkbenchSyncSweep', `${width}: busy progress animates`);
-      assert.equal(m.overflowX, 'scroll');
-      assert.equal(m.overflowY, 'scroll');
-      assert.ok(m.vertical, `${width}: vertical table scroll works`);
+      assert.equal(m.overflowX, 'auto');
+      assert.equal(m.overflowY, 'auto');
+      assert.equal(m.vertical, false, `${width}: document owns vertical scrolling`);
       assert.equal(m.header, 'sticky');
       assert.equal(m.first, 'sticky');
       assert.equal(m.second, 'sticky');
@@ -113,6 +114,36 @@ async function main() {
       assert.deepEqual(errors, [], `${width}: no page errors`);
       await page.close();
     }
+
+    const lightPage = await browser.newPage({ viewport: { width: 1440, height: 900 } });
+    const lightHtml = html()
+      .replace('<html lang="ru">', '<html lang="ru" data-theme="porcelain-day">')
+      .replace(
+        '</head>',
+        '<style>:root{--text:#241f1a;--muted:#6e645a;--line:#d6cab9}</style></head>'
+      );
+    await lightPage.setContent(lightHtml);
+    await lightPage.waitForTimeout(60);
+    const light = await lightPage.evaluate(() => {
+      const style = (selector) => getComputedStyle(document.querySelector(selector));
+      return {
+        boardBackground: style('.rating-smart-board').backgroundColor,
+        boardHeading: style('.rating-smart-board h3').color,
+        toolbarBackground: style('.rating-feedback-toolbar').backgroundColor,
+        activeText: style('.rating-density-switch button.active').color,
+        tableText: style('.rating-work-table td').color,
+        headerText: style('.rating-work-table th').color,
+        pageOverflow: document.documentElement.scrollWidth - document.documentElement.clientWidth
+      };
+    });
+    assert.equal(light.boardBackground, 'rgb(255, 250, 242)', 'light board must not retain a night surface');
+    assert.equal(light.boardHeading, 'rgb(36, 31, 26)', 'light board heading must remain readable');
+    assert.equal(light.toolbarBackground, 'rgb(255, 253, 249)', 'light toolbar must use the shell surface');
+    assert.notEqual(light.activeText, 'rgb(255, 241, 202)', 'active controls must not keep pale night text');
+    assert.equal(light.tableText, 'rgb(36, 31, 26)', 'light table rows must remain readable');
+    assert.equal(light.headerText, 'rgb(36, 31, 26)', 'light table headers must remain readable');
+    assert.equal(light.pageOverflow, 0, 'light theme must not widen the route');
+    await lightPage.close();
     console.log('portal-wb-rating-workbench-v3 selftest: ok');
   } finally {
     await browser.close();

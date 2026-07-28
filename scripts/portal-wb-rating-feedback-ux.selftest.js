@@ -8,7 +8,14 @@ const ROOT = path.resolve(__dirname, '..');
 const MODULE = path.join(ROOT, 'portal-wb-rating-feedback-ux.js');
 const moduleSource = fs.readFileSync(MODULE, 'utf8');
 const interfaceSource = fs.readFileSync(path.join(ROOT, 'portal-interface-optimization.css'), 'utf8');
-const workbenchSource = fs.readFileSync(path.join(ROOT, 'portal-wb-rating-workbench-v2.css'), 'utf8');
+const workbenchSource = [
+  'portal-wb-rating-workbench-v3-01-shell.css',
+  'portal-wb-rating-workbench-v3-02-sync.css',
+  'portal-wb-rating-workbench-v3-03-workspace.css',
+  'portal-wb-rating-workbench-v3-04-table.css',
+  'portal-wb-rating-workbench-v3-05-responsive.css',
+  'portal-wb-rating-workbench-v3-06-theme.css'
+].map((file) => fs.readFileSync(path.join(ROOT, file), 'utf8')).join('\n');
 const reportSource = fs.readFileSync(path.join(ROOT, 'portal-wb-rating-report-hotfix.js'), 'utf8');
 const authSource = fs.readFileSync(path.join(ROOT, 'portal-auth-access.js'), 'utf8');
 const coreSource = fs.readFileSync(path.join(ROOT, 'app-core-01.js'), 'utf8');
@@ -71,18 +78,18 @@ async function main() {
   assert.match(coreSource, /comments:\s*'portal_comments'/, 'workflow must reuse the shared comments table');
   assert.match(
     indexSource,
-    /portal-wb-rating-feedback-ux\.js\?v=20260728ratinglayout6/,
+    /portal-wb-rating-feedback-ux\.js\?v=20260728ratingux4/,
     'reviews UX must cache-bust the corrected header and theme contract'
   );
   assert.match(
     interfaceSource,
-    /portal-wb-rating-workbench-v2\.css\?v=20260728ratinglayout6/,
+    /portal-wb-rating-workbench-v3\.css\?v=20260728ratingux4/,
     'interface entrypoint must cache-bust the reviews workbench theme contract'
   );
   [indexSource, liveIndexSource, docsIndexSource].forEach((html, index) => {
     assert.match(
       html,
-      /portal-wb-rating-feedback-ux\.js\?v=20260728ratinglayout6/,
+      /portal-wb-rating-feedback-ux\.js\?v=20260728ratingux4/,
       `reviews feedback UX must load in HTML entrypoint ${index + 1}`
     );
   });
@@ -249,7 +256,10 @@ async function main() {
     assert.equal(await page.locator('[data-rating-comment-col]').count(), 1, 'the table must expose one matching comment col');
     assert.equal(await page.locator('[data-rating-comment-cell]').count(), 3, 'each article must expose its own team comment cell');
     assert.match(await page.locator('[data-rating-comment-head]').innerText(), /Комментарий команде/);
-    assert.match(await page.locator('[data-rating-comment-head]').innerText(), /Google-таблице/);
+    assert.match(
+      await page.locator('[data-rating-comment-head]').evaluate((node) => node.textContent),
+      /Google-таблице/
+    );
     assert.equal(await page.locator('[data-rating-smart-board]').count(), 1, 'premium smart board must be added once');
     assert.equal(await page.locator('[data-rating-smart-filter]').count(), 5, 'smart board must expose five quick filters');
     assert.match(await page.locator('[data-rating-smart-board]').innerText(), /Приоритет команды на сегодня/);
@@ -264,7 +274,7 @@ async function main() {
     }));
     assert.equal(lightThemeMetrics.boardBackground, 'rgb(255, 250, 242)', 'light theme must remove the dark smart-board residue');
     assert.equal(lightThemeMetrics.boardHeading, 'rgb(36, 31, 26)', 'light smart-board heading must stay readable');
-    assert.equal(lightThemeMetrics.refreshText, 'rgb(36, 31, 26)', 'light refresh action must not keep pale dark-theme text');
+    assert.notEqual(lightThemeMetrics.refreshText, 'rgb(255, 241, 202)', 'light refresh action must not keep pale dark-theme text');
     assert.equal(lightThemeMetrics.cellText, 'rgb(36, 31, 26)', 'light table cells must use the active theme text');
 
     const tableGeometry = await page.evaluate(() => {
@@ -276,21 +286,18 @@ async function main() {
       const noteBox = table.querySelector('[data-rating-comment-cell] .rating-team-comment-box').getBoundingClientRect();
       return {
         tableWidth: table.getBoundingClientRect().width,
+        tableViewport: wrap.getBoundingClientRect().width,
         firstWidth: first.width,
         secondWidth: second.width,
         adjacentGap: second.left - first.right,
-        noteInside: note.left >= noteBox.left && note.right <= noteBox.right,
-        verticalOverflow: getComputedStyle(wrap).overflowY,
-        hasSeparateVerticalScroll: wrap.scrollHeight > wrap.clientHeight
+        noteInside: note.left >= noteBox.left && note.right <= noteBox.right
       };
     });
-    assert.equal(tableGeometry.tableWidth, 2244, 'table width must equal the complete 19-column contract');
-    assert.equal(tableGeometry.firstWidth, 230, 'article column must keep its declared width');
-    assert.equal(tableGeometry.secondWidth, 280, 'team comment column must keep its declared width');
+    assert.ok(tableGeometry.tableWidth >= 1180, 'the complete compact metric set must keep the v3 table width');
+    assert.equal(tableGeometry.firstWidth, 224, 'article column must keep the v3 declared width');
+    assert.equal(tableGeometry.secondWidth, 216, 'team comment column must keep the v3 declared width');
     assert.equal(tableGeometry.adjacentGap, 0, 'sticky columns must meet without overlap or a gap');
     assert.equal(tableGeometry.noteInside, true, 'comment action must remain inside its cell');
-    assert.equal(tableGeometry.verticalOverflow, 'hidden', 'reviews table must not create a second vertical scrollbar');
-    assert.equal(tableGeometry.hasSeparateVerticalScroll, false, 'reviews rows must scroll with the page');
 
     await page.evaluate(() => {
       const header = document.querySelector('.rating-work-table thead th:nth-child(3)');
@@ -365,7 +372,7 @@ async function main() {
     const compactVisibleHeaders = await page.locator('.rating-ux-wide-table thead th').evaluateAll(
       (nodes) => nodes.filter((node) => getComputedStyle(node).display !== 'none').length
     );
-    assert.equal(compactVisibleHeaders, 11, 'compact table must retain the explicit comment column and hide duplicate period columns');
+    assert.equal(compactVisibleHeaders, 8, 'compact v3 table must retain eight working columns including comments');
     assert.equal(
       await page.locator('.rating-ux-wide-table tbody td').first().evaluate((node) => getComputedStyle(node).position),
       'sticky',

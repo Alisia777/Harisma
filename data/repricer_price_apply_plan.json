@@ -1,15 +1,313 @@
 {
   "schema": "repricer-price-apply-plan-v1",
-  "generatedAt": "2026-07-25T02:38:23.473Z",
-  "requestedBy": "merge-revalidation",
+  "generatedAt": "2026-07-28T16:08:02.369Z",
+  "requestedBy": "",
   "status": "blocked",
   "applyAllowed": false,
-  "confirmationHash": "9922511b8c684e43dd2657c178b9e7d186e492d541aa112a6df8e6492f26dafd",
+  "confirmationHash": "42d3436350f9341b90ad183f007f95d1c56b31b4b81432392d88296e0c20b353",
   "source": {
-    "canonicalSnapshotId": "repricer:c53c42c469e32ce0",
-    "livePriceGeneratedAt": "2026-07-25T00:48:50.043Z",
-    "liveSignalGeneratedAt": "2026-07-25T01:30:22.722Z",
-    "actions": []
+    "canonicalSnapshotId": "repricer:b003a845fb06f406",
+    "livePriceGeneratedAt": "2026-07-28T08:43:23.395Z",
+    "liveSignalGeneratedAt": "2026-07-28T08:44:11.011Z",
+    "actions": [
+      {
+        "platform": "wb",
+        "articleKey": "arterol",
+        "currentSellerPrice": 646.8,
+        "requestedSellerPrice": 647,
+        "expectedSellerPrice": 646.8,
+        "currentClientPrice": 614.46,
+        "expectedClientPriceAfter": 614.46,
+        "currentBuyerDiscountPct": 0.05,
+        "buyerDiscountFactor": 0.95,
+        "clientPriceProjectionSource": "current_client_price_ratio",
+        "changePct": 0.000309,
+        "lifecycle": "exit",
+        "approvalId": "",
+        "automationTier": "automatic",
+        "autoApplyEligible": true,
+        "confirmationsRequired": 0,
+        "confirmationsRecordedAtPlan": 0,
+        "confirmationStages": [],
+        "apiPayload": {
+          "nmID": 222225755,
+          "price": 1155,
+          "discount": 44
+        },
+        "rollbackEligible": true,
+        "rollbackBlockers": [],
+        "rollbackExpectedSellerPrice": 646.8,
+        "rollbackApiPayload": {
+          "nmID": 222225755,
+          "price": 1155,
+          "discount": 44
+        }
+      },
+      {
+        "platform": "wb",
+        "articleKey": "insulight_bad_60caps",
+        "currentSellerPrice": 725,
+        "requestedSellerPrice": 742,
+        "expectedSellerPrice": 742,
+        "currentClientPrice": 688.75,
+        "expectedClientPriceAfter": 704.9,
+        "currentBuyerDiscountPct": 0.05,
+        "buyerDiscountFactor": 0.95,
+        "clientPriceProjectionSource": "current_client_price_ratio",
+        "changePct": 0.023448,
+        "lifecycle": "exit",
+        "approvalId": "",
+        "automationTier": "automatic",
+        "autoApplyEligible": true,
+        "confirmationsRequired": 0,
+        "confirmationsRecordedAtPlan": 0,
+        "confirmationStages": [],
+        "apiPayload": {
+          "nmID": 229280202,
+          "price": 1484,
+          "discount": 50
+        },
+        "rollbackEligible": true,
+        "rollbackBlockers": [],
+        "rollbackExpectedSellerPrice": 725,
+        "rollbackApiPayload": {
+          "nmID": 229280202,
+          "price": 1450,
+          "discount": 50
+        }
+      },
+      {
+        "platform": "wb",
+        "articleKey": "kardicin",
+        "currentSellerPrice": 605.55,
+        "requestedSellerPrice": 606,
+        "expectedSellerPrice": 605.88,
+        "currentClientPrice": 575.27,
+        "expectedClientPriceAfter": 575.58,
+        "currentBuyerDiscountPct": 0.050004,
+        "buyerDiscountFactor": 0.949996,
+        "clientPriceProjectionSource": "current_client_price_ratio",
+        "changePct": 0.000743,
+        "lifecycle": "exit",
+        "approvalId": "",
+        "automationTier": "automatic",
+        "autoApplyEligible": true,
+        "confirmationsRequired": 0,
+        "confirmationsRecordedAtPlan": 0,
+        "confirmationStages": [],
+        "apiPayload": {
+          "nmID": 100410775,
+          "price": 1836,
+          "discount": 67
+        },
+        "rollbackEligible": true,
+        "rollbackBlockers": [],
+        "rollbackExpectedSellerPrice": 605.55,
+        "rollbackApiPayload": {
+          "nmID": 100410775,
+          "price": 1835,
+          "discount": 67
+        }
+      },
+      {
+        "platform": "wb",
+        "articleKey": "kardicin_1_1",
+        "currentSellerPrice": 578.76,
+        "requestedSellerPrice": 579,
+        "expectedSellerPrice": 578.76,
+        "currentClientPrice": 549.82,
+        "expectedClientPriceAfter": 549.82,
+        "currentBuyerDiscountPct": 0.050003,
+        "buyerDiscountFactor": 0.949997,
+        "clientPriceProjectionSource": "current_client_price_ratio",
+        "changePct": 0.000415,
+        "lifecycle": "exit",
+        "approvalId": "",
+        "automationTier": "automatic",
+        "autoApplyEligible": true,
+        "confirmationsRequired": 0,
+        "confirmationsRecordedAtPlan": 0,
+        "confirmationStages": [],
+        "apiPayload": {
+          "nmID": 176157841,
+          "price": 1113,
+          "discount": 48
+        },
+        "rollbackEligible": true,
+        "rollbackBlockers": [],
+        "rollbackExpectedSellerPrice": 578.76,
+        "rollbackApiPayload": {
+          "nmID": 176157841,
+          "price": 1113,
+          "discount": 48
+        }
+      },
+      {
+        "platform": "wb",
+        "articleKey": "khvoinitsa_1_1",
+        "currentSellerPrice": 735.7,
+        "requestedSellerPrice": 736,
+        "expectedSellerPrice": 735.7,
+        "currentClientPrice": 698.91,
+        "expectedClientPriceAfter": 698.91,
+        "currentBuyerDiscountPct": 0.050007,
+        "buyerDiscountFactor": 0.949993,
+        "clientPriceProjectionSource": "current_client_price_ratio",
+        "changePct": 0.000408,
+        "lifecycle": "exit",
+        "approvalId": "",
+        "automationTier": "automatic",
+        "autoApplyEligible": true,
+        "confirmationsRequired": 0,
+        "confirmationsRecordedAtPlan": 0,
+        "confirmationStages": [],
+        "apiPayload": {
+          "nmID": 176858863,
+          "price": 1051,
+          "discount": 30
+        },
+        "rollbackEligible": true,
+        "rollbackBlockers": [],
+        "rollbackExpectedSellerPrice": 735.7,
+        "rollbackApiPayload": {
+          "nmID": 176858863,
+          "price": 1051,
+          "discount": 30
+        }
+      },
+      {
+        "platform": "wb",
+        "articleKey": "nabor_remuver_40ml_1_1",
+        "currentSellerPrice": 384.6,
+        "requestedSellerPrice": 385,
+        "expectedSellerPrice": 384.9,
+        "currentClientPrice": 365.37,
+        "expectedClientPriceAfter": 365.66,
+        "currentBuyerDiscountPct": 0.05,
+        "buyerDiscountFactor": 0.95,
+        "clientPriceProjectionSource": "current_client_price_ratio",
+        "changePct": 0.00104,
+        "lifecycle": "exit",
+        "approvalId": "",
+        "automationTier": "automatic",
+        "autoApplyEligible": true,
+        "confirmationsRequired": 0,
+        "confirmationsRecordedAtPlan": 0,
+        "confirmationStages": [],
+        "apiPayload": {
+          "nmID": 399759797,
+          "price": 1283,
+          "discount": 70
+        },
+        "rollbackEligible": true,
+        "rollbackBlockers": [],
+        "rollbackExpectedSellerPrice": 384.6,
+        "rollbackApiPayload": {
+          "nmID": 399759797,
+          "price": 1282,
+          "discount": 70
+        }
+      },
+      {
+        "platform": "wb",
+        "articleKey": "trezax",
+        "currentSellerPrice": 658.94,
+        "requestedSellerPrice": 659,
+        "expectedSellerPrice": 658.94,
+        "currentClientPrice": 625.99,
+        "expectedClientPriceAfter": 625.99,
+        "currentBuyerDiscountPct": 0.050005,
+        "buyerDiscountFactor": 0.949995,
+        "clientPriceProjectionSource": "current_client_price_ratio",
+        "changePct": 0.000091,
+        "lifecycle": "exit",
+        "approvalId": "",
+        "automationTier": "automatic",
+        "autoApplyEligible": true,
+        "confirmationsRequired": 0,
+        "confirmationsRecordedAtPlan": 0,
+        "confirmationStages": [],
+        "apiPayload": {
+          "nmID": 100410811,
+          "price": 1402,
+          "discount": 53
+        },
+        "rollbackEligible": true,
+        "rollbackBlockers": [],
+        "rollbackExpectedSellerPrice": 658.94,
+        "rollbackApiPayload": {
+          "nmID": 100410811,
+          "price": 1402,
+          "discount": 53
+        }
+      },
+      {
+        "platform": "wb",
+        "articleKey": "wbgetsize1gel2",
+        "currentSellerPrice": 1666.92,
+        "requestedSellerPrice": 1667,
+        "expectedSellerPrice": 1666.92,
+        "currentClientPrice": 1583.57,
+        "expectedClientPriceAfter": 1583.57,
+        "currentBuyerDiscountPct": 0.050002,
+        "buyerDiscountFactor": 0.949998,
+        "clientPriceProjectionSource": "current_client_price_ratio",
+        "changePct": 0.000048,
+        "lifecycle": "exit",
+        "approvalId": "",
+        "automationTier": "automatic",
+        "autoApplyEligible": true,
+        "confirmationsRequired": 0,
+        "confirmationsRecordedAtPlan": 0,
+        "confirmationStages": [],
+        "apiPayload": {
+          "nmID": 17908721,
+          "price": 5748,
+          "discount": 71
+        },
+        "rollbackEligible": true,
+        "rollbackBlockers": [],
+        "rollbackExpectedSellerPrice": 1666.92,
+        "rollbackApiPayload": {
+          "nmID": 17908721,
+          "price": 5748,
+          "discount": 71
+        }
+      },
+      {
+        "platform": "wb",
+        "articleKey": "wbvaritox",
+        "currentSellerPrice": 389.9,
+        "requestedSellerPrice": 390,
+        "expectedSellerPrice": 389.9,
+        "currentClientPrice": 370.41,
+        "expectedClientPriceAfter": 370.41,
+        "currentBuyerDiscountPct": 0.049987,
+        "buyerDiscountFactor": 0.950013,
+        "clientPriceProjectionSource": "current_client_price_ratio",
+        "changePct": 0.000256,
+        "lifecycle": "exit",
+        "approvalId": "",
+        "automationTier": "automatic",
+        "autoApplyEligible": true,
+        "confirmationsRequired": 0,
+        "confirmationsRecordedAtPlan": 0,
+        "confirmationStages": [],
+        "apiPayload": {
+          "nmID": 17904962,
+          "price": 557,
+          "discount": 30
+        },
+        "rollbackEligible": true,
+        "rollbackBlockers": [],
+        "rollbackExpectedSellerPrice": 389.9,
+        "rollbackApiPayload": {
+          "nmID": 17904962,
+          "price": 557,
+          "discount": 30
+        }
+      }
+    ]
   },
   "limits": {
     "maxSnapshotAgeMinutes": 120,
@@ -17,215 +315,602 @@
     "maxChangePct": 0.5
   },
   "summary": {
-    "actions": 0,
-    "wb": 0,
+    "actions": 9,
+    "candidateActions": 9,
+    "deferred": 0,
+    "wb": 9,
     "ozon": 0,
-    "rejected": 27,
-    "ignored": 3
+    "automaticEligible": 9,
+    "ropApproved": 0,
+    "doubleConfirmedAtApply": 0,
+    "rejected": 39,
+    "ignored": 4
   },
   "globalBlockers": [
     "shadow_cutover_not_allowed",
-    "direct_stock_platform_missing:wb",
-    "direct_stock_platform_missing:ozon",
-    "ready_rows_rejected:27",
-    "no_applicable_price_changes"
+    "live_price_snapshot_stale"
   ],
-  "actions": [],
+  "warnings": [
+    "ready_rows_rejected:39"
+  ],
+  "actions": [
+    {
+      "platform": "wb",
+      "articleKey": "arterol",
+      "currentSellerPrice": 646.8,
+      "requestedSellerPrice": 647,
+      "expectedSellerPrice": 646.8,
+      "currentClientPrice": 614.46,
+      "expectedClientPriceAfter": 614.46,
+      "currentBuyerDiscountPct": 0.05,
+      "buyerDiscountFactor": 0.95,
+      "clientPriceProjectionSource": "current_client_price_ratio",
+      "changePct": 0.000309,
+      "lifecycle": "exit",
+      "approvalId": "",
+      "automationTier": "automatic",
+      "autoApplyEligible": true,
+      "confirmationsRequired": 0,
+      "confirmationsRecordedAtPlan": 0,
+      "confirmationStages": [],
+      "apiPayload": {
+        "nmID": 222225755,
+        "price": 1155,
+        "discount": 44
+      },
+      "rollbackEligible": true,
+      "rollbackBlockers": [],
+      "rollbackExpectedSellerPrice": 646.8,
+      "rollbackApiPayload": {
+        "nmID": 222225755,
+        "price": 1155,
+        "discount": 44
+      }
+    },
+    {
+      "platform": "wb",
+      "articleKey": "insulight_bad_60caps",
+      "currentSellerPrice": 725,
+      "requestedSellerPrice": 742,
+      "expectedSellerPrice": 742,
+      "currentClientPrice": 688.75,
+      "expectedClientPriceAfter": 704.9,
+      "currentBuyerDiscountPct": 0.05,
+      "buyerDiscountFactor": 0.95,
+      "clientPriceProjectionSource": "current_client_price_ratio",
+      "changePct": 0.023448,
+      "lifecycle": "exit",
+      "approvalId": "",
+      "automationTier": "automatic",
+      "autoApplyEligible": true,
+      "confirmationsRequired": 0,
+      "confirmationsRecordedAtPlan": 0,
+      "confirmationStages": [],
+      "apiPayload": {
+        "nmID": 229280202,
+        "price": 1484,
+        "discount": 50
+      },
+      "rollbackEligible": true,
+      "rollbackBlockers": [],
+      "rollbackExpectedSellerPrice": 725,
+      "rollbackApiPayload": {
+        "nmID": 229280202,
+        "price": 1450,
+        "discount": 50
+      }
+    },
+    {
+      "platform": "wb",
+      "articleKey": "kardicin",
+      "currentSellerPrice": 605.55,
+      "requestedSellerPrice": 606,
+      "expectedSellerPrice": 605.88,
+      "currentClientPrice": 575.27,
+      "expectedClientPriceAfter": 575.58,
+      "currentBuyerDiscountPct": 0.050004,
+      "buyerDiscountFactor": 0.949996,
+      "clientPriceProjectionSource": "current_client_price_ratio",
+      "changePct": 0.000743,
+      "lifecycle": "exit",
+      "approvalId": "",
+      "automationTier": "automatic",
+      "autoApplyEligible": true,
+      "confirmationsRequired": 0,
+      "confirmationsRecordedAtPlan": 0,
+      "confirmationStages": [],
+      "apiPayload": {
+        "nmID": 100410775,
+        "price": 1836,
+        "discount": 67
+      },
+      "rollbackEligible": true,
+      "rollbackBlockers": [],
+      "rollbackExpectedSellerPrice": 605.55,
+      "rollbackApiPayload": {
+        "nmID": 100410775,
+        "price": 1835,
+        "discount": 67
+      }
+    },
+    {
+      "platform": "wb",
+      "articleKey": "kardicin_1_1",
+      "currentSellerPrice": 578.76,
+      "requestedSellerPrice": 579,
+      "expectedSellerPrice": 578.76,
+      "currentClientPrice": 549.82,
+      "expectedClientPriceAfter": 549.82,
+      "currentBuyerDiscountPct": 0.050003,
+      "buyerDiscountFactor": 0.949997,
+      "clientPriceProjectionSource": "current_client_price_ratio",
+      "changePct": 0.000415,
+      "lifecycle": "exit",
+      "approvalId": "",
+      "automationTier": "automatic",
+      "autoApplyEligible": true,
+      "confirmationsRequired": 0,
+      "confirmationsRecordedAtPlan": 0,
+      "confirmationStages": [],
+      "apiPayload": {
+        "nmID": 176157841,
+        "price": 1113,
+        "discount": 48
+      },
+      "rollbackEligible": true,
+      "rollbackBlockers": [],
+      "rollbackExpectedSellerPrice": 578.76,
+      "rollbackApiPayload": {
+        "nmID": 176157841,
+        "price": 1113,
+        "discount": 48
+      }
+    },
+    {
+      "platform": "wb",
+      "articleKey": "khvoinitsa_1_1",
+      "currentSellerPrice": 735.7,
+      "requestedSellerPrice": 736,
+      "expectedSellerPrice": 735.7,
+      "currentClientPrice": 698.91,
+      "expectedClientPriceAfter": 698.91,
+      "currentBuyerDiscountPct": 0.050007,
+      "buyerDiscountFactor": 0.949993,
+      "clientPriceProjectionSource": "current_client_price_ratio",
+      "changePct": 0.000408,
+      "lifecycle": "exit",
+      "approvalId": "",
+      "automationTier": "automatic",
+      "autoApplyEligible": true,
+      "confirmationsRequired": 0,
+      "confirmationsRecordedAtPlan": 0,
+      "confirmationStages": [],
+      "apiPayload": {
+        "nmID": 176858863,
+        "price": 1051,
+        "discount": 30
+      },
+      "rollbackEligible": true,
+      "rollbackBlockers": [],
+      "rollbackExpectedSellerPrice": 735.7,
+      "rollbackApiPayload": {
+        "nmID": 176858863,
+        "price": 1051,
+        "discount": 30
+      }
+    },
+    {
+      "platform": "wb",
+      "articleKey": "nabor_remuver_40ml_1_1",
+      "currentSellerPrice": 384.6,
+      "requestedSellerPrice": 385,
+      "expectedSellerPrice": 384.9,
+      "currentClientPrice": 365.37,
+      "expectedClientPriceAfter": 365.66,
+      "currentBuyerDiscountPct": 0.05,
+      "buyerDiscountFactor": 0.95,
+      "clientPriceProjectionSource": "current_client_price_ratio",
+      "changePct": 0.00104,
+      "lifecycle": "exit",
+      "approvalId": "",
+      "automationTier": "automatic",
+      "autoApplyEligible": true,
+      "confirmationsRequired": 0,
+      "confirmationsRecordedAtPlan": 0,
+      "confirmationStages": [],
+      "apiPayload": {
+        "nmID": 399759797,
+        "price": 1283,
+        "discount": 70
+      },
+      "rollbackEligible": true,
+      "rollbackBlockers": [],
+      "rollbackExpectedSellerPrice": 384.6,
+      "rollbackApiPayload": {
+        "nmID": 399759797,
+        "price": 1282,
+        "discount": 70
+      }
+    },
+    {
+      "platform": "wb",
+      "articleKey": "trezax",
+      "currentSellerPrice": 658.94,
+      "requestedSellerPrice": 659,
+      "expectedSellerPrice": 658.94,
+      "currentClientPrice": 625.99,
+      "expectedClientPriceAfter": 625.99,
+      "currentBuyerDiscountPct": 0.050005,
+      "buyerDiscountFactor": 0.949995,
+      "clientPriceProjectionSource": "current_client_price_ratio",
+      "changePct": 0.000091,
+      "lifecycle": "exit",
+      "approvalId": "",
+      "automationTier": "automatic",
+      "autoApplyEligible": true,
+      "confirmationsRequired": 0,
+      "confirmationsRecordedAtPlan": 0,
+      "confirmationStages": [],
+      "apiPayload": {
+        "nmID": 100410811,
+        "price": 1402,
+        "discount": 53
+      },
+      "rollbackEligible": true,
+      "rollbackBlockers": [],
+      "rollbackExpectedSellerPrice": 658.94,
+      "rollbackApiPayload": {
+        "nmID": 100410811,
+        "price": 1402,
+        "discount": 53
+      }
+    },
+    {
+      "platform": "wb",
+      "articleKey": "wbgetsize1gel2",
+      "currentSellerPrice": 1666.92,
+      "requestedSellerPrice": 1667,
+      "expectedSellerPrice": 1666.92,
+      "currentClientPrice": 1583.57,
+      "expectedClientPriceAfter": 1583.57,
+      "currentBuyerDiscountPct": 0.050002,
+      "buyerDiscountFactor": 0.949998,
+      "clientPriceProjectionSource": "current_client_price_ratio",
+      "changePct": 0.000048,
+      "lifecycle": "exit",
+      "approvalId": "",
+      "automationTier": "automatic",
+      "autoApplyEligible": true,
+      "confirmationsRequired": 0,
+      "confirmationsRecordedAtPlan": 0,
+      "confirmationStages": [],
+      "apiPayload": {
+        "nmID": 17908721,
+        "price": 5748,
+        "discount": 71
+      },
+      "rollbackEligible": true,
+      "rollbackBlockers": [],
+      "rollbackExpectedSellerPrice": 1666.92,
+      "rollbackApiPayload": {
+        "nmID": 17908721,
+        "price": 5748,
+        "discount": 71
+      }
+    },
+    {
+      "platform": "wb",
+      "articleKey": "wbvaritox",
+      "currentSellerPrice": 389.9,
+      "requestedSellerPrice": 390,
+      "expectedSellerPrice": 389.9,
+      "currentClientPrice": 370.41,
+      "expectedClientPriceAfter": 370.41,
+      "currentBuyerDiscountPct": 0.049987,
+      "buyerDiscountFactor": 0.950013,
+      "clientPriceProjectionSource": "current_client_price_ratio",
+      "changePct": 0.000256,
+      "lifecycle": "exit",
+      "approvalId": "",
+      "automationTier": "automatic",
+      "autoApplyEligible": true,
+      "confirmationsRequired": 0,
+      "confirmationsRecordedAtPlan": 0,
+      "confirmationStages": [],
+      "apiPayload": {
+        "nmID": 17904962,
+        "price": 557,
+        "discount": 30
+      },
+      "rollbackEligible": true,
+      "rollbackBlockers": [],
+      "rollbackExpectedSellerPrice": 389.9,
+      "rollbackApiPayload": {
+        "nmID": 17904962,
+        "price": 557,
+        "discount": 30
+      }
+    }
+  ],
   "rejected": [
     {
       "platform": "ozon",
-      "articleKey": "limfaks_bad_30caps",
+      "articleKey": "kardicin_1_1",
       "reasons": [
-        "direct_sku_stock_missing"
+        "rop_approval_required"
       ]
     },
     {
       "platform": "ozon",
-      "articleKey": "menoflavon_bad_60caps",
+      "articleKey": "limfaks_bad_30caps",
       "reasons": [
-        "direct_sku_stock_missing"
+        "first_confirmation_rop_task_required"
+      ]
+    },
+    {
+      "platform": "ozon",
+      "articleKey": "maslo_dlya_volos_parf_110ml_",
+      "reasons": [
+        "rop_approval_required"
       ]
     },
     {
       "platform": "ozon",
       "articleKey": "micardin_1_1_1",
       "reasons": [
-        "direct_sku_stock_missing"
+        "rop_approval_required"
       ]
     },
     {
       "platform": "ozon",
       "articleKey": "syvorotka_guk_30ml",
       "reasons": [
-        "direct_sku_stock_missing"
+        "first_confirmation_rop_task_required"
+      ]
+    },
+    {
+      "platform": "wb",
+      "articleKey": "artoks_1_1",
+      "reasons": [
+        "rop_approval_required"
       ]
     },
     {
       "platform": "wb",
       "articleKey": "cardicin_bad_60caps",
       "reasons": [
-        "direct_sku_stock_missing"
+        "rop_approval_required"
+      ]
+    },
+    {
+      "platform": "wb",
+      "articleKey": "chudogrib",
+      "reasons": [
+        "first_confirmation_rop_task_required"
       ]
     },
     {
       "platform": "wb",
       "articleKey": "daoshen_75ml",
       "reasons": [
-        "direct_sku_stock_missing"
+        "rop_approval_required"
       ]
     },
     {
       "platform": "wb",
       "articleKey": "dardrakona_1_1",
       "reasons": [
-        "direct_sku_stock_missing"
+        "rop_approval_required"
       ]
     },
     {
       "platform": "wb",
       "articleKey": "dardrakona_75ml",
       "reasons": [
-        "direct_sku_stock_missing"
+        "first_confirmation_rop_task_required"
       ]
     },
     {
       "platform": "wb",
       "articleKey": "erobrut",
       "reasons": [
-        "direct_sku_stock_missing"
+        "rop_approval_required"
       ]
     },
     {
       "platform": "wb",
       "articleKey": "frutalika_bad_60caps",
       "reasons": [
-        "direct_sku_stock_missing"
+        "first_confirmation_rop_task_required"
       ]
     },
     {
       "platform": "wb",
       "articleKey": "gel_dlya_britya_300ml",
       "reasons": [
-        "direct_sku_stock_missing"
+        "first_confirmation_rop_task_required"
+      ]
+    },
+    {
+      "platform": "wb",
+      "articleKey": "gel_for_men_3_in_1_1000ml",
+      "reasons": [
+        "first_confirmation_rop_task_required"
       ]
     },
     {
       "platform": "wb",
       "articleKey": "gel_parfum_tabacco_vanille_450ml",
       "reasons": [
-        "direct_sku_stock_missing"
+        "first_confirmation_rop_task_required"
       ]
     },
     {
       "platform": "wb",
       "articleKey": "glikiron_bad_60caps",
       "reasons": [
-        "direct_sku_stock_missing"
+        "first_confirmation_rop_task_required"
       ]
     },
     {
       "platform": "wb",
       "articleKey": "i_am_alpha_bad_60caps",
       "reasons": [
-        "direct_sku_stock_missing"
+        "rop_approval_required"
       ]
     },
     {
       "platform": "wb",
-      "articleKey": "insulight_bad_60caps",
+      "articleKey": "insulight",
       "reasons": [
-        "direct_sku_stock_missing"
+        "first_confirmation_rop_task_required"
       ]
     },
     {
       "platform": "wb",
-      "articleKey": "khvoinitsa_1_1",
+      "articleKey": "intimvita_200ml",
       "reasons": [
-        "direct_sku_stock_missing"
+        "first_confirmation_rop_task_required"
+      ]
+    },
+    {
+      "platform": "wb",
+      "articleKey": "kardicin_1_1_1",
+      "reasons": [
+        "first_confirmation_rop_task_required"
+      ]
+    },
+    {
+      "platform": "wb",
+      "articleKey": "maslo_dlya_volos_parf_110ml_",
+      "reasons": [
+        "first_confirmation_rop_task_required"
       ]
     },
     {
       "platform": "wb",
       "articleKey": "micardin_1_1",
       "reasons": [
-        "direct_sku_stock_missing"
+        "rop_approval_required"
+      ]
+    },
+    {
+      "platform": "wb",
+      "articleKey": "micardin_1_1_1",
+      "reasons": [
+        "rop_approval_required"
       ]
     },
     {
       "platform": "wb",
       "articleKey": "mycoplax",
       "reasons": [
-        "direct_sku_stock_missing"
+        "rop_approval_required"
       ]
     },
     {
       "platform": "wb",
-      "articleKey": "nabor_remuver_40ml_1_1",
+      "articleKey": "okospas",
       "reasons": [
-        "direct_sku_stock_missing"
+        "first_confirmation_rop_task_required"
       ]
     },
     {
       "platform": "wb",
-      "articleKey": "psoral_50ml",
+      "articleKey": "okucin",
       "reasons": [
-        "direct_sku_stock_missing"
+        "rop_approval_required"
+      ]
+    },
+    {
+      "platform": "wb",
+      "articleKey": "otivin",
+      "reasons": [
+        "rop_approval_required"
+      ]
+    },
+    {
+      "platform": "wb",
+      "articleKey": "sanatsin",
+      "reasons": [
+        "rop_approval_required"
       ]
     },
     {
       "platform": "wb",
       "articleKey": "sustalit",
       "reasons": [
-        "direct_sku_stock_missing"
+        "rop_approval_required"
+      ]
+    },
+    {
+      "platform": "wb",
+      "articleKey": "uhovit",
+      "reasons": [
+        "first_confirmation_rop_task_required"
       ]
     },
     {
       "platform": "wb",
       "articleKey": "urolgan",
       "reasons": [
-        "direct_sku_stock_missing"
-      ]
-    },
-    {
-      "platform": "wb",
-      "articleKey": "uromax",
-      "reasons": [
-        "direct_sku_stock_missing"
-      ]
-    },
-    {
-      "platform": "wb",
-      "articleKey": "uromax_1_1",
-      "reasons": [
-        "direct_sku_stock_missing"
+        "rop_approval_required"
       ]
     },
     {
       "platform": "wb",
       "articleKey": "vetonus_1_1",
       "reasons": [
-        "direct_sku_stock_missing"
+        "first_confirmation_rop_task_required"
       ]
     },
     {
       "platform": "wb",
       "articleKey": "wbbiotrin_1_1_1",
       "reasons": [
-        "direct_sku_stock_missing"
+        "rop_approval_required"
       ]
     },
     {
       "platform": "wb",
       "articleKey": "wbgetsizegel",
       "reasons": [
-        "direct_sku_stock_missing"
+        "rop_approval_required"
+      ]
+    },
+    {
+      "platform": "wb",
+      "articleKey": "wbmicelix",
+      "reasons": [
+        "first_confirmation_rop_task_required"
+      ]
+    },
+    {
+      "platform": "wb",
+      "articleKey": "wbpantogor_1_1",
+      "reasons": [
+        "first_confirmation_rop_task_required"
+      ]
+    },
+    {
+      "platform": "wb",
+      "articleKey": "yagodniy_spas",
+      "reasons": [
+        "rop_approval_required"
+      ]
+    },
+    {
+      "platform": "wb",
+      "articleKey": "yagodniy_spas_1_1",
+      "reasons": [
+        "rop_approval_required"
       ]
     }
   ],
   "ignored": [
     {
       "platform": "ozon",
-      "articleKey": "khvoinitsa",
+      "articleKey": "enteroshol",
       "reason": "ozon_change_below_api_minimum_5pct"
     },
     {
@@ -236,6 +921,11 @@
     {
       "platform": "ozon",
       "articleKey": "telomeras_60caps",
+      "reason": "ozon_change_below_api_minimum_5pct"
+    },
+    {
+      "platform": "ozon",
+      "articleKey": "wbmicelix_1_1",
       "reason": "ozon_change_below_api_minimum_5pct"
     }
   ]

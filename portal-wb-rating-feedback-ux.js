@@ -566,10 +566,11 @@
       }
       #${ROOT_ID} .rating-work-table {
         max-width:100%;
-        max-height:min(68vh,720px);
-        overflow:auto;
-        overscroll-behavior:contain;
-        scrollbar-gutter:stable both-edges;
+        max-height:none !important;
+        overflow-x:auto !important;
+        overflow-y:visible !important;
+        overscroll-behavior-inline:contain;
+        scrollbar-gutter:stable;
         scrollbar-width:auto;
         touch-action:pan-x pan-y;
         -webkit-overflow-scrolling:touch;
@@ -954,6 +955,16 @@
       #${ROOT_ID}[data-rating-density="compact"] .rating-planfact-card .sku-plan-platform-card__meta,
       #${ROOT_ID}[data-rating-density="compact"] .rating-planfact-card .sku-plan-platform-card__foot {
         display:none;
+      }
+      #${ROOT_ID}[data-rating-density="compact"] .rating-planfact-card.is-rating-unavailable .sku-plan-platform-card__meta {
+        display:block;
+      }
+      #${ROOT_ID}[data-rating-density="compact"] .rating-planfact-card.is-current-tail-state .sku-plan-platform-card__meta {
+        display:block;
+      }
+      #${ROOT_ID}[data-rating-density="compact"] .rating-planfact-card.is-rating-unavailable .sku-plan-platform-card__foot,
+      #${ROOT_ID}[data-rating-density="compact"] .rating-planfact-card.is-current-tail-state .sku-plan-platform-card__foot {
+        display:flex;
       }
       #${ROOT_ID}[data-rating-density="compact"] .rating-detail-panel { padding:12px; }
       #${ROOT_ID}[data-rating-density="compact"] .rating-work-table table.rating-ux-wide-table th:nth-child(6),

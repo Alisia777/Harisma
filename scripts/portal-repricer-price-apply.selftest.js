@@ -6,6 +6,7 @@ const fs = require('fs');
 const path = require('path');
 const {
   buildApplyPlan,
+  buildRollbackPlan,
   submitApplyPlan,
   verifyReceipt
 } = require('./portal-repricer-price-apply');
@@ -76,7 +77,8 @@ function fixture() {
             currentSellerPrice: 1000,
             currentClientPrice: 920,
             currentBuyerDiscountPct: 0.08,
-            currentListPrice: 1500
+            currentListPrice: 1500,
+            currentMinPrice: 900
           }]
         }
       }
@@ -88,6 +90,32 @@ function fixture() {
       rows: [
         { platform: 'wb', articleKey: 'wb-safe', available: 10, oos: false, sourceMode: 'wb_stock_api' },
         { platform: 'ozon', articleKey: 'oz-safe', available: 20, oos: false, sourceMode: 'ozon_stock_api_v4' }
+      ]
+    },
+    decisionCenter: {
+      rows: [
+        {
+          platform: 'wb',
+          articleKey: 'wb-safe',
+          dataQuality: { usable: true, blockers: [] },
+          automation: { tier: 'double_confirmation', autoApplyEligible: false },
+          approval: {
+            status: 'APPROVED',
+            confirmationsRequired: 2,
+            confirmationStages: ['ROP_TASK', 'API_APPLY_PREVIEW']
+          }
+        },
+        {
+          platform: 'ozon',
+          articleKey: 'oz-safe',
+          dataQuality: { usable: true, blockers: [] },
+          automation: { tier: 'rop_approval', autoApplyEligible: false },
+          approval: {
+            status: 'APPROVED',
+            confirmationsRequired: 1,
+            confirmationStages: ['ROP_TASK']
+          }
+        }
       ]
     },
     shadow: { cutover_allowed: true }
@@ -113,6 +141,17 @@ async function run() {
   assert.strictEqual(plan.actions[0].expectedClientPriceAfter, 1140);
   assert.strictEqual(plan.actions[0].currentBuyerDiscountPct, 0.05);
   assert.strictEqual(plan.actions[1].expectedClientPriceAfter, 1012);
+  assert.strictEqual(plan.actions[0].rollbackEligible, true);
+  assert.deepStrictEqual(plan.actions[0].rollbackApiPayload, {
+    nmID: 101,
+    price: 1250,
+    discount: 20
+  });
+  assert.strictEqual(plan.actions[1].rollbackEligible, true);
+  assert.strictEqual(plan.actions[0].automationTier, 'double_confirmation');
+  assert.strictEqual(plan.actions[0].confirmationsRequired, 2);
+  assert.strictEqual(plan.actions[0].confirmationsRecordedAtPlan, 1);
+  assert.strictEqual(plan.actions[1].automationTier, 'rop_approval');
   assert.deepStrictEqual(
     canonicalClientPriceProjection(1000, 950, null, 1200),
     {
@@ -192,6 +231,23 @@ async function run() {
   assert.strictEqual(verified.rows[0].sellerMatched, true);
   assert.strictEqual(verified.rows[0].clientPriceMatchedProjection, false);
   assert.strictEqual(verified.rows[1].clientPriceMatchedProjection, true);
+  assert.strictEqual(verified.remediation.status, 'not_required');
+
+  const mismatch = verifyReceipt(receipt, {
+    platforms: {
+      wb: { rows: [{ articleKey: 'wb-safe', currentSellerPrice: 1190, currentClientPrice: 1130 }] },
+      ozon: { rows: [{ articleKey: 'oz-safe', currentSellerPrice: 1080, currentClientPrice: 995 }] }
+    }
+  });
+  assert.strictEqual(mismatch.status, 'mismatch_action_required');
+  assert.strictEqual(mismatch.summary.remediationTasks, 2);
+  assert.strictEqual(mismatch.remediation.automaticRollbackAllowed, true);
+  assert(mismatch.remediation.tasks.every((task) => task.status === 'OPEN'));
+  const rollback = buildRollbackPlan(receipt, mismatch);
+  assert.strictEqual(rollback.status, 'ready');
+  assert.strictEqual(rollback.actions.length, 2);
+  assert.strictEqual(rollback.actions[0].expectedSellerPrice, 1000);
+  assert.strictEqual(rollback.actions[1].apiPayload.min_price, '900');
 
   const fallback = fixture();
   fallback.liveSignals.summary.directPlatforms = [];
@@ -217,6 +273,37 @@ async function run() {
   assert(excessivePlan.warnings.includes('ready_rows_rejected:1'));
   assert.strictEqual(excessivePlan.status, 'ready', 'one rejected row must not block independent safe actions');
 
+  const missingApproval = fixture();
+  missingApproval.decisionCenter.rows[0].approval.status = 'PENDING_ROP';
+  const missingApprovalPlan = buildApplyPlan({
+    ...missingApproval,
+    now: new Date(missingApproval.livePrices.generatedAt)
+  });
+  assert(missingApprovalPlan.rejected.some((row) => (
+    row.articleKey === 'wb-safe'
+    && row.reasons.includes('first_confirmation_rop_task_required')
+  )));
+
+  const automatic = fixture();
+  automatic.canonical.rows[0].recommendation.price = 1020;
+  automatic.canonical.rows[0].recommendation.margin_pct = 0.21;
+  automatic.canonical.rows[0].policy.floor = 1020;
+  automatic.canonical.rows[0].policy.cap = 1020;
+  automatic.decisionCenter.rows[0].automation = { tier: 'automatic', autoApplyEligible: true };
+  automatic.decisionCenter.rows[0].approval = {
+    status: 'NOT_REQUIRED',
+    confirmationsRequired: 0,
+    confirmationStages: []
+  };
+  const automaticPlan = buildApplyPlan({
+    ...automatic,
+    now: new Date(automatic.livePrices.generatedAt)
+  });
+  const automaticAction = automaticPlan.actions.find((row) => row.articleKey === 'wb-safe');
+  assert.strictEqual(automaticAction.autoApplyEligible, true);
+  assert.strictEqual(automaticAction.automationTier, 'automatic');
+  assert.strictEqual(automaticPlan.summary.automaticEligible, 1);
+
   const applyWorkflow = fs.readFileSync(
     path.join(__dirname, '..', '.github', 'workflows', 'portal-repricer-price-apply.yml'),
     'utf8'
@@ -236,7 +323,7 @@ async function run() {
   );
   assert.match(applyWorkflow, /--requested-by "\$REQUESTED_BY"/);
 
-  console.log('[repricer-price-apply] PASS: plan hash, audit identity, direct-stock gate, workflow preflight, safe inputs, submission and post-verification');
+  console.log('[repricer-price-apply] PASS: plan hash, audit identity, direct-stock gate, safe inputs, submission, readback and exact rollback/task remediation');
 }
 
 run().catch((error) => {

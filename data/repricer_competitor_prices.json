@@ -1,13 +1,1368 @@
 {
-  "schema": "repricer-competitor-prices-v1",
-  "generatedAt": "",
+  "schema": "repricer-competitor-prices-v2",
+  "generatedAt": "2026-07-28T12:00:00.000Z",
   "currency": "RUB",
-  "rules": {
-    "grain": "platform + article_key + competitor offer",
-    "price": "Use the current client price. If pack_units is not 1, comparable_unit_price is required.",
-    "matching": "match_score must be independently confirmed and at least 0.85; brand, product type, volume or weight and pack count must match.",
-    "freshness": "An offer older than one day is rejected.",
-    "decision": "At least three fresh in-stock comparable offers are required. The repricer uses their median and never the cheapest offer."
+  "status": "insufficient",
+  "policy": {
+    "minimumOffers": 3,
+    "minimumMatchScore": 0.85,
+    "packageTolerancePct": 0.08,
+    "promotionsExcluded": true,
+    "suspiciousSellersExcluded": true,
+    "ownBrandExcluded": true,
+    "stalePreviousOffersNeverRefreshed": true,
+    "ozonProvider": "not_configured"
   },
-  "rows": []
+  "summary": {
+    "requested_skus": 10,
+    "sku_platform_rows": 10,
+    "trusted_rows": 0,
+    "trusted_offers": 0,
+    "total_offers": 2,
+    "failed_queries": 0,
+    "retained_previous": 2,
+    "provider_not_configured": 10
+  },
+  "rows": [
+    {
+      "platform": "wb",
+      "article_key": "gel_kudryavii_metod_300ml",
+      "normalized_article_key": "gelkudryaviimetod300ml",
+      "observed_at": "2026-07-28T12:00:00.000Z",
+      "source": "wb_public_catalog_search+external_provider",
+      "query": "gel_kudryavii_metod_300ml",
+      "offers": [],
+      "diagnostics": {
+        "discovered": 100,
+        "accepted": 0,
+        "rejected": 100,
+        "rejected_by_reason": {
+          "package_mismatch": 100
+        }
+      }
+    },
+    {
+      "platform": "wb",
+      "article_key": "gel-penka_dlya_lica_150ml",
+      "normalized_article_key": "gelpenkadlyalica150ml",
+      "observed_at": "2026-07-28T12:00:00.000Z",
+      "source": "wb_public_catalog_search+external_provider",
+      "query": "gel-penka_dlya_lica_150ml",
+      "offers": [],
+      "diagnostics": {
+        "discovered": 100,
+        "accepted": 0,
+        "rejected": 100,
+        "rejected_by_reason": {
+          "package_mismatch": 92,
+          "match_score_low": 8
+        }
+      }
+    },
+    {
+      "platform": "wb",
+      "article_key": "krem_dlya_lica_pdrn_50_ml",
+      "normalized_article_key": "kremdlyalicapdrn50ml",
+      "observed_at": "2026-07-28T12:00:00.000Z",
+      "source": "wb_public_catalog_search+external_provider",
+      "query": "krem_dlya_lica_pdrn_50 ml",
+      "offers": [],
+      "diagnostics": {
+        "discovered": 100,
+        "accepted": 0,
+        "rejected": 100,
+        "rejected_by_reason": {
+          "package_mismatch": 86,
+          "match_score_low": 13,
+          "own_brand": 1
+        }
+      }
+    },
+    {
+      "platform": "wb",
+      "article_key": "lifting_maska_pdrn_75ml",
+      "normalized_article_key": "liftingmaskapdrn75ml",
+      "observed_at": "2026-07-28T12:00:00.000Z",
+      "source": "wb_public_catalog_search+external_provider",
+      "query": "lifting_maska_pdrn_75ml",
+      "offers": [],
+      "diagnostics": {
+        "discovered": 100,
+        "accepted": 0,
+        "rejected": 100,
+        "rejected_by_reason": {
+          "package_mismatch": 98,
+          "match_score_low": 2
+        }
+      }
+    },
+    {
+      "platform": "wb",
+      "article_key": "retinait_syvorotka_05_30ml",
+      "normalized_article_key": "retinaitsyvorotka0530ml",
+      "observed_at": "2026-07-28T12:00:00.000Z",
+      "source": "wb_public_catalog_search+external_provider",
+      "query": "Сыворотка для лица с ретинолом омолаживающая",
+      "offers": [
+        {
+          "competitor_id": "162231805",
+          "seller": "HARBEZ",
+          "product_name": "Сыворотка для лица омолаживающая с ретинолом 30 мл",
+          "client_price": 313,
+          "comparable_unit_price": 313,
+          "in_stock": true,
+          "match_score": 0.8667,
+          "pack_units": 1,
+          "package_dimension": "volume_ml",
+          "package_amount": 30,
+          "own_package_amount": 30,
+          "currency": "RUB",
+          "observed_at": "2026-07-28T12:00:00.000Z",
+          "url": "https://www.wildberries.ru/catalog/162231805/detail.aspx",
+          "source": "wb_public_catalog_search"
+        },
+        {
+          "competitor_id": "462967564",
+          "seller": "РИВ ГОШ",
+          "product_name": "Сыворотка для лица омолаживающая с ретинолом 0,4 %, 30 мл",
+          "client_price": 674,
+          "comparable_unit_price": 674,
+          "in_stock": true,
+          "match_score": 0.8667,
+          "pack_units": 1,
+          "package_dimension": "volume_ml",
+          "package_amount": 30,
+          "own_package_amount": 30,
+          "currency": "RUB",
+          "observed_at": "2026-07-28T12:00:00.000Z",
+          "url": "https://www.wildberries.ru/catalog/462967564/detail.aspx",
+          "source": "wb_public_catalog_search"
+        }
+      ],
+      "diagnostics": {
+        "discovered": 100,
+        "accepted": 2,
+        "rejected": 98,
+        "rejected_by_reason": {
+          "package_mismatch": 82,
+          "match_score_low": 15,
+          "own_brand": 1
+        }
+      }
+    },
+    {
+      "platform": "wb",
+      "article_key": "retinol_boost_krem_dlya_vek_30ml",
+      "normalized_article_key": "retinolboostkremdlyavek30ml",
+      "observed_at": "2026-07-28T12:00:00.000Z",
+      "source": "wb_public_catalog_search+external_provider",
+      "query": "Крем c ретинолом для век антивозрастной для кожи и кожи вокруг глаз, Алтея, 30мл",
+      "offers": [],
+      "diagnostics": {
+        "discovered": 100,
+        "accepted": 0,
+        "rejected": 100,
+        "rejected_by_reason": {
+          "own_brand": 1,
+          "package_mismatch": 74,
+          "match_score_low": 4,
+          "seller_missing": 21
+        }
+      }
+    },
+    {
+      "platform": "wb",
+      "article_key": "shampun_badd_500ml",
+      "normalized_article_key": "shampunbadd500ml",
+      "observed_at": "2026-07-28T12:00:00.000Z",
+      "source": "wb_public_catalog_search+external_provider",
+      "query": "shampun_BADD_500ml",
+      "offers": [],
+      "diagnostics": {
+        "discovered": 100,
+        "accepted": 0,
+        "rejected": 100,
+        "rejected_by_reason": {
+          "package_mismatch": 98,
+          "seller_missing": 2
+        }
+      }
+    },
+    {
+      "platform": "wb",
+      "article_key": "shampun_kudryavii_metod_500ml",
+      "normalized_article_key": "shampunkudryaviimetod500ml",
+      "observed_at": "2026-07-28T12:00:00.000Z",
+      "source": "wb_public_catalog_search+external_provider",
+      "query": "shampun_kudryavii_metod_500ml",
+      "offers": [],
+      "diagnostics": {
+        "discovered": 0,
+        "accepted": 0,
+        "rejected": 0,
+        "rejected_by_reason": {}
+      }
+    },
+    {
+      "platform": "wb",
+      "article_key": "spicul_gel_mask_75ml",
+      "normalized_article_key": "spiculgelmask75ml",
+      "observed_at": "2026-07-28T12:00:00.000Z",
+      "source": "wb_public_catalog_search+external_provider",
+      "query": "Гелевая маска для лица со спикулами 3000 ppm и микроиглами",
+      "offers": [],
+      "diagnostics": {
+        "discovered": 34,
+        "accepted": 0,
+        "rejected": 34,
+        "rejected_by_reason": {
+          "package_mismatch": 24,
+          "seller_missing": 10
+        }
+      }
+    },
+    {
+      "platform": "wb",
+      "article_key": "spiculboost_30ml",
+      "normalized_article_key": "spiculboost30ml",
+      "observed_at": "2026-07-28T12:00:00.000Z",
+      "source": "wb_public_catalog_search+external_provider",
+      "query": "Сыворотка для лица с микроиглами и коллагеном",
+      "offers": [],
+      "diagnostics": {
+        "discovered": 100,
+        "accepted": 0,
+        "rejected": 100,
+        "rejected_by_reason": {
+          "package_mismatch": 96,
+          "match_score_low": 4
+        }
+      }
+    }
+  ],
+  "diagnostics": [
+    {
+      "platform": "wb",
+      "articleKey": "gel_kudryavii_metod_300ml",
+      "status": "insufficient",
+      "discovered": 100,
+      "accepted": 0,
+      "rejected": [
+        {
+          "competitor_id": "230762787",
+          "seller": "Beactiv",
+          "name": "Энергетические гели для бега и марафона Double Energy",
+          "reason": "package_mismatch",
+          "match_score": 0
+        },
+        {
+          "competitor_id": "244493912",
+          "seller": "РИВ ГОШ",
+          "name": "Гель для душа Shades Of Siberia Wisdom, 450 мл",
+          "reason": "package_mismatch",
+          "match_score": 0
+        },
+        {
+          "competitor_id": "541244781",
+          "seller": "ГУРМАНДИЗ",
+          "name": "Карандаш для глаз гелевый Gel Eyepencil 1.2 г 801 Черный",
+          "reason": "package_mismatch",
+          "match_score": 0.1875
+        },
+        {
+          "competitor_id": "222431079",
+          "seller": "Na_El",
+          "name": "Гель для наращивания и укрепления ногтей",
+          "reason": "package_mismatch",
+          "match_score": 0
+        },
+        {
+          "competitor_id": "743557811",
+          "seller": "Широкий ассортимент товаров",
+          "name": "кроссовки",
+          "reason": "package_mismatch",
+          "match_score": 0
+        },
+        {
+          "competitor_id": "567179630",
+          "seller": "Родезия",
+          "name": "Indurent Gel Индурент гель (60мл) Активатор Зета плюс",
+          "reason": "package_mismatch",
+          "match_score": 0.1875
+        },
+        {
+          "competitor_id": "814369804",
+          "seller": "ATASHI",
+          "name": "Гель для наращивания ногтей и моделирования 15 мл",
+          "reason": "package_mismatch",
+          "match_score": 0
+        },
+        {
+          "competitor_id": "187379128",
+          "seller": "Only Nails",
+          "name": "Гель желе для наращивания и моделирования",
+          "reason": "package_mismatch",
+          "match_score": 0
+        },
+        {
+          "competitor_id": "981161426",
+          "seller": "NUZHNAYA",
+          "name": "Гель для наращивания ногтей светоотражающий цветной",
+          "reason": "package_mismatch",
+          "match_score": 0
+        },
+        {
+          "competitor_id": "953649321",
+          "seller": "корейская косметика",
+          "name": "Гель для умывания с гиалуроновой кислотой pH Hyaluron Gel Cl…",
+          "reason": "package_mismatch",
+          "match_score": 0.1875
+        },
+        {
+          "competitor_id": "241001133",
+          "seller": "TIES_Brand",
+          "name": "Жидкий гель для ногтей Only Gel 31",
+          "reason": "package_mismatch",
+          "match_score": 0.1875
+        },
+        {
+          "competitor_id": "397403754",
+          "seller": "Маманейл",
+          "name": "Жемчужный гель для наращивания ногтей, 15г (01)",
+          "reason": "package_mismatch",
+          "match_score": 0
+        },
+        {
+          "competitor_id": "493461270",
+          "seller": "Dr. BLADE",
+          "name": "Гидросорб гель в тубе Hydrosorb gel 15 гр - 1 шт",
+          "reason": "package_mismatch",
+          "match_score": 0.1875
+        },
+        {
+          "competitor_id": "805195952",
+          "seller": "NUZHNAYA",
+          "name": "Гель для наращивания и моделирования ногтей с шиммером",
+          "reason": "package_mismatch",
+          "match_score": 0
+        },
+        {
+          "competitor_id": "223949431",
+          "seller": "benordic",
+          "name": "Энергетический гель для бега и тренировок",
+          "reason": "package_mismatch",
+          "match_score": 0
+        },
+        {
+          "competitor_id": "805178318",
+          "seller": "NUZHNAYA",
+          "name": "Гель для наращивания ногтей с поталью бежевый",
+          "reason": "package_mismatch",
+          "match_score": 0
+        },
+        {
+          "competitor_id": "635633324",
+          "seller": "ЭкоМир",
+          "name": "Гель с хитозаном Wel. lab Revital gel, 50 мл",
+          "reason": "package_mismatch",
+          "match_score": 0.1875
+        },
+        {
+          "competitor_id": "229207699",
+          "seller": "Официальный представитель",
+          "name": "Гелевый пилинг Gel Peeling",
+          "reason": "package_mismatch",
+          "match_score": 0.1875
+        },
+        {
+          "competitor_id": "550702697",
+          "seller": "TIES_Brand",
+          "name": "Жидкий гель для ногтей Only Gel 42",
+          "reason": "package_mismatch",
+          "match_score": 0.1875
+        },
+        {
+          "competitor_id": "805195939",
+          "seller": "NUZHNAYA",
+          "name": "Гель для наращивания ногтей цветной с поталью",
+          "reason": "package_mismatch",
+          "match_score": 0
+        }
+      ]
+    },
+    {
+      "platform": "ozon",
+      "articleKey": "gel_kudryavii_metod_300ml",
+      "status": "provider_not_configured",
+      "accepted": 0
+    },
+    {
+      "platform": "wb",
+      "articleKey": "gel-penka_dlya_lica_150ml",
+      "status": "retained_previous",
+      "error": "HTTP 429: <!DOCTYPE html>\n<html>\n<head>\n<meta http-equiv=\"content-type\" content=\"text/html; charset=utf-8\">\n<title>429 Too Many Re"
+    },
+    {
+      "platform": "ozon",
+      "articleKey": "gel-penka_dlya_lica_150ml",
+      "status": "provider_not_configured",
+      "accepted": 0
+    },
+    {
+      "platform": "wb",
+      "articleKey": "krem_dlya_lica_pdrn_50_ml",
+      "status": "insufficient",
+      "discovered": 100,
+      "accepted": 0,
+      "rejected": [
+        {
+          "competitor_id": "877328577",
+          "seller": "FROMM RUSSIA",
+          "name": "Антивозрастной крем для шеи и декольте 110 мл с массажером",
+          "reason": "package_mismatch",
+          "match_score": 0
+        },
+        {
+          "competitor_id": "279409309",
+          "seller": "РИВ ГОШ",
+          "name": "Крем для лица с витамином С, 120 мл",
+          "reason": "package_mismatch",
+          "match_score": 0
+        },
+        {
+          "competitor_id": "282220352",
+          "seller": "REPHARM",
+          "name": "Аксиния Сила коллагена Ночной крем для лица",
+          "reason": "package_mismatch",
+          "match_score": 0
+        },
+        {
+          "competitor_id": "580281680",
+          "seller": "РИВ ГОШ",
+          "name": "Крем для лица питательный с ретинолом 50 мл",
+          "reason": "match_score_low",
+          "match_score": 0.25
+        },
+        {
+          "competitor_id": "279409335",
+          "seller": "РИВ ГОШ",
+          "name": "Крем для лица Гиалуроновый, 120 мл",
+          "reason": "package_mismatch",
+          "match_score": 0
+        },
+        {
+          "competitor_id": "46836933",
+          "seller": "Seauty",
+          "name": "Крем для лица и тела с церамидами 300 мл",
+          "reason": "package_mismatch",
+          "match_score": 0
+        },
+        {
+          "competitor_id": "154535912",
+          "seller": "LIMONI официальный магазин",
+          "name": "Солнцезащитный крем гель для лица и тела SPF 50, 50 мл",
+          "reason": "match_score_low",
+          "match_score": 0.25
+        },
+        {
+          "competitor_id": "156095116",
+          "seller": "Официальный магазин Matsesta",
+          "name": "Солнцезащитный крем для лица spf 50",
+          "reason": "package_mismatch",
+          "match_score": 0
+        },
+        {
+          "competitor_id": "282783875",
+          "seller": "ПРИРОДА КРАСОТЫ",
+          "name": "Крем с тамбуканской грязью ночной 50мл",
+          "reason": "match_score_low",
+          "match_score": 0.25
+        },
+        {
+          "competitor_id": "580281663",
+          "seller": "РИВ ГОШ",
+          "name": "Крем для лица с гиалуроновой кислотой увлажняющий 50 мл",
+          "reason": "match_score_low",
+          "match_score": 0.25
+        },
+        {
+          "competitor_id": "580281733",
+          "seller": "РИВ ГОШ",
+          "name": "Крем с гиалуроновой кислотой разглаживающий, 150 мл",
+          "reason": "package_mismatch",
+          "match_score": 0
+        },
+        {
+          "competitor_id": "417802843",
+          "seller": "Стильная мануфактура",
+          "name": "Крем для лица увлажняющий, 50 мл",
+          "reason": "match_score_low",
+          "match_score": 0.25
+        },
+        {
+          "competitor_id": "244637616",
+          "seller": "Nonpareil",
+          "name": "Крем для лица увлажняющий",
+          "reason": "package_mismatch",
+          "match_score": 0
+        },
+        {
+          "competitor_id": "19681064",
+          "seller": "Wildberries",
+          "name": "ночной крем для лица Лифтинг и питание с облепихой 50 мл",
+          "reason": "match_score_low",
+          "match_score": 0.25
+        },
+        {
+          "competitor_id": "580281654",
+          "seller": "РИВ ГОШ",
+          "name": "Крем для лица балансирующий с РНА-кислотами 50 мл",
+          "reason": "match_score_low",
+          "match_score": 0.25
+        },
+        {
+          "competitor_id": "297814274",
+          "seller": "Активная косметика: космецевтика ZenWay",
+          "name": "Липосомальный Vitamin C Shield крем для сухой кожи лица",
+          "reason": "package_mismatch",
+          "match_score": 0
+        },
+        {
+          "competitor_id": "266660329",
+          "seller": "E-COSMETIC",
+          "name": "Омолаживающий лифтинг-крем для лица, шеи и декольте ALTAI",
+          "reason": "package_mismatch",
+          "match_score": 0
+        },
+        {
+          "competitor_id": "29653361",
+          "seller": "Сима-Ленд - Универсальный",
+          "name": "Крем для лица с витамином АЕ, питание и увлажнение 50 мл",
+          "reason": "match_score_low",
+          "match_score": 0.25
+        },
+        {
+          "competitor_id": "600945417",
+          "seller": "Faberlic Official",
+          "name": "CC-крем для лица SPF 10 Мультиуход Dose of Nature",
+          "reason": "package_mismatch",
+          "match_score": 0
+        },
+        {
+          "competitor_id": "390722625",
+          "seller": "ПРИРОДА КРАСОТЫ",
+          "name": "Омолаживающий крем для лица и век 40мл",
+          "reason": "package_mismatch",
+          "match_score": 0
+        }
+      ]
+    },
+    {
+      "platform": "ozon",
+      "articleKey": "krem_dlya_lica_pdrn_50_ml",
+      "status": "provider_not_configured",
+      "accepted": 0
+    },
+    {
+      "platform": "wb",
+      "articleKey": "lifting_maska_pdrn_75ml",
+      "status": "insufficient",
+      "discovered": 100,
+      "accepted": 0,
+      "rejected": [
+        {
+          "competitor_id": "1214286421",
+          "seller": "Руйви",
+          "name": "Лифтинг маска для лица и подбородка подтягивающая",
+          "reason": "package_mismatch",
+          "match_score": 0
+        },
+        {
+          "competitor_id": "831626792",
+          "seller": "Vpoint",
+          "name": "Подтягивающие тканевые лифтинг маски для подбородка и лица",
+          "reason": "package_mismatch",
+          "match_score": 0
+        },
+        {
+          "competitor_id": "505407151",
+          "seller": "ИП Ангельчев Р.С.",
+          "name": "Маска для лица тканевая антивозрастная лифтинг набор 5 шт",
+          "reason": "package_mismatch",
+          "match_score": 0
+        },
+        {
+          "competitor_id": "232918521",
+          "seller": "SUNQUEEN",
+          "name": "Маска для лица моделирующая против морщин с лифтинг-эффектом",
+          "reason": "package_mismatch",
+          "match_score": 0
+        },
+        {
+          "competitor_id": "23658763",
+          "seller": "Диталир",
+          "name": "Увлажняющая ночная маска для лица с гиалуроновой кислотой",
+          "reason": "package_mismatch",
+          "match_score": 0
+        },
+        {
+          "competitor_id": "161696690",
+          "seller": "Cosmo Beauty (Likato&Co) - официальный магазин",
+          "name": "Маска для лица от морщин увлажняющая с ботокс эффектом",
+          "reason": "package_mismatch",
+          "match_score": 0
+        },
+        {
+          "competitor_id": "488662900",
+          "seller": "B-D-C",
+          "name": "Лифтинг маска подтягивающая двойной подбородок контур лица",
+          "reason": "package_mismatch",
+          "match_score": 0
+        },
+        {
+          "competitor_id": "672997312",
+          "seller": "ИП ГИА",
+          "name": "Маска для лица омолаживающая подтягивающая Rozetta",
+          "reason": "package_mismatch",
+          "match_score": 0
+        },
+        {
+          "competitor_id": "177547594",
+          "seller": "SUNQUEEN",
+          "name": "Увлажняющая маска для лица против отеков и морщин",
+          "reason": "package_mismatch",
+          "match_score": 0
+        },
+        {
+          "competitor_id": "596443288",
+          "seller": "AST",
+          "name": "Маска для лица золотая антивозрастная с змеиным ядом 2 шт",
+          "reason": "package_mismatch",
+          "match_score": 0
+        },
+        {
+          "competitor_id": "447137417",
+          "seller": "B-D-C",
+          "name": "Лифтинг маска тканевая для подбородка и лица подтягивающая",
+          "reason": "package_mismatch",
+          "match_score": 0
+        },
+        {
+          "competitor_id": "620809452",
+          "seller": "Kosmart",
+          "name": "Маски для лица тканевые набор 4 шт",
+          "reason": "package_mismatch",
+          "match_score": 0
+        },
+        {
+          "competitor_id": "159914321",
+          "seller": "Benvenuto",
+          "name": "Гидрогелевая косметическая лифтинг маска для шеи",
+          "reason": "package_mismatch",
+          "match_score": 0
+        },
+        {
+          "competitor_id": "169778836",
+          "seller": "Диталир-официальный дистрибьютер",
+          "name": "Маска пленка для лица гиалуроновая Hyaluron Elixir",
+          "reason": "package_mismatch",
+          "match_score": 0
+        },
+        {
+          "competitor_id": "672804308",
+          "seller": "ИП ГИА",
+          "name": "Реновационная маска 55+ с Q10 и коллагеном",
+          "reason": "package_mismatch",
+          "match_score": 0
+        },
+        {
+          "competitor_id": "173248383",
+          "seller": "Диталир",
+          "name": "Лифтинг маска для лица с коллагеном",
+          "reason": "package_mismatch",
+          "match_score": 0
+        },
+        {
+          "competitor_id": "567031240",
+          "seller": "B-D-C",
+          "name": "Лифтинг маска подтягивающая двойной подбородок контур лица",
+          "reason": "package_mismatch",
+          "match_score": 0
+        },
+        {
+          "competitor_id": "876841274",
+          "seller": "Hellash",
+          "name": "Лифтинг маски для подтяжки лица 5 штук",
+          "reason": "package_mismatch",
+          "match_score": 0
+        },
+        {
+          "competitor_id": "874904940",
+          "seller": "MAHBUB PROFESSIONAL",
+          "name": "Набор масок для лица омолаживающих",
+          "reason": "package_mismatch",
+          "match_score": 0
+        },
+        {
+          "competitor_id": "539729568",
+          "seller": "MIXIT",
+          "name": "Лифтинг маска для лица и глаз от отеков увлажняющая",
+          "reason": "package_mismatch",
+          "match_score": 0
+        }
+      ]
+    },
+    {
+      "platform": "ozon",
+      "articleKey": "lifting_maska_pdrn_75ml",
+      "status": "provider_not_configured",
+      "accepted": 0
+    },
+    {
+      "platform": "wb",
+      "articleKey": "retinait_syvorotka_05_30ml",
+      "status": "retained_previous",
+      "error": "HTTP 429: <!DOCTYPE html>\n<html>\n<head>\n<meta http-equiv=\"content-type\" content=\"text/html; charset=utf-8\">\n<title>429 Too Many Re"
+    },
+    {
+      "platform": "ozon",
+      "articleKey": "retinait_syvorotka_05_30ml",
+      "status": "provider_not_configured",
+      "accepted": 0
+    },
+    {
+      "platform": "wb",
+      "articleKey": "retinol_boost_krem_dlya_vek_30ml",
+      "status": "insufficient",
+      "discovered": 100,
+      "accepted": 0,
+      "rejected": [
+        {
+          "competitor_id": "815466628",
+          "seller": "Алтея",
+          "name": "Крем для век и кожи вокруг глаз с ретинолом",
+          "reason": "own_brand",
+          "match_score": 0.4944
+        },
+        {
+          "competitor_id": "1015940770",
+          "seller": "VEC",
+          "name": "Крем для век антивозрастной с пептидами",
+          "reason": "package_mismatch",
+          "match_score": 0.25
+        },
+        {
+          "competitor_id": "418135555",
+          "seller": "LIFECOSM",
+          "name": "Антивозрастной крем для лица с ретинолом от морщин 300ppm",
+          "reason": "package_mismatch",
+          "match_score": 0.25
+        },
+        {
+          "competitor_id": "106924103",
+          "seller": "WOW BOX",
+          "name": "Крем вокруг глаз от морщин",
+          "reason": "package_mismatch",
+          "match_score": 0.25
+        },
+        {
+          "competitor_id": "330936335",
+          "seller": "WOW BOX",
+          "name": "Крем вокруг глаз",
+          "reason": "package_mismatch",
+          "match_score": 0.25
+        },
+        {
+          "competitor_id": "1001022641",
+          "seller": "Амина",
+          "name": "Крем-стик для лица от морщин с ретинолом",
+          "reason": "package_mismatch",
+          "match_score": 0.1889
+        },
+        {
+          "competitor_id": "275066603",
+          "seller": "Integraaal",
+          "name": "Крем для лица антивозрастной Retinol + Vitamin C, 50 мл",
+          "reason": "package_mismatch",
+          "match_score": 0.1889
+        },
+        {
+          "competitor_id": "929841135",
+          "seller": "Очень хороший магазин",
+          "name": "Крем для век и лица антивозрастной увлажняющий от морщин",
+          "reason": "package_mismatch",
+          "match_score": 0.25
+        },
+        {
+          "competitor_id": "558296434",
+          "seller": "Профессиональная косметика Гельтек",
+          "name": "Крем для век с ретинолом нового поколения и пептидами",
+          "reason": "package_mismatch",
+          "match_score": 0.25
+        },
+        {
+          "competitor_id": "4803022",
+          "seller": "Wildberries",
+          "name": "Дневной крем для лица с ретинолом от 36 лет 50 мл",
+          "reason": "package_mismatch",
+          "match_score": 0.1889
+        },
+        {
+          "competitor_id": "416178469",
+          "seller": "Yar'Co",
+          "name": "Крем для век и кожи вокруг глаз антивозрастной 20 гр",
+          "reason": "package_mismatch",
+          "match_score": 0.4333
+        },
+        {
+          "competitor_id": "484405592",
+          "seller": "WOW BOX",
+          "name": "Крем вокруг глаз с роллером антивозрастной набор",
+          "reason": "package_mismatch",
+          "match_score": 0.3111
+        },
+        {
+          "competitor_id": "367960015",
+          "seller": "SADOER",
+          "name": "Крем для век и кожи вокруг глаз антивозрастной 20 гр",
+          "reason": "package_mismatch",
+          "match_score": 0.4333
+        },
+        {
+          "competitor_id": "19351614",
+          "seller": "Divage Group",
+          "name": "Крем для глаз с ретинолом от морщин SAFE RETINOL, 15 мл",
+          "reason": "package_mismatch",
+          "match_score": 0.25
+        },
+        {
+          "competitor_id": "742647827",
+          "seller": "GlowBelle Россия",
+          "name": "Крем для век и кожи вокруг глаз от морщин антивозрастной",
+          "reason": "package_mismatch",
+          "match_score": 0.4333
+        },
+        {
+          "competitor_id": "334255811",
+          "seller": "Yar'Co",
+          "name": "Крем для лица и век против морщин 50 гр",
+          "reason": "package_mismatch",
+          "match_score": 0.1889
+        },
+        {
+          "competitor_id": "1135716849",
+          "seller": "Месси Универмаг",
+          "name": "Крем c ретинолом для век антивозрастной для кожи и кожи вокр",
+          "reason": "package_mismatch",
+          "match_score": 0.3722
+        },
+        {
+          "competitor_id": "1136038016",
+          "seller": "MUBAPEIунивермаг",
+          "name": "Крем c ретинолом для век антивозрастной для кожи и кожи вокр",
+          "reason": "package_mismatch",
+          "match_score": 0.3722
+        },
+        {
+          "competitor_id": "1067772151",
+          "seller": "DWSунивермаг",
+          "name": "Крем c ретинолом для век антивозрастной для кожи и кожи 30мл",
+          "reason": "match_score_low",
+          "match_score": 0.6833
+        },
+        {
+          "competitor_id": "1290279806",
+          "seller": "Продавайте больше",
+          "name": "Крем c ретинолом для век антивозрастной для кожи и кожи вокр",
+          "reason": "package_mismatch",
+          "match_score": 0.3722
+        }
+      ]
+    },
+    {
+      "platform": "ozon",
+      "articleKey": "retinol_boost_krem_dlya_vek_30ml",
+      "status": "provider_not_configured",
+      "accepted": 0
+    },
+    {
+      "platform": "wb",
+      "articleKey": "shampun_badd_500ml",
+      "status": "insufficient",
+      "discovered": 100,
+      "accepted": 0,
+      "rejected": [
+        {
+          "competitor_id": "527720775",
+          "seller": "Компания АДК",
+          "name": "Косметический актив BADD (Bis 50%) для волос, 10г",
+          "reason": "package_mismatch",
+          "match_score": 0.25
+        },
+        {
+          "competitor_id": "342430413",
+          "seller": "ВИМАРТ",
+          "name": "Маска для волос восстанавливающая с кератином BADD",
+          "reason": "package_mismatch",
+          "match_score": 0.25
+        },
+        {
+          "competitor_id": "527734538",
+          "seller": "Компания АДК",
+          "name": "Косметический актив BADD (Bis 50%), 30г",
+          "reason": "package_mismatch",
+          "match_score": 0.25
+        },
+        {
+          "competitor_id": "332066688",
+          "seller": "chekasso",
+          "name": "Косметический актив BADD (Bis 50%) витамины для волос 30г",
+          "reason": "package_mismatch",
+          "match_score": 0.25
+        },
+        {
+          "competitor_id": "478953229",
+          "seller": "ST-Cosmetics",
+          "name": "BADD, 12 гр, косметический актив для волос",
+          "reason": "package_mismatch",
+          "match_score": 0.25
+        },
+        {
+          "competitor_id": "478957527",
+          "seller": "ST-Cosmetics",
+          "name": "BADD, 33 гр, косметический актив для волос",
+          "reason": "package_mismatch",
+          "match_score": 0.25
+        },
+        {
+          "competitor_id": "528504848",
+          "seller": "Компания АДК",
+          "name": "Косметический актив BADD (Bis 50%) для волос, 100г",
+          "reason": "package_mismatch",
+          "match_score": 0.25
+        },
+        {
+          "competitor_id": "478957528",
+          "seller": "ST-Cosmetics",
+          "name": "BADD, 110 гр, косметический актив для волос",
+          "reason": "package_mismatch",
+          "match_score": 0.25
+        },
+        {
+          "competitor_id": "451041482",
+          "seller": "chekasso",
+          "name": "BADD для восстановления окрашенных волос",
+          "reason": "package_mismatch",
+          "match_score": 0.25
+        },
+        {
+          "competitor_id": "259086389",
+          "seller": "ALQXA-Made in Home",
+          "name": "Косметический актив BADD (Bis 40%) для волос 30г сыворотка д…",
+          "reason": "package_mismatch",
+          "match_score": 0.25
+        },
+        {
+          "competitor_id": "527740368",
+          "seller": "Компания АДК",
+          "name": "Косметический актив BADD (Bis 50%) для волос, 50г",
+          "reason": "package_mismatch",
+          "match_score": 0.25
+        },
+        {
+          "competitor_id": "371875677",
+          "seller": "ALQXA-Made in Home",
+          "name": "Косметический актив BADD (Bis 40%) для волос 10г сыворотка д…",
+          "reason": "package_mismatch",
+          "match_score": 0.25
+        },
+        {
+          "competitor_id": "812351124",
+          "seller": "lian ruo",
+          "name": "BADD, 33 г, косметический актив для восстановления волос",
+          "reason": "package_mismatch",
+          "match_score": 0.25
+        },
+        {
+          "competitor_id": "237219942",
+          "seller": "B-Like",
+          "name": "Косметический актив BADD (Bis 50%) для волос, 30 мл",
+          "reason": "package_mismatch",
+          "match_score": 0.25
+        },
+        {
+          "competitor_id": "221809327",
+          "seller": "MOLEKULAR® -Beauty Lab made by Strelchenko N.",
+          "name": "Крем Флюид для Волос 18 в 1 Эссенция Несмываемая",
+          "reason": "package_mismatch",
+          "match_score": 0
+        },
+        {
+          "competitor_id": "281667682",
+          "seller": "DAKED",
+          "name": "Бальзам для волос профессиональный увлажняющий с кератином",
+          "reason": "package_mismatch",
+          "match_score": 0
+        },
+        {
+          "competitor_id": "533626677",
+          "seller": "Мануфактура красоты",
+          "name": "Бис-Аминопропил дигликоль дималеат (BADD) 20 гр",
+          "reason": "package_mismatch",
+          "match_score": 0.25
+        },
+        {
+          "competitor_id": "489568653",
+          "seller": "KoreaBeautyLuxe",
+          "name": "Восстанавливающий актив для волос BADD 10г",
+          "reason": "package_mismatch",
+          "match_score": 0.25
+        },
+        {
+          "competitor_id": "371136413",
+          "seller": "ВИМАРТ",
+          "name": "Маска для волос восстанавливающая с кератином BADD ReparAge",
+          "reason": "package_mismatch",
+          "match_score": 0.25
+        },
+        {
+          "competitor_id": "281676900",
+          "seller": "DAKED",
+          "name": "Крем-флюид для волос с термозащитой, несмываемый уход",
+          "reason": "package_mismatch",
+          "match_score": 0
+        }
+      ]
+    },
+    {
+      "platform": "ozon",
+      "articleKey": "shampun_badd_500ml",
+      "status": "provider_not_configured",
+      "accepted": 0
+    },
+    {
+      "platform": "wb",
+      "articleKey": "shampun_kudryavii_metod_500ml",
+      "status": "insufficient",
+      "discovered": 0,
+      "accepted": 0,
+      "rejected": []
+    },
+    {
+      "platform": "ozon",
+      "articleKey": "shampun_kudryavii_metod_500ml",
+      "status": "provider_not_configured",
+      "accepted": 0
+    },
+    {
+      "platform": "wb",
+      "articleKey": "spicul_gel_mask_75ml",
+      "status": "insufficient",
+      "discovered": 34,
+      "accepted": 0,
+      "rejected": [
+        {
+          "competitor_id": "964601018",
+          "seller": "Qeep - эффективные БАДы для красоты и здоровья",
+          "name": "Гелевая маска для лица со спикулами 3000 ppm и микроиглами",
+          "reason": "package_mismatch",
+          "match_score": 0.65
+        },
+        {
+          "competitor_id": "1288259919",
+          "seller": "Лучший торговый магазин",
+          "name": "Гелевая маска для лица со спикулами 3000 ppm и микроиглами",
+          "reason": "package_mismatch",
+          "match_score": 0.65
+        },
+        {
+          "competitor_id": "1284133828",
+          "seller": "Магазин подлинных товаров China-Russia Yimai",
+          "name": "Гелевая маска для лица со спикулами 3000 ppm и микроиглами",
+          "reason": "package_mismatch",
+          "match_score": 0.65
+        },
+        {
+          "competitor_id": "1284131520",
+          "seller": "Магазин подлинных товаров China-Russia Yimai",
+          "name": "Гелевая маска для лица со спикулами 3000 ppm и микроиглами",
+          "reason": "package_mismatch",
+          "match_score": 0.65
+        },
+        {
+          "competitor_id": "1193933046",
+          "seller": "星旭",
+          "name": "Гелевая маска для лица со спикулами 3000 ppm и микроиглами",
+          "reason": "seller_missing",
+          "match_score": 0.65
+        },
+        {
+          "competitor_id": "1220326087",
+          "seller": "靓仔国际贸易",
+          "name": "Гелевая маска для лица со спикулами 3000 ppm и микроиглами",
+          "reason": "seller_missing",
+          "match_score": 0.65
+        },
+        {
+          "competitor_id": "1296268924",
+          "seller": "Чжуоян Торговля Международный Выбор Маркет",
+          "name": "Гелевая маска для лица со спикулами 3000 ppm и микроиглами",
+          "reason": "package_mismatch",
+          "match_score": 0.65
+        },
+        {
+          "competitor_id": "1288707026",
+          "seller": "俄罗斯大品牌批发超市",
+          "name": "Гелевая маска для лица со спикулами 3000 ppm и микроиглами",
+          "reason": "seller_missing",
+          "match_score": 0.65
+        },
+        {
+          "competitor_id": "1224615238",
+          "seller": "guojimaoyi",
+          "name": "Гелевая маска для лица со спикулами 3000 ppm и микроиглами",
+          "reason": "package_mismatch",
+          "match_score": 0.65
+        },
+        {
+          "competitor_id": "1297100352",
+          "seller": "中俄贸易",
+          "name": "Гелевая маска для лица со спикулами 3000 ppm и микроиглами",
+          "reason": "seller_missing",
+          "match_score": 0.65
+        },
+        {
+          "competitor_id": "1296949261",
+          "seller": "中俄贸易",
+          "name": "Гелевая маска для лица со спикулами 3000 ppm и микроиглами",
+          "reason": "seller_missing",
+          "match_score": 0.65
+        },
+        {
+          "competitor_id": "1296268976",
+          "seller": "Чжуоян Торговля Международный Выбор Маркет",
+          "name": "Гелевая маска для лица со спикулами 3000 ppm и микроиглами",
+          "reason": "package_mismatch",
+          "match_score": 0.65
+        },
+        {
+          "competitor_id": "1294590807",
+          "seller": "Кайшэн Оптовый Склад Товаров Премиум",
+          "name": "Гелевая маска для лица со спикулами 3000 ppm и микроиглами",
+          "reason": "package_mismatch",
+          "match_score": 0.65
+        },
+        {
+          "competitor_id": "1274309239",
+          "seller": "余干县段战销售有限公司",
+          "name": "Гелевая маска для лица со спикулами 3000 ppm и микроиглами",
+          "reason": "seller_missing",
+          "match_score": 0.65
+        },
+        {
+          "competitor_id": "1274286041",
+          "seller": "余干县段战销售有限公司",
+          "name": "Гелевая маска для лица со спикулами 3000 ppm и микроиглами",
+          "reason": "seller_missing",
+          "match_score": 0.65
+        },
+        {
+          "competitor_id": "1274285280",
+          "seller": "余干县段战销售有限公司",
+          "name": "Гелевая маска для лица со спикулами 3000 ppm и микроиглами",
+          "reason": "seller_missing",
+          "match_score": 0.65
+        },
+        {
+          "competitor_id": "1224609104",
+          "seller": "фирменный магазин",
+          "name": "Гелевая маска для лица со спикулами 3000 ppm и микроиглами",
+          "reason": "package_mismatch",
+          "match_score": 0.65
+        },
+        {
+          "competitor_id": "1235478005",
+          "seller": "Международный торговый центр Синьюй",
+          "name": "Гелевая маска для лица со спикулами 3000 ppm и микроиглами",
+          "reason": "package_mismatch",
+          "match_score": 0.65
+        },
+        {
+          "competitor_id": "1234468172",
+          "seller": "Международный центр эксклюзивных товаров Тасин",
+          "name": "Гелевая маска для лица со спикулами 3000 ppm и микроиглами",
+          "reason": "package_mismatch",
+          "match_score": 0.65
+        },
+        {
+          "competitor_id": "1224635216",
+          "seller": "фирменный магазин",
+          "name": "Гелевая маска для лица со спикулами 3000 ppm и микроиглами",
+          "reason": "package_mismatch",
+          "match_score": 0.65
+        }
+      ]
+    },
+    {
+      "platform": "ozon",
+      "articleKey": "spicul_gel_mask_75ml",
+      "status": "provider_not_configured",
+      "accepted": 0
+    },
+    {
+      "platform": "wb",
+      "articleKey": "spiculboost_30ml",
+      "status": "insufficient",
+      "discovered": 100,
+      "accepted": 0,
+      "rejected": [
+        {
+          "competitor_id": "836993641",
+          "seller": "IOFFE",
+          "name": "Сыворотка для лица с микроиглами от морщин с ретинолом",
+          "reason": "package_mismatch",
+          "match_score": 0.4792
+        },
+        {
+          "competitor_id": "783252637",
+          "seller": "ShineSecrets",
+          "name": "Бустер сыворотка для лица с микроиглами и коллагеном 50 мл",
+          "reason": "package_mismatch",
+          "match_score": 0.6167
+        },
+        {
+          "competitor_id": "884243650",
+          "seller": "Qeep - эффективные БАДы для красоты и здоровья",
+          "name": "Сыворотка для лица с микроиглами увлажняющая против морщин",
+          "reason": "package_mismatch",
+          "match_score": 0.4792
+        },
+        {
+          "competitor_id": "1126918807",
+          "seller": "Диталир-официальный дистрибьютер",
+          "name": "Сыворотка для лица с микроиглами COLLAGEN + Spicule",
+          "reason": "package_mismatch",
+          "match_score": 0.4792
+        },
+        {
+          "competitor_id": "783412446",
+          "seller": "ShineSecrets",
+          "name": "Бустер сыворотка с микроиглами и антиоксидантами 50 мл",
+          "reason": "package_mismatch",
+          "match_score": 0.3417
+        },
+        {
+          "competitor_id": "1060276823",
+          "seller": "Официальный поставщик Белорусская косметика",
+          "name": "Сыворотка для лица с микроиглами COLLAGEN + Spicule",
+          "reason": "package_mismatch",
+          "match_score": 0.4792
+        },
+        {
+          "competitor_id": "1054997219",
+          "seller": "I like korean cosmetics",
+          "name": "Сыворотка для лица с микроиглами и коллагеном Collagen Reedl…",
+          "reason": "package_mismatch",
+          "match_score": 0.6167
+        },
+        {
+          "competitor_id": "946362630",
+          "seller": "LIFECOSM",
+          "name": "VT Сыворотка для лица Collagen Reedle Shot 300, 50 мл",
+          "reason": "package_mismatch",
+          "match_score": 0.3417
+        },
+        {
+          "competitor_id": "890744845",
+          "seller": "Яблоко",
+          "name": "Сыворотка-микроиглы для лица Collagen Booster, 30 мл",
+          "reason": "match_score_low",
+          "match_score": 0.5917
+        },
+        {
+          "competitor_id": "984984622",
+          "seller": "IOFFE",
+          "name": "Сыворотка для лица с микроиглами и ретинолом от морщин набор",
+          "reason": "package_mismatch",
+          "match_score": 0.4792
+        },
+        {
+          "competitor_id": "955574343",
+          "seller": "Диталир",
+          "name": "Сыворотка-микроиглы для лица Collagen booster",
+          "reason": "package_mismatch",
+          "match_score": 0.3417
+        },
+        {
+          "competitor_id": "418154992",
+          "seller": "LUNIFERA",
+          "name": "Сыворотка с микроиглами и коллагеном в стиках 10 штук",
+          "reason": "package_mismatch",
+          "match_score": 0.4792
+        },
+        {
+          "competitor_id": "858885461",
+          "seller": "I like korean cosmetics",
+          "name": "Ночная сыворотка для лица с микроиглами и коллагеном Collage…",
+          "reason": "package_mismatch",
+          "match_score": 0.6167
+        },
+        {
+          "competitor_id": "1275417570",
+          "seller": "Косметический бутик",
+          "name": "Сыворотка с микроиглами PEPTID + Spicule",
+          "reason": "package_mismatch",
+          "match_score": 0.3417
+        },
+        {
+          "competitor_id": "775648309",
+          "seller": "Торговый Дом Ниссей",
+          "name": "Бустер-сыворотка с микроиглами и коллагеном 10 шт. * 2 мл",
+          "reason": "package_mismatch",
+          "match_score": 0.4792
+        },
+        {
+          "competitor_id": "1251509387",
+          "seller": "ВИТЭКС - завод-производитель",
+          "name": "Сыворотка микроиглы для лица с коллагеном и гиалуроном,30 мл",
+          "reason": "match_score_low",
+          "match_score": 0.7292
+        },
+        {
+          "competitor_id": "893182332",
+          "seller": "2BB - to be beauty",
+          "name": "Сыворотка с коллагеном для лица COLLAGEN REEDLE SHOT 100",
+          "reason": "package_mismatch",
+          "match_score": 0.4792
+        },
+        {
+          "competitor_id": "858852234",
+          "seller": "I like korean cosmetics",
+          "name": "Сыворотка для лица с микроиглами и коллагеном Collagen Reedl…",
+          "reason": "package_mismatch",
+          "match_score": 0.6167
+        },
+        {
+          "competitor_id": "1241851523",
+          "seller": "Magic market",
+          "name": "Лифтинг-сыворотка с микроиглами витамин С и коллаген",
+          "reason": "package_mismatch",
+          "match_score": 0.3417
+        },
+        {
+          "competitor_id": "367366945",
+          "seller": "KORAS TRADE",
+          "name": "Антивозрастная сыворотка с микроиглами и коллагеном",
+          "reason": "package_mismatch",
+          "match_score": 0.4792
+        }
+      ]
+    },
+    {
+      "platform": "ozon",
+      "articleKey": "spiculboost_30ml",
+      "status": "provider_not_configured",
+      "accepted": 0
+    }
+  ]
 }

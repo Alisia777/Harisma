@@ -2571,11 +2571,11 @@
       }
       primaryAction.textContent = repricerSyncBusy
         ? (repricerSyncState.label || 'Обновление идёт…')
-        : (repricerActive ? 'Получить актуальные цены' : 'Обновить данные');
+        : (repricerActive ? 'Обновить всё' : 'Обновить данные');
       primaryAction.title = repricerActive
         ? (repricerSyncBusy
           ? 'Сервер уже собирает цены, рекламу и OOS. Повторное нажатие не требуется.'
-          : 'Запустить защищённое обновление цен, рекламы и OOS WB/Ozon')
+          : 'Обновить единым пакетом цены продавца и клиента, комиссию, рекламу, остатки/OOS и конкурентов WB/Ozon')
         : 'Загрузить свежие командные данные';
     }
     var userSource = document.querySelector('.portal-auth-user');

@@ -54,10 +54,19 @@ jobs:
             fi
           done
 
+      - name: Hydrate SKU registry and previous feedback history
+        env:
+          ALTEA_SUPABASE_URL: ${{ secrets.SUPABASE_URL || vars.SUPABASE_URL || 'https://iyckwryrucqrxwlowxow.supabase.co' }}
+          ALTEA_SUPABASE_KEY: ${{ secrets.SUPABASE_SERVICE_ROLE_KEY || secrets.ALTEA_SUPABASE_SERVICE_ROLE_KEY }}
+        run: >-
+          node scripts/portal-snapshot-pull.js
+          --output-dir data
+          --snapshot skus,wb_feedbacks_summary
+
       - name: Collect current WB reviews and questions
         env:
           ALTEA_WB_FEEDBACKS_TOKEN: ${{ secrets.ALTEA_WB_FEEDBACKS_TOKEN || secrets.ALTEA_WB_PROMOTION_TOKEN || secrets.ALTEA_WB_API_TOKEN }}
-          ALTEA_WB_API_TOKEN: ${{ secrets.ALTEA_WB_API_TOKEN }}
+          ALTEA_WB_FEEDBACKS_SERVICE_TOKEN: ${{ secrets.ALTEA_WB_FEEDBACKS_SERVICE_TOKEN }}
         run: >-
           node scripts/portal-wb-feedback-sync.js sync
           --input-dir data
@@ -65,6 +74,11 @@ jobs:
           --output-dir data
           --from '${{ steps.api_window.outputs.from }}'
           --to '${{ steps.api_window.outputs.to }}'
+
+      - name: Verify current-state contract
+        run: |
+          node scripts/portal-wb-feedback-sync.selftest.js
+          node -e "const p=require('./data/wb_feedbacks_summary.json');if(p?.currentState?.basis!=='current_unanswered_list')throw new Error('current unanswered list is missing');if(!p?.currentState?.observedAt)throw new Error('current state timestamp is missing');"
 
       - name: Publish refreshed feedback snapshot
         env:
@@ -82,5 +96,5 @@ jobs:
         with:
           name: wb-feedbacks-live-${{ github.run_id }}
           path: data/wb_feedbacks_summary.json
-          if-no-files-found: warn
+          if-no-files-found: error
           retention-days: 14

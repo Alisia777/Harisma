@@ -75,7 +75,7 @@ async function run() {
     'the same price-refresh job must rebuild the immutable upload plan'
   );
   assert(
-    workflow.includes('--snapshot repricer_price_observation_history,repricer_market_observation_history,repricer_competitor_prices,repricer_live_prices'),
+    workflow.includes('--snapshot repricer_price_observation_history,repricer_market_observation_history,repricer_competitor_prices,repricer_competitor_history,repricer_live_prices'),
     'price refresh must hydrate previous price, demand and competitor observations before collecting the next price'
   );
   assert(
@@ -87,8 +87,17 @@ async function run() {
     'price refresh must persist daily demand and price observations for seasonality and learned elasticity'
   );
   assert(
-    workflow.includes('repricer_live_signals,repricer_price_observation_history,repricer_market_observation_history,canonical_repricer'),
-    'the atomic price bundle must publish price and market history together with canonical recommendations'
+    workflow.includes('--canonical data/canonical_repricer.json'),
+    'the unified refresh must append daily margin, DRR and stock economics for 3/7/14/30 outcome learning'
+  );
+  assert(
+    workflow.includes('node scripts/build-repricer-competitor-history.js')
+      && workflow.includes('--retention-days 180'),
+    'price refresh must append a 180-day trusted competitor snapshot history'
+  );
+  assert(
+    workflow.includes('repricer_live_signals,repricer_price_observation_history,repricer_market_observation_history,repricer_competitor_prices,repricer_competitor_history,repricer_calendar_factors,repricer_learning_report,repricer_decision_center,canonical_repricer'),
+    'the atomic price bundle must publish prices, market history, competitors, learning and ROP decisions together'
   );
   assert(
     workflow.includes('--commit-manifest repricer_price_sync_manifest'),
@@ -159,6 +168,36 @@ async function run() {
           source: 'current_live_prices'
         }]
       }],
+      atomicSyncMarker: bundleId
+    },
+    repricer_market_observation_history: {
+      ...readBundleFixture('repricer_market_observation_history.json'),
+      generatedAt,
+      atomicSyncMarker: bundleId
+    },
+    repricer_competitor_prices: {
+      ...readBundleFixture('repricer_competitor_prices.json'),
+      generatedAt,
+      atomicSyncMarker: bundleId
+    },
+    repricer_competitor_history: {
+      ...readBundleFixture('repricer_competitor_history.json'),
+      generatedAt,
+      atomicSyncMarker: bundleId
+    },
+    repricer_calendar_factors: {
+      ...readBundleFixture('repricer_calendar_factors.json'),
+      generatedAt,
+      atomicSyncMarker: bundleId
+    },
+    repricer_learning_report: {
+      ...readBundleFixture('repricer_learning_report.json'),
+      generatedAt,
+      atomicSyncMarker: bundleId
+    },
+    repricer_decision_center: {
+      ...readBundleFixture('repricer_decision_center.json'),
+      generatedAt,
       atomicSyncMarker: bundleId
     },
     canonical_repricer: {
@@ -466,6 +505,33 @@ async function run() {
       ['1. Скачать рабочий Excel', '2. Загрузить заполненный Excel'],
       'simple mode must expose one clear Excel download/upload workflow'
     );
+    const freshnessText = await page.locator('.repricer-live-price-sync-card').innerText();
+    for (const sourceLabel of [
+      'Цена продавца:',
+      'Цена клиента / СПП:',
+      'Комиссия:',
+      'Реклама:',
+      'Остатки:',
+      'OOS:',
+      'Конкуренты:'
+    ]) {
+      assert(
+        freshnessText.includes(sourceLabel),
+        `unified refresh card must show freshness for ${sourceLabel}`
+      );
+    }
+    const decisionText = await page.locator('.repricer-decision-center-card').innerText();
+    for (const label of ['Ниже маржи', 'Резкое изменение', 'Вывод', 'Нет данных', '3д:', '7д:', '14д:', '30д:', 'Контроль результата 3 / 7 / 14 / 30 дней']) {
+      assert(decisionText.includes(label), `ROP decision center must expose ${label}`);
+    }
+    assert(
+      decisionText.includes('Конкуренты не учтены в цене'),
+      'each price decision must explain why insufficient competitor history did not influence the price'
+    );
+    const marginEditorText = await page.locator('[data-repricer-margin-policy-editor]').innerText();
+    for (const label of ['Проставить группе', 'Копировать WB → Ozon', 'Копировать Ozon → WB']) {
+      assert(marginEditorText.includes(label), `bulk margin editor must expose ${label}`);
+    }
 
     const baselineStamp = await page.evaluate(() => {
       window.__alteaAppState.team.accessToken = 'selftest-user-session';
@@ -477,8 +543,8 @@ async function run() {
     await topbarPriceAction.waitFor({ state: 'visible', timeout: 30000 });
     assert.strictEqual(
       (await topbarPriceAction.innerText()).trim(),
-      'Получить актуальные цены',
-      'repricer topbar must expose the real WB/Ozon refresh action'
+      'Обновить всё',
+      'repricer topbar must expose the complete atomic WB/Ozon refresh action'
     );
     assert.strictEqual(
       await topbarPriceAction.getAttribute('data-premium-proxy'),

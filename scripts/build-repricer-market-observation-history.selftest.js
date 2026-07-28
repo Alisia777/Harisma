@@ -54,6 +54,24 @@ const second = buildMarketHistory({
       }
     }
   },
+  canonical: {
+    freshness_reference_date: '2026-07-27',
+    rows: [{
+      platform: 'wb',
+      article_key: 'sku_1',
+      facts: {
+        seller_price: 970,
+        client_price: 921.5,
+        stock: 31
+      },
+      economics: {
+        internal_advertising_pct: 0.08
+      },
+      recommendation: {
+        current_margin_pct: 0.27
+      }
+    }]
+  },
   asOf: '2026-07-27'
 });
 assert.strictEqual(second.summary.observations, 3);
@@ -61,5 +79,10 @@ assert.strictEqual(second.rows[0].observations[1].units, 7);
 assert.strictEqual(second.rows[0].observations[1].seller_price, 990);
 assert.strictEqual(second.rows[0].observations[2].units, 8);
 assert.strictEqual(second.rows[0].observations[2].seller_price, 970);
+assert.strictEqual(second.rows[0].observations[2].drr_pct, 0.08);
+assert.strictEqual(second.rows[0].observations[2].margin_pct, 0.27);
+assert.strictEqual(second.rows[0].observations[2].margin_rub, 261.9);
+assert.strictEqual(second.rows[0].observations[2].stock, 31);
+assert.strictEqual(second.summary.economics_observations, 1);
 
-console.log('[repricer-market-observation-history-selftest] OK: daily demand and seller/client prices accumulate without losing existing observations');
+console.log('[repricer-market-observation-history-selftest] OK: daily demand, seller/client prices, margin, DRR and stock accumulate without losing existing observations');

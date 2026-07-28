@@ -3,8 +3,10 @@
 
 const assert = require('assert');
 const {
+  buildCompetitorHistoryMap,
   buildCompetitorPriceMap,
   buildCrossPlatformPriceMap,
+  competitorHistorySignal,
   competitorPriceSignal,
   crossPlatformPriceSignal,
   estimateOwnPriceElasticity,
@@ -125,6 +127,41 @@ assert.strictEqual(competitor.rejected.unit, 1);
 assert.strictEqual(competitor.rejected.match, 1);
 assert(competitor.suggested_influence_pct < 0);
 
+const competitorHistoryPayload = {
+  series: [{
+    platform: 'wb',
+    article_key: 'sku_1',
+    observations: Array.from({ length: 15 }, (_, index) => ({
+      date: new Date(Date.parse('2026-07-13T00:00:00Z') + index * 86400000)
+        .toISOString().slice(0, 10),
+      trusted: true,
+      status: 'trusted',
+      offer_count: 3,
+      benchmark_client_price: 800 + index * 9
+    }))
+  }]
+};
+const competitorHistoryMap = buildCompetitorHistoryMap(competitorHistoryPayload);
+const competitorHistory = competitorHistorySignal(
+  competitorHistoryMap.get('wb|sku1'),
+  '2026-07-27',
+  policy,
+  competitor
+);
+assert.strictEqual(competitorHistory.usable, true);
+assert.strictEqual(competitorHistory.trusted_days, 15);
+assert.strictEqual(competitorHistory.calendar_span_days, 14);
+assert(competitorHistory.suggested_influence_pct > 0);
+const historyWithoutCurrent = competitorHistorySignal(
+  competitorHistoryMap.get('wb|sku1'),
+  '2026-07-27',
+  policy,
+  { usable: false }
+);
+assert.strictEqual(historyWithoutCurrent.usable, false);
+assert.strictEqual(historyWithoutCurrent.suggested_influence_pct, 0);
+assert.strictEqual(historyWithoutCurrent.reason, 'competitor_current_snapshot_required');
+
 const weakCompetitor = competitorPriceSignal({
   observed_at: '2026-07-27',
   offers: competitorPayload.rows[0].offers.slice(0, 2)
@@ -243,7 +280,8 @@ const integrated = buildDemandIntelligence({
     currentClientPrice: 1100,
     daily: integrationHistory
   },
-  competitorRecord: competitorPayload.rows[0]
+  competitorRecord: competitorPayload.rows[0],
+  competitorHistoryRecord: competitorHistoryMap.get('wb|sku1')
 });
 assert.strictEqual(integrated.eligible, true);
 assert.strictEqual(integrated.action, 'decrease');
@@ -252,6 +290,7 @@ assert(integrated.step_pct > 0 && integrated.step_pct <= 0.02);
 assert.strictEqual(integrated.review_required, true);
 assert.strictEqual(integrated.auto_apply, false);
 assert(integrated.reasons.includes('demand_competitor_gap_price_review'));
+assert.strictEqual(integrated.market_intelligence.competitor_history.usable, true);
 
 const integratedWeak = buildDemandIntelligence({
   economicsPolicy: integratedEconomicsPolicy,
@@ -278,4 +317,4 @@ const integratedWeak = buildDemandIntelligence({
 assert.strictEqual(integratedWeak.action, 'keep');
 assert.strictEqual(integratedWeak.market_only_decision, false);
 
-console.log('[repricer-market-intelligence-selftest] OK: seasonality, learned elasticity, robust competitor median and cross-platform influence are confidence-gated, capped and ROP-only');
+console.log('[repricer-market-intelligence-selftest] OK: seasonality, learned elasticity, current competitors, 180d competitor history and cross-platform influence are confidence-gated, capped and ROP-only');

@@ -99,7 +99,7 @@ async function run() {
   try {
     await page.goto(url, { waitUntil: 'domcontentloaded', timeout: 90000 });
     await page.waitForFunction(() => window.__alteaAppState?.boot?.dataReady && Array.isArray(window.__alteaAppState?.skus), null, { timeout: 90000 });
-    await page.evaluate(() => window.setView('repricer'));
+    await openView(page, 'repricer');
     await page.waitForFunction(
       () => window.__alteaAppState?.boot?.lazyReady?.repricer
         && Array.isArray(window.__alteaAppState?.canonicalRepricer?.rows)
@@ -207,7 +207,7 @@ async function run() {
     assert.strictEqual(approvedStatus.lifecycleKey, proposed, JSON.stringify(approvedStatus));
     assert.strictEqual(approvedStatus.taskStatus, 'done', JSON.stringify(approvedStatus));
 
-    await page.evaluate(() => window.setView('repricer'));
+    await openView(page, 'repricer');
     await page.waitForFunction(
       () => window.__alteaAppState?.boot?.lazyReady?.repricer
         && typeof window.buildRepricerRows === 'function'
@@ -218,9 +218,46 @@ async function run() {
     await page.waitForSelector('[data-repricer-price-sync]', { state: 'attached', timeout: 30000 });
     assert.strictEqual(
       await page.locator('[data-repricer-price-sync]').first().innerText(),
-      'Получить актуальные цены',
+      'Обновить всё',
       'repricer must expose the protected live-price refresh button'
     );
+    await page.waitForSelector('.repricer-decision-center-card', { timeout: 30000 });
+    const centerTarget = await page.locator('[data-repricer-decision-action="approve"]').first().evaluate((button) => {
+      const articleKey = button.dataset.articleKey;
+      const platform = button.dataset.platform;
+      const row = (window.__alteaAppState.repricerDecisionCenter?.rows || []).find((item) => (
+        item.articleKey === articleKey && item.platform === platform
+      ));
+      return {
+        articleKey,
+        platform,
+        targetPrice: Number(row?.price?.sellerAfter),
+        priceRecommendation: row?.decisionKinds?.priceRecommendation === true
+      };
+    });
+    assert(centerTarget.priceRecommendation, JSON.stringify(centerTarget));
+    assert(Number.isFinite(centerTarget.targetPrice) && centerTarget.targetPrice > 0, JSON.stringify(centerTarget));
+    await page.locator(
+      `[data-repricer-decision-action="approve"][data-article-key="${centerTarget.articleKey}"][data-platform="${centerTarget.platform}"]`
+    ).first().click();
+    await page.waitForFunction(({ articleKey, platform, targetPrice }) => {
+      const decision = (window.__alteaAppState.storage.skuDecisionApprovals || []).find((item) => (
+        item.articleKey === articleKey
+        && item.platform === platform
+        && Number(item.proposedValue) === targetPrice
+        && item.status === 'applied'
+      ));
+      const override = (window.__alteaAppState.storage.repricerOverrides || []).find((item) => (
+        item.articleKey === articleKey
+        && item.platform === platform
+        && Number(item.forcePrice) === targetPrice
+        && item.approvalStatus === 'approved'
+      ));
+      return Boolean(decision && override);
+    }, centerTarget, { timeout: 30000 });
+    await page.waitForFunction(({ articleKey, platform }) => !document.querySelector(
+      `[data-repricer-decision-action="approve"][data-article-key="${articleKey}"][data-platform="${platform}"]`
+    ), centerTarget, { timeout: 30000 });
     const priceTarget = await page.evaluate(() => {
       const rows = window.buildRepricerRows();
       for (const row of rows) {
@@ -577,7 +614,7 @@ async function run() {
       || /\[task-workflow-resilient\].*persist/i.test(message)
     ));
     assert.strictEqual(unexpectedErrors.length, 0, `browser errors: ${unexpectedErrors.join(' | ')}`);
-    console.log('[sku-rop-approval-workflow-selftest] OK: status, price and margin-policy tasks, concurrent deduplication and ROP-only application');
+    console.log('[sku-rop-approval-workflow-selftest] OK: decision center, status, price and margin-policy tasks, concurrent deduplication and ROP-only application');
   } finally {
     await browser.close();
     await new Promise((resolve) => server.close(resolve));

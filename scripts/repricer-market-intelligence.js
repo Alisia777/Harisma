@@ -1,6 +1,11 @@
 #!/usr/bin/env node
 'use strict';
 
+const {
+  calendarDateFactors,
+  calendarRegressionFeatures
+} = require('./repricer-calendar-intelligence');
+
 function finiteNumber(...values) {
   for (const value of values) {
     if (value === '' || value === null || value === undefined || typeof value === 'boolean') continue;
@@ -118,6 +123,23 @@ function marketIntelligencePolicy(economicsPolicy = {}, platform = '') {
       minimumMatchScore: clamp(finiteNumber(competitors.minimumMatchScore) ?? 0.85, 0.5, 1),
       triggerGapPct: clamp(positiveNumber(competitors.triggerGapPct) ?? 0.10, 0.03, 0.5),
       maxInfluencePct: clamp(positiveNumber(competitors.maxInfluencePct) ?? 0.02, 0, 0.04),
+      historyMinimumTrustedDays: Math.max(
+        7,
+        finiteNumber(competitors.historyMinimumTrustedDays) ?? 7
+      ),
+      historyMinimumSpanDays: Math.max(
+        14,
+        finiteNumber(competitors.historyMinimumSpanDays) ?? 14
+      ),
+      historyMaxAgeDays: Math.max(
+        1,
+        finiteNumber(competitors.historyMaxAgeDays) ?? 3
+      ),
+      historyMaxInfluencePct: clamp(
+        positiveNumber(competitors.historyMaxInfluencePct) ?? 0.005,
+        0,
+        0.01
+      ),
       outlierRatioLow: clamp(positiveNumber(competitors.outlierRatioLow) ?? 0.5, 0.1, 1),
       outlierRatioHigh: clamp(positiveNumber(competitors.outlierRatioHigh) ?? 2, 1, 5)
     },
@@ -126,6 +148,15 @@ function marketIntelligencePolicy(economicsPolicy = {}, platform = '') {
       maxAgeDays: Math.max(0, finiteNumber(crossPlatform.maxAgeDays) ?? 2),
       triggerGapPct: clamp(positiveNumber(crossPlatform.triggerGapPct) ?? 0.10, 0.03, 0.5),
       maxInfluencePct: clamp(positiveNumber(crossPlatform.maxInfluencePct) ?? 0.01, 0, 0.03)
+    },
+    calendarEvents: {
+      enabled: root?.calendarEvents?.enabled !== false,
+      holidayDemandPct: clamp(finiteNumber(root?.calendarEvents?.holidayDemandPct) ?? 0.08, -0.3, 0.3),
+      salaryWindowDemandPct: clamp(finiteNumber(root?.calendarEvents?.salaryWindowDemandPct) ?? 0.05, -0.3, 0.3),
+      salaryDayRanges: Array.isArray(root?.calendarEvents?.salaryDayRanges)
+        ? root.calendarEvents.salaryDayRanges
+        : [[5, 10], [20, 25]],
+      holidays: Array.isArray(root?.calendarEvents?.holidays) ? root.calendarEvents.holidays : []
     }
   };
 }
@@ -137,7 +168,14 @@ function normalizeDailyHistory(sourceRow = {}, additionalHistory = null) {
       const date = isoDate(item[0]);
       const units = finiteNumber(item[2], item[1]);
       const price = positiveNumber(item[5]);
-      if (date) rows.push({ date, units, price, clientPrice: price, source: 'compact_daily_history' });
+      if (date) rows.push({
+        date,
+        units,
+        price,
+        clientPrice: price,
+        source: 'compact_daily_history',
+        calendar: calendarDateFactors(date)
+      });
       return;
     }
     const date = isoDate(item?.date || item?.valueDate || item?.observed_at || item?.observedAt);
@@ -157,12 +195,20 @@ function normalizeDailyHistory(sourceRow = {}, additionalHistory = null) {
     );
     const clientPrice = positiveNumber(item?.client_price, item?.clientPrice, sellerPrice);
     if (!date) return;
+    const calendar = calendarDateFactors(date, item);
     rows.push({
       date,
       units: units !== null && units >= 0 ? units : null,
       price: sellerPrice,
       clientPrice,
-      source: String(item?.source || '').trim()
+      source: String(item?.source || '').trim(),
+      promoActive: calendar.promotion,
+      promotionStart: calendar.promotionStart,
+      promotionEnd: calendar.promotionEnd,
+      advertisingChange: calendar.advertisingChange,
+      advertisingStart: calendar.advertisingStart,
+      advertisingEnd: calendar.advertisingEnd,
+      calendar
     });
   };
   const direct = Array.isArray(sourceRow?.daily)
@@ -183,7 +229,14 @@ function normalizeDailyHistory(sourceRow = {}, additionalHistory = null) {
         units: row.units !== null ? row.units : (current.units ?? null),
         price: row.price ?? current.price ?? null,
         clientPrice: row.clientPrice ?? current.clientPrice ?? row.price ?? current.price ?? null,
-        source: row.source || current.source || ''
+        source: row.source || current.source || '',
+        promoActive: row.promoActive ?? current.promoActive ?? false,
+        promotionStart: row.promotionStart ?? current.promotionStart ?? false,
+        promotionEnd: row.promotionEnd ?? current.promotionEnd ?? false,
+        advertisingChange: row.advertisingChange ?? current.advertisingChange ?? false,
+        advertisingStart: row.advertisingStart ?? current.advertisingStart ?? false,
+        advertisingEnd: row.advertisingEnd ?? current.advertisingEnd ?? false,
+        calendar: row.calendar || current.calendar || calendarDateFactors(row.date, row)
       });
     });
   return [...byDate.values()].sort((left, right) => left.date.localeCompare(right.date));
@@ -191,6 +244,7 @@ function normalizeDailyHistory(sourceRow = {}, additionalHistory = null) {
 
 function seasonalitySignal(sourceRow = {}, snapshotAsOf = '', policy = {}, additionalHistory = null) {
   const config = policy.seasonality || {};
+  const calendarPolicy = policy.calendarEvents || {};
   const daily = normalizeDailyHistory(sourceRow, additionalHistory)
     .filter((row) => row.units !== null && row.units >= 0);
   const latestDate = daily[daily.length - 1]?.date || '';
@@ -265,10 +319,21 @@ function seasonalitySignal(sourceRow = {}, snapshotAsOf = '', policy = {}, addit
   });
   const latestStamp = Date.parse(`${latestDate}T00:00:00Z`);
   const forwardWeights = [7, 6, 5, 4, 3, 2, 1];
+  const forwardCalendar = forwardWeights.map((weight, index) => {
+    const next = new Date(latestStamp + (index + 1) * 86400000);
+    return {
+      weight,
+      factors: calendarDateFactors(next.toISOString().slice(0, 10), {}, calendarPolicy)
+    };
+  });
   const weightedWeekdayFactor = forwardWeights.reduce((sum, weight, index) => {
     const next = new Date(latestStamp + (index + 1) * 86400000);
     return sum + weekdayFactors[next.getUTCDay()] * weight;
   }, 0) / forwardWeights.reduce((sum, weight) => sum + weight, 0);
+  const weightedCalendarFactor = forwardCalendar.reduce(
+    (sum, item) => sum + item.factors.demandFactor * item.weight,
+    0
+  ) / forwardWeights.reduce((sum, weight) => sum + weight, 0);
 
   let annualFactor = 1;
   let annualEvidenceDays = 0;
@@ -286,7 +351,7 @@ function seasonalitySignal(sourceRow = {}, snapshotAsOf = '', policy = {}, addit
     }
   }
   const index = clamp(
-    weightedWeekdayFactor * annualFactor,
+    weightedWeekdayFactor * annualFactor * weightedCalendarFactor,
     config.minIndex ?? 0.8,
     config.maxIndex ?? 1.2
   );
@@ -295,6 +360,10 @@ function seasonalitySignal(sourceRow = {}, snapshotAsOf = '', policy = {}, addit
     index: rounded(index, 4),
     next_7d_daily_units_factor: rounded(index, 4),
     weekday_factor: rounded(weightedWeekdayFactor, 4),
+    calendar_factor: rounded(weightedCalendarFactor, 4),
+    calendar_events: forwardCalendar
+      .filter((item) => item.factors.reasons.length)
+      .map((item) => ({ date: item.factors.date, reasons: item.factors.reasons })),
     annual_factor: rounded(annualFactor, 4),
     annual_evidence_days: annualEvidenceDays,
     reason: index >= (config.peakDecreaseBlockIndex || 1.12)
@@ -360,13 +429,20 @@ function estimateOwnPriceElasticity(
   snapshotAsOf = ''
 ) {
   const config = policy.elasticity || {};
+  const calendarPolicy = policy.calendarEvents || {};
   const fallback = clamp(
     finiteNumber(fallbackElasticity, config.fallbackValue) ?? -0.9,
     config.minValue ?? -2.5,
     config.maxValue ?? -0.2
   );
-  const daily = normalizeDailyHistory(sourceRow, additionalHistory)
+  const normalizedDaily = normalizeDailyHistory(sourceRow, additionalHistory)
     .filter((row) => row.units !== null && row.units >= 0 && positiveNumber(row.clientPrice, row.price) !== null);
+  const excludedExceptionalDays = normalizedDaily.filter((row) => (
+    calendarDateFactors(row.date, row, calendarPolicy).exceptional
+  )).length;
+  const daily = normalizedDaily.filter((row) => (
+    !calendarDateFactors(row.date, row, calendarPolicy).exceptional
+  ));
   const historyAsOf = daily[daily.length - 1]?.date || '';
   const historyAgeDays = snapshotAsOf ? dateAgeDays(historyAsOf, snapshotAsOf) : null;
   const calendarSpanDays = daily.length
@@ -390,8 +466,11 @@ function estimateOwnPriceElasticity(
     fallback_value: rounded(fallback, 4),
     source: 'policy_or_role_fallback',
     confidence: 'fallback',
-    model: 'log_log_price_time_weekday_v1',
+    model: 'log_log_price_time_weekday_calendar_v2',
     observations: daily.length,
+    raw_observations: normalizedDaily.length,
+    exceptional_days_excluded: excludedExceptionalDays,
+    calendar_controls: ['weekday', 'ru_holiday', 'salary_window', 'promotion', 'advertising_change'],
     history_as_of: historyAsOf,
     history_age_days: historyAgeDays,
     calendar_span_days: calendarSpanDays,
@@ -435,7 +514,8 @@ function estimateOwnPriceElasticity(
       1,
       Math.log(price),
       normalizedTime,
-      ...Array.from({ length: 6 }, (_, weekdayIndex) => (weekday === weekdayIndex ? 1 : 0))
+      ...Array.from({ length: 6 }, (_, weekdayIndex) => (weekday === weekdayIndex ? 1 : 0)),
+      ...calendarRegressionFeatures(calendarDateFactors(row.date, row, calendarPolicy))
     ];
   });
   const target = daily.map((row) => Math.log(clamp(row.units, lowerUnits, upperUnits) + 0.25));
@@ -490,6 +570,142 @@ function buildCompetitorPriceMap(payload = {}) {
     if (!map.has(normalizedKey)) map.set(normalizedKey, value);
   });
   return map;
+}
+
+function buildCompetitorHistoryMap(payload = {}) {
+  const map = new Map();
+  const seriesRows = Array.isArray(payload?.series) ? payload.series : [];
+  seriesRows.forEach((row) => {
+    const platform = String(row?.platform || '').trim().toLowerCase();
+    const articleKey = String(row?.article_key || row?.articleKey || row?.article || '').trim();
+    const normalized = normalizeKey(row?.normalized_article_key || articleKey);
+    if (!platform || !normalized) return;
+    const value = {
+      ...row,
+      platform,
+      article_key: articleKey,
+      normalized_article_key: normalized,
+      observations: Array.isArray(row?.observations) ? row.observations : []
+    };
+    map.set(`${platform}|${normalized}|${articleKey.toLowerCase()}`, value);
+    if (!map.has(`${platform}|${normalized}`)) map.set(`${platform}|${normalized}`, value);
+  });
+  if (seriesRows.length) return map;
+  const grouped = new Map();
+  (Array.isArray(payload?.observations) ? payload.observations : []).forEach((row) => {
+    const platform = String(row?.platform || '').trim().toLowerCase();
+    const articleKey = String(row?.article_key || row?.articleKey || row?.article || '').trim();
+    const normalized = normalizeKey(row?.normalized_article_key || articleKey);
+    if (!platform || !normalized) return;
+    const key = `${platform}|${normalized}`;
+    const current = grouped.get(key) || {
+      platform,
+      article_key: articleKey,
+      normalized_article_key: normalized,
+      observations: []
+    };
+    current.observations.push(row);
+    grouped.set(key, current);
+  });
+  grouped.forEach((row, key) => {
+    row.observations.sort((left, right) => String(left.date || '').localeCompare(String(right.date || '')));
+    map.set(key, row);
+    map.set(`${key}|${String(row.article_key || '').toLowerCase()}`, row);
+  });
+  return map;
+}
+
+function competitorHistorySignal(
+  record = null,
+  snapshotAsOf = '',
+  policy = {},
+  currentCompetitor = {}
+) {
+  const config = policy.competitors || {};
+  const observations = (Array.isArray(record?.observations) ? record.observations : [])
+    .map((row) => ({
+      date: isoDate(row?.date || row?.observed_at || row?.observedAt),
+      trusted: row?.trusted === true || row?.status === 'trusted',
+      benchmark: positiveNumber(
+        row?.benchmark_client_price,
+        row?.benchmarkClientPrice,
+        row?.median_client_price,
+        row?.medianClientPrice
+      ),
+      offerCount: finiteNumber(row?.offer_count, row?.offerCount)
+    }))
+    .filter((row) => row.date && row.trusted && row.benchmark !== null)
+    .sort((left, right) => left.date.localeCompare(right.date));
+  const byDate = new Map();
+  observations.forEach((row) => byDate.set(row.date, row));
+  const trusted = [...byDate.values()].sort((left, right) => left.date.localeCompare(right.date));
+  const first = trusted[0] || null;
+  const latest = trusted[trusted.length - 1] || null;
+  const spanDays = first && latest
+    ? Math.round((Date.parse(`${latest.date}T00:00:00Z`) - Date.parse(`${first.date}T00:00:00Z`)) / 86400000)
+    : 0;
+  const ageDays = latest ? dateAgeDays(latest.date, snapshotAsOf) : null;
+  const minimumDays = config.historyMinimumTrustedDays ?? 7;
+  const minimumSpan = config.historyMinimumSpanDays ?? 14;
+  const maxAge = config.historyMaxAgeDays ?? 3;
+  const structurallyUsable = Boolean(
+    policy.enabled
+    && config.enabled
+    && trusted.length >= minimumDays
+    && spanDays >= minimumSpan
+    && ageDays !== null
+    && ageDays >= 0
+    && ageDays <= maxAge
+  );
+  const usable = Boolean(structurallyUsable && currentCompetitor?.usable);
+  const comparisonWindow = Math.max(1, Math.min(14, Math.floor(trusted.length / 2)));
+  const recent = trusted.slice(-comparisonWindow);
+  const baseline = trusted.slice(0, comparisonWindow);
+  const recentMedian = median(recent.map((row) => row.benchmark));
+  const baselineMedian = median(baseline.map((row) => row.benchmark));
+  const trendPct = recentMedian !== null && baselineMedian !== null && baselineMedian > 0
+    ? recentMedian / baselineMedian - 1
+    : null;
+  const benchmarkMedian = median(trusted.map((row) => row.benchmark));
+  const deviations = benchmarkMedian === null
+    ? []
+    : trusted.map((row) => Math.abs(row.benchmark / benchmarkMedian - 1));
+  const volatilityPct = median(deviations);
+  const maxInfluence = config.historyMaxInfluencePct ?? 0.005;
+  const influence = usable && trendPct !== null && Math.abs(trendPct) >= 0.03
+    ? Math.sign(trendPct) * Math.min(maxInfluence, Math.max(0, Math.abs(trendPct) - 0.03) * 0.10)
+    : 0;
+  return {
+    usable,
+    structurally_usable: structurallyUsable,
+    confidence: usable
+      ? (trusted.length >= 21 && spanDays >= 45 ? 'high' : 'medium')
+      : 'insufficient',
+    trusted_days: trusted.length,
+    calendar_span_days: spanDays,
+    first_date: first?.date || '',
+    last_date: latest?.date || '',
+    history_age_days: ageDays,
+    baseline_benchmark_client_price: baselineMedian === null ? null : rounded(baselineMedian, 2),
+    recent_benchmark_client_price: recentMedian === null ? null : rounded(recentMedian, 2),
+    trend_pct: trendPct === null ? null : rounded(trendPct, 6),
+    median_volatility_pct: volatilityPct === null ? null : rounded(volatilityPct, 6),
+    suggested_influence_pct: rounded(influence, 6),
+    current_snapshot_required: true,
+    reason: !structurallyUsable
+      ? (!latest
+        ? 'competitor_history_missing'
+        : (ageDays > maxAge
+          ? 'competitor_history_stale'
+          : (trusted.length < minimumDays
+            ? 'competitor_history_days_insufficient'
+            : 'competitor_history_span_insufficient')))
+      : (!currentCompetitor?.usable
+        ? 'competitor_current_snapshot_required'
+        : (Math.abs(trendPct || 0) < 0.03
+          ? 'competitor_history_trend_inside_tolerance'
+          : 'competitor_history_trend_actionable'))
+  };
 }
 
 function competitorPriceSignal(record = null, ownClientPrice = null, snapshotAsOf = '', policy = {}) {
@@ -705,8 +921,10 @@ function marketStepAdjustment({
 }
 
 module.exports = {
+  buildCompetitorHistoryMap,
   buildCompetitorPriceMap,
   buildCrossPlatformPriceMap,
+  competitorHistorySignal,
   competitorPriceSignal,
   crossPlatformPriceSignal,
   dateAgeDays,

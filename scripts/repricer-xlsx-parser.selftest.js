@@ -95,13 +95,13 @@ assert(fs.statSync(vendor).size > 500_000, 'browser XLSX reader asset is missing
 for (const file of ['index.html', 'live-index.html', 'docs/index.html']) {
   const html = fs.readFileSync(path.join(ROOT, file), 'utf8');
   assert(html.includes('xlsx.full.min.js?v=0.18.5'), `${file} must load the XLSX reader`);
-  assert(html.includes('app-core-08.js?v=20260728marketintelligence4'), `${file} must bust the repricer loader cache`);
+  assert(html.includes('app-core-08.js?v=20260728smartrepricer3'), `${file} must bust the repricer loader cache`);
 }
 assert(source.includes('accept=".xlsx,.xls'), 'repricer file input must expose XLSX');
 
 const premium = fs.readFileSync(path.join(ROOT, 'portal-premium-presentation.js'), 'utf8');
 assert(premium.includes("targetId === 'repricerPriceSync'"), 'topbar repricer action proxy is missing');
-assert(premium.includes("'Получить актуальные цены'"), 'topbar repricer price label is missing');
+assert(premium.includes("'Обновить всё'"), 'topbar unified repricer refresh label is missing');
 assert(premium.includes("targetId === 'syncStatusBadge'"), 'team database topbar action is missing');
 assert(premium.includes("'requestRepricerPriceSync'"), 'topbar must call the visible price-sync action directly');
 assert(premium.includes("'Синхронизирую…'"), 'topbar sync action must expose visible progress');

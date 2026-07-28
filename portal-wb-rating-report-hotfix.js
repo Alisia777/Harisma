@@ -2,7 +2,7 @@
   if (window.__ALTEA_WB_RATING_REPORT_HOTFIX__) return;
   window.__ALTEA_WB_RATING_REPORT_HOTFIX__ = true;
 
-  const VERSION = '20260728ratingfresh1';
+  const VERSION = '20260728ratingfresh4';
   const STYLE_ID = 'altea-wb-rating-report-hotfix-style';
   const auxCache = {
     trends: null,
@@ -24,6 +24,9 @@
     statsPeriod: 'all',
     statsMetric: 'all'
   };
+  const OPEN_STATE_MAX_AGE_MS = 3 * 60 * 60 * 1000;
+  let auxRevision = 0;
+  let modelCache = { signature: '', value: null };
   const RATING_RENDER_LIMIT = 40;
   const RATING_SEARCH_DEBOUNCE_MS = 180;
   let ratingSearchTimer = 0;
@@ -289,7 +292,7 @@
       .rating-inline-search { flex:1 1 260px; min-width:220px; height:36px; border:1px solid rgba(216,176,102,.2); border-radius:999px; background:rgba(0,0,0,.32); color:#fff7e6; padding:0 12px; font:inherit; font-size:12px; outline:none; }
       .rating-inline-search::placeholder { color:rgba(255,247,230,.52); }
       .rating-inline-search:focus { border-color:rgba(216,176,102,.62); box-shadow:0 0 0 3px rgba(216,176,102,.12); }
-      .rating-work-table { max-height:640px; overflow:auto; }
+      #view-wb-rating .rating-work-table { max-height:none !important; overflow-x:auto !important; overflow-y:visible !important; overscroll-behavior-inline:contain; scrollbar-gutter:stable; -webkit-overflow-scrolling:touch; touch-action:pan-x pan-y; }
       .rating-work-table table { width:100%; min-width:2060px; border-collapse:separate; border-spacing:0; table-layout:fixed; }
       .rating-work-table thead th { position:sticky; top:0; z-index:4; padding:10px 12px; border-bottom:1px solid var(--line); background:rgba(12,8,7,.96); color:#f8e9c7; font-size:11px; text-align:left; text-transform:uppercase; letter-spacing:0; }
       .rating-work-table td { padding:10px 12px; border-bottom:1px solid rgba(255,255,255,.06); vertical-align:top; overflow:hidden; background:linear-gradient(90deg,hsl(var(--pf-hue,205) 74% 34% / var(--pf-row-fill,.025)),rgba(255,255,255,.012)); }
@@ -414,6 +417,8 @@
     if (!tasks.length || auxCache.pending) return;
     auxCache.pending = Promise.allSettled(tasks).finally(() => {
       auxCache.pending = null;
+      auxRevision += 1;
+      modelCache = { signature: '', value: null };
       const activeView = appState().activeView || '';
       if (activeView === 'wb-rating') {
         if (typeof rerenderCurrentView === 'function') rerenderCurrentView();
@@ -662,6 +667,7 @@
   }
 
   function gameLabel(row) {
+    if (row.openStateTrusted === false) return 'Нужен свежий срез';
     if (row.unanswered > 0 || row.unansweredQuestions > 0) return 'Нужен ответ';
     if (row.p1.low > 0 || row.p7.negativePct >= 0.12) return 'Негатив';
     if (row.ratingDelta1 <= -0.03) return 'Падение';
@@ -671,6 +677,7 @@
   }
 
   function rowComment(row) {
+    if (row.openStateTrusted === false) return 'Текущий хвост не подтверждён свежим API-срезом';
     if (row.unanswered > 0) return `Ответить: ${fmtInt(row.unanswered)}`;
     if (row.p1.low > 0 && row.p1.reviews > 0) return `Негатив вчера: ${fmtInt(row.p1.low)} из ${fmtInt(row.p1.reviews)}`;
     if (row.ratingDelta1 <= -0.04) return `Просадка: ${fmtNum(row.ratingDelta1, 2)}`;
@@ -681,9 +688,23 @@
 
   function buildModel(payload) {
     const st = appState();
+    const signature = [
+      payload?.generatedAt || '',
+      payload?.currentState?.observedAt || '',
+      payload?.cards?.length || 0,
+      payload?.history?.length || 0,
+      st.skus?.length || 0,
+      auxRevision
+    ].join('|');
+    if (modelCache.signature === signature && modelCache.value) return modelCache.value;
     const snapshots = getSnapshots(payload);
     const active = snapshots[snapshots.length - 1] || null;
     if (!active) return null;
+    const openState = payload?.currentState || {};
+    const openObservedAt = Date.parse(openState.observedAt || payload?.generatedAt || '');
+    const openStateAgeMs = Number.isFinite(openObservedAt) ? Math.max(0, Date.now() - openObservedAt) : Infinity;
+    const openStateTrusted = openState.basis === 'current_unanswered_list'
+      && openStateAgeMs <= OPEN_STATE_MAX_AGE_MS;
 
     const baseline7 = snapshotAtOrBefore(snapshots, addDays(active.date, -7), active.date);
     const baseline3 = snapshotAtOrBefore(snapshots, addDays(active.date, -3), active.date);
@@ -717,7 +738,7 @@
       const revenue = revenueModel(key, leaderboard, skuMap, wbFunnel);
       const rating = num(card.avgRating || card.ratingTrendLatestRating);
       const ratingDelta1 = rating - num(base1?.avgRating || base1?.ratingTrendLatestRating || rating);
-      const unanswered = num(card.unansweredFeedbackCount);
+      const unanswered = openStateTrusted ? num(card.unansweredFeedbackCount) : 0;
       const negativeTotalPct = num(card.lowRatingCount) / Math.max(1, num(card.feedbackCount));
       const gameScore = Math.max(1, Math.round(
         rating * 13
@@ -737,7 +758,8 @@
         lowRatingCount: num(card.lowRatingCount),
         unanswered,
         questionCount: num(card.questionCount),
-        unansweredQuestions: num(card.unansweredQuestionCount),
+        unansweredQuestions: openStateTrusted ? num(card.unansweredQuestionCount) : 0,
+        openStateTrusted,
         lastFeedbackDate: isoDate(card.lastFeedbackDate || active.date),
         lastQuestionDate: isoDate(card.lastQuestionDate || active.date),
         p7,
@@ -792,17 +814,32 @@
       ratingSum: 0, ratingCount: 0, leaders: 0, risks: 0
     });
 
-    totals.cardAvgRating = totals.ratingCount ? totals.ratingSum / totals.ratingCount : null;
+    totals.avgCardRating = totals.ratingCount ? totals.ratingSum / totals.ratingCount : null;
+    totals.cardAvgRating = totals.avgCardRating;
     const sellerRating = payload?.summary?.counters?.sellerRating?.valuation
       ?? active?.summary?.counters?.sellerRating?.valuation;
     totals.sellerRating = hasNumber(sellerRating) ? Number(sellerRating) : null;
     totals.avgRating = totals.sellerRating ?? totals.cardAvgRating;
-    totals.ratingSource = totals.sellerRating !== null ? 'WB API · кабинет продавца' : 'среднее по карточкам снимка';
+    totals.ratingSource = totals.sellerRating !== null
+      ? 'WB API · кабинет продавца'
+      : 'нет доступа к точному рейтингу кабинета';
+    totals.newFeedbackRating = hasNumber(payload?.summary?.feedbacks?.avgRating)
+      ? Number(payload.summary.feedbacks.avgRating)
+      : null;
+    totals.openStateTrusted = openStateTrusted;
+    totals.openStateAgeMs = openStateAgeMs;
+    totals.openStateObservedAt = openState.observedAt || payload?.generatedAt || '';
+    if (openStateTrusted && hasNumber(openState.feedbacksUnansweredVerified)) {
+      totals.unanswered = Number(openState.feedbacksUnansweredVerified);
+    }
+    if (openStateTrusted && hasNumber(openState.questionsUnansweredVerified)) {
+      totals.unansweredQuestions = Number(openState.questionsUnansweredVerified);
+    }
     totals.neg7 = totals.reviews7 ? totals.low7 / totals.reviews7 : null;
     totals.neg3 = totals.reviews3 ? totals.low3 / totals.reviews3 : null;
     totals.neg1 = totals.reviews1 ? totals.low1 / totals.reviews1 : null;
 
-    return {
+    const model = {
       snapshots,
       active,
       baseline7,
@@ -815,6 +852,8 @@
       wbWindow7: platformWindow('wb', 7),
       ozonWindow7: platformWindow('ozon', 7)
     };
+    modelCache = { signature, value: model };
+    return model;
   }
 
   function rowIndex(model) {
@@ -1533,7 +1572,7 @@
     const level = options.empty ? 'danger' : planFactLevel(ratio);
     const side = options.side || (platform === 'ozon' ? 'Ozon' : 'WB');
     return `
-      <button class="sku-plan-platform-card rating-planfact-card level-${level} ${options.empty ? 'is-empty' : ''}" type="button" data-rating-platform="${esc(platform)}" style="${planFactStyle(platform, ratio)}">
+      <button class="sku-plan-platform-card rating-planfact-card level-${level} ${options.empty ? 'is-empty' : ''} ${esc(options.className || '')}" type="button" data-rating-platform="${esc(platform)}" style="${planFactStyle(platform, ratio)}">
         <span class="sku-plan-platform-card__top">
           <strong>${esc(label)}</strong>
           <em>${esc(side)}</em>
@@ -1547,6 +1586,46 @@
         </span>
       </button>
     `;
+  }
+
+  function openStatePresentation(model) {
+    const trusted = model?.totals?.openStateTrusted === true;
+    const feedbacks = num(model?.totals?.unanswered);
+    const questions = num(model?.totals?.unansweredQuestions);
+    const total = feedbacks + questions;
+    return {
+      trusted,
+      feedbacks,
+      questions,
+      total,
+      value: trusted ? fmtInt(total) : '—',
+      badge: trusted
+        ? (total ? simpleBadge('нужно закрыть', 'down') : simpleBadge('проверено: закрыто', 'up'))
+        : simpleBadge('нужен свежий API-срез', 'flat'),
+      note: trusted
+        ? `хвост API свежий · ${fmtInt(feedbacks)} отзывов / ${fmtInt(questions)} вопросов`
+        : 'хвост API устарел · старый срез не считается текущим хвостом'
+    };
+  }
+
+  function renderWbAccountRatingMetric(model, label = 'WB рейтинг ЛК') {
+    const exact = model?.totals?.sellerRating;
+    const windowRating = model?.totals?.newFeedbackRating;
+    const exactAvailable = hasNumber(exact);
+    return renderMetricCard(
+      label,
+      exactAvailable ? fmtNum(exact, 2) : 'нет доступа',
+      exactAvailable ? simpleBadge('WB API · ЛК', 'up') : simpleBadge('нужен сервисный токен', 'flat'),
+      exactAvailable
+        ? 'точный рейтинг продавца из WB API'
+        : `не подменяем средним карточек · новые отзывы 30д ${fmtNum(windowRating, 2)}`,
+      {
+        platform: 'wb',
+        ratio: exactAvailable ? Number(exact) / 5 : 0.18,
+        empty: !exactAvailable,
+        className: exactAvailable ? '' : 'is-rating-unavailable'
+      }
+    );
   }
 
   function renderPlatformPanel(kind, model) {
@@ -1566,12 +1645,7 @@
       renderMetricCard('История рейтинга', 'нет срезов', simpleBadge('подключить', 'flat'), 'после источника будет как WB', { empty: true }),
       renderMetricCard('Статус блока', 'место готово', simpleBadge('видно отдельно', 'up'), 'Ozon больше не спрятан')
     ].join('') : [
-      renderMetricCard(
-        'Рейтинг продавца WB',
-        fmtNum(latestRating, 2),
-        model.totals.sellerRating !== null ? simpleBadge('WB API', 'up') : ratingTrendBadge(latestRating, prevRating),
-        `${model.totals.ratingSource} · ${fmtInt(model.totals.leaders)} карточек 4,8+`
-      ),
+      renderWbAccountRatingMetric(model),
       renderMetricCard('Отзывы 7 дней', fmtInt(model.totals.reviews7), trendBadge(model.totals.reviews1, reviewDailyBase), `вчера ${fmtInt(model.totals.reviews1)}`),
       renderMetricCard('Негатив 7 дней', fmtPct(model.totals.neg7), trendBadge(model.totals.neg1, model.totals.neg3, { lowerIsBetter: true, percent: true, threshold: 0.01 }), `${fmtInt(model.totals.low7)} негативных отзывов`),
       renderMetricCard('Вопросы всего', fmtInt(model.totals.questions), trendBadge(model.totals.questions1, questionDailyBase), `+${fmtInt(model.totals.questions7)} за 7 дней`),
@@ -2430,18 +2504,21 @@
 
   function renderStructuredPlatforms(model) {
     const ozon = buildOzonModel(model);
-    const latestRating = model.totals.avgRating;
-    const prevRating = avgSnapshotRating(model.baseline1);
     const reviewDailyBase = model.totals.reviews3 ? model.totals.reviews3 / 3 : null;
     const questionDailyBase = model.totals.questions3 ? model.totals.questions3 / 3 : null;
     const ozonQuestionDailyBase = ozon.totals.questions3 ? ozon.totals.questions3 / 3 : null;
-    const unansweredTotal = model.totals.unanswered + model.totals.unansweredQuestions;
+    const openState = openStatePresentation(model);
     const cards = [
-      renderMetricCard('WB рейтинг продавца', fmtNum(latestRating, 2), model.totals.sellerRating !== null ? simpleBadge('WB API', 'up') : ratingTrendBadge(latestRating, prevRating), model.totals.ratingSource, { platform: 'wb', ratio: hasNumber(latestRating) ? Number(latestRating) / 5 : 0.5 }),
+      renderWbAccountRatingMetric(model),
       renderMetricCard('WB отзывы 7д', fmtInt(model.totals.reviews7), trendBadge(model.totals.reviews1, reviewDailyBase), `вчера ${fmtInt(model.totals.reviews1)}`, { platform: 'wb' }),
       renderMetricCard('WB негатив 7д', fmtPct(model.totals.neg7), trendBadge(model.totals.neg1, model.totals.neg3, { lowerIsBetter: true, percent: true, threshold: 0.01 }), `${fmtInt(model.totals.low7)} негативных`, { platform: 'wb', ratio: model.totals.neg7 === null ? 0.5 : Math.max(0.08, 1 - Number(model.totals.neg7)) }),
       renderMetricCard('WB вопросы', fmtInt(model.totals.questions), trendBadge(model.totals.questions1, questionDailyBase), `+${fmtInt(model.totals.questions7)} за 7 дней`, { platform: 'wb' }),
-      renderMetricCard('WB без ответа', fmtInt(unansweredTotal), unansweredTotal ? simpleBadge('закрыть', 'down') : simpleBadge('ок', 'up'), `${fmtInt(model.totals.unanswered)} отзывов / ${fmtInt(model.totals.unansweredQuestions)} вопросов`, { platform: 'wb', ratio: unansweredTotal ? 0.35 : 1 }),
+      renderMetricCard('WB без ответа', openState.value, openState.badge, openState.note, {
+        platform: 'wb',
+        ratio: openState.trusted ? (openState.total ? 0.35 : 1) : 0.18,
+        empty: !openState.trusted,
+        className: 'is-current-tail-state'
+      }),
       renderMetricCard('Ozon выручка 7д', fmtMoney(ozon.totals.revenue7), simpleBadge(`${fmtInt(ozon.totals.units7)} шт.`, 'up'), `вчера ${fmtMoney(ozon.totals.revenue1)}`, { platform: 'ozon', ratio: ozon.totals.revenue7 ? 1 : 0.1 }),
       renderMetricCard('Ozon вопросы 7д', fmtInt(ozon.totals.questions7), trendBadge(ozon.totals.questions1, ozonQuestionDailyBase), `${fmtInt(ozon.totals.questions)} всего`, { platform: 'ozon' }),
       renderMetricCard('Ozon без ответа', fmtInt(ozon.totals.unansweredQuestions), ozon.totals.unansweredQuestions ? simpleBadge('закрыть', 'down') : simpleBadge('ок', 'up'), 'вопросы', { platform: 'ozon', ratio: ozon.totals.unansweredQuestions ? 0.35 : 1 }),
@@ -2909,16 +2986,22 @@
       ['reviews', renderMetricCard(`Отзывы ${periodData.label}`, fmtInt(periodData.reviews), trendBadge(model.totals.reviews1, reviewDailyBase), `выручка ${fmtMoney(periodData.revenue)}`)],
       ['negative', renderMetricCard(`Негатив ${periodData.label}`, fmtPct(periodData.neg), trendBadge(model.totals.neg1, model.totals.neg3, { lowerIsBetter: true, percent: true, threshold: 0.01 }), `${fmtInt(periodData.low)} негативных отзывов`, { ratio: periodData.neg === null ? 0.5 : Math.max(0.08, 1 - Number(periodData.neg)) })],
       ['questions', renderMetricCard(`Вопросы ${periodData.label}`, fmtInt(periodData.questions), trendBadge(model.totals.questions1, questionDailyBase), `${fmtInt(model.totals.questions)} всего в базе`)],
-      ['unanswered', renderMetricCard('Без ответа сейчас', `${fmtInt(model.totals.unanswered)} отзывов / ${fmtInt(model.totals.unansweredQuestions)} вопросов`, (model.totals.unanswered + model.totals.unansweredQuestions) ? simpleBadge('закрыть', 'down') : simpleBadge('ок', 'up'))],
+      ['unanswered', (() => {
+        const openState = openStatePresentation(model);
+        return renderMetricCard('Без ответа сейчас', openState.value, openState.badge, openState.note, { empty: !openState.trusted });
+      })()],
       ['history', renderMetricCard('История карточек', `${fmtInt(model.snapshots.length)} срезов`, simpleBadge(`${fmtInt(model.rows.length)} карточек`, 'flat'), `срез ${fullDate(model.active.date)}`)],
-      ['rating', renderMetricCard('Рейтинг продавца WB', fmtNum(model.totals.avgRating, 2), model.totals.sellerRating !== null ? simpleBadge('WB API', 'up') : ratingTrendBadge(model.totals.avgRating, avgSnapshotRating(model.baseline1)), model.totals.ratingSource)]
+      ['rating', renderWbAccountRatingMetric(model)]
     ] : [
       ['reviews', renderMetricCard('Отзывы 7 / 3 / вчера', `${fmtInt(model.totals.reviews7)} / ${fmtInt(model.totals.reviews3)} / ${fmtInt(model.totals.reviews1)}`)],
       ['negative', renderMetricCard('Негатив 7 / 3 / вчера', `${fmtPct(model.totals.neg7)} / ${fmtPct(model.totals.neg3)} / ${fmtPct(model.totals.neg1)}`, trendBadge(model.totals.neg1, model.totals.neg3, { lowerIsBetter: true, percent: true, threshold: 0.01 }))],
       ['questions', renderMetricCard('Вопросы 7 / 3 / вчера', `${fmtInt(model.totals.questions7)} / ${fmtInt(model.totals.questions3)} / ${fmtInt(model.totals.questions1)}`)],
-      ['unanswered', renderMetricCard('Без ответа', `${fmtInt(model.totals.unanswered)} отзывов / ${fmtInt(model.totals.unansweredQuestions)} вопросов`, (model.totals.unanswered + model.totals.unansweredQuestions) ? simpleBadge('нужно закрыть', 'down') : simpleBadge('закрыто', 'up'))],
+      ['unanswered', (() => {
+        const openState = openStatePresentation(model);
+        return renderMetricCard('Без ответа', openState.value, openState.badge, openState.note, { empty: !openState.trusted });
+      })()],
       ['history', renderMetricCard('История', `${fmtInt(model.snapshots.length)} срезов`, '', `${fmtInt(model.rows.length)} карточек`)],
-      ['rating', renderMetricCard('Рейтинг продавца WB', fmtNum(model.totals.avgRating, 2), model.totals.sellerRating !== null ? simpleBadge('WB API', 'up') : ratingTrendBadge(model.totals.avgRating, avgSnapshotRating(model.baseline1)), model.totals.ratingSource)]
+      ['rating', renderWbAccountRatingMetric(model)]
     ];
     return cards
       .filter(([id]) => metric === 'all' || metric === id)
@@ -3025,6 +3108,7 @@
   }
 
   function ratingHowItWorks(row) {
+    if (row?.openStateTrusted === false) return 'Старый срез не считается текущим хвостом. Обновите WB API.';
     const unanswered = num(row?.unanswered) + num(row?.unansweredQuestions);
     if (unanswered > 0) return `Нужно ответить: ${fmtInt(unanswered)} хвостов по отзывам/вопросам.`;
     if (num(row?.p1?.low) > 0) return `Есть свежий негатив: ${fmtInt(row.p1.low)} низких оценок за последний день.`;
@@ -3162,11 +3246,18 @@
         ratingSearchTimer = 0;
         workbenchState.search = input.value || '';
         workbenchState.rowLimit = RATING_RENDER_LIMIT;
+        const pageScroller = document.querySelector('.altea-premium-shell-content');
+        const pageTop = pageScroller?.scrollTop || 0;
+        const horizontal = [...root.querySelectorAll('.rating-work-table')].map((table) => table.scrollLeft || 0);
         renderWbCardRatingStructured(rootId);
         window.requestAnimationFrame(() => {
+          if (pageScroller) pageScroller.scrollTop = pageTop;
+          document.getElementById(rootId)?.querySelectorAll('.rating-work-table').forEach((table, index) => {
+            table.scrollLeft = horizontal[index] || 0;
+          });
           const nextInput = document.getElementById(rootId)?.querySelector('[data-rating-search]');
           if (!nextInput) return;
-          nextInput.focus();
+          nextInput.focus({ preventScroll: true });
           const length = nextInput.value.length;
           if (typeof nextInput.setSelectionRange === 'function') nextInput.setSelectionRange(length, length);
         });
@@ -3183,6 +3274,32 @@
         window.clearTimeout(ratingSearchTimer);
         applySearch();
       });
+    });
+    root.querySelector('[data-rating-refresh]')?.addEventListener('click', async (event) => {
+      const button = event.currentTarget;
+      const original = button.textContent;
+      button.disabled = true;
+      button.textContent = 'Обновляем…';
+      try {
+        if (typeof window.__alteaResetPortalSnapshotState === 'function') window.__alteaResetPortalSnapshotState();
+        if (typeof window.__ALTEA_REFRESH_SUPABASE_SNAPSHOTS__ === 'function') {
+          await window.__ALTEA_REFRESH_SUPABASE_SNAPSHOTS__({
+            rerender: true,
+            reason: 'manual',
+            view: 'wb-rating',
+            keys: ['wb_feedbacks_summary']
+          });
+        } else if (typeof ensureViewData === 'function') {
+          await ensureViewData('wb-rating');
+        }
+        modelCache = { signature: '', value: null };
+        renderWbCardRatingStructured(rootId);
+      } catch (error) {
+        console.warn('[wb-rating-refresh]', error);
+      } finally {
+        button.disabled = false;
+        button.textContent = original || 'Обновить данные';
+      }
     });
     root.querySelectorAll('[data-rating-stats-period]').forEach((control) => {
       control.addEventListener('click', () => {
@@ -3217,6 +3334,15 @@
   function renderWbCardRatingStructured(rootId = 'view-wb-rating') {
     const root = document.getElementById(rootId);
     if (!root) return;
+    const activeSearch = root.querySelector('[data-rating-search]:focus');
+    const searchFocus = activeSearch
+      ? {
+          start: Number.isFinite(activeSearch.selectionStart) ? activeSearch.selectionStart : activeSearch.value.length,
+          end: Number.isFinite(activeSearch.selectionEnd) ? activeSearch.selectionEnd : activeSearch.value.length,
+          direction: activeSearch.selectionDirection || 'none'
+        }
+      : null;
+    if (activeSearch) workbenchState.search = activeSearch.value || '';
     ensureStyles();
     ensureStructuredStyles();
     ensureAuxData();
@@ -3237,10 +3363,12 @@
       <div class="section-title">
         <div>
           <h2>Рейтинг карточек WB/Ozon</h2>
-          <p>Крупные блоки по площадкам: рейтинги, отзывы, вопросы, история и рост/падение.</p>
+          <p>Рейтинги, отзывы, вопросы и история. Текущий хвост WB обновляется автоматически дважды в час; кнопка перечитывает опубликованный срез без перезагрузки.</p>
         </div>
         <div class="badge-stack">
+          <button type="button" class="quick-chip" data-rating-refresh>Проверить новый срез</button>
           ${chip(`WB ${fullDate(model.active.date)}`, 'ok')}
+          ${chip(model.totals.openStateTrusted ? 'хвост API свежий' : 'хвост API устарел', model.totals.openStateTrusted ? 'ok' : 'warn')}
           ${chip(`Ozon API ${fmtInt(ozonModel.totals.cards)} карточек`, 'info')}
           ${chip(`Ozon выручка ${fmtMoney(ozonModel.totals.revenue7)}`, 'ok')}
           ${chip(`Ozon вопросы ${fmtInt(ozonModel.totals.questions)}`, 'info')}
@@ -3255,6 +3383,20 @@
       </div>
     `;
     attachStructuredEvents(rootId);
+    if (searchFocus) {
+      window.requestAnimationFrame(() => {
+        const nextInput = document.getElementById(rootId)?.querySelector('[data-rating-search]');
+        if (!nextInput) return;
+        nextInput.focus({ preventScroll: true });
+        if (typeof nextInput.setSelectionRange !== 'function') return;
+        const length = nextInput.value.length;
+        nextInput.setSelectionRange(
+          Math.min(searchFocus.start, length),
+          Math.min(searchFocus.end, length),
+          searchFocus.direction
+        );
+      });
+    }
   }
 
   function renderEmpty(root, payload) {
@@ -3331,14 +3473,14 @@
     window.renderWbCardRating = renderWbCardRatingStructured;
   }
 
-  ['hashchange', 'altea:viewchange', 'altea:data-ready', 'altea:app-ready', 'altea:portal-storage-updated'].forEach((eventName) => {
+  ['hashchange', 'altea:viewchange', 'altea:data-ready', 'altea:datarefresh', 'altea:app-ready', 'altea:portal-storage-updated'].forEach((eventName) => {
     window.addEventListener(eventName, () => window.setTimeout(renderWbRatingIfActive, 0));
   });
   if (document.readyState === 'loading') {
     document.addEventListener('DOMContentLoaded', () => {
-      [0, 700, 1800, 4200].forEach((delay) => window.setTimeout(renderWbRatingIfActive, delay));
+      [0, 700].forEach((delay) => window.setTimeout(renderWbRatingIfActive, delay));
     }, { once: true });
   } else {
-    [0, 700, 1800, 4200].forEach((delay) => window.setTimeout(renderWbRatingIfActive, delay));
+    [0, 700].forEach((delay) => window.setTimeout(renderWbRatingIfActive, delay));
   }
 })();

@@ -1,0 +1,477 @@
+{
+  "schema": "repricer-competitor-history-v1",
+  "generatedAt": "2026-07-28T11:45:40.253Z",
+  "asOfDate": "2026-07-28",
+  "retentionDays": 180,
+  "cutoffDate": "2026-01-30",
+  "status": "ok",
+  "policy": {
+    "minimumOffers": 3,
+    "historyMinimumTrustedDays": 7,
+    "historyMinimumSpanDays": 14,
+    "currentSnapshotRequiredForPriceInfluence": true,
+    "insufficientHistoryNeverControlsPrice": true,
+    "retainedPreviousSnapshotNeverCountsAsFresh": true
+  },
+  "summary": {
+    "calendar_days": 1,
+    "observations": 10,
+    "trusted_observations": 0,
+    "series": 10,
+    "trusted_series_7d": 0,
+    "first_date": "2026-07-28",
+    "last_date": "2026-07-28",
+    "latest_snapshot_age_days": 0
+  },
+  "observations": [
+    {
+      "date": "2026-07-28",
+      "observed_at": "2026-07-28T12:00:00.000Z",
+      "platform": "wb",
+      "article_key": "gel_kudryavii_metod_300ml",
+      "normalized_article_key": "gelkudryaviimetod300ml",
+      "source": "wb_public_catalog_search+external_provider",
+      "status": "insufficient",
+      "trusted": false,
+      "minimum_offers": 3,
+      "offer_count": 0,
+      "benchmark_client_price": null,
+      "lower_quartile_client_price": null,
+      "upper_quartile_client_price": null,
+      "minimum_client_price": null,
+      "maximum_client_price": null,
+      "offers": []
+    },
+    {
+      "date": "2026-07-28",
+      "observed_at": "2026-07-28T12:00:00.000Z",
+      "platform": "wb",
+      "article_key": "gel-penka_dlya_lica_150ml",
+      "normalized_article_key": "gelpenkadlyalica150ml",
+      "source": "wb_public_catalog_search+external_provider",
+      "status": "insufficient",
+      "trusted": false,
+      "minimum_offers": 3,
+      "offer_count": 0,
+      "benchmark_client_price": null,
+      "lower_quartile_client_price": null,
+      "upper_quartile_client_price": null,
+      "minimum_client_price": null,
+      "maximum_client_price": null,
+      "offers": []
+    },
+    {
+      "date": "2026-07-28",
+      "observed_at": "2026-07-28T12:00:00.000Z",
+      "platform": "wb",
+      "article_key": "krem_dlya_lica_pdrn_50_ml",
+      "normalized_article_key": "kremdlyalicapdrn50ml",
+      "source": "wb_public_catalog_search+external_provider",
+      "status": "insufficient",
+      "trusted": false,
+      "minimum_offers": 3,
+      "offer_count": 0,
+      "benchmark_client_price": null,
+      "lower_quartile_client_price": null,
+      "upper_quartile_client_price": null,
+      "minimum_client_price": null,
+      "maximum_client_price": null,
+      "offers": []
+    },
+    {
+      "date": "2026-07-28",
+      "observed_at": "2026-07-28T12:00:00.000Z",
+      "platform": "wb",
+      "article_key": "lifting_maska_pdrn_75ml",
+      "normalized_article_key": "liftingmaskapdrn75ml",
+      "source": "wb_public_catalog_search+external_provider",
+      "status": "insufficient",
+      "trusted": false,
+      "minimum_offers": 3,
+      "offer_count": 0,
+      "benchmark_client_price": null,
+      "lower_quartile_client_price": null,
+      "upper_quartile_client_price": null,
+      "minimum_client_price": null,
+      "maximum_client_price": null,
+      "offers": []
+    },
+    {
+      "date": "2026-07-28",
+      "observed_at": "2026-07-28T12:00:00.000Z",
+      "platform": "wb",
+      "article_key": "retinait_syvorotka_05_30ml",
+      "normalized_article_key": "retinaitsyvorotka0530ml",
+      "source": "wb_public_catalog_search+external_provider",
+      "status": "insufficient",
+      "trusted": false,
+      "minimum_offers": 3,
+      "offer_count": 2,
+      "benchmark_client_price": 493.5,
+      "lower_quartile_client_price": 403.25,
+      "upper_quartile_client_price": 583.75,
+      "minimum_client_price": 313,
+      "maximum_client_price": 674,
+      "offers": [
+        {
+          "competitor_id": "162231805",
+          "seller": "HARBEZ",
+          "client_price": 313,
+          "comparable_unit_price": 313,
+          "match_score": 0.8667,
+          "package_dimension": "volume_ml",
+          "package_amount": 30,
+          "in_stock": true,
+          "source": "wb_public_catalog_search",
+          "observed_at": "2026-07-28T12:00:00.000Z",
+          "url": "https://www.wildberries.ru/catalog/162231805/detail.aspx"
+        },
+        {
+          "competitor_id": "462967564",
+          "seller": "РИВ ГОШ",
+          "client_price": 674,
+          "comparable_unit_price": 674,
+          "match_score": 0.8667,
+          "package_dimension": "volume_ml",
+          "package_amount": 30,
+          "in_stock": true,
+          "source": "wb_public_catalog_search",
+          "observed_at": "2026-07-28T12:00:00.000Z",
+          "url": "https://www.wildberries.ru/catalog/462967564/detail.aspx"
+        }
+      ]
+    },
+    {
+      "date": "2026-07-28",
+      "observed_at": "2026-07-28T12:00:00.000Z",
+      "platform": "wb",
+      "article_key": "retinol_boost_krem_dlya_vek_30ml",
+      "normalized_article_key": "retinolboostkremdlyavek30ml",
+      "source": "wb_public_catalog_search+external_provider",
+      "status": "insufficient",
+      "trusted": false,
+      "minimum_offers": 3,
+      "offer_count": 0,
+      "benchmark_client_price": null,
+      "lower_quartile_client_price": null,
+      "upper_quartile_client_price": null,
+      "minimum_client_price": null,
+      "maximum_client_price": null,
+      "offers": []
+    },
+    {
+      "date": "2026-07-28",
+      "observed_at": "2026-07-28T12:00:00.000Z",
+      "platform": "wb",
+      "article_key": "shampun_badd_500ml",
+      "normalized_article_key": "shampunbadd500ml",
+      "source": "wb_public_catalog_search+external_provider",
+      "status": "insufficient",
+      "trusted": false,
+      "minimum_offers": 3,
+      "offer_count": 0,
+      "benchmark_client_price": null,
+      "lower_quartile_client_price": null,
+      "upper_quartile_client_price": null,
+      "minimum_client_price": null,
+      "maximum_client_price": null,
+      "offers": []
+    },
+    {
+      "date": "2026-07-28",
+      "observed_at": "2026-07-28T12:00:00.000Z",
+      "platform": "wb",
+      "article_key": "shampun_kudryavii_metod_500ml",
+      "normalized_article_key": "shampunkudryaviimetod500ml",
+      "source": "wb_public_catalog_search+external_provider",
+      "status": "insufficient",
+      "trusted": false,
+      "minimum_offers": 3,
+      "offer_count": 0,
+      "benchmark_client_price": null,
+      "lower_quartile_client_price": null,
+      "upper_quartile_client_price": null,
+      "minimum_client_price": null,
+      "maximum_client_price": null,
+      "offers": []
+    },
+    {
+      "date": "2026-07-28",
+      "observed_at": "2026-07-28T12:00:00.000Z",
+      "platform": "wb",
+      "article_key": "spiculboost_30ml",
+      "normalized_article_key": "spiculboost30ml",
+      "source": "wb_public_catalog_search+external_provider",
+      "status": "insufficient",
+      "trusted": false,
+      "minimum_offers": 3,
+      "offer_count": 0,
+      "benchmark_client_price": null,
+      "lower_quartile_client_price": null,
+      "upper_quartile_client_price": null,
+      "minimum_client_price": null,
+      "maximum_client_price": null,
+      "offers": []
+    },
+    {
+      "date": "2026-07-28",
+      "observed_at": "2026-07-28T12:00:00.000Z",
+      "platform": "wb",
+      "article_key": "spicul_gel_mask_75ml",
+      "normalized_article_key": "spiculgelmask75ml",
+      "source": "wb_public_catalog_search+external_provider",
+      "status": "insufficient",
+      "trusted": false,
+      "minimum_offers": 3,
+      "offer_count": 0,
+      "benchmark_client_price": null,
+      "lower_quartile_client_price": null,
+      "upper_quartile_client_price": null,
+      "minimum_client_price": null,
+      "maximum_client_price": null,
+      "offers": []
+    }
+  ],
+  "series": [
+    {
+      "key": "wb|gelkudryaviimetod300ml",
+      "platform": "wb",
+      "article_key": "gel_kudryavii_metod_300ml",
+      "normalized_article_key": "gelkudryaviimetod300ml",
+      "first_date": "2026-07-28",
+      "last_date": "2026-07-28",
+      "observed_days": 1,
+      "trusted_days": 0,
+      "latest_status": "insufficient",
+      "latest_benchmark_client_price": null,
+      "observations": [
+        {
+          "date": "2026-07-28",
+          "status": "insufficient",
+          "trusted": false,
+          "offer_count": 0,
+          "benchmark_client_price": null,
+          "lower_quartile_client_price": null,
+          "upper_quartile_client_price": null,
+          "source": "wb_public_catalog_search+external_provider"
+        }
+      ]
+    },
+    {
+      "key": "wb|gelpenkadlyalica150ml",
+      "platform": "wb",
+      "article_key": "gel-penka_dlya_lica_150ml",
+      "normalized_article_key": "gelpenkadlyalica150ml",
+      "first_date": "2026-07-28",
+      "last_date": "2026-07-28",
+      "observed_days": 1,
+      "trusted_days": 0,
+      "latest_status": "insufficient",
+      "latest_benchmark_client_price": null,
+      "observations": [
+        {
+          "date": "2026-07-28",
+          "status": "insufficient",
+          "trusted": false,
+          "offer_count": 0,
+          "benchmark_client_price": null,
+          "lower_quartile_client_price": null,
+          "upper_quartile_client_price": null,
+          "source": "wb_public_catalog_search+external_provider"
+        }
+      ]
+    },
+    {
+      "key": "wb|kremdlyalicapdrn50ml",
+      "platform": "wb",
+      "article_key": "krem_dlya_lica_pdrn_50_ml",
+      "normalized_article_key": "kremdlyalicapdrn50ml",
+      "first_date": "2026-07-28",
+      "last_date": "2026-07-28",
+      "observed_days": 1,
+      "trusted_days": 0,
+      "latest_status": "insufficient",
+      "latest_benchmark_client_price": null,
+      "observations": [
+        {
+          "date": "2026-07-28",
+          "status": "insufficient",
+          "trusted": false,
+          "offer_count": 0,
+          "benchmark_client_price": null,
+          "lower_quartile_client_price": null,
+          "upper_quartile_client_price": null,
+          "source": "wb_public_catalog_search+external_provider"
+        }
+      ]
+    },
+    {
+      "key": "wb|liftingmaskapdrn75ml",
+      "platform": "wb",
+      "article_key": "lifting_maska_pdrn_75ml",
+      "normalized_article_key": "liftingmaskapdrn75ml",
+      "first_date": "2026-07-28",
+      "last_date": "2026-07-28",
+      "observed_days": 1,
+      "trusted_days": 0,
+      "latest_status": "insufficient",
+      "latest_benchmark_client_price": null,
+      "observations": [
+        {
+          "date": "2026-07-28",
+          "status": "insufficient",
+          "trusted": false,
+          "offer_count": 0,
+          "benchmark_client_price": null,
+          "lower_quartile_client_price": null,
+          "upper_quartile_client_price": null,
+          "source": "wb_public_catalog_search+external_provider"
+        }
+      ]
+    },
+    {
+      "key": "wb|retinaitsyvorotka0530ml",
+      "platform": "wb",
+      "article_key": "retinait_syvorotka_05_30ml",
+      "normalized_article_key": "retinaitsyvorotka0530ml",
+      "first_date": "2026-07-28",
+      "last_date": "2026-07-28",
+      "observed_days": 1,
+      "trusted_days": 0,
+      "latest_status": "insufficient",
+      "latest_benchmark_client_price": 493.5,
+      "observations": [
+        {
+          "date": "2026-07-28",
+          "status": "insufficient",
+          "trusted": false,
+          "offer_count": 2,
+          "benchmark_client_price": 493.5,
+          "lower_quartile_client_price": 403.25,
+          "upper_quartile_client_price": 583.75,
+          "source": "wb_public_catalog_search+external_provider"
+        }
+      ]
+    },
+    {
+      "key": "wb|retinolboostkremdlyavek30ml",
+      "platform": "wb",
+      "article_key": "retinol_boost_krem_dlya_vek_30ml",
+      "normalized_article_key": "retinolboostkremdlyavek30ml",
+      "first_date": "2026-07-28",
+      "last_date": "2026-07-28",
+      "observed_days": 1,
+      "trusted_days": 0,
+      "latest_status": "insufficient",
+      "latest_benchmark_client_price": null,
+      "observations": [
+        {
+          "date": "2026-07-28",
+          "status": "insufficient",
+          "trusted": false,
+          "offer_count": 0,
+          "benchmark_client_price": null,
+          "lower_quartile_client_price": null,
+          "upper_quartile_client_price": null,
+          "source": "wb_public_catalog_search+external_provider"
+        }
+      ]
+    },
+    {
+      "key": "wb|shampunbadd500ml",
+      "platform": "wb",
+      "article_key": "shampun_badd_500ml",
+      "normalized_article_key": "shampunbadd500ml",
+      "first_date": "2026-07-28",
+      "last_date": "2026-07-28",
+      "observed_days": 1,
+      "trusted_days": 0,
+      "latest_status": "insufficient",
+      "latest_benchmark_client_price": null,
+      "observations": [
+        {
+          "date": "2026-07-28",
+          "status": "insufficient",
+          "trusted": false,
+          "offer_count": 0,
+          "benchmark_client_price": null,
+          "lower_quartile_client_price": null,
+          "upper_quartile_client_price": null,
+          "source": "wb_public_catalog_search+external_provider"
+        }
+      ]
+    },
+    {
+      "key": "wb|shampunkudryaviimetod500ml",
+      "platform": "wb",
+      "article_key": "shampun_kudryavii_metod_500ml",
+      "normalized_article_key": "shampunkudryaviimetod500ml",
+      "first_date": "2026-07-28",
+      "last_date": "2026-07-28",
+      "observed_days": 1,
+      "trusted_days": 0,
+      "latest_status": "insufficient",
+      "latest_benchmark_client_price": null,
+      "observations": [
+        {
+          "date": "2026-07-28",
+          "status": "insufficient",
+          "trusted": false,
+          "offer_count": 0,
+          "benchmark_client_price": null,
+          "lower_quartile_client_price": null,
+          "upper_quartile_client_price": null,
+          "source": "wb_public_catalog_search+external_provider"
+        }
+      ]
+    },
+    {
+      "key": "wb|spiculboost30ml",
+      "platform": "wb",
+      "article_key": "spiculboost_30ml",
+      "normalized_article_key": "spiculboost30ml",
+      "first_date": "2026-07-28",
+      "last_date": "2026-07-28",
+      "observed_days": 1,
+      "trusted_days": 0,
+      "latest_status": "insufficient",
+      "latest_benchmark_client_price": null,
+      "observations": [
+        {
+          "date": "2026-07-28",
+          "status": "insufficient",
+          "trusted": false,
+          "offer_count": 0,
+          "benchmark_client_price": null,
+          "lower_quartile_client_price": null,
+          "upper_quartile_client_price": null,
+          "source": "wb_public_catalog_search+external_provider"
+        }
+      ]
+    },
+    {
+      "key": "wb|spiculgelmask75ml",
+      "platform": "wb",
+      "article_key": "spicul_gel_mask_75ml",
+      "normalized_article_key": "spiculgelmask75ml",
+      "first_date": "2026-07-28",
+      "last_date": "2026-07-28",
+      "observed_days": 1,
+      "trusted_days": 0,
+      "latest_status": "insufficient",
+      "latest_benchmark_client_price": null,
+      "observations": [
+        {
+          "date": "2026-07-28",
+          "status": "insufficient",
+          "trusted": false,
+          "offer_count": 0,
+          "benchmark_client_price": null,
+          "lower_quartile_client_price": null,
+          "upper_quartile_client_price": null,
+          "source": "wb_public_catalog_search+external_provider"
+        }
+      ]
+    }
+  ]
+}

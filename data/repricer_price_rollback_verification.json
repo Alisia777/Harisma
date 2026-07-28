@@ -1,0 +1,13 @@
+{
+  "schema": "repricer-price-rollback-verification-v1",
+  "generatedAt": "",
+  "status": "missing",
+  "requestedBy": "",
+  "confirmationHash": "",
+  "summary": {
+    "rows": 0,
+    "matched": 0,
+    "mismatched": 0
+  },
+  "rows": []
+}

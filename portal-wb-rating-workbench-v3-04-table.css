@@ -1,0 +1,257 @@
+/* ---------- One scroll owner for the data grid ---------- */
+body.v87-imperial.altea-premium-shell #view-wb-rating .rating-work-table {
+  position: relative;
+  width: 100%;
+  max-width: 100%;
+  height: clamp(360px, 58dvh, 650px) !important;
+  max-height: none !important;
+  min-height: 360px;
+  overflow: scroll !important;
+  overscroll-behavior: contain;
+  scrollbar-gutter: stable both-edges;
+  scrollbar-width: auto;
+  scrollbar-color: rgba(216, 176, 102, .7) rgba(255, 255, 255, .045);
+  touch-action: pan-x pan-y;
+  -webkit-overflow-scrolling: touch;
+  border-top: 1px solid rgba(255, 255, 255, .045);
+  border-radius: 0 0 var(--rw-radius) var(--rw-radius);
+  background: rgba(7, 7, 9, .62);
+}
+
+body.v87-imperial.altea-premium-shell #view-wb-rating .rating-work-table::-webkit-scrollbar {
+  width: 15px;
+  height: 15px;
+}
+
+body.v87-imperial.altea-premium-shell #view-wb-rating .rating-work-table::-webkit-scrollbar-track {
+  background: rgba(255, 255, 255, .045);
+  box-shadow: inset 0 0 0 1px rgba(255, 255, 255, .025);
+}
+
+body.v87-imperial.altea-premium-shell #view-wb-rating .rating-work-table::-webkit-scrollbar-thumb {
+  min-width: 44px;
+  min-height: 44px;
+  border: 3px solid transparent;
+  border-radius: 999px;
+  background: rgba(216, 176, 102, .7);
+  background-clip: padding-box;
+}
+
+body.v87-imperial.altea-premium-shell #view-wb-rating .rating-work-table::-webkit-scrollbar-thumb:hover {
+  background: rgba(241, 207, 134, .9);
+  background-clip: padding-box;
+}
+
+body.v87-imperial.altea-premium-shell #view-wb-rating .rating-work-table::-webkit-scrollbar-corner {
+  background: rgba(255, 255, 255, .045);
+}
+
+body.v87-imperial.altea-premium-shell #view-wb-rating .rating-work-table table {
+  border-collapse: separate !important;
+  border-spacing: 0 !important;
+  table-layout: auto !important;
+  width: max-content !important;
+  max-width: none !important;
+  margin: 0;
+}
+
+/* Ignore stale colgroup widths; visible cells own the compact/full layout. */
+body.v87-imperial.altea-premium-shell #view-wb-rating .rating-work-table table.rating-ux-wide-table colgroup {
+  display: none !important;
+}
+
+body.v87-imperial.altea-premium-shell #view-wb-rating[data-rating-density="compact"]
+  .rating-work-table table.rating-ux-wide-table {
+  min-width: 1180px !important;
+}
+
+body.v87-imperial.altea-premium-shell #view-wb-rating[data-rating-density="full"]
+  .rating-work-table table.rating-ux-wide-table {
+  min-width: 2220px !important;
+}
+
+/* Compact really means compact: keep article, team note, status, revenue,
+ * review flow, current rating, 7d negative and unanswered tails. */
+body.v87-imperial.altea-premium-shell #view-wb-rating[data-rating-density="compact"]
+  .rating-work-table table.rating-ux-wide-table :is(th, td):nth-child(6),
+body.v87-imperial.altea-premium-shell #view-wb-rating[data-rating-density="compact"]
+  .rating-work-table table.rating-ux-wide-table :is(th, td):nth-child(7),
+body.v87-imperial.altea-premium-shell #view-wb-rating[data-rating-density="compact"]
+  .rating-work-table table.rating-ux-wide-table :is(th, td):nth-child(8),
+body.v87-imperial.altea-premium-shell #view-wb-rating[data-rating-density="compact"]
+  .rating-work-table table.rating-ux-wide-table :is(th, td):nth-child(9),
+body.v87-imperial.altea-premium-shell #view-wb-rating[data-rating-density="compact"]
+  .rating-work-table table.rating-ux-wide-table :is(th, td):nth-child(12),
+body.v87-imperial.altea-premium-shell #view-wb-rating[data-rating-density="compact"]
+  .rating-work-table table.rating-ux-wide-table :is(th, td):nth-child(13),
+body.v87-imperial.altea-premium-shell #view-wb-rating[data-rating-density="compact"]
+  .rating-work-table table.rating-ux-wide-table :is(th, td):nth-child(14),
+body.v87-imperial.altea-premium-shell #view-wb-rating[data-rating-density="compact"]
+  .rating-work-table table.rating-ux-wide-table :is(th, td):nth-child(15),
+body.v87-imperial.altea-premium-shell #view-wb-rating[data-rating-density="compact"]
+  .rating-work-table table.rating-ux-wide-table :is(th, td):nth-child(16),
+body.v87-imperial.altea-premium-shell #view-wb-rating[data-rating-density="compact"]
+  .rating-work-table table.rating-ux-wide-table :is(th, td):nth-child(17),
+body.v87-imperial.altea-premium-shell #view-wb-rating[data-rating-density="compact"]
+  .rating-work-table table.rating-ux-wide-table :is(th, td):nth-child(19) {
+  display: none !important;
+}
+
+body.v87-imperial.altea-premium-shell #view-wb-rating .rating-work-table thead th {
+  position: sticky !important;
+  top: 0 !important;
+  z-index: 12 !important;
+  min-height: 46px;
+  padding: 9px 10px !important;
+  border-bottom: 1px solid rgba(216, 176, 102, .2) !important;
+  background: #171419 !important;
+  color: #f4e3bf;
+  font-size: 10px !important;
+  line-height: 1.2;
+  text-align: left;
+  text-transform: none !important;
+  letter-spacing: 0 !important;
+  vertical-align: middle;
+  box-shadow: 0 1px 0 rgba(0, 0, 0, .7);
+}
+
+body.v87-imperial.altea-premium-shell #view-wb-rating .rating-work-table td {
+  padding: 9px 10px !important;
+  border-bottom: 1px solid rgba(255, 255, 255, .065);
+  background: #101216;
+  font-size: 11.5px;
+  line-height: 1.32;
+  vertical-align: top;
+}
+
+body.v87-imperial.altea-premium-shell #view-wb-rating .rating-work-table tbody tr:hover td {
+  background: #151619;
+}
+
+/* Sticky context columns. */
+body.v87-imperial.altea-premium-shell #view-wb-rating .rating-work-table
+  table.rating-ux-wide-table :is(th, td):nth-child(1) {
+  position: sticky !important;
+  left: 0 !important;
+  z-index: 9 !important;
+  width: var(--rw-first-col) !important;
+  min-width: var(--rw-first-col) !important;
+  max-width: var(--rw-first-col) !important;
+  background: #111216 !important;
+  box-shadow: 8px 0 16px rgba(0, 0, 0, .18);
+}
+
+body.v87-imperial.altea-premium-shell #view-wb-rating .rating-work-table
+  table.rating-ux-wide-table :is(th, td):nth-child(2) {
+  position: sticky !important;
+  left: var(--rw-first-col) !important;
+  z-index: 8 !important;
+  width: var(--rw-second-col) !important;
+  min-width: var(--rw-second-col) !important;
+  max-width: var(--rw-second-col) !important;
+  background: #111216 !important;
+  box-shadow: 8px 0 16px rgba(0, 0, 0, .14);
+}
+
+body.v87-imperial.altea-premium-shell #view-wb-rating .rating-work-table
+  table.rating-ux-wide-table thead :is(th:nth-child(1), th:nth-child(2)) {
+  z-index: 16 !important;
+  background: #1b171c !important;
+}
+
+body.v87-imperial.altea-premium-shell #view-wb-rating .rating-team-comment-head small {
+  display: none !important;
+}
+
+body.v87-imperial.altea-premium-shell #view-wb-rating .rating-team-comment-cell {
+  width: var(--rw-second-col) !important;
+  min-width: var(--rw-second-col) !important;
+  max-width: var(--rw-second-col) !important;
+}
+
+body.v87-imperial.altea-premium-shell #view-wb-rating .rating-team-comment-box {
+  gap: 5px;
+  min-height: 0;
+  padding: 6px;
+  border-radius: 8px;
+}
+
+body.v87-imperial.altea-premium-shell #view-wb-rating .rating-team-comment-box .rating-note-button {
+  min-height: 31px;
+  padding: 6px 8px;
+  font-size: 9.5px;
+  line-height: 1.05;
+}
+
+body.v87-imperial.altea-premium-shell #view-wb-rating .rating-team-comment-preview,
+body.v87-imperial.altea-premium-shell #view-wb-rating .rating-team-comment-placeholder {
+  display: -webkit-box;
+  overflow: hidden;
+  font-size: 9.5px;
+  line-height: 1.3;
+  -webkit-box-orient: vertical;
+  -webkit-line-clamp: 2;
+}
+
+body.v87-imperial.altea-premium-shell #view-wb-rating .rating-team-comment-meta {
+  font-size: 8.5px;
+}
+
+body.v87-imperial.altea-premium-shell #view-wb-rating .rating-work-table .article-cell {
+  overflow: visible;
+}
+
+body.v87-imperial.altea-premium-shell #view-wb-rating .rating-work-table .article-cell .link-btn,
+body.v87-imperial.altea-premium-shell #view-wb-rating .rating-work-table .article-cell > strong {
+  display: block;
+  max-width: 100%;
+  overflow: hidden;
+  font-size: 12px;
+  line-height: 1.2;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+body.v87-imperial.altea-premium-shell #view-wb-rating .rating-row-actions {
+  display: flex;
+  gap: 5px;
+  margin-top: 6px;
+  flex-wrap: wrap;
+}
+
+body.v87-imperial.altea-premium-shell #view-wb-rating :is(.rating-copy-button, .rating-note-button) {
+  min-height: 29px;
+  padding: 6px 8px;
+  font-size: 9px;
+}
+
+body.v87-imperial.altea-premium-shell #view-wb-rating .rating-work-table .cell-main {
+  font-size: 13.5px;
+  line-height: 1.15;
+}
+
+body.v87-imperial.altea-premium-shell #view-wb-rating .rating-work-table .cell-muted {
+  margin-top: 3px;
+  font-size: 9.5px;
+  line-height: 1.25;
+}
+
+body.v87-imperial.altea-premium-shell #view-wb-rating .rating-work-table .cell-text {
+  max-height: 42px;
+  font-size: 10.5px;
+  line-height: 1.32;
+}
+
+body.v87-imperial.altea-premium-shell #view-wb-rating .rating-more-row {
+  padding: 8px 11px 9px;
+}
+
+/* Empty data state: explicit next action, without a giant blank canvas. */
+body.v87-imperial.altea-premium-shell #view-wb-rating > .empty {
+  display: grid;
+  min-height: 190px;
+  place-items: center;
+  padding: 32px 20px;
+  border-radius: var(--rw-radius);
+  text-align: center;
+}

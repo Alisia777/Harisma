@@ -1,0 +1,4224 @@
+{
+  "schema": "repricer-learning-report-v1",
+  "generatedAt": "2026-07-28T11:55:59.556Z",
+  "asOfDate": "2026-07-28",
+  "lookbackDays": 60,
+  "status": "ready_for_calibration",
+  "disclaimer": "Counterfactual replay is a calibration aid, not a causal promise. Only verified applied-price events enter outcome learning.",
+  "backtest": {
+    "model": "60d_counterfactual_constant_target_price_v1",
+    "causalClaim": false,
+    "summary": {
+      "rows": 414,
+      "modelledRows": 2,
+      "highConfidenceRows": 1,
+      "insufficientRows": 412,
+      "baselineTurnoverRub": 435880.28,
+      "scenarioTurnoverRub": 452182.36,
+      "turnoverDeltaRub": 16302.08,
+      "turnoverDeltaPct": 0.0374,
+      "baselineContributionRub": 10327.02,
+      "scenarioContributionRub": 101313.77,
+      "contributionDeltaRub": 90986.75,
+      "contributionDeltaPct": 8.810552
+    },
+    "rows": [
+      {
+        "platform": "ozon",
+        "articleKey": "activeprost",
+        "lifecycle": "exit",
+        "currentPrice": 691,
+        "proposedPrice": null,
+        "status": "insufficient",
+        "observedDays": 21,
+        "reason": "recommendation_missing"
+      },
+      {
+        "platform": "ozon",
+        "articleKey": "adenofrin",
+        "lifecycle": "exit",
+        "currentPrice": 670,
+        "proposedPrice": null,
+        "status": "insufficient",
+        "observedDays": 0,
+        "reason": "recommendation_missing"
+      },
+      {
+        "platform": "ozon",
+        "articleKey": "adenofringreen",
+        "lifecycle": "exit",
+        "currentPrice": 605,
+        "proposedPrice": null,
+        "status": "insufficient",
+        "observedDays": 0,
+        "reason": "recommendation_missing"
+      },
+      {
+        "platform": "ozon",
+        "articleKey": "allicil_gribok15ml",
+        "lifecycle": "exit",
+        "currentPrice": 246,
+        "proposedPrice": 412,
+        "status": "insufficient",
+        "observedDays": 22,
+        "reason": "history_below_28_days"
+      },
+      {
+        "platform": "ozon",
+        "articleKey": "alteya_beauty_brows_box",
+        "lifecycle": "exit",
+        "currentPrice": 1100,
+        "proposedPrice": null,
+        "status": "insufficient",
+        "observedDays": 1,
+        "reason": "recommendation_missing"
+      },
+      {
+        "platform": "ozon",
+        "articleKey": "alteya_young_skin_box",
+        "lifecycle": "exit",
+        "currentPrice": 2800,
+        "proposedPrice": null,
+        "status": "insufficient",
+        "observedDays": 0,
+        "reason": "recommendation_missing"
+      },
+      {
+        "platform": "ozon",
+        "articleKey": "antigiperton",
+        "lifecycle": "exit",
+        "currentPrice": 3000,
+        "proposedPrice": 859,
+        "status": "insufficient",
+        "observedDays": 0,
+        "reason": "history_below_28_days"
+      },
+      {
+        "platform": "ozon",
+        "articleKey": "arterol",
+        "lifecycle": "exit",
+        "currentPrice": 215,
+        "proposedPrice": 385,
+        "status": "insufficient",
+        "observedDays": 23,
+        "reason": "history_below_28_days"
+      },
+      {
+        "platform": "ozon",
+        "articleKey": "arterol_1_1",
+        "lifecycle": "exit",
+        "currentPrice": 508,
+        "proposedPrice": null,
+        "status": "insufficient",
+        "observedDays": 12,
+        "reason": "recommendation_missing"
+      },
+      {
+        "platform": "ozon",
+        "articleKey": "arterol_1_1_1",
+        "lifecycle": "exit",
+        "currentPrice": 764,
+        "proposedPrice": 893,
+        "status": "insufficient",
+        "observedDays": 20,
+        "reason": "history_below_28_days"
+      },
+      {
+        "platform": "ozon",
+        "articleKey": "artoks",
+        "lifecycle": "exit",
+        "currentPrice": 745,
+        "proposedPrice": null,
+        "status": "insufficient",
+        "observedDays": 21,
+        "reason": "recommendation_missing"
+      },
+      {
+        "platform": "ozon",
+        "articleKey": "artoks_1_1",
+        "lifecycle": "exit",
+        "currentPrice": 1218,
+        "proposedPrice": null,
+        "status": "insufficient",
+        "observedDays": 13,
+        "reason": "recommendation_missing"
+      },
+      {
+        "platform": "ozon",
+        "articleKey": "artoks_75ml",
+        "lifecycle": "exit",
+        "currentPrice": 937,
+        "proposedPrice": null,
+        "status": "insufficient",
+        "observedDays": 22,
+        "reason": "recommendation_missing"
+      },
+      {
+        "platform": "ozon",
+        "articleKey": "b_kompleks_bad_60tabl",
+        "lifecycle": "exit",
+        "currentPrice": 637,
+        "proposedPrice": null,
+        "status": "insufficient",
+        "observedDays": 0,
+        "reason": "recommendation_missing"
+      },
+      {
+        "platform": "ozon",
+        "articleKey": "balzam_kudryavii_metod_500ml",
+        "lifecycle": "new",
+        "currentPrice": 1250,
+        "proposedPrice": null,
+        "status": "insufficient",
+        "observedDays": 1,
+        "reason": "recommendation_missing"
+      },
+      {
+        "platform": "ozon",
+        "articleKey": "berberin_laif_bad_60caps",
+        "lifecycle": "exit",
+        "currentPrice": 850,
+        "proposedPrice": 1392,
+        "status": "insufficient",
+        "observedDays": 23,
+        "reason": "history_below_28_days"
+      },
+      {
+        "platform": "ozon",
+        "articleKey": "biotrin_60ml",
+        "lifecycle": "not_listed",
+        "currentPrice": 860,
+        "proposedPrice": null,
+        "status": "insufficient",
+        "observedDays": 0,
+        "reason": "recommendation_missing"
+      },
+      {
+        "platform": "ozon",
+        "articleKey": "biotrin_60mlv1",
+        "lifecycle": "exit",
+        "currentPrice": 3000,
+        "proposedPrice": null,
+        "status": "insufficient",
+        "observedDays": 0,
+        "reason": "recommendation_missing"
+      },
+      {
+        "platform": "ozon",
+        "articleKey": "brutalax",
+        "lifecycle": "exit",
+        "currentPrice": 665,
+        "proposedPrice": 389,
+        "status": "insufficient",
+        "observedDays": 3,
+        "reason": "history_below_28_days"
+      },
+      {
+        "platform": "ozon",
+        "articleKey": "cardicin_bad_60caps",
+        "lifecycle": "exit",
+        "currentPrice": 250,
+        "proposedPrice": 788,
+        "status": "insufficient",
+        "observedDays": 23,
+        "reason": "history_below_28_days"
+      },
+      {
+        "platform": "ozon",
+        "articleKey": "chudofrukt",
+        "lifecycle": "exit",
+        "currentPrice": 650,
+        "proposedPrice": null,
+        "status": "insufficient",
+        "observedDays": 0,
+        "reason": "recommendation_missing"
+      },
+      {
+        "platform": "ozon",
+        "articleKey": "chudofrukt_1_1",
+        "lifecycle": "exit",
+        "currentPrice": 681.9,
+        "proposedPrice": null,
+        "status": "insufficient",
+        "observedDays": 0,
+        "reason": "recommendation_missing"
+      },
+      {
+        "platform": "ozon",
+        "articleKey": "chudofrukt_bad_60caps",
+        "lifecycle": "exit",
+        "currentPrice": 483,
+        "proposedPrice": null,
+        "status": "insufficient",
+        "observedDays": 0,
+        "reason": "recommendation_missing"
+      },
+      {
+        "platform": "ozon",
+        "articleKey": "chudogrib",
+        "lifecycle": "exit",
+        "currentPrice": 297,
+        "proposedPrice": 457,
+        "status": "insufficient",
+        "observedDays": 21,
+        "reason": "history_below_28_days"
+      },
+      {
+        "platform": "ozon",
+        "articleKey": "cpa_все_sku",
+        "lifecycle": "other",
+        "currentPrice": 220.9,
+        "proposedPrice": null,
+        "status": "insufficient",
+        "observedDays": 1,
+        "reason": "recommendation_missing"
+      },
+      {
+        "platform": "ozon",
+        "articleKey": "curly_method_300ml",
+        "lifecycle": "active",
+        "currentPrice": 1350,
+        "proposedPrice": null,
+        "status": "insufficient",
+        "observedDays": 51,
+        "reason": "recommendation_missing"
+      },
+      {
+        "platform": "ozon",
+        "articleKey": "daoshen",
+        "lifecycle": "exit",
+        "currentPrice": 242,
+        "proposedPrice": 409,
+        "status": "insufficient",
+        "observedDays": 22,
+        "reason": "history_below_28_days"
+      },
+      {
+        "platform": "ozon",
+        "articleKey": "daoshen_75ml",
+        "lifecycle": "exit",
+        "currentPrice": 457,
+        "proposedPrice": null,
+        "status": "insufficient",
+        "observedDays": 23,
+        "reason": "recommendation_missing"
+      },
+      {
+        "platform": "ozon",
+        "articleKey": "dardrakona",
+        "lifecycle": "exit",
+        "currentPrice": 1275,
+        "proposedPrice": 467,
+        "status": "insufficient",
+        "observedDays": 23,
+        "reason": "history_below_28_days"
+      },
+      {
+        "platform": "ozon",
+        "articleKey": "dardrakona_1_1",
+        "lifecycle": "exit",
+        "currentPrice": 640,
+        "proposedPrice": null,
+        "status": "insufficient",
+        "observedDays": 23,
+        "reason": "recommendation_missing"
+      },
+      {
+        "platform": "ozon",
+        "articleKey": "dardrakona_75ml",
+        "lifecycle": "exit",
+        "currentPrice": 324.84615384615387,
+        "proposedPrice": null,
+        "status": "insufficient",
+        "observedDays": 0,
+        "reason": "recommendation_missing"
+      },
+      {
+        "platform": "ozon",
+        "articleKey": "dolgar",
+        "lifecycle": "exit",
+        "currentPrice": 374.5,
+        "proposedPrice": null,
+        "status": "insufficient",
+        "observedDays": 3,
+        "reason": "recommendation_missing"
+      },
+      {
+        "platform": "ozon",
+        "articleKey": "ekdisteron_ultra_man_60caps",
+        "lifecycle": "exit",
+        "currentPrice": 900,
+        "proposedPrice": 994,
+        "status": "insufficient",
+        "observedDays": 23,
+        "reason": "history_below_28_days"
+      },
+      {
+        "platform": "ozon",
+        "articleKey": "ekzifol",
+        "lifecycle": "exit",
+        "currentPrice": 700,
+        "proposedPrice": 482,
+        "status": "insufficient",
+        "observedDays": 23,
+        "reason": "history_below_28_days"
+      },
+      {
+        "platform": "ozon",
+        "articleKey": "enteroshol",
+        "lifecycle": "exit",
+        "currentPrice": 489,
+        "proposedPrice": 488,
+        "status": "insufficient",
+        "observedDays": 0,
+        "reason": "history_below_28_days"
+      },
+      {
+        "platform": "ozon",
+        "articleKey": "enzim_pudra_80gr",
+        "lifecycle": "exit",
+        "currentPrice": 779,
+        "proposedPrice": null,
+        "status": "insufficient",
+        "observedDays": 0,
+        "reason": "recommendation_missing"
+      },
+      {
+        "platform": "ozon",
+        "articleKey": "enzim_pudra_80gr_v2",
+        "lifecycle": "active",
+        "currentPrice": 999,
+        "proposedPrice": null,
+        "status": "insufficient",
+        "observedDays": 51,
+        "reason": "recommendation_missing"
+      },
+      {
+        "platform": "ozon",
+        "articleKey": "erobrut",
+        "lifecycle": "exit",
+        "currentPrice": 777,
+        "proposedPrice": null,
+        "status": "insufficient",
+        "observedDays": 22,
+        "reason": "recommendation_missing"
+      },
+      {
+        "platform": "ozon",
+        "articleKey": "fruitalica",
+        "lifecycle": "exit",
+        "currentPrice": 359,
+        "proposedPrice": null,
+        "status": "insufficient",
+        "observedDays": 16,
+        "reason": "recommendation_missing"
+      },
+      {
+        "platform": "ozon",
+        "articleKey": "frutaksa_bad_200gr",
+        "lifecycle": "exit",
+        "currentPrice": 738,
+        "proposedPrice": null,
+        "status": "insufficient",
+        "observedDays": 14,
+        "reason": "recommendation_missing"
+      },
+      {
+        "platform": "ozon",
+        "articleKey": "frutalika_bad_60caps",
+        "lifecycle": "exit",
+        "currentPrice": 326,
+        "proposedPrice": 840,
+        "status": "insufficient",
+        "observedDays": 22,
+        "reason": "history_below_28_days"
+      },
+      {
+        "platform": "ozon",
+        "articleKey": "gel_antiakne_20ml",
+        "lifecycle": "exit",
+        "currentPrice": 1450,
+        "proposedPrice": null,
+        "status": "insufficient",
+        "observedDays": 0,
+        "reason": "recommendation_missing"
+      },
+      {
+        "platform": "ozon",
+        "articleKey": "gel_antiakne_20ml_v2",
+        "lifecycle": "active",
+        "currentPrice": 1200,
+        "proposedPrice": null,
+        "status": "insufficient",
+        "observedDays": 51,
+        "reason": "recommendation_missing"
+      },
+      {
+        "platform": "ozon",
+        "articleKey": "gel_brows_5ml",
+        "lifecycle": "active",
+        "currentPrice": 250,
+        "proposedPrice": null,
+        "status": "insufficient",
+        "observedDays": 20,
+        "reason": "recommendation_missing"
+      },
+      {
+        "platform": "ozon",
+        "articleKey": "gel_dlya_britya_300ml",
+        "lifecycle": "exit",
+        "currentPrice": 600,
+        "proposedPrice": 691,
+        "status": "insufficient",
+        "observedDays": 23,
+        "reason": "history_below_28_days"
+      },
+      {
+        "platform": "ozon",
+        "articleKey": "gel_dlya_brovei_6ml",
+        "lifecycle": "exit",
+        "currentPrice": 372,
+        "proposedPrice": 433,
+        "status": "insufficient",
+        "observedDays": 21,
+        "reason": "history_below_28_days"
+      },
+      {
+        "platform": "ozon",
+        "articleKey": "gel_for_men_3_in_1_1000ml",
+        "lifecycle": "exit",
+        "currentPrice": 1059,
+        "proposedPrice": 702,
+        "status": "insufficient",
+        "observedDays": 23,
+        "reason": "history_below_28_days"
+      },
+      {
+        "platform": "ozon",
+        "articleKey": "gel_kudryavii_metod_300ml",
+        "lifecycle": "new",
+        "currentPrice": 1150,
+        "proposedPrice": null,
+        "status": "insufficient",
+        "observedDays": 1,
+        "reason": "recommendation_missing"
+      },
+      {
+        "platform": "ozon",
+        "articleKey": "gel_parfum_tabacco_vanille_450ml",
+        "lifecycle": "exit",
+        "currentPrice": 353,
+        "proposedPrice": 628,
+        "status": "insufficient",
+        "observedDays": 16,
+        "reason": "history_below_28_days"
+      },
+      {
+        "platform": "ozon",
+        "articleKey": "gel-penka_dlya_lica_150ml",
+        "lifecycle": "new",
+        "currentPrice": 2500,
+        "proposedPrice": null,
+        "status": "insufficient",
+        "observedDays": 0,
+        "reason": "recommendation_missing"
+      },
+      {
+        "platform": "ozon",
+        "articleKey": "gemorekt",
+        "lifecycle": "exit",
+        "currentPrice": 249,
+        "proposedPrice": null,
+        "status": "insufficient",
+        "observedDays": 23,
+        "reason": "recommendation_missing"
+      },
+      {
+        "platform": "ozon",
+        "articleKey": "gidrofilnoe_maslo_150ml",
+        "lifecycle": "exit",
+        "currentPrice": 504.8,
+        "proposedPrice": null,
+        "status": "insufficient",
+        "observedDays": 0,
+        "reason": "recommendation_missing"
+      },
+      {
+        "platform": "ozon",
+        "articleKey": "glikiron",
+        "lifecycle": "exit",
+        "currentPrice": 302,
+        "proposedPrice": null,
+        "status": "insufficient",
+        "observedDays": 22,
+        "reason": "recommendation_missing"
+      },
+      {
+        "platform": "ozon",
+        "articleKey": "glikiron_bad_60caps",
+        "lifecycle": "exit",
+        "currentPrice": 469,
+        "proposedPrice": 840,
+        "status": "insufficient",
+        "observedDays": 20,
+        "reason": "history_below_28_days"
+      },
+      {
+        "platform": "ozon",
+        "articleKey": "glukofol",
+        "lifecycle": "exit",
+        "currentPrice": 183,
+        "proposedPrice": 366,
+        "status": "insufficient",
+        "observedDays": 23,
+        "reason": "history_below_28_days"
+      },
+      {
+        "platform": "ozon",
+        "articleKey": "i_am_alpha_bad_60caps",
+        "lifecycle": "exit",
+        "currentPrice": 908,
+        "proposedPrice": 1540,
+        "status": "insufficient",
+        "observedDays": 23,
+        "reason": "history_below_28_days"
+      },
+      {
+        "platform": "ozon",
+        "articleKey": "indolakt_bad_60caps",
+        "lifecycle": "exit",
+        "currentPrice": 580,
+        "proposedPrice": 1080,
+        "status": "insufficient",
+        "observedDays": 23,
+        "reason": "history_below_28_days"
+      },
+      {
+        "platform": "ozon",
+        "articleKey": "insulight",
+        "lifecycle": "exit",
+        "currentPrice": 364,
+        "proposedPrice": 518,
+        "status": "insufficient",
+        "observedDays": 23,
+        "reason": "history_below_28_days"
+      },
+      {
+        "platform": "ozon",
+        "articleKey": "insulight_1_1",
+        "lifecycle": "exit",
+        "currentPrice": 721,
+        "proposedPrice": 1004,
+        "status": "insufficient",
+        "observedDays": 18,
+        "reason": "history_below_28_days"
+      },
+      {
+        "platform": "ozon",
+        "articleKey": "insulight_bad_60caps",
+        "lifecycle": "exit",
+        "currentPrice": 500,
+        "proposedPrice": 906,
+        "status": "insufficient",
+        "observedDays": 22,
+        "reason": "history_below_28_days"
+      },
+      {
+        "platform": "ozon",
+        "articleKey": "intimvita_200ml",
+        "lifecycle": "exit",
+        "currentPrice": 640,
+        "proposedPrice": null,
+        "status": "insufficient",
+        "observedDays": 0,
+        "reason": "recommendation_missing"
+      },
+      {
+        "platform": "ozon",
+        "articleKey": "intimvita_300ml",
+        "lifecycle": "question",
+        "currentPrice": 500,
+        "proposedPrice": 577,
+        "status": "modelled_low_confidence",
+        "model": "60d_counterfactual_constant_target_price_v1",
+        "causalClaim": false,
+        "observedDays": 40,
+        "exceptionalDaysExcluded": 0,
+        "targetPrice": 577,
+        "elasticity": -0.9,
+        "elasticitySource": "policy_or_role_fallback",
+        "baseline": {
+          "units": 89,
+          "turnoverRub": 53282.01,
+          "contributionRub": 6599.55
+        },
+        "scenario": {
+          "units": 91.84,
+          "turnoverRub": 52990.24,
+          "contributionRub": 5938.67
+        },
+        "delta": {
+          "units": 2.84,
+          "turnoverRub": -291.77,
+          "turnoverPct": -0.005476,
+          "contributionRub": -660.88,
+          "contributionPct": -0.10014
+        }
+      },
+      {
+        "platform": "ozon",
+        "articleKey": "kardicin",
+        "lifecycle": "exit",
+        "currentPrice": 717,
+        "proposedPrice": 717,
+        "status": "insufficient",
+        "observedDays": 0,
+        "reason": "history_below_28_days"
+      },
+      {
+        "platform": "ozon",
+        "articleKey": "kardicin_1_1",
+        "lifecycle": "exit",
+        "currentPrice": 1175,
+        "proposedPrice": 1279,
+        "status": "insufficient",
+        "observedDays": 9,
+        "reason": "history_below_28_days"
+      },
+      {
+        "platform": "ozon",
+        "articleKey": "kardicin_1_1_1",
+        "lifecycle": "exit",
+        "currentPrice": 1754,
+        "proposedPrice": null,
+        "status": "insufficient",
+        "observedDays": 14,
+        "reason": "recommendation_missing"
+      },
+      {
+        "platform": "ozon",
+        "articleKey": "kavmaz",
+        "lifecycle": "exit",
+        "currentPrice": 305,
+        "proposedPrice": 465,
+        "status": "insufficient",
+        "observedDays": 23,
+        "reason": "history_below_28_days"
+      },
+      {
+        "platform": "ozon",
+        "articleKey": "kavmaz_40ml_1_1",
+        "lifecycle": "exit",
+        "currentPrice": 721,
+        "proposedPrice": 844,
+        "status": "insufficient",
+        "observedDays": 23,
+        "reason": "history_below_28_days"
+      },
+      {
+        "platform": "ozon",
+        "articleKey": "kavmaz_60ml",
+        "lifecycle": "exit",
+        "currentPrice": 365,
+        "proposedPrice": 496,
+        "status": "insufficient",
+        "observedDays": 23,
+        "reason": "history_below_28_days"
+      },
+      {
+        "platform": "ozon",
+        "articleKey": "khvoinitsa",
+        "lifecycle": "exit",
+        "currentPrice": 400,
+        "proposedPrice": 452,
+        "status": "insufficient",
+        "observedDays": 19,
+        "reason": "history_below_28_days"
+      },
+      {
+        "platform": "ozon",
+        "articleKey": "khvoinitsa_1_1",
+        "lifecycle": "exit",
+        "currentPrice": 597,
+        "proposedPrice": 804,
+        "status": "insufficient",
+        "observedDays": 7,
+        "reason": "history_below_28_days"
+      },
+      {
+        "platform": "ozon",
+        "articleKey": "kinzhal",
+        "lifecycle": "exit",
+        "currentPrice": 304,
+        "proposedPrice": 465,
+        "status": "insufficient",
+        "observedDays": 23,
+        "reason": "history_below_28_days"
+      },
+      {
+        "platform": "ozon",
+        "articleKey": "kinzhal_1_1",
+        "lifecycle": "exit",
+        "currentPrice": 719,
+        "proposedPrice": 842,
+        "status": "insufficient",
+        "observedDays": 22,
+        "reason": "history_below_28_days"
+      },
+      {
+        "platform": "ozon",
+        "articleKey": "krem_buster_250ml",
+        "lifecycle": "active",
+        "currentPrice": 920,
+        "proposedPrice": null,
+        "status": "insufficient",
+        "observedDays": 50,
+        "reason": "recommendation_missing"
+      },
+      {
+        "platform": "ozon",
+        "articleKey": "krem_dlya_lica_pdrn_50_ml",
+        "lifecycle": "new",
+        "currentPrice": 1750,
+        "proposedPrice": null,
+        "status": "insufficient",
+        "observedDays": 15,
+        "reason": "recommendation_missing"
+      },
+      {
+        "platform": "ozon",
+        "articleKey": "krem_dlya_ruk_75ml",
+        "lifecycle": "active",
+        "currentPrice": 556,
+        "proposedPrice": null,
+        "status": "insufficient",
+        "observedDays": 51,
+        "reason": "recommendation_missing"
+      },
+      {
+        "platform": "ozon",
+        "articleKey": "krem_dlya_vek_30ml",
+        "lifecycle": "active",
+        "currentPrice": 1857,
+        "proposedPrice": null,
+        "status": "insufficient",
+        "observedDays": 48,
+        "reason": "recommendation_missing"
+      },
+      {
+        "platform": "ozon",
+        "articleKey": "krem_ot_rastyazhek",
+        "lifecycle": "active",
+        "currentPrice": 1200,
+        "proposedPrice": null,
+        "status": "insufficient",
+        "observedDays": 51,
+        "reason": "recommendation_missing"
+      },
+      {
+        "platform": "ozon",
+        "articleKey": "krem_spf50_50ml",
+        "lifecycle": "active",
+        "currentPrice": 1150,
+        "proposedPrice": null,
+        "status": "insufficient",
+        "observedDays": 51,
+        "reason": "recommendation_missing"
+      },
+      {
+        "platform": "ozon",
+        "articleKey": "krem-filler_15ml",
+        "lifecycle": "exit",
+        "currentPrice": 30000,
+        "proposedPrice": null,
+        "status": "insufficient",
+        "observedDays": 0,
+        "reason": "recommendation_missing"
+      },
+      {
+        "platform": "ozon",
+        "articleKey": "kremshelk_100ml",
+        "lifecycle": "active",
+        "currentPrice": 1414,
+        "proposedPrice": null,
+        "status": "insufficient",
+        "observedDays": 51,
+        "reason": "recommendation_missing"
+      },
+      {
+        "platform": "ozon",
+        "articleKey": "krovavii_piling_30ml",
+        "lifecycle": "active",
+        "currentPrice": 1230,
+        "proposedPrice": null,
+        "status": "insufficient",
+        "observedDays": 51,
+        "reason": "recommendation_missing"
+      },
+      {
+        "platform": "ozon",
+        "articleKey": "lifting_maska_pdrn_75ml",
+        "lifecycle": "new",
+        "currentPrice": 1300,
+        "proposedPrice": null,
+        "status": "insufficient",
+        "observedDays": 16,
+        "reason": "recommendation_missing"
+      },
+      {
+        "platform": "ozon",
+        "articleKey": "limfaks_bad_30caps",
+        "lifecycle": "exit",
+        "currentPrice": 900,
+        "proposedPrice": 816,
+        "status": "insufficient",
+        "observedDays": 23,
+        "reason": "history_below_28_days"
+      },
+      {
+        "platform": "ozon",
+        "articleKey": "maska_dlya_lica_100ml",
+        "lifecycle": "active",
+        "currentPrice": 1550,
+        "proposedPrice": null,
+        "status": "insufficient",
+        "observedDays": 46,
+        "reason": "recommendation_missing"
+      },
+      {
+        "platform": "ozon",
+        "articleKey": "maska_dlya_lica_intens_uvl_50ml",
+        "lifecycle": "new",
+        "currentPrice": 2500,
+        "proposedPrice": null,
+        "status": "insufficient",
+        "observedDays": 1,
+        "reason": "recommendation_missing"
+      },
+      {
+        "platform": "ozon",
+        "articleKey": "maska-batter_250ml",
+        "lifecycle": "active",
+        "currentPrice": 680,
+        "proposedPrice": null,
+        "status": "insufficient",
+        "observedDays": 50,
+        "reason": "recommendation_missing"
+      },
+      {
+        "platform": "ozon",
+        "articleKey": "maska-batter_500ml",
+        "lifecycle": "active",
+        "currentPrice": 850,
+        "proposedPrice": null,
+        "status": "insufficient",
+        "observedDays": 51,
+        "reason": "recommendation_missing"
+      },
+      {
+        "platform": "ozon",
+        "articleKey": "maska-batter_dlya_rosta_500ml",
+        "lifecycle": "active",
+        "currentPrice": 825,
+        "proposedPrice": null,
+        "status": "insufficient",
+        "observedDays": 51,
+        "reason": "recommendation_missing"
+      },
+      {
+        "platform": "ozon",
+        "articleKey": "maslo_dlya_borodi_50ml",
+        "lifecycle": "exit",
+        "currentPrice": 600,
+        "proposedPrice": 612,
+        "status": "insufficient",
+        "observedDays": 23,
+        "reason": "history_below_28_days"
+      },
+      {
+        "platform": "ozon",
+        "articleKey": "maslo_dlya_volos_parf_110ml",
+        "lifecycle": "exit",
+        "currentPrice": 950,
+        "proposedPrice": null,
+        "status": "insufficient",
+        "observedDays": 0,
+        "reason": "recommendation_missing"
+      },
+      {
+        "platform": "ozon",
+        "articleKey": "maslo_dlya_volos_parf_110ml_",
+        "lifecycle": "exit",
+        "currentPrice": 780,
+        "proposedPrice": 823,
+        "status": "insufficient",
+        "observedDays": 0,
+        "reason": "history_below_28_days"
+      },
+      {
+        "platform": "ozon",
+        "articleKey": "maslo-shimmer_spf15_100ml",
+        "lifecycle": "new",
+        "currentPrice": 2500,
+        "proposedPrice": null,
+        "status": "insufficient",
+        "observedDays": 1,
+        "reason": "recommendation_missing"
+      },
+      {
+        "platform": "ozon",
+        "articleKey": "matte_wax_50ml",
+        "lifecycle": "active",
+        "currentPrice": 800,
+        "proposedPrice": null,
+        "status": "insufficient",
+        "observedDays": 18,
+        "reason": "recommendation_missing"
+      },
+      {
+        "platform": "ozon",
+        "articleKey": "menoflavon_bad_60caps",
+        "lifecycle": "exit",
+        "currentPrice": 1617,
+        "proposedPrice": null,
+        "status": "insufficient",
+        "observedDays": 23,
+        "reason": "recommendation_missing"
+      },
+      {
+        "platform": "ozon",
+        "articleKey": "micardin",
+        "lifecycle": "exit",
+        "currentPrice": 775,
+        "proposedPrice": 427,
+        "status": "insufficient",
+        "observedDays": 0,
+        "reason": "history_below_28_days"
+      },
+      {
+        "platform": "ozon",
+        "articleKey": "micardin_1_1",
+        "lifecycle": "exit",
+        "currentPrice": 1013,
+        "proposedPrice": 1279,
+        "status": "insufficient",
+        "observedDays": 0,
+        "reason": "history_below_28_days"
+      },
+      {
+        "platform": "ozon",
+        "articleKey": "micardin_1_1_1",
+        "lifecycle": "exit",
+        "currentPrice": 1777,
+        "proposedPrice": 1919,
+        "status": "insufficient",
+        "observedDays": 0,
+        "reason": "history_below_28_days"
+      },
+      {
+        "platform": "ozon",
+        "articleKey": "micardinforte",
+        "lifecycle": "exit",
+        "currentPrice": 791,
+        "proposedPrice": null,
+        "status": "insufficient",
+        "observedDays": 23,
+        "reason": "recommendation_missing"
+      },
+      {
+        "platform": "ozon",
+        "articleKey": "micolan",
+        "lifecycle": "exit",
+        "currentPrice": 562,
+        "proposedPrice": null,
+        "status": "insufficient",
+        "observedDays": 20,
+        "reason": "recommendation_missing"
+      },
+      {
+        "platform": "ozon",
+        "articleKey": "mikardin plus_bad_60 caps",
+        "lifecycle": "exit",
+        "currentPrice": 1128,
+        "proposedPrice": null,
+        "status": "insufficient",
+        "observedDays": 0,
+        "reason": "recommendation_missing"
+      },
+      {
+        "platform": "ozon",
+        "articleKey": "monarda_30ml",
+        "lifecycle": "exit",
+        "currentPrice": 545,
+        "proposedPrice": null,
+        "status": "insufficient",
+        "observedDays": 0,
+        "reason": "recommendation_missing"
+      },
+      {
+        "platform": "ozon",
+        "articleKey": "mycoplax",
+        "lifecycle": "exit",
+        "currentPrice": 270,
+        "proposedPrice": 450,
+        "status": "insufficient",
+        "observedDays": 23,
+        "reason": "history_below_28_days"
+      },
+      {
+        "platform": "ozon",
+        "articleKey": "mycoplax_1_1",
+        "lifecycle": "exit",
+        "currentPrice": 713,
+        "proposedPrice": 797,
+        "status": "insufficient",
+        "observedDays": 11,
+        "reason": "history_below_28_days"
+      },
+      {
+        "platform": "ozon",
+        "articleKey": "nabor_penka_dlya_resnic",
+        "lifecycle": "exit",
+        "currentPrice": 1350,
+        "proposedPrice": 544,
+        "status": "insufficient",
+        "observedDays": 19,
+        "reason": "history_below_28_days"
+      },
+      {
+        "platform": "ozon",
+        "articleKey": "nabor_remuver_40ml",
+        "lifecycle": "exit",
+        "currentPrice": 750,
+        "proposedPrice": 303,
+        "status": "insufficient",
+        "observedDays": 23,
+        "reason": "history_below_28_days"
+      },
+      {
+        "platform": "ozon",
+        "articleKey": "nabor_remuver_40ml_1_1",
+        "lifecycle": "exit",
+        "currentPrice": 1150,
+        "proposedPrice": null,
+        "status": "insufficient",
+        "observedDays": 1,
+        "reason": "recommendation_missing"
+      },
+      {
+        "platform": "ozon",
+        "articleKey": "nabor_remuver_kremovii",
+        "lifecycle": "active",
+        "currentPrice": 600,
+        "proposedPrice": null,
+        "status": "insufficient",
+        "observedDays": 51,
+        "reason": "recommendation_missing"
+      },
+      {
+        "platform": "ozon",
+        "articleKey": "oftalmol",
+        "lifecycle": "exit",
+        "currentPrice": 1370,
+        "proposedPrice": 428,
+        "status": "insufficient",
+        "observedDays": 23,
+        "reason": "history_below_28_days"
+      },
+      {
+        "platform": "ozon",
+        "articleKey": "okospas",
+        "lifecycle": "exit",
+        "currentPrice": 490,
+        "proposedPrice": 377,
+        "status": "insufficient",
+        "observedDays": 0,
+        "reason": "history_below_28_days"
+      },
+      {
+        "platform": "ozon",
+        "articleKey": "okucin",
+        "lifecycle": "exit",
+        "currentPrice": 650,
+        "proposedPrice": null,
+        "status": "insufficient",
+        "observedDays": 19,
+        "reason": "recommendation_missing"
+      },
+      {
+        "platform": "ozon",
+        "articleKey": "osteofast",
+        "lifecycle": "exit",
+        "currentPrice": 400,
+        "proposedPrice": 505,
+        "status": "insufficient",
+        "observedDays": 23,
+        "reason": "history_below_28_days"
+      },
+      {
+        "platform": "ozon",
+        "articleKey": "otivin",
+        "lifecycle": "exit",
+        "currentPrice": 625,
+        "proposedPrice": null,
+        "status": "insufficient",
+        "observedDays": 22,
+        "reason": "recommendation_missing"
+      },
+      {
+        "platform": "ozon",
+        "articleKey": "pantogor",
+        "lifecycle": "exit",
+        "currentPrice": 605,
+        "proposedPrice": null,
+        "status": "insufficient",
+        "observedDays": 0,
+        "reason": "recommendation_missing"
+      },
+      {
+        "platform": "ozon",
+        "articleKey": "pantogor_100ml",
+        "lifecycle": "exit",
+        "currentPrice": 546,
+        "proposedPrice": null,
+        "status": "insufficient",
+        "observedDays": 2,
+        "reason": "recommendation_missing"
+      },
+      {
+        "platform": "ozon",
+        "articleKey": "papiderm",
+        "lifecycle": "exit",
+        "currentPrice": 255,
+        "proposedPrice": null,
+        "status": "insufficient",
+        "observedDays": 21,
+        "reason": "recommendation_missing"
+      },
+      {
+        "platform": "ozon",
+        "articleKey": "penka_160ml",
+        "lifecycle": "exit",
+        "currentPrice": 3000,
+        "proposedPrice": null,
+        "status": "insufficient",
+        "observedDays": 0,
+        "reason": "recommendation_missing"
+      },
+      {
+        "platform": "ozon",
+        "articleKey": "penka_kudryavii_metod_150ml",
+        "lifecycle": "active",
+        "currentPrice": 1350,
+        "proposedPrice": null,
+        "status": "insufficient",
+        "observedDays": 48,
+        "reason": "recommendation_missing"
+      },
+      {
+        "platform": "ozon",
+        "articleKey": "piling_100ml",
+        "lifecycle": "exit",
+        "currentPrice": 700,
+        "proposedPrice": null,
+        "status": "insufficient",
+        "observedDays": 0,
+        "reason": "recommendation_missing"
+      },
+      {
+        "platform": "ozon",
+        "articleKey": "pink_pepper_50ml",
+        "lifecycle": "active",
+        "currentPrice": 1515,
+        "proposedPrice": null,
+        "status": "insufficient",
+        "observedDays": 47,
+        "reason": "recommendation_missing"
+      },
+      {
+        "platform": "ozon",
+        "articleKey": "pirantoks_bad_60caps",
+        "lifecycle": "exit",
+        "currentPrice": 827,
+        "proposedPrice": null,
+        "status": "insufficient",
+        "observedDays": 0,
+        "reason": "recommendation_missing"
+      },
+      {
+        "platform": "ozon",
+        "articleKey": "pirantox",
+        "lifecycle": "exit",
+        "currentPrice": 512,
+        "proposedPrice": null,
+        "status": "insufficient",
+        "observedDays": 0,
+        "reason": "recommendation_missing"
+      },
+      {
+        "platform": "ozon",
+        "articleKey": "psoral",
+        "lifecycle": "exit",
+        "currentPrice": 271.9189189189189,
+        "proposedPrice": null,
+        "status": "insufficient",
+        "observedDays": 4,
+        "reason": "recommendation_missing"
+      },
+      {
+        "platform": "ozon",
+        "articleKey": "psoral_50ml",
+        "lifecycle": "exit",
+        "currentPrice": 913,
+        "proposedPrice": null,
+        "status": "insufficient",
+        "observedDays": 19,
+        "reason": "recommendation_missing"
+      },
+      {
+        "platform": "ozon",
+        "articleKey": "psoral11",
+        "lifecycle": "exit",
+        "currentPrice": 2000,
+        "proposedPrice": null,
+        "status": "insufficient",
+        "observedDays": 0,
+        "reason": "recommendation_missing"
+      },
+      {
+        "platform": "ozon",
+        "articleKey": "relaksinol_bad_60caps",
+        "lifecycle": "exit",
+        "currentPrice": 550,
+        "proposedPrice": 1010,
+        "status": "insufficient",
+        "observedDays": 19,
+        "reason": "history_below_28_days"
+      },
+      {
+        "platform": "ozon",
+        "articleKey": "remuver_40ml",
+        "lifecycle": "not_listed",
+        "currentPrice": null,
+        "proposedPrice": null,
+        "status": "insufficient",
+        "observedDays": 0,
+        "reason": "recommendation_missing"
+      },
+      {
+        "platform": "ozon",
+        "articleKey": "retiderm_50ml",
+        "lifecycle": "active",
+        "currentPrice": 250,
+        "proposedPrice": null,
+        "status": "insufficient",
+        "observedDays": 51,
+        "reason": "recommendation_missing"
+      },
+      {
+        "platform": "ozon",
+        "articleKey": "retinait_krem_01_50ml",
+        "lifecycle": "active",
+        "currentPrice": 1150,
+        "proposedPrice": null,
+        "status": "insufficient",
+        "observedDays": 44,
+        "reason": "recommendation_missing"
+      },
+      {
+        "platform": "ozon",
+        "articleKey": "retinait_krem_025_50ml",
+        "lifecycle": "active",
+        "currentPrice": 1173,
+        "proposedPrice": null,
+        "status": "insufficient",
+        "observedDays": 44,
+        "reason": "recommendation_missing"
+      },
+      {
+        "platform": "ozon",
+        "articleKey": "retinait_krem_05_50ml",
+        "lifecycle": "active",
+        "currentPrice": 1150,
+        "proposedPrice": null,
+        "status": "insufficient",
+        "observedDays": 51,
+        "reason": "recommendation_missing"
+      },
+      {
+        "platform": "ozon",
+        "articleKey": "retinait_krem_1_5_50ml",
+        "lifecycle": "active",
+        "currentPrice": 1550,
+        "proposedPrice": null,
+        "status": "insufficient",
+        "observedDays": 51,
+        "reason": "recommendation_missing"
+      },
+      {
+        "platform": "ozon",
+        "articleKey": "retinait_krem_1_50ml",
+        "lifecycle": "active",
+        "currentPrice": 1700,
+        "proposedPrice": null,
+        "status": "insufficient",
+        "observedDays": 51,
+        "reason": "recommendation_missing"
+      },
+      {
+        "platform": "ozon",
+        "articleKey": "retinait_syvorotka_025_30ml",
+        "lifecycle": "active",
+        "currentPrice": 2505,
+        "proposedPrice": null,
+        "status": "insufficient",
+        "observedDays": 51,
+        "reason": "recommendation_missing"
+      },
+      {
+        "platform": "ozon",
+        "articleKey": "retinait_syvorotka_05_30ml",
+        "lifecycle": "new",
+        "currentPrice": 1475,
+        "proposedPrice": null,
+        "status": "insufficient",
+        "observedDays": 51,
+        "reason": "recommendation_missing"
+      },
+      {
+        "platform": "ozon",
+        "articleKey": "retinait_syvorotka_1_30ml",
+        "lifecycle": "active",
+        "currentPrice": 2100,
+        "proposedPrice": null,
+        "status": "insufficient",
+        "observedDays": 51,
+        "reason": "recommendation_missing"
+      },
+      {
+        "platform": "ozon",
+        "articleKey": "retinol_boost_krem_dlya_vek_30ml",
+        "lifecycle": "new",
+        "currentPrice": 1600,
+        "proposedPrice": null,
+        "status": "insufficient",
+        "observedDays": 51,
+        "reason": "recommendation_missing"
+      },
+      {
+        "platform": "ozon",
+        "articleKey": "retinol_full_journey",
+        "lifecycle": "active",
+        "currentPrice": 3200,
+        "proposedPrice": null,
+        "status": "insufficient",
+        "observedDays": 6,
+        "reason": "recommendation_missing"
+      },
+      {
+        "platform": "ozon",
+        "articleKey": "retinol_start_kit",
+        "lifecycle": "active",
+        "currentPrice": 1700,
+        "proposedPrice": null,
+        "status": "insufficient",
+        "observedDays": 3,
+        "reason": "recommendation_missing"
+      },
+      {
+        "platform": "ozon",
+        "articleKey": "revmastop_bad_60caps",
+        "lifecycle": "exit",
+        "currentPrice": 1142,
+        "proposedPrice": 1142,
+        "status": "insufficient",
+        "observedDays": 12,
+        "reason": "history_below_28_days"
+      },
+      {
+        "platform": "ozon",
+        "articleKey": "sanatsin",
+        "lifecycle": "exit",
+        "currentPrice": 460,
+        "proposedPrice": null,
+        "status": "insufficient",
+        "observedDays": 10,
+        "reason": "recommendation_missing"
+      },
+      {
+        "platform": "ozon",
+        "articleKey": "sanatsin_1_1",
+        "lifecycle": "exit",
+        "currentPrice": 998,
+        "proposedPrice": null,
+        "status": "insufficient",
+        "observedDays": 6,
+        "reason": "recommendation_missing"
+      },
+      {
+        "platform": "ozon",
+        "articleKey": "sanaсin_bad_60caps",
+        "lifecycle": "not_listed",
+        "currentPrice": 1000,
+        "proposedPrice": null,
+        "status": "insufficient",
+        "observedDays": 0,
+        "reason": "recommendation_missing"
+      },
+      {
+        "platform": "ozon",
+        "articleKey": "shampun_badd_500ml",
+        "lifecycle": "new",
+        "currentPrice": 2500,
+        "proposedPrice": null,
+        "status": "insufficient",
+        "observedDays": 0,
+        "reason": "recommendation_missing"
+      },
+      {
+        "platform": "ozon",
+        "articleKey": "shampun_dlya_rosta_250ml",
+        "lifecycle": "active",
+        "currentPrice": 714,
+        "proposedPrice": null,
+        "status": "insufficient",
+        "observedDays": 51,
+        "reason": "recommendation_missing"
+      },
+      {
+        "platform": "ozon",
+        "articleKey": "shampun_kudryavii_metod_500ml",
+        "lifecycle": "new",
+        "currentPrice": 1168,
+        "proposedPrice": null,
+        "status": "insufficient",
+        "observedDays": 41,
+        "reason": "recommendation_missing"
+      },
+      {
+        "platform": "ozon",
+        "articleKey": "shampun_protiv_perhoti_250ml",
+        "lifecycle": "active",
+        "currentPrice": 1000,
+        "proposedPrice": null,
+        "status": "insufficient",
+        "observedDays": 21,
+        "reason": "recommendation_missing"
+      },
+      {
+        "platform": "ozon",
+        "articleKey": "silk_hair_300ml",
+        "lifecycle": "active",
+        "currentPrice": 1080,
+        "proposedPrice": null,
+        "status": "insufficient",
+        "observedDays": 51,
+        "reason": "recommendation_missing"
+      },
+      {
+        "platform": "ozon",
+        "articleKey": "sinergel_30ml_1_1",
+        "lifecycle": "exit",
+        "currentPrice": 635,
+        "proposedPrice": null,
+        "status": "insufficient",
+        "observedDays": 13,
+        "reason": "recommendation_missing"
+      },
+      {
+        "platform": "ozon",
+        "articleKey": "skrab_babl_gam_200ml",
+        "lifecycle": "active",
+        "currentPrice": 580,
+        "proposedPrice": null,
+        "status": "insufficient",
+        "observedDays": 42,
+        "reason": "recommendation_missing"
+      },
+      {
+        "platform": "ozon",
+        "articleKey": "smokinglock",
+        "lifecycle": "exit",
+        "currentPrice": 635,
+        "proposedPrice": null,
+        "status": "insufficient",
+        "observedDays": 0,
+        "reason": "recommendation_missing"
+      },
+      {
+        "platform": "ozon",
+        "articleKey": "solevoy_sprei_200ml",
+        "lifecycle": "active",
+        "currentPrice": 850,
+        "proposedPrice": null,
+        "status": "insufficient",
+        "observedDays": 51,
+        "reason": "recommendation_missing"
+      },
+      {
+        "platform": "ozon",
+        "articleKey": "spicul_gel_mask_75ml",
+        "lifecycle": "new",
+        "currentPrice": 1952,
+        "proposedPrice": null,
+        "status": "insufficient",
+        "observedDays": 51,
+        "reason": "recommendation_missing"
+      },
+      {
+        "platform": "ozon",
+        "articleKey": "spiculboost_30ml",
+        "lifecycle": "new",
+        "currentPrice": 2000,
+        "proposedPrice": null,
+        "status": "insufficient",
+        "observedDays": 51,
+        "reason": "recommendation_missing"
+      },
+      {
+        "platform": "ozon",
+        "articleKey": "spray-syvorotka_pdrn_100ml",
+        "lifecycle": "new",
+        "currentPrice": 2500,
+        "proposedPrice": null,
+        "status": "insufficient",
+        "observedDays": 1,
+        "reason": "recommendation_missing"
+      },
+      {
+        "platform": "ozon",
+        "articleKey": "sprei_buster_100ml",
+        "lifecycle": "active",
+        "currentPrice": 1100,
+        "proposedPrice": null,
+        "status": "insufficient",
+        "observedDays": 51,
+        "reason": "recommendation_missing"
+      },
+      {
+        "platform": "ozon",
+        "articleKey": "stik_ot_mozoley",
+        "lifecycle": "exit",
+        "currentPrice": 515,
+        "proposedPrice": null,
+        "status": "insufficient",
+        "observedDays": 0,
+        "reason": "recommendation_missing"
+      },
+      {
+        "platform": "ozon",
+        "articleKey": "strong_hair",
+        "lifecycle": "active",
+        "currentPrice": 2050,
+        "proposedPrice": null,
+        "status": "insufficient",
+        "observedDays": 0,
+        "reason": "recommendation_missing"
+      },
+      {
+        "platform": "ozon",
+        "articleKey": "sustalit",
+        "lifecycle": "exit",
+        "currentPrice": 618,
+        "proposedPrice": null,
+        "status": "insufficient",
+        "observedDays": 21,
+        "reason": "recommendation_missing"
+      },
+      {
+        "platform": "ozon",
+        "articleKey": "sustalit_75ml",
+        "lifecycle": "exit",
+        "currentPrice": 401,
+        "proposedPrice": 555,
+        "status": "insufficient",
+        "observedDays": 23,
+        "reason": "history_below_28_days"
+      },
+      {
+        "platform": "ozon",
+        "articleKey": "synergel_60ml",
+        "lifecycle": "exit",
+        "currentPrice": 950,
+        "proposedPrice": null,
+        "status": "insufficient",
+        "observedDays": 10,
+        "reason": "recommendation_missing"
+      },
+      {
+        "platform": "ozon",
+        "articleKey": "syvorotka_dlya_lica_30ml",
+        "lifecycle": "active",
+        "currentPrice": 1557,
+        "proposedPrice": null,
+        "status": "insufficient",
+        "observedDays": 11,
+        "reason": "recommendation_missing"
+      },
+      {
+        "platform": "ozon",
+        "articleKey": "syvorotka_dlya_lica_30ml_v2",
+        "lifecycle": "active",
+        "currentPrice": 1940,
+        "proposedPrice": null,
+        "status": "insufficient",
+        "observedDays": 51,
+        "reason": "recommendation_missing"
+      },
+      {
+        "platform": "ozon",
+        "articleKey": "syvorotka_dlya_lica_intens_uvl_30ml",
+        "lifecycle": "new",
+        "currentPrice": 2500,
+        "proposedPrice": null,
+        "status": "insufficient",
+        "observedDays": 1,
+        "reason": "recommendation_missing"
+      },
+      {
+        "platform": "ozon",
+        "articleKey": "syvorotka_dlya_rosta_6ml",
+        "lifecycle": "exit",
+        "currentPrice": 721,
+        "proposedPrice": null,
+        "status": "insufficient",
+        "observedDays": 2,
+        "reason": "recommendation_missing"
+      },
+      {
+        "platform": "ozon",
+        "articleKey": "syvorotka_dlya_rosta_6ml_v2",
+        "lifecycle": "active",
+        "currentPrice": 3294,
+        "proposedPrice": null,
+        "status": "insufficient",
+        "observedDays": 49,
+        "reason": "recommendation_missing"
+      },
+      {
+        "platform": "ozon",
+        "articleKey": "syvorotka_guk_30ml",
+        "lifecycle": "exit",
+        "currentPrice": 590,
+        "proposedPrice": 536,
+        "status": "insufficient",
+        "observedDays": 23,
+        "reason": "history_below_28_days"
+      },
+      {
+        "platform": "ozon",
+        "articleKey": "syvorotka_niacin_05_30ml",
+        "lifecycle": "active",
+        "currentPrice": 1500,
+        "proposedPrice": null,
+        "status": "insufficient",
+        "observedDays": 51,
+        "reason": "recommendation_missing"
+      },
+      {
+        "platform": "ozon",
+        "articleKey": "syvorotka_vit_c_30ml",
+        "lifecycle": "new",
+        "currentPrice": 1550,
+        "proposedPrice": null,
+        "status": "insufficient",
+        "observedDays": 49,
+        "reason": "recommendation_missing"
+      },
+      {
+        "platform": "ozon",
+        "articleKey": "t34poten10caps",
+        "lifecycle": "exit",
+        "currentPrice": 296,
+        "proposedPrice": null,
+        "status": "insufficient",
+        "observedDays": 5,
+        "reason": "recommendation_missing"
+      },
+      {
+        "platform": "ozon",
+        "articleKey": "telomeras_60caps",
+        "lifecycle": "question",
+        "currentPrice": 3613,
+        "proposedPrice": 3685,
+        "status": "insufficient",
+        "observedDays": 0,
+        "reason": "history_below_28_days"
+      },
+      {
+        "platform": "ozon",
+        "articleKey": "termo_maslo_100ml",
+        "lifecycle": "new",
+        "currentPrice": 1050,
+        "proposedPrice": null,
+        "status": "insufficient",
+        "observedDays": 1,
+        "reason": "recommendation_missing"
+      },
+      {
+        "platform": "ozon",
+        "articleKey": "termo_sprei_200ml",
+        "lifecycle": "exit",
+        "currentPrice": 416,
+        "proposedPrice": 639,
+        "status": "insufficient",
+        "observedDays": 22,
+        "reason": "history_below_28_days"
+      },
+      {
+        "platform": "ozon",
+        "articleKey": "termo_sprei_200ml_v2",
+        "lifecycle": "new",
+        "currentPrice": 2500,
+        "proposedPrice": null,
+        "status": "insufficient",
+        "observedDays": 0,
+        "reason": "recommendation_missing"
+      },
+      {
+        "platform": "ozon",
+        "articleKey": "tonik_dlya_lica_200ml",
+        "lifecycle": "active",
+        "currentPrice": 1815,
+        "proposedPrice": null,
+        "status": "insufficient",
+        "observedDays": 48,
+        "reason": "recommendation_missing"
+      },
+      {
+        "platform": "ozon",
+        "articleKey": "trezax",
+        "lifecycle": "exit",
+        "currentPrice": 718,
+        "proposedPrice": 357,
+        "status": "insufficient",
+        "observedDays": 23,
+        "reason": "history_below_28_days"
+      },
+      {
+        "platform": "ozon",
+        "articleKey": "trezor",
+        "lifecycle": "exit",
+        "currentPrice": 184.3846153846154,
+        "proposedPrice": null,
+        "status": "insufficient",
+        "observedDays": 23,
+        "reason": "recommendation_missing"
+      },
+      {
+        "platform": "ozon",
+        "articleKey": "trezvin",
+        "lifecycle": "exit",
+        "currentPrice": 690,
+        "proposedPrice": 469,
+        "status": "insufficient",
+        "observedDays": 23,
+        "reason": "history_below_28_days"
+      },
+      {
+        "platform": "ozon",
+        "articleKey": "uhovit",
+        "lifecycle": "exit",
+        "currentPrice": 1861,
+        "proposedPrice": 456,
+        "status": "insufficient",
+        "observedDays": 23,
+        "reason": "history_below_28_days"
+      },
+      {
+        "platform": "ozon",
+        "articleKey": "urinofix",
+        "lifecycle": "exit",
+        "currentPrice": 1210,
+        "proposedPrice": null,
+        "status": "insufficient",
+        "observedDays": 23,
+        "reason": "recommendation_missing"
+      },
+      {
+        "platform": "ozon",
+        "articleKey": "urofol",
+        "lifecycle": "exit",
+        "currentPrice": 332,
+        "proposedPrice": 489,
+        "status": "insufficient",
+        "observedDays": 23,
+        "reason": "history_below_28_days"
+      },
+      {
+        "platform": "ozon",
+        "articleKey": "urolgan",
+        "lifecycle": "exit",
+        "currentPrice": 343,
+        "proposedPrice": 403,
+        "status": "insufficient",
+        "observedDays": 23,
+        "reason": "history_below_28_days"
+      },
+      {
+        "platform": "ozon",
+        "articleKey": "uromax",
+        "lifecycle": "exit",
+        "currentPrice": 266,
+        "proposedPrice": 430,
+        "status": "insufficient",
+        "observedDays": 23,
+        "reason": "history_below_28_days"
+      },
+      {
+        "platform": "ozon",
+        "articleKey": "uromax_1_1",
+        "lifecycle": "exit",
+        "currentPrice": 460,
+        "proposedPrice": 735,
+        "status": "insufficient",
+        "observedDays": 23,
+        "reason": "history_below_28_days"
+      },
+      {
+        "platform": "ozon",
+        "articleKey": "varifit",
+        "lifecycle": "exit",
+        "currentPrice": 297,
+        "proposedPrice": 457,
+        "status": "insufficient",
+        "observedDays": 23,
+        "reason": "history_below_28_days"
+      },
+      {
+        "platform": "ozon",
+        "articleKey": "varifit_1_1",
+        "lifecycle": "exit",
+        "currentPrice": 778,
+        "proposedPrice": null,
+        "status": "insufficient",
+        "observedDays": 21,
+        "reason": "recommendation_missing"
+      },
+      {
+        "platform": "ozon",
+        "articleKey": "vetonus",
+        "lifecycle": "exit",
+        "currentPrice": 650,
+        "proposedPrice": null,
+        "status": "insufficient",
+        "observedDays": 16,
+        "reason": "recommendation_missing"
+      },
+      {
+        "platform": "ozon",
+        "articleKey": "vetonus_1_1",
+        "lifecycle": "exit",
+        "currentPrice": 1300,
+        "proposedPrice": 1300,
+        "status": "insufficient",
+        "observedDays": 16,
+        "reason": "history_below_28_days"
+      },
+      {
+        "platform": "ozon",
+        "articleKey": "vetonus_100ml",
+        "lifecycle": "exit",
+        "currentPrice": 380,
+        "proposedPrice": null,
+        "status": "insufficient",
+        "observedDays": 7,
+        "reason": "recommendation_missing"
+      },
+      {
+        "platform": "ozon",
+        "articleKey": "visitcreamamarant",
+        "lifecycle": "exit",
+        "currentPrice": 300,
+        "proposedPrice": null,
+        "status": "insufficient",
+        "observedDays": 0,
+        "reason": "recommendation_missing"
+      },
+      {
+        "platform": "ozon",
+        "articleKey": "vosk_stik_15ml",
+        "lifecycle": "active",
+        "currentPrice": 500,
+        "proposedPrice": null,
+        "status": "insufficient",
+        "observedDays": 23,
+        "reason": "recommendation_missing"
+      },
+      {
+        "platform": "ozon",
+        "articleKey": "wbalkotoxic",
+        "lifecycle": "exit",
+        "currentPrice": 649,
+        "proposedPrice": null,
+        "status": "insufficient",
+        "observedDays": 0,
+        "reason": "recommendation_missing"
+      },
+      {
+        "platform": "ozon",
+        "articleKey": "wbbiotrin",
+        "lifecycle": "exit",
+        "currentPrice": 1222,
+        "proposedPrice": null,
+        "status": "insufficient",
+        "observedDays": 23,
+        "reason": "recommendation_missing"
+      },
+      {
+        "platform": "ozon",
+        "articleKey": "wbbiotrin_1_1",
+        "lifecycle": "exit",
+        "currentPrice": 597,
+        "proposedPrice": null,
+        "status": "insufficient",
+        "observedDays": 13,
+        "reason": "recommendation_missing"
+      },
+      {
+        "platform": "ozon",
+        "articleKey": "wbbiotrin_1_1_1",
+        "lifecycle": "exit",
+        "currentPrice": 1260,
+        "proposedPrice": null,
+        "status": "insufficient",
+        "observedDays": 10,
+        "reason": "recommendation_missing"
+      },
+      {
+        "platform": "ozon",
+        "articleKey": "wbgetsize",
+        "lifecycle": "exit",
+        "currentPrice": 714,
+        "proposedPrice": 1900,
+        "status": "insufficient",
+        "observedDays": 16,
+        "reason": "history_below_28_days"
+      },
+      {
+        "platform": "ozon",
+        "articleKey": "wbgetsize1gel2",
+        "lifecycle": "not_listed",
+        "currentPrice": 2154,
+        "proposedPrice": null,
+        "status": "insufficient",
+        "observedDays": 0,
+        "reason": "recommendation_missing"
+      },
+      {
+        "platform": "ozon",
+        "articleKey": "wbgetsizegel",
+        "lifecycle": "exit",
+        "currentPrice": 1000,
+        "proposedPrice": null,
+        "status": "insufficient",
+        "observedDays": 4,
+        "reason": "recommendation_missing"
+      },
+      {
+        "platform": "ozon",
+        "articleKey": "wbmicelix",
+        "lifecycle": "exit",
+        "currentPrice": 295,
+        "proposedPrice": 456,
+        "status": "insufficient",
+        "observedDays": 23,
+        "reason": "history_below_28_days"
+      },
+      {
+        "platform": "ozon",
+        "articleKey": "wbmicelix_1_1",
+        "lifecycle": "exit",
+        "currentPrice": 776,
+        "proposedPrice": 814,
+        "status": "insufficient",
+        "observedDays": 17,
+        "reason": "history_below_28_days"
+      },
+      {
+        "platform": "ozon",
+        "articleKey": "wbneomax",
+        "lifecycle": "exit",
+        "currentPrice": 635,
+        "proposedPrice": null,
+        "status": "insufficient",
+        "observedDays": 0,
+        "reason": "recommendation_missing"
+      },
+      {
+        "platform": "ozon",
+        "articleKey": "wbneomaxblue",
+        "lifecycle": "exit",
+        "currentPrice": 167,
+        "proposedPrice": null,
+        "status": "insufficient",
+        "observedDays": 0,
+        "reason": "recommendation_missing"
+      },
+      {
+        "platform": "ozon",
+        "articleKey": "wboptitrin",
+        "lifecycle": "exit",
+        "currentPrice": 680,
+        "proposedPrice": null,
+        "status": "insufficient",
+        "observedDays": 19,
+        "reason": "recommendation_missing"
+      },
+      {
+        "platform": "ozon",
+        "articleKey": "wbpantogor_1_1",
+        "lifecycle": "exit",
+        "currentPrice": 1240,
+        "proposedPrice": null,
+        "status": "insufficient",
+        "observedDays": 1,
+        "reason": "recommendation_missing"
+      },
+      {
+        "platform": "ozon",
+        "articleKey": "wbsinergel",
+        "lifecycle": "exit",
+        "currentPrice": 703,
+        "proposedPrice": null,
+        "status": "insufficient",
+        "observedDays": 14,
+        "reason": "recommendation_missing"
+      },
+      {
+        "platform": "ozon",
+        "articleKey": "wbvaranga",
+        "lifecycle": "not_listed",
+        "currentPrice": 620,
+        "proposedPrice": null,
+        "status": "insufficient",
+        "observedDays": 0,
+        "reason": "recommendation_missing"
+      },
+      {
+        "platform": "ozon",
+        "articleKey": "wbvaritox",
+        "lifecycle": "exit",
+        "currentPrice": 260,
+        "proposedPrice": null,
+        "status": "insufficient",
+        "observedDays": 0,
+        "reason": "recommendation_missing"
+      },
+      {
+        "platform": "ozon",
+        "articleKey": "wbvizox",
+        "lifecycle": "exit",
+        "currentPrice": 562,
+        "proposedPrice": null,
+        "status": "insufficient",
+        "observedDays": 0,
+        "reason": "recommendation_missing"
+      },
+      {
+        "platform": "ozon",
+        "articleKey": "wowglam",
+        "lifecycle": "exit",
+        "currentPrice": 1488.3333333333333,
+        "proposedPrice": null,
+        "status": "insufficient",
+        "observedDays": 0,
+        "reason": "recommendation_missing"
+      },
+      {
+        "platform": "ozon",
+        "articleKey": "yagodniy_spas",
+        "lifecycle": "exit",
+        "currentPrice": 805,
+        "proposedPrice": 553,
+        "status": "insufficient",
+        "observedDays": 23,
+        "reason": "history_below_28_days"
+      },
+      {
+        "platform": "ozon",
+        "articleKey": "yagodniy_spas_1_1",
+        "lifecycle": "exit",
+        "currentPrice": 1550,
+        "proposedPrice": 1710,
+        "status": "insufficient",
+        "observedDays": 22,
+        "reason": "history_below_28_days"
+      },
+      {
+        "platform": "ozon",
+        "articleKey": "т-34_bad_60caps",
+        "lifecycle": "exit",
+        "currentPrice": 975,
+        "proposedPrice": null,
+        "status": "insufficient",
+        "observedDays": 0,
+        "reason": "recommendation_missing"
+      },
+      {
+        "platform": "wb",
+        "articleKey": "activeprost",
+        "lifecycle": "exit",
+        "currentPrice": 250.04,
+        "proposedPrice": 331.55,
+        "status": "insufficient",
+        "observedDays": 22,
+        "reason": "history_below_28_days"
+      },
+      {
+        "platform": "wb",
+        "articleKey": "adenofrin",
+        "lifecycle": "exit",
+        "currentPrice": 532,
+        "proposedPrice": 380,
+        "status": "insufficient",
+        "observedDays": 0,
+        "reason": "history_below_28_days"
+      },
+      {
+        "platform": "wb",
+        "articleKey": "adenofringreen",
+        "lifecycle": "exit",
+        "currentPrice": 519.84,
+        "proposedPrice": 380,
+        "status": "insufficient",
+        "observedDays": 0,
+        "reason": "history_below_28_days"
+      },
+      {
+        "platform": "wb",
+        "articleKey": "allicil_gribok15ml",
+        "lifecycle": "exit",
+        "currentPrice": 257.93,
+        "proposedPrice": null,
+        "status": "insufficient",
+        "observedDays": 10,
+        "reason": "recommendation_missing"
+      },
+      {
+        "platform": "wb",
+        "articleKey": "alteya_beauty_brows_box",
+        "lifecycle": "exit",
+        "currentPrice": 664.62,
+        "proposedPrice": 566.2,
+        "status": "insufficient",
+        "observedDays": 22,
+        "reason": "history_below_28_days"
+      },
+      {
+        "platform": "wb",
+        "articleKey": "alteya_young_skin_box",
+        "lifecycle": "exit",
+        "currentPrice": 1448.75,
+        "proposedPrice": null,
+        "status": "insufficient",
+        "observedDays": 0,
+        "reason": "recommendation_missing"
+      },
+      {
+        "platform": "wb",
+        "articleKey": "antigiperton",
+        "lifecycle": "exit",
+        "currentPrice": 2945,
+        "proposedPrice": null,
+        "status": "insufficient",
+        "observedDays": 0,
+        "reason": "recommendation_missing"
+      },
+      {
+        "platform": "wb",
+        "articleKey": "arterol",
+        "lifecycle": "exit",
+        "currentPrice": 614.46,
+        "proposedPrice": 614.65,
+        "status": "insufficient",
+        "observedDays": 0,
+        "reason": "history_below_28_days"
+      },
+      {
+        "platform": "wb",
+        "articleKey": "arterol_1_1_1",
+        "lifecycle": "exit",
+        "currentPrice": 1550.4,
+        "proposedPrice": null,
+        "status": "insufficient",
+        "observedDays": 0,
+        "reason": "recommendation_missing"
+      },
+      {
+        "platform": "wb",
+        "articleKey": "artoks",
+        "lifecycle": "exit",
+        "currentPrice": 327.18,
+        "proposedPrice": 372.4,
+        "status": "insufficient",
+        "observedDays": 20,
+        "reason": "history_below_28_days"
+      },
+      {
+        "platform": "wb",
+        "articleKey": "artoks_1_1",
+        "lifecycle": "exit",
+        "currentPrice": 654.06,
+        "proposedPrice": 702.05,
+        "status": "insufficient",
+        "observedDays": 0,
+        "reason": "history_below_28_days"
+      },
+      {
+        "platform": "wb",
+        "articleKey": "artoks_75ml",
+        "lifecycle": "exit",
+        "currentPrice": 1026,
+        "proposedPrice": 710.6,
+        "status": "insufficient",
+        "observedDays": 21,
+        "reason": "history_below_28_days"
+      },
+      {
+        "platform": "wb",
+        "articleKey": "b_kompleks_bad_60tabl",
+        "lifecycle": "exit",
+        "currentPrice": 398.73,
+        "proposedPrice": null,
+        "status": "insufficient",
+        "observedDays": 0,
+        "reason": "recommendation_missing"
+      },
+      {
+        "platform": "wb",
+        "articleKey": "balzam_kudryavii_metod_500ml",
+        "lifecycle": "new",
+        "currentPrice": 1710,
+        "proposedPrice": null,
+        "status": "insufficient",
+        "observedDays": 8,
+        "reason": "recommendation_missing"
+      },
+      {
+        "platform": "wb",
+        "articleKey": "berberin_laif_bad_60caps",
+        "lifecycle": "exit",
+        "currentPrice": 1187.5,
+        "proposedPrice": 1187.5,
+        "status": "insufficient",
+        "observedDays": 0,
+        "reason": "history_below_28_days"
+      },
+      {
+        "platform": "wb",
+        "articleKey": "biotrin_60ml",
+        "lifecycle": "exit",
+        "currentPrice": 111.72,
+        "proposedPrice": null,
+        "status": "insufficient",
+        "observedDays": 0,
+        "reason": "recommendation_missing"
+      },
+      {
+        "platform": "wb",
+        "articleKey": "brutalax",
+        "lifecycle": "exit",
+        "currentPrice": 231.19,
+        "proposedPrice": 284.05,
+        "status": "insufficient",
+        "observedDays": 0,
+        "reason": "history_below_28_days"
+      },
+      {
+        "platform": "wb",
+        "articleKey": "cardicin_bad_60caps",
+        "lifecycle": "exit",
+        "currentPrice": 598.07,
+        "proposedPrice": 641.25,
+        "status": "insufficient",
+        "observedDays": 23,
+        "reason": "history_below_28_days"
+      },
+      {
+        "platform": "wb",
+        "articleKey": "chudofrukt",
+        "lifecycle": "exit",
+        "currentPrice": 288.56,
+        "proposedPrice": 395.2,
+        "status": "insufficient",
+        "observedDays": 0,
+        "reason": "history_below_28_days"
+      },
+      {
+        "platform": "wb",
+        "articleKey": "chudofrukt_1_1",
+        "lifecycle": "exit",
+        "currentPrice": 583.54,
+        "proposedPrice": 789.45,
+        "status": "insufficient",
+        "observedDays": 0,
+        "reason": "history_below_28_days"
+      },
+      {
+        "platform": "wb",
+        "articleKey": "chudofrukt_bad_60caps",
+        "lifecycle": "exit",
+        "currentPrice": 293.74,
+        "proposedPrice": null,
+        "status": "insufficient",
+        "observedDays": 0,
+        "reason": "recommendation_missing"
+      },
+      {
+        "platform": "wb",
+        "articleKey": "chudogrib",
+        "lifecycle": "exit",
+        "currentPrice": 628.14,
+        "proposedPrice": 627.95,
+        "status": "insufficient",
+        "observedDays": 0,
+        "reason": "history_below_28_days"
+      },
+      {
+        "platform": "wb",
+        "articleKey": "copywbgetsize1gel2",
+        "lifecycle": "exit",
+        "currentPrice": 1140,
+        "proposedPrice": null,
+        "status": "insufficient",
+        "observedDays": 0,
+        "reason": "recommendation_missing"
+      },
+      {
+        "platform": "wb",
+        "articleKey": "cpa_все_sku",
+        "lifecycle": "other",
+        "currentPrice": 385.9,
+        "proposedPrice": null,
+        "status": "insufficient",
+        "observedDays": 1,
+        "reason": "recommendation_missing"
+      },
+      {
+        "platform": "wb",
+        "articleKey": "curly_method_300ml",
+        "lifecycle": "active",
+        "currentPrice": 1626.72,
+        "proposedPrice": null,
+        "status": "insufficient",
+        "observedDays": 51,
+        "reason": "recommendation_missing"
+      },
+      {
+        "platform": "wb",
+        "articleKey": "daoshen",
+        "lifecycle": "exit",
+        "currentPrice": 254.03,
+        "proposedPrice": 311.6,
+        "status": "insufficient",
+        "observedDays": 7,
+        "reason": "history_below_28_days"
+      },
+      {
+        "platform": "wb",
+        "articleKey": "daoshen_75ml",
+        "lifecycle": "exit",
+        "currentPrice": 478.23,
+        "proposedPrice": 513,
+        "status": "insufficient",
+        "observedDays": 23,
+        "reason": "history_below_28_days"
+      },
+      {
+        "platform": "wb",
+        "articleKey": "dardrakona",
+        "lifecycle": "exit",
+        "currentPrice": 310.55,
+        "proposedPrice": 369.54,
+        "status": "insufficient",
+        "observedDays": 22,
+        "reason": "history_below_28_days"
+      },
+      {
+        "platform": "wb",
+        "articleKey": "dardrakona_1_1",
+        "lifecycle": "exit",
+        "currentPrice": 620.54,
+        "proposedPrice": 665.95,
+        "status": "insufficient",
+        "observedDays": 20,
+        "reason": "history_below_28_days"
+      },
+      {
+        "platform": "wb",
+        "articleKey": "dardrakona_75ml",
+        "lifecycle": "exit",
+        "currentPrice": 400.33,
+        "proposedPrice": 399.95,
+        "status": "insufficient",
+        "observedDays": 23,
+        "reason": "history_below_28_days"
+      },
+      {
+        "platform": "wb",
+        "articleKey": "dolgar",
+        "lifecycle": "exit",
+        "currentPrice": 264.67,
+        "proposedPrice": 315.4,
+        "status": "insufficient",
+        "observedDays": 9,
+        "reason": "history_below_28_days"
+      },
+      {
+        "platform": "wb",
+        "articleKey": "ekdisteron_ultra_man_60caps",
+        "lifecycle": "exit",
+        "currentPrice": 678.3,
+        "proposedPrice": 678.3,
+        "status": "insufficient",
+        "observedDays": 20,
+        "reason": "history_below_28_days"
+      },
+      {
+        "platform": "wb",
+        "articleKey": "ekzifol",
+        "lifecycle": "exit",
+        "currentPrice": 319.86,
+        "proposedPrice": 399.94,
+        "status": "insufficient",
+        "observedDays": 23,
+        "reason": "history_below_28_days"
+      },
+      {
+        "platform": "wb",
+        "articleKey": "enteroshol",
+        "lifecycle": "exit",
+        "currentPrice": 612.44,
+        "proposedPrice": null,
+        "status": "insufficient",
+        "observedDays": 0,
+        "reason": "recommendation_missing"
+      },
+      {
+        "platform": "wb",
+        "articleKey": "enzim_pudra_80gr",
+        "lifecycle": "exit",
+        "currentPrice": 707.75,
+        "proposedPrice": null,
+        "status": "insufficient",
+        "observedDays": 1,
+        "reason": "recommendation_missing"
+      },
+      {
+        "platform": "wb",
+        "articleKey": "enzim_pudra_80gr_v2",
+        "lifecycle": "active",
+        "currentPrice": 1040.25,
+        "proposedPrice": null,
+        "status": "insufficient",
+        "observedDays": 51,
+        "reason": "recommendation_missing"
+      },
+      {
+        "platform": "wb",
+        "articleKey": "erobrut",
+        "lifecycle": "exit",
+        "currentPrice": 328.32,
+        "proposedPrice": 352.45,
+        "status": "insufficient",
+        "observedDays": 23,
+        "reason": "history_below_28_days"
+      },
+      {
+        "platform": "wb",
+        "articleKey": "fruitalica",
+        "lifecycle": "exit",
+        "currentPrice": 250.33,
+        "proposedPrice": 334.41,
+        "status": "insufficient",
+        "observedDays": 0,
+        "reason": "history_below_28_days"
+      },
+      {
+        "platform": "wb",
+        "articleKey": "frutaksa_bad_200gr",
+        "lifecycle": "exit",
+        "currentPrice": 692.55,
+        "proposedPrice": 692.55,
+        "status": "insufficient",
+        "observedDays": 6,
+        "reason": "history_below_28_days"
+      },
+      {
+        "platform": "wb",
+        "articleKey": "frutalika_bad_60caps",
+        "lifecycle": "exit",
+        "currentPrice": 521.04,
+        "proposedPrice": 520.6,
+        "status": "insufficient",
+        "observedDays": 23,
+        "reason": "history_below_28_days"
+      },
+      {
+        "platform": "wb",
+        "articleKey": "gel_antiakne_20ml",
+        "lifecycle": "exit",
+        "currentPrice": 741,
+        "proposedPrice": null,
+        "status": "insufficient",
+        "observedDays": 7,
+        "reason": "recommendation_missing"
+      },
+      {
+        "platform": "wb",
+        "articleKey": "gel_antiakne_20ml_v2",
+        "lifecycle": "active",
+        "currentPrice": 1211.25,
+        "proposedPrice": null,
+        "status": "insufficient",
+        "observedDays": 51,
+        "reason": "recommendation_missing"
+      },
+      {
+        "platform": "wb",
+        "articleKey": "gel_brows_5ml",
+        "lifecycle": "active",
+        "currentPrice": 570,
+        "proposedPrice": null,
+        "status": "insufficient",
+        "observedDays": 23,
+        "reason": "recommendation_missing"
+      },
+      {
+        "platform": "wb",
+        "articleKey": "gel_dlya_britya_300ml",
+        "lifecycle": "exit",
+        "currentPrice": 522.5,
+        "proposedPrice": 476.9,
+        "status": "insufficient",
+        "observedDays": 23,
+        "reason": "history_below_28_days"
+      },
+      {
+        "platform": "wb",
+        "articleKey": "gel_dlya_brovei_6ml",
+        "lifecycle": "exit",
+        "currentPrice": 434.11,
+        "proposedPrice": 300.2,
+        "status": "insufficient",
+        "observedDays": 23,
+        "reason": "history_below_28_days"
+      },
+      {
+        "platform": "wb",
+        "articleKey": "gel_for_men_3_in_1_1000ml",
+        "lifecycle": "exit",
+        "currentPrice": 424.79,
+        "proposedPrice": 424.65,
+        "status": "insufficient",
+        "observedDays": 23,
+        "reason": "history_below_28_days"
+      },
+      {
+        "platform": "wb",
+        "articleKey": "gel_kudryavii_metod_300ml",
+        "lifecycle": "new",
+        "currentPrice": 1425,
+        "proposedPrice": null,
+        "status": "insufficient",
+        "observedDays": 0,
+        "reason": "recommendation_missing"
+      },
+      {
+        "platform": "wb",
+        "articleKey": "gel_parfum_tabacco_vanille_450ml",
+        "lifecycle": "exit",
+        "currentPrice": 423.21,
+        "proposedPrice": 422.75,
+        "status": "insufficient",
+        "observedDays": 23,
+        "reason": "history_below_28_days"
+      },
+      {
+        "platform": "wb",
+        "articleKey": "gel-penka_dlya_lica_150ml",
+        "lifecycle": "new",
+        "currentPrice": 2500,
+        "proposedPrice": null,
+        "status": "insufficient",
+        "observedDays": 0,
+        "reason": "recommendation_missing"
+      },
+      {
+        "platform": "wb",
+        "articleKey": "gemorekt",
+        "lifecycle": "exit",
+        "currentPrice": 261.2,
+        "proposedPrice": null,
+        "status": "insufficient",
+        "observedDays": 22,
+        "reason": "recommendation_missing"
+      },
+      {
+        "platform": "wb",
+        "articleKey": "gidrofilnoe_maslo_150ml",
+        "lifecycle": "exit",
+        "currentPrice": 501.6,
+        "proposedPrice": 501.6,
+        "status": "insufficient",
+        "observedDays": 0,
+        "reason": "history_below_28_days"
+      },
+      {
+        "platform": "wb",
+        "articleKey": "glikiron",
+        "lifecycle": "exit",
+        "currentPrice": 316.78,
+        "proposedPrice": null,
+        "status": "insufficient",
+        "observedDays": 0,
+        "reason": "recommendation_missing"
+      },
+      {
+        "platform": "wb",
+        "articleKey": "glikiron_bad_60caps",
+        "lifecycle": "exit",
+        "currentPrice": 477.14,
+        "proposedPrice": 476.9,
+        "status": "insufficient",
+        "observedDays": 17,
+        "reason": "history_below_28_days"
+      },
+      {
+        "platform": "wb",
+        "articleKey": "glukofol",
+        "lifecycle": "exit",
+        "currentPrice": 602.19,
+        "proposedPrice": null,
+        "status": "insufficient",
+        "observedDays": 0,
+        "reason": "recommendation_missing"
+      },
+      {
+        "platform": "wb",
+        "articleKey": "i_am_alpha_bad_60caps",
+        "lifecycle": "exit",
+        "currentPrice": 760,
+        "proposedPrice": 826.5,
+        "status": "insufficient",
+        "observedDays": 20,
+        "reason": "history_below_28_days"
+      },
+      {
+        "platform": "wb",
+        "articleKey": "indolakt_bad_60caps",
+        "lifecycle": "exit",
+        "currentPrice": 570,
+        "proposedPrice": 570,
+        "status": "insufficient",
+        "observedDays": 23,
+        "reason": "history_below_28_days"
+      },
+      {
+        "platform": "wb",
+        "articleKey": "insulight",
+        "lifecycle": "exit",
+        "currentPrice": 381.14,
+        "proposedPrice": 380.95,
+        "status": "insufficient",
+        "observedDays": 0,
+        "reason": "history_below_28_days"
+      },
+      {
+        "platform": "wb",
+        "articleKey": "insulight_bad_60caps",
+        "lifecycle": "exit",
+        "currentPrice": 688.75,
+        "proposedPrice": 704.9,
+        "status": "insufficient",
+        "observedDays": 23,
+        "reason": "history_below_28_days"
+      },
+      {
+        "platform": "wb",
+        "articleKey": "insulight_v2",
+        "lifecycle": "exit",
+        "currentPrice": 1900,
+        "proposedPrice": null,
+        "status": "insufficient",
+        "observedDays": 0,
+        "reason": "recommendation_missing"
+      },
+      {
+        "platform": "wb",
+        "articleKey": "intimvita_200ml",
+        "lifecycle": "exit",
+        "currentPrice": 352.26,
+        "proposedPrice": 332.5,
+        "status": "insufficient",
+        "observedDays": 22,
+        "reason": "history_below_28_days"
+      },
+      {
+        "platform": "wb",
+        "articleKey": "intimvita_300ml",
+        "lifecycle": "question",
+        "currentPrice": 524.4,
+        "proposedPrice": 524.4,
+        "status": "modelled",
+        "model": "60d_counterfactual_constant_target_price_v1",
+        "causalClaim": false,
+        "observedDays": 51,
+        "exceptionalDaysExcluded": 0,
+        "targetPrice": 552,
+        "elasticity": -0.9148,
+        "elasticitySource": "learned_own_price_history",
+        "baseline": {
+          "units": 1143,
+          "turnoverRub": 382598.27,
+          "contributionRub": 3727.47
+        },
+        "scenario": {
+          "units": 723.17,
+          "turnoverRub": 399192.12,
+          "contributionRub": 95375.1
+        },
+        "delta": {
+          "units": -419.83,
+          "turnoverRub": 16593.85,
+          "turnoverPct": 0.043371,
+          "contributionRub": 91647.62,
+          "contributionPct": 24.587057
+        }
+      },
+      {
+        "platform": "wb",
+        "articleKey": "kardicin",
+        "lifecycle": "exit",
+        "currentPrice": 575.27,
+        "proposedPrice": 575.7,
+        "status": "insufficient",
+        "observedDays": 0,
+        "reason": "history_below_28_days"
+      },
+      {
+        "platform": "wb",
+        "articleKey": "kardicin_1_1",
+        "lifecycle": "exit",
+        "currentPrice": 549.82,
+        "proposedPrice": 550.05,
+        "status": "insufficient",
+        "observedDays": 0,
+        "reason": "history_below_28_days"
+      },
+      {
+        "platform": "wb",
+        "articleKey": "kardicin_1_1_1",
+        "lifecycle": "exit",
+        "currentPrice": 824.73,
+        "proposedPrice": 824.6,
+        "status": "insufficient",
+        "observedDays": 0,
+        "reason": "history_below_28_days"
+      },
+      {
+        "platform": "wb",
+        "articleKey": "kavmaz",
+        "lifecycle": "exit",
+        "currentPrice": 320.53,
+        "proposedPrice": 374.3,
+        "status": "insufficient",
+        "observedDays": 23,
+        "reason": "history_below_28_days"
+      },
+      {
+        "platform": "wb",
+        "articleKey": "kavmaz_40ml_1_1",
+        "lifecycle": "exit",
+        "currentPrice": 1284.25,
+        "proposedPrice": null,
+        "status": "insufficient",
+        "observedDays": 0,
+        "reason": "recommendation_missing"
+      },
+      {
+        "platform": "wb",
+        "articleKey": "kavmaz_60ml",
+        "lifecycle": "exit",
+        "currentPrice": 355.68,
+        "proposedPrice": 477.85,
+        "status": "insufficient",
+        "observedDays": 23,
+        "reason": "history_below_28_days"
+      },
+      {
+        "platform": "wb",
+        "articleKey": "khvoinitsa",
+        "lifecycle": "exit",
+        "currentPrice": 299.82,
+        "proposedPrice": 361.95,
+        "status": "insufficient",
+        "observedDays": 14,
+        "reason": "history_below_28_days"
+      },
+      {
+        "platform": "wb",
+        "articleKey": "khvoinitsa_1_1",
+        "lifecycle": "exit",
+        "currentPrice": 698.91,
+        "proposedPrice": 699.19,
+        "status": "insufficient",
+        "observedDays": 13,
+        "reason": "history_below_28_days"
+      },
+      {
+        "platform": "wb",
+        "articleKey": "kinzhal",
+        "lifecycle": "exit",
+        "currentPrice": 290.22,
+        "proposedPrice": 342.94,
+        "status": "insufficient",
+        "observedDays": 18,
+        "reason": "history_below_28_days"
+      },
+      {
+        "platform": "wb",
+        "articleKey": "kinzhal_1_1",
+        "lifecycle": "exit",
+        "currentPrice": 639.07,
+        "proposedPrice": null,
+        "status": "insufficient",
+        "observedDays": 0,
+        "reason": "recommendation_missing"
+      },
+      {
+        "platform": "wb",
+        "articleKey": "krem_buster_250ml",
+        "lifecycle": "active",
+        "currentPrice": 926.25,
+        "proposedPrice": null,
+        "status": "insufficient",
+        "observedDays": 51,
+        "reason": "recommendation_missing"
+      },
+      {
+        "platform": "wb",
+        "articleKey": "krem_dlya_lica_pdrn_50_ml",
+        "lifecycle": "new",
+        "currentPrice": 1662.5,
+        "proposedPrice": null,
+        "status": "insufficient",
+        "observedDays": 10,
+        "reason": "recommendation_missing"
+      },
+      {
+        "platform": "wb",
+        "articleKey": "krem_dlya_ruk_75ml",
+        "lifecycle": "active",
+        "currentPrice": 444.6,
+        "proposedPrice": null,
+        "status": "insufficient",
+        "observedDays": 51,
+        "reason": "recommendation_missing"
+      },
+      {
+        "platform": "wb",
+        "articleKey": "krem_dlya_vek_30ml",
+        "lifecycle": "active",
+        "currentPrice": 987.01,
+        "proposedPrice": null,
+        "status": "insufficient",
+        "observedDays": 51,
+        "reason": "recommendation_missing"
+      },
+      {
+        "platform": "wb",
+        "articleKey": "krem_ot_rastyazhek",
+        "lifecycle": "active",
+        "currentPrice": 975.41,
+        "proposedPrice": null,
+        "status": "insufficient",
+        "observedDays": 51,
+        "reason": "recommendation_missing"
+      },
+      {
+        "platform": "wb",
+        "articleKey": "krem_spf50_50ml",
+        "lifecycle": "active",
+        "currentPrice": 1130.5,
+        "proposedPrice": null,
+        "status": "insufficient",
+        "observedDays": 51,
+        "reason": "recommendation_missing"
+      },
+      {
+        "platform": "wb",
+        "articleKey": "krem-filler_15ml",
+        "lifecycle": "not_listed",
+        "currentPrice": null,
+        "proposedPrice": null,
+        "status": "insufficient",
+        "observedDays": 0,
+        "reason": "recommendation_missing"
+      },
+      {
+        "platform": "wb",
+        "articleKey": "kremshelk_100ml",
+        "lifecycle": "active",
+        "currentPrice": 841.04,
+        "proposedPrice": null,
+        "status": "insufficient",
+        "observedDays": 51,
+        "reason": "recommendation_missing"
+      },
+      {
+        "platform": "wb",
+        "articleKey": "krovavii_piling_30ml",
+        "lifecycle": "active",
+        "currentPrice": 1236.9,
+        "proposedPrice": null,
+        "status": "insufficient",
+        "observedDays": 51,
+        "reason": "recommendation_missing"
+      },
+      {
+        "platform": "wb",
+        "articleKey": "lifting_maska_pdrn_75ml",
+        "lifecycle": "new",
+        "currentPrice": 1200,
+        "proposedPrice": null,
+        "status": "insufficient",
+        "observedDays": 7,
+        "reason": "recommendation_missing"
+      },
+      {
+        "platform": "wb",
+        "articleKey": "limfaks_bad_30caps",
+        "lifecycle": "exit",
+        "currentPrice": 940.5,
+        "proposedPrice": 507.3,
+        "status": "insufficient",
+        "observedDays": 23,
+        "reason": "history_below_28_days"
+      },
+      {
+        "platform": "wb",
+        "articleKey": "maska_dlya_lica_100ml",
+        "lifecycle": "active",
+        "currentPrice": 1401.25,
+        "proposedPrice": null,
+        "status": "insufficient",
+        "observedDays": 51,
+        "reason": "recommendation_missing"
+      },
+      {
+        "platform": "wb",
+        "articleKey": "maska-batter_250ml",
+        "lifecycle": "active",
+        "currentPrice": 569.86,
+        "proposedPrice": null,
+        "status": "insufficient",
+        "observedDays": 51,
+        "reason": "recommendation_missing"
+      },
+      {
+        "platform": "wb",
+        "articleKey": "maska-batter_500ml",
+        "lifecycle": "active",
+        "currentPrice": 712.5,
+        "proposedPrice": null,
+        "status": "insufficient",
+        "observedDays": 50,
+        "reason": "recommendation_missing"
+      },
+      {
+        "platform": "wb",
+        "articleKey": "maska-batter_dlya_rosta_500ml",
+        "lifecycle": "active",
+        "currentPrice": 807.24,
+        "proposedPrice": null,
+        "status": "insufficient",
+        "observedDays": 51,
+        "reason": "recommendation_missing"
+      },
+      {
+        "platform": "wb",
+        "articleKey": "maslo_dlya_borodi_50ml",
+        "lifecycle": "exit",
+        "currentPrice": 556.27,
+        "proposedPrice": 474.05,
+        "status": "insufficient",
+        "observedDays": 23,
+        "reason": "history_below_28_days"
+      },
+      {
+        "platform": "wb",
+        "articleKey": "maslo_dlya_volos_parf_110ml",
+        "lifecycle": "exit",
+        "currentPrice": 204.49,
+        "proposedPrice": 426.56,
+        "status": "insufficient",
+        "observedDays": 0,
+        "reason": "history_below_28_days"
+      },
+      {
+        "platform": "wb",
+        "articleKey": "maslo_dlya_volos_parf_110ml_",
+        "lifecycle": "exit",
+        "currentPrice": 627,
+        "proposedPrice": 568.1,
+        "status": "insufficient",
+        "observedDays": 0,
+        "reason": "history_below_28_days"
+      },
+      {
+        "platform": "wb",
+        "articleKey": "matte_wax_50ml",
+        "lifecycle": "active",
+        "currentPrice": 570,
+        "proposedPrice": null,
+        "status": "insufficient",
+        "observedDays": 23,
+        "reason": "recommendation_missing"
+      },
+      {
+        "platform": "wb",
+        "articleKey": "menoflavon_bad_60caps",
+        "lifecycle": "exit",
+        "currentPrice": 862.52,
+        "proposedPrice": 670.7,
+        "status": "insufficient",
+        "observedDays": 23,
+        "reason": "history_below_28_days"
+      },
+      {
+        "platform": "wb",
+        "articleKey": "micardin",
+        "lifecycle": "exit",
+        "currentPrice": 275.31,
+        "proposedPrice": 321.1,
+        "status": "insufficient",
+        "observedDays": 18,
+        "reason": "history_below_28_days"
+      },
+      {
+        "platform": "wb",
+        "articleKey": "micardin_1_1",
+        "lifecycle": "exit",
+        "currentPrice": 549.95,
+        "proposedPrice": 589.94,
+        "status": "insufficient",
+        "observedDays": 23,
+        "reason": "history_below_28_days"
+      },
+      {
+        "platform": "wb",
+        "articleKey": "micardin_1_1_1",
+        "lifecycle": "exit",
+        "currentPrice": 825.21,
+        "proposedPrice": 885.4,
+        "status": "insufficient",
+        "observedDays": 17,
+        "reason": "history_below_28_days"
+      },
+      {
+        "platform": "wb",
+        "articleKey": "micolan",
+        "lifecycle": "exit",
+        "currentPrice": 258.7,
+        "proposedPrice": 315.4,
+        "status": "insufficient",
+        "observedDays": 0,
+        "reason": "history_below_28_days"
+      },
+      {
+        "platform": "wb",
+        "articleKey": "mikardin_plus_bad_60_caps",
+        "lifecycle": "exit",
+        "currentPrice": 1028.85,
+        "proposedPrice": null,
+        "status": "insufficient",
+        "observedDays": 0,
+        "reason": "recommendation_missing"
+      },
+      {
+        "platform": "wb",
+        "articleKey": "monarda_30ml",
+        "lifecycle": "exit",
+        "currentPrice": 75,
+        "proposedPrice": null,
+        "status": "insufficient",
+        "observedDays": 0,
+        "reason": "recommendation_missing"
+      },
+      {
+        "platform": "wb",
+        "articleKey": "mycoplax",
+        "lifecycle": "exit",
+        "currentPrice": 302.58,
+        "proposedPrice": 327.76,
+        "status": "insufficient",
+        "observedDays": 23,
+        "reason": "history_below_28_days"
+      },
+      {
+        "platform": "wb",
+        "articleKey": "mycoplax_1_1",
+        "lifecycle": "exit",
+        "currentPrice": 1377.5,
+        "proposedPrice": null,
+        "status": "insufficient",
+        "observedDays": 0,
+        "reason": "recommendation_missing"
+      },
+      {
+        "platform": "wb",
+        "articleKey": "nabor_penka_dlya_resnic",
+        "lifecycle": "exit",
+        "currentPrice": 889.2,
+        "proposedPrice": null,
+        "status": "insufficient",
+        "observedDays": 0,
+        "reason": "recommendation_missing"
+      },
+      {
+        "platform": "wb",
+        "articleKey": "nabor_remuver_40ml",
+        "lifecycle": "exit",
+        "currentPrice": 284.89,
+        "proposedPrice": 233.7,
+        "status": "insufficient",
+        "observedDays": 23,
+        "reason": "history_below_28_days"
+      },
+      {
+        "platform": "wb",
+        "articleKey": "nabor_remuver_40ml_1_1",
+        "lifecycle": "exit",
+        "currentPrice": 365.37,
+        "proposedPrice": 365.75,
+        "status": "insufficient",
+        "observedDays": 20,
+        "reason": "history_below_28_days"
+      },
+      {
+        "platform": "wb",
+        "articleKey": "nabor_remuver_kremovii",
+        "lifecycle": "active",
+        "currentPrice": 446.88,
+        "proposedPrice": null,
+        "status": "insufficient",
+        "observedDays": 51,
+        "reason": "recommendation_missing"
+      },
+      {
+        "platform": "wb",
+        "articleKey": "oftalmol",
+        "lifecycle": "exit",
+        "currentPrice": 646.38,
+        "proposedPrice": null,
+        "status": "insufficient",
+        "observedDays": 0,
+        "reason": "recommendation_missing"
+      },
+      {
+        "platform": "wb",
+        "articleKey": "okospas",
+        "lifecycle": "exit",
+        "currentPrice": 576.84,
+        "proposedPrice": 576.65,
+        "status": "insufficient",
+        "observedDays": 0,
+        "reason": "history_below_28_days"
+      },
+      {
+        "platform": "wb",
+        "articleKey": "okucin",
+        "lifecycle": "exit",
+        "currentPrice": 332.77,
+        "proposedPrice": 345.8,
+        "status": "insufficient",
+        "observedDays": 0,
+        "reason": "history_below_28_days"
+      },
+      {
+        "platform": "wb",
+        "articleKey": "osteofast",
+        "lifecycle": "exit",
+        "currentPrice": 366.42,
+        "proposedPrice": 406.61,
+        "status": "insufficient",
+        "observedDays": 20,
+        "reason": "history_below_28_days"
+      },
+      {
+        "platform": "wb",
+        "articleKey": "otivin",
+        "lifecycle": "exit",
+        "currentPrice": 366.37,
+        "proposedPrice": 393.3,
+        "status": "insufficient",
+        "observedDays": 2,
+        "reason": "history_below_28_days"
+      },
+      {
+        "platform": "wb",
+        "articleKey": "otz_fbs3_curly_method_300ml",
+        "lifecycle": "",
+        "currentPrice": 285,
+        "proposedPrice": null,
+        "status": "insufficient",
+        "observedDays": 2,
+        "reason": "recommendation_missing"
+      },
+      {
+        "platform": "wb",
+        "articleKey": "pantogor_100ml",
+        "lifecycle": "exit",
+        "currentPrice": 506.77,
+        "proposedPrice": null,
+        "status": "insufficient",
+        "observedDays": 0,
+        "reason": "recommendation_missing"
+      },
+      {
+        "platform": "wb",
+        "articleKey": "penka_160ml",
+        "lifecycle": "exit",
+        "currentPrice": 681.72,
+        "proposedPrice": 447.45,
+        "status": "insufficient",
+        "observedDays": 0,
+        "reason": "history_below_28_days"
+      },
+      {
+        "platform": "wb",
+        "articleKey": "penka_kudryavii_metod_150ml",
+        "lifecycle": "active",
+        "currentPrice": 1405.05,
+        "proposedPrice": null,
+        "status": "insufficient",
+        "observedDays": 51,
+        "reason": "recommendation_missing"
+      },
+      {
+        "platform": "wb",
+        "articleKey": "piling_100ml",
+        "lifecycle": "exit",
+        "currentPrice": 202.49,
+        "proposedPrice": null,
+        "status": "insufficient",
+        "observedDays": 0,
+        "reason": "recommendation_missing"
+      },
+      {
+        "platform": "wb",
+        "articleKey": "pink_pepper_50ml",
+        "lifecycle": "active",
+        "currentPrice": 769.5,
+        "proposedPrice": null,
+        "status": "insufficient",
+        "observedDays": 21,
+        "reason": "recommendation_missing"
+      },
+      {
+        "platform": "wb",
+        "articleKey": "pirantoks_bad_60caps",
+        "lifecycle": "exit",
+        "currentPrice": 446.5,
+        "proposedPrice": null,
+        "status": "insufficient",
+        "observedDays": 0,
+        "reason": "recommendation_missing"
+      },
+      {
+        "platform": "wb",
+        "articleKey": "psoral",
+        "lifecycle": "exit",
+        "currentPrice": 259.16,
+        "proposedPrice": 344.85,
+        "status": "insufficient",
+        "observedDays": 21,
+        "reason": "history_below_28_days"
+      },
+      {
+        "platform": "wb",
+        "articleKey": "psoral_50ml",
+        "lifecycle": "exit",
+        "currentPrice": 349.13,
+        "proposedPrice": null,
+        "status": "insufficient",
+        "observedDays": 18,
+        "reason": "recommendation_missing"
+      },
+      {
+        "platform": "wb",
+        "articleKey": "relaksinol_bad_60caps",
+        "lifecycle": "exit",
+        "currentPrice": 570,
+        "proposedPrice": 785.65,
+        "status": "insufficient",
+        "observedDays": 23,
+        "reason": "history_below_28_days"
+      },
+      {
+        "platform": "wb",
+        "articleKey": "remuver_40ml",
+        "lifecycle": "not_listed",
+        "currentPrice": null,
+        "proposedPrice": null,
+        "status": "insufficient",
+        "observedDays": 0,
+        "reason": "recommendation_missing"
+      },
+      {
+        "platform": "wb",
+        "articleKey": "retiderm_50ml",
+        "lifecycle": "active",
+        "currentPrice": 300,
+        "proposedPrice": null,
+        "status": "insufficient",
+        "observedDays": 51,
+        "reason": "recommendation_missing"
+      },
+      {
+        "platform": "wb",
+        "articleKey": "retinait_krem_01_50ml",
+        "lifecycle": "active",
+        "currentPrice": 1072.71,
+        "proposedPrice": null,
+        "status": "insufficient",
+        "observedDays": 51,
+        "reason": "recommendation_missing"
+      },
+      {
+        "platform": "wb",
+        "articleKey": "retinait_krem_025_50ml",
+        "lifecycle": "active",
+        "currentPrice": 1225.26,
+        "proposedPrice": null,
+        "status": "insufficient",
+        "observedDays": 51,
+        "reason": "recommendation_missing"
+      },
+      {
+        "platform": "wb",
+        "articleKey": "retinait_krem_05_50ml",
+        "lifecycle": "active",
+        "currentPrice": 1097.9,
+        "proposedPrice": null,
+        "status": "insufficient",
+        "observedDays": 51,
+        "reason": "recommendation_missing"
+      },
+      {
+        "platform": "wb",
+        "articleKey": "retinait_krem_1_5_50ml",
+        "lifecycle": "active",
+        "currentPrice": 1602.84,
+        "proposedPrice": null,
+        "status": "insufficient",
+        "observedDays": 51,
+        "reason": "recommendation_missing"
+      },
+      {
+        "platform": "wb",
+        "articleKey": "retinait_krem_1_50ml",
+        "lifecycle": "active",
+        "currentPrice": 1663.49,
+        "proposedPrice": null,
+        "status": "insufficient",
+        "observedDays": 51,
+        "reason": "recommendation_missing"
+      },
+      {
+        "platform": "wb",
+        "articleKey": "retinait_syvorotka_025_30ml",
+        "lifecycle": "active",
+        "currentPrice": 1662.5,
+        "proposedPrice": null,
+        "status": "insufficient",
+        "observedDays": 51,
+        "reason": "recommendation_missing"
+      },
+      {
+        "platform": "wb",
+        "articleKey": "retinait_syvorotka_05_30ml",
+        "lifecycle": "new",
+        "currentPrice": 2375,
+        "proposedPrice": null,
+        "status": "insufficient",
+        "observedDays": 51,
+        "reason": "recommendation_missing"
+      },
+      {
+        "platform": "wb",
+        "articleKey": "retinait_syvorotka_1_30ml",
+        "lifecycle": "active",
+        "currentPrice": 2280,
+        "proposedPrice": null,
+        "status": "insufficient",
+        "observedDays": 51,
+        "reason": "recommendation_missing"
+      },
+      {
+        "platform": "wb",
+        "articleKey": "retinol_boost_krem_dlya_vek_30ml",
+        "lifecycle": "new",
+        "currentPrice": 1506.99,
+        "proposedPrice": null,
+        "status": "insufficient",
+        "observedDays": 51,
+        "reason": "recommendation_missing"
+      },
+      {
+        "platform": "wb",
+        "articleKey": "retinol_full_journey",
+        "lifecycle": "active",
+        "currentPrice": 5130,
+        "proposedPrice": null,
+        "status": "insufficient",
+        "observedDays": 0,
+        "reason": "recommendation_missing"
+      },
+      {
+        "platform": "wb",
+        "articleKey": "retinol_start_kit",
+        "lifecycle": "active",
+        "currentPrice": 2375,
+        "proposedPrice": null,
+        "status": "insufficient",
+        "observedDays": 7,
+        "reason": "recommendation_missing"
+      },
+      {
+        "platform": "wb",
+        "articleKey": "revmastop_bad_60caps",
+        "lifecycle": "exit",
+        "currentPrice": 939.55,
+        "proposedPrice": null,
+        "status": "insufficient",
+        "observedDays": 0,
+        "reason": "recommendation_missing"
+      },
+      {
+        "platform": "wb",
+        "articleKey": "sanatsin",
+        "lifecycle": "exit",
+        "currentPrice": 308.56,
+        "proposedPrice": 331.55,
+        "status": "insufficient",
+        "observedDays": 10,
+        "reason": "history_below_28_days"
+      },
+      {
+        "platform": "wb",
+        "articleKey": "sanatsin_1_1",
+        "lifecycle": "exit",
+        "currentPrice": 1353.75,
+        "proposedPrice": null,
+        "status": "insufficient",
+        "observedDays": 18,
+        "reason": "recommendation_missing"
+      },
+      {
+        "platform": "wb",
+        "articleKey": "sanaсin_bad_60caps",
+        "lifecycle": "exit",
+        "currentPrice": 971.45,
+        "proposedPrice": null,
+        "status": "insufficient",
+        "observedDays": 0,
+        "reason": "recommendation_missing"
+      },
+      {
+        "platform": "wb",
+        "articleKey": "shampun_badd_500ml",
+        "lifecycle": "new",
+        "currentPrice": 2500,
+        "proposedPrice": null,
+        "status": "insufficient",
+        "observedDays": 0,
+        "reason": "recommendation_missing"
+      },
+      {
+        "platform": "wb",
+        "articleKey": "shampun_dlya_rosta_250ml",
+        "lifecycle": "active",
+        "currentPrice": 712.21,
+        "proposedPrice": null,
+        "status": "insufficient",
+        "observedDays": 51,
+        "reason": "recommendation_missing"
+      },
+      {
+        "platform": "wb",
+        "articleKey": "shampun_kudryavii_metod_500ml",
+        "lifecycle": "new",
+        "currentPrice": 1140,
+        "proposedPrice": null,
+        "status": "insufficient",
+        "observedDays": 45,
+        "reason": "recommendation_missing"
+      },
+      {
+        "platform": "wb",
+        "articleKey": "shampun_protiv_perhoti_250ml",
+        "lifecycle": "active",
+        "currentPrice": 727.23,
+        "proposedPrice": null,
+        "status": "insufficient",
+        "observedDays": 23,
+        "reason": "recommendation_missing"
+      },
+      {
+        "platform": "wb",
+        "articleKey": "silk_hair_300ml",
+        "lifecycle": "active",
+        "currentPrice": 1092.26,
+        "proposedPrice": null,
+        "status": "insufficient",
+        "observedDays": 51,
+        "reason": "recommendation_missing"
+      },
+      {
+        "platform": "wb",
+        "articleKey": "sinergel_30ml_1_1",
+        "lifecycle": "exit",
+        "currentPrice": 657.69,
+        "proposedPrice": null,
+        "status": "insufficient",
+        "observedDays": 23,
+        "reason": "recommendation_missing"
+      },
+      {
+        "platform": "wb",
+        "articleKey": "skrab_babl_gam_200ml",
+        "lifecycle": "active",
+        "currentPrice": 569.86,
+        "proposedPrice": null,
+        "status": "insufficient",
+        "observedDays": 48,
+        "reason": "recommendation_missing"
+      },
+      {
+        "platform": "wb",
+        "articleKey": "solevoy_sprei_200ml",
+        "lifecycle": "active",
+        "currentPrice": 798.66,
+        "proposedPrice": null,
+        "status": "insufficient",
+        "observedDays": 51,
+        "reason": "recommendation_missing"
+      },
+      {
+        "platform": "wb",
+        "articleKey": "spicul_gel_mask_75ml",
+        "lifecycle": "new",
+        "currentPrice": 1329.89,
+        "proposedPrice": null,
+        "status": "insufficient",
+        "observedDays": 50,
+        "reason": "recommendation_missing"
+      },
+      {
+        "platform": "wb",
+        "articleKey": "spiculboost_30ml",
+        "lifecycle": "new",
+        "currentPrice": 2375,
+        "proposedPrice": null,
+        "status": "insufficient",
+        "observedDays": 51,
+        "reason": "recommendation_missing"
+      },
+      {
+        "platform": "wb",
+        "articleKey": "spray-syvorotka_pdrn_100ml",
+        "lifecycle": "new",
+        "currentPrice": 1500,
+        "proposedPrice": null,
+        "status": "insufficient",
+        "observedDays": 0,
+        "reason": "recommendation_missing"
+      },
+      {
+        "platform": "wb",
+        "articleKey": "sprei_buster_100ml",
+        "lifecycle": "active",
+        "currentPrice": 1068.75,
+        "proposedPrice": null,
+        "status": "insufficient",
+        "observedDays": 51,
+        "reason": "recommendation_missing"
+      },
+      {
+        "platform": "wb",
+        "articleKey": "stik_ot_mozoley",
+        "lifecycle": "exit",
+        "currentPrice": 253.08,
+        "proposedPrice": 334.4,
+        "status": "insufficient",
+        "observedDays": 1,
+        "reason": "history_below_28_days"
+      },
+      {
+        "platform": "wb",
+        "articleKey": "strong_hair",
+        "lifecycle": "active",
+        "currentPrice": 2850,
+        "proposedPrice": null,
+        "status": "insufficient",
+        "observedDays": 0,
+        "reason": "recommendation_missing"
+      },
+      {
+        "platform": "wb",
+        "articleKey": "sustalit",
+        "lifecycle": "exit",
+        "currentPrice": 334.49,
+        "proposedPrice": 360.04,
+        "status": "insufficient",
+        "observedDays": 23,
+        "reason": "history_below_28_days"
+      },
+      {
+        "platform": "wb",
+        "articleKey": "sustalit_30ml_1_1",
+        "lifecycle": "exit",
+        "currentPrice": 989.52,
+        "proposedPrice": null,
+        "status": "insufficient",
+        "observedDays": 0,
+        "reason": "recommendation_missing"
+      },
+      {
+        "platform": "wb",
+        "articleKey": "sustalit_75ml",
+        "lifecycle": "exit",
+        "currentPrice": 420.94,
+        "proposedPrice": 484.49,
+        "status": "insufficient",
+        "observedDays": 23,
+        "reason": "history_below_28_days"
+      },
+      {
+        "platform": "wb",
+        "articleKey": "synergel_60ml",
+        "lifecycle": "exit",
+        "currentPrice": 532,
+        "proposedPrice": 532,
+        "status": "insufficient",
+        "observedDays": 23,
+        "reason": "history_below_28_days"
+      },
+      {
+        "platform": "wb",
+        "articleKey": "syvorotka_dlya_lica_30ml",
+        "lifecycle": "active",
+        "currentPrice": 1474.59,
+        "proposedPrice": null,
+        "status": "insufficient",
+        "observedDays": 51,
+        "reason": "recommendation_missing"
+      },
+      {
+        "platform": "wb",
+        "articleKey": "syvorotka_dlya_lica_30ml_v2",
+        "lifecycle": "not_listed",
+        "currentPrice": null,
+        "proposedPrice": null,
+        "status": "insufficient",
+        "observedDays": 0,
+        "reason": "recommendation_missing"
+      },
+      {
+        "platform": "wb",
+        "articleKey": "syvorotka_dlya_lica_intens_uvl_30ml",
+        "lifecycle": "new",
+        "currentPrice": 1425,
+        "proposedPrice": null,
+        "status": "insufficient",
+        "observedDays": 0,
+        "reason": "recommendation_missing"
+      },
+      {
+        "platform": "wb",
+        "articleKey": "syvorotka_dlya_rosta_6ml",
+        "lifecycle": "exit",
+        "currentPrice": 485.36,
+        "proposedPrice": 276.45,
+        "status": "insufficient",
+        "observedDays": 23,
+        "reason": "history_below_28_days"
+      },
+      {
+        "platform": "wb",
+        "articleKey": "syvorotka_dlya_rosta_6ml_v2",
+        "lifecycle": "active",
+        "currentPrice": 712.5,
+        "proposedPrice": null,
+        "status": "insufficient",
+        "observedDays": 51,
+        "reason": "recommendation_missing"
+      },
+      {
+        "platform": "wb",
+        "articleKey": "syvorotka_guk_30ml",
+        "lifecycle": "exit",
+        "currentPrice": 641.25,
+        "proposedPrice": 339.15,
+        "status": "insufficient",
+        "observedDays": 23,
+        "reason": "history_below_28_days"
+      },
+      {
+        "platform": "wb",
+        "articleKey": "syvorotka_niacin_05_30ml",
+        "lifecycle": "active",
+        "currentPrice": 1505.47,
+        "proposedPrice": null,
+        "status": "insufficient",
+        "observedDays": 51,
+        "reason": "recommendation_missing"
+      },
+      {
+        "platform": "wb",
+        "articleKey": "syvorotka_vit_c_30ml",
+        "lifecycle": "new",
+        "currentPrice": 813.96,
+        "proposedPrice": null,
+        "status": "insufficient",
+        "observedDays": 39,
+        "reason": "recommendation_missing"
+      },
+      {
+        "platform": "wb",
+        "articleKey": "t34poten10caps",
+        "lifecycle": "exit",
+        "currentPrice": 306.77,
+        "proposedPrice": null,
+        "status": "insufficient",
+        "observedDays": 0,
+        "reason": "recommendation_missing"
+      },
+      {
+        "platform": "wb",
+        "articleKey": "telomeras_60caps",
+        "lifecycle": "question",
+        "currentPrice": 2185,
+        "proposedPrice": null,
+        "status": "insufficient",
+        "observedDays": 0,
+        "reason": "recommendation_missing"
+      },
+      {
+        "platform": "wb",
+        "articleKey": "termo_maslo_100ml",
+        "lifecycle": "new",
+        "currentPrice": 1425,
+        "proposedPrice": null,
+        "status": "insufficient",
+        "observedDays": 0,
+        "reason": "recommendation_missing"
+      },
+      {
+        "platform": "wb",
+        "articleKey": "termo_sprei_200ml",
+        "lifecycle": "exit",
+        "currentPrice": 577.6,
+        "proposedPrice": 440.8,
+        "status": "insufficient",
+        "observedDays": 23,
+        "reason": "history_below_28_days"
+      },
+      {
+        "platform": "wb",
+        "articleKey": "termo_sprei_200ml_v2",
+        "lifecycle": "new",
+        "currentPrice": 2500,
+        "proposedPrice": null,
+        "status": "insufficient",
+        "observedDays": 0,
+        "reason": "recommendation_missing"
+      },
+      {
+        "platform": "wb",
+        "articleKey": "tonik_dlya_lica_200ml",
+        "lifecycle": "active",
+        "currentPrice": 1187.5,
+        "proposedPrice": null,
+        "status": "insufficient",
+        "observedDays": 8,
+        "reason": "recommendation_missing"
+      },
+      {
+        "platform": "wb",
+        "articleKey": "trezax",
+        "lifecycle": "exit",
+        "currentPrice": 625.99,
+        "proposedPrice": 626.05,
+        "status": "insufficient",
+        "observedDays": 0,
+        "reason": "history_below_28_days"
+      },
+      {
+        "platform": "wb",
+        "articleKey": "trezor",
+        "lifecycle": "exit",
+        "currentPrice": 571.9,
+        "proposedPrice": 571.9,
+        "status": "insufficient",
+        "observedDays": 0,
+        "reason": "history_below_28_days"
+      },
+      {
+        "platform": "wb",
+        "articleKey": "uhovit",
+        "lifecycle": "exit",
+        "currentPrice": 655.96,
+        "proposedPrice": 655.5,
+        "status": "insufficient",
+        "observedDays": 0,
+        "reason": "history_below_28_days"
+      },
+      {
+        "platform": "wb",
+        "articleKey": "urinofix",
+        "lifecycle": "exit",
+        "currentPrice": 278.92,
+        "proposedPrice": 321.1,
+        "status": "insufficient",
+        "observedDays": 23,
+        "reason": "history_below_28_days"
+      },
+      {
+        "platform": "wb",
+        "articleKey": "urofol",
+        "lifecycle": "exit",
+        "currentPrice": 347.81,
+        "proposedPrice": 411.35,
+        "status": "insufficient",
+        "observedDays": 0,
+        "reason": "history_below_28_days"
+      },
+      {
+        "platform": "wb",
+        "articleKey": "urolgan",
+        "lifecycle": "exit",
+        "currentPrice": 285.28,
+        "proposedPrice": 294.49,
+        "status": "insufficient",
+        "observedDays": 21,
+        "reason": "history_below_28_days"
+      },
+      {
+        "platform": "wb",
+        "articleKey": "uromax",
+        "lifecycle": "exit",
+        "currentPrice": 272.03,
+        "proposedPrice": 317.3,
+        "status": "insufficient",
+        "observedDays": 23,
+        "reason": "history_below_28_days"
+      },
+      {
+        "platform": "wb",
+        "articleKey": "uromax_1_1",
+        "lifecycle": "exit",
+        "currentPrice": 539.43,
+        "proposedPrice": 612.75,
+        "status": "insufficient",
+        "observedDays": 16,
+        "reason": "history_below_28_days"
+      },
+      {
+        "platform": "wb",
+        "articleKey": "varifit",
+        "lifecycle": "exit",
+        "currentPrice": 310.37,
+        "proposedPrice": 388.56,
+        "status": "insufficient",
+        "observedDays": 23,
+        "reason": "history_below_28_days"
+      },
+      {
+        "platform": "wb",
+        "articleKey": "varifit_1_1",
+        "lifecycle": "exit",
+        "currentPrice": 434.58,
+        "proposedPrice": 776.15,
+        "status": "insufficient",
+        "observedDays": 10,
+        "reason": "history_below_28_days"
+      },
+      {
+        "platform": "wb",
+        "articleKey": "vetonus",
+        "lifecycle": "exit",
+        "currentPrice": 328.51,
+        "proposedPrice": null,
+        "status": "insufficient",
+        "observedDays": 4,
+        "reason": "recommendation_missing"
+      },
+      {
+        "platform": "wb",
+        "articleKey": "vetonus_1_1",
+        "lifecycle": "exit",
+        "currentPrice": 653.03,
+        "proposedPrice": 652.65,
+        "status": "insufficient",
+        "observedDays": 20,
+        "reason": "history_below_28_days"
+      },
+      {
+        "platform": "wb",
+        "articleKey": "vetonus_100ml",
+        "lifecycle": "exit",
+        "currentPrice": 448.12,
+        "proposedPrice": null,
+        "status": "insufficient",
+        "observedDays": 0,
+        "reason": "recommendation_missing"
+      },
+      {
+        "platform": "wb",
+        "articleKey": "vosk_stik_15ml",
+        "lifecycle": "active",
+        "currentPrice": 474.81,
+        "proposedPrice": null,
+        "status": "insufficient",
+        "observedDays": 23,
+        "reason": "recommendation_missing"
+      },
+      {
+        "platform": "wb",
+        "articleKey": "wbalkotoxic",
+        "lifecycle": "exit",
+        "currentPrice": 572.85,
+        "proposedPrice": 572.85,
+        "status": "insufficient",
+        "observedDays": 0,
+        "reason": "history_below_28_days"
+      },
+      {
+        "platform": "wb",
+        "articleKey": "wbbiotrin",
+        "lifecycle": "exit",
+        "currentPrice": 309.32,
+        "proposedPrice": 361,
+        "status": "insufficient",
+        "observedDays": 0,
+        "reason": "history_below_28_days"
+      },
+      {
+        "platform": "wb",
+        "articleKey": "wbbiotrin_1_1",
+        "lifecycle": "exit",
+        "currentPrice": 618.34,
+        "proposedPrice": null,
+        "status": "insufficient",
+        "observedDays": 1,
+        "reason": "recommendation_missing"
+      },
+      {
+        "platform": "wb",
+        "articleKey": "wbbiotrin_1_1_1",
+        "lifecycle": "exit",
+        "currentPrice": 927.77,
+        "proposedPrice": 1012.7,
+        "status": "insufficient",
+        "observedDays": 0,
+        "reason": "history_below_28_days"
+      },
+      {
+        "platform": "wb",
+        "articleKey": "wbgetsize",
+        "lifecycle": "exit",
+        "currentPrice": 615.51,
+        "proposedPrice": null,
+        "status": "insufficient",
+        "observedDays": 0,
+        "reason": "recommendation_missing"
+      },
+      {
+        "platform": "wb",
+        "articleKey": "wbgetsize1gel2",
+        "lifecycle": "exit",
+        "currentPrice": 1583.57,
+        "proposedPrice": 1583.65,
+        "status": "insufficient",
+        "observedDays": 0,
+        "reason": "history_below_28_days"
+      },
+      {
+        "platform": "wb",
+        "articleKey": "wbgetsizegel",
+        "lifecycle": "exit",
+        "currentPrice": 256.88,
+        "proposedPrice": 282.15,
+        "status": "insufficient",
+        "observedDays": 14,
+        "reason": "history_below_28_days"
+      },
+      {
+        "platform": "wb",
+        "articleKey": "wbmicardinforte",
+        "lifecycle": "exit",
+        "currentPrice": 262.64866666666666,
+        "proposedPrice": null,
+        "status": "insufficient",
+        "observedDays": 23,
+        "reason": "recommendation_missing"
+      },
+      {
+        "platform": "wb",
+        "articleKey": "wbmicelix",
+        "lifecycle": "exit",
+        "currentPrice": 626.29,
+        "proposedPrice": 626.05,
+        "status": "insufficient",
+        "observedDays": 0,
+        "reason": "history_below_28_days"
+      },
+      {
+        "platform": "wb",
+        "articleKey": "wbmicelix_1_1",
+        "lifecycle": "exit",
+        "currentPrice": 1448.75,
+        "proposedPrice": null,
+        "status": "insufficient",
+        "observedDays": 0,
+        "reason": "recommendation_missing"
+      },
+      {
+        "platform": "wb",
+        "articleKey": "wbneomax",
+        "lifecycle": "exit",
+        "currentPrice": 245.33,
+        "proposedPrice": 496.85,
+        "status": "insufficient",
+        "observedDays": 0,
+        "reason": "history_below_28_days"
+      },
+      {
+        "platform": "wb",
+        "articleKey": "wbneomaxblue",
+        "lifecycle": "exit",
+        "currentPrice": 209.95,
+        "proposedPrice": 328.7,
+        "status": "insufficient",
+        "observedDays": 0,
+        "reason": "history_below_28_days"
+      },
+      {
+        "platform": "wb",
+        "articleKey": "wboptitrin",
+        "lifecycle": "exit",
+        "currentPrice": 312.02,
+        "proposedPrice": 376.2,
+        "status": "insufficient",
+        "observedDays": 0,
+        "reason": "history_below_28_days"
+      },
+      {
+        "platform": "wb",
+        "articleKey": "wbpantogor",
+        "lifecycle": "exit",
+        "currentPrice": 557.17,
+        "proposedPrice": 464.55,
+        "status": "insufficient",
+        "observedDays": 0,
+        "reason": "history_below_28_days"
+      },
+      {
+        "platform": "wb",
+        "articleKey": "wbpantogor_1_1",
+        "lifecycle": "exit",
+        "currentPrice": 1052.13,
+        "proposedPrice": 979.45,
+        "status": "insufficient",
+        "observedDays": 0,
+        "reason": "history_below_28_days"
+      },
+      {
+        "platform": "wb",
+        "articleKey": "wbsinergel",
+        "lifecycle": "exit",
+        "currentPrice": 258.64,
+        "proposedPrice": 356.25,
+        "status": "insufficient",
+        "observedDays": 23,
+        "reason": "history_below_28_days"
+      },
+      {
+        "platform": "wb",
+        "articleKey": "wbvaranga",
+        "lifecycle": "exit",
+        "currentPrice": 570,
+        "proposedPrice": 380.95,
+        "status": "insufficient",
+        "observedDays": 0,
+        "reason": "history_below_28_days"
+      },
+      {
+        "platform": "wb",
+        "articleKey": "wbvaritox",
+        "lifecycle": "exit",
+        "currentPrice": 370.41,
+        "proposedPrice": 370.51,
+        "status": "insufficient",
+        "observedDays": 5,
+        "reason": "history_below_28_days"
+      },
+      {
+        "platform": "wb",
+        "articleKey": "wowglam",
+        "lifecycle": "exit",
+        "currentPrice": 642.01,
+        "proposedPrice": null,
+        "status": "insufficient",
+        "observedDays": 0,
+        "reason": "recommendation_missing"
+      },
+      {
+        "platform": "wb",
+        "articleKey": "yagodniy_spas",
+        "lifecycle": "exit",
+        "currentPrice": 367.68,
+        "proposedPrice": 394.25,
+        "status": "insufficient",
+        "observedDays": 0,
+        "reason": "history_below_28_days"
+      },
+      {
+        "platform": "wb",
+        "articleKey": "yagodniy_spas_1_1",
+        "lifecycle": "exit",
+        "currentPrice": 734.83,
+        "proposedPrice": 788.51,
+        "status": "insufficient",
+        "observedDays": 0,
+        "reason": "history_below_28_days"
+      },
+      {
+        "platform": "wb",
+        "articleKey": "т-34_bad_60caps",
+        "lifecycle": "exit",
+        "currentPrice": 745.51,
+        "proposedPrice": null,
+        "status": "insufficient",
+        "observedDays": 1,
+        "reason": "recommendation_missing"
+      }
+    ]
+  },
+  "outcomes": {
+    "evaluationWindowDays": [
+      3,
+      7
+    ],
+    "summary": {
+      "events": 0,
+      "evaluated": 0,
+      "waiting": 0
+    },
+    "rows": []
+  }
+}

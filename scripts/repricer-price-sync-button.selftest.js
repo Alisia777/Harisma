@@ -75,7 +75,7 @@ async function run() {
     'the same price-refresh job must rebuild the immutable upload plan'
   );
   assert(
-    workflow.includes('--snapshot repricer_price_observation_history,repricer_market_observation_history,repricer_competitor_prices,repricer_live_prices'),
+    workflow.includes('--snapshot repricer_price_observation_history,repricer_market_observation_history,repricer_competitor_prices,repricer_competitor_history,repricer_live_prices'),
     'price refresh must hydrate previous price, demand and competitor observations before collecting the next price'
   );
   assert(
@@ -87,8 +87,13 @@ async function run() {
     'price refresh must persist daily demand and price observations for seasonality and learned elasticity'
   );
   assert(
-    workflow.includes('repricer_live_signals,repricer_price_observation_history,repricer_market_observation_history,canonical_repricer'),
-    'the atomic price bundle must publish price and market history together with canonical recommendations'
+    workflow.includes('node scripts/build-repricer-competitor-history.js')
+      && workflow.includes('--retention-days 180'),
+    'price refresh must append a 180-day trusted competitor snapshot history'
+  );
+  assert(
+    workflow.includes('repricer_live_signals,repricer_price_observation_history,repricer_market_observation_history,repricer_competitor_prices,repricer_competitor_history,repricer_calendar_factors,repricer_learning_report,repricer_decision_center,canonical_repricer'),
+    'the atomic price bundle must publish prices, market history, competitors, learning and ROP decisions together'
   );
   assert(
     workflow.includes('--commit-manifest repricer_price_sync_manifest'),
@@ -159,6 +164,36 @@ async function run() {
           source: 'current_live_prices'
         }]
       }],
+      atomicSyncMarker: bundleId
+    },
+    repricer_market_observation_history: {
+      ...readBundleFixture('repricer_market_observation_history.json'),
+      generatedAt,
+      atomicSyncMarker: bundleId
+    },
+    repricer_competitor_prices: {
+      ...readBundleFixture('repricer_competitor_prices.json'),
+      generatedAt,
+      atomicSyncMarker: bundleId
+    },
+    repricer_competitor_history: {
+      ...readBundleFixture('repricer_competitor_history.json'),
+      generatedAt,
+      atomicSyncMarker: bundleId
+    },
+    repricer_calendar_factors: {
+      ...readBundleFixture('repricer_calendar_factors.json'),
+      generatedAt,
+      atomicSyncMarker: bundleId
+    },
+    repricer_learning_report: {
+      ...readBundleFixture('repricer_learning_report.json'),
+      generatedAt,
+      atomicSyncMarker: bundleId
+    },
+    repricer_decision_center: {
+      ...readBundleFixture('repricer_decision_center.json'),
+      generatedAt,
       atomicSyncMarker: bundleId
     },
     canonical_repricer: {

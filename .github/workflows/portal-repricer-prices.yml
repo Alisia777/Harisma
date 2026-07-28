@@ -63,7 +63,7 @@ jobs:
         run: >-
           node scripts/portal-snapshot-pull.js
           --output-dir .portal-truth-output/repricer-previous
-          --snapshot repricer_price_observation_history,repricer_market_observation_history,repricer_competitor_prices,repricer_live_prices
+          --snapshot repricer_price_observation_history,repricer_market_observation_history,repricer_competitor_prices,repricer_competitor_history,repricer_live_prices
 
       - name: Refresh advertising facts used by margin
         env:
@@ -129,6 +129,28 @@ jobs:
             --as-of-date '${{ steps.run_date.outputs.value }}' \
             --retention-days 400
 
+      - name: Collect trusted competitor prices
+        env:
+          ALTEA_REPRICER_COMPETITOR_FEED_URL: ${{ secrets.ALTEA_REPRICER_COMPETITOR_FEED_URL || vars.ALTEA_REPRICER_COMPETITOR_FEED_URL }}
+        run: >-
+          node scripts/portal-repricer-competitor-sync.js sync
+          --input-dir data
+          --previous .portal-truth-output/repricer-previous/repricer_competitor_prices.json
+          --output data/repricer_competitor_prices.json
+          --as-of-date '${{ steps.run_date.outputs.value }}'
+          --max-skus 60
+          --delay-ms 1200
+
+      - name: Append trusted competitor snapshot history
+        run: >-
+          node scripts/build-repricer-competitor-history.js
+          --input-dir data
+          --history .portal-truth-output/repricer-previous/repricer_competitor_history.json
+          --current data/repricer_competitor_prices.json
+          --output data/repricer_competitor_history.json
+          --as-of-date '${{ steps.run_date.outputs.value }}'
+          --retention-days 180
+
       - name: Materialize approved portal decisions
         env:
           ALTEA_SUPABASE_URL: ${{ secrets.SUPABASE_URL || vars.SUPABASE_URL || 'https://iyckwryrucqrxwlowxow.supabase.co' }}
@@ -144,7 +166,7 @@ jobs:
           node scripts/build-canonical-repricer.js \
             --input-dir data \
             --output-dir data \
-            --competitor-prices .portal-truth-output/repricer-previous/repricer_competitor_prices.json \
+            --competitor-prices data/repricer_competitor_prices.json \
             --as-of-date '${{ steps.run_date.outputs.value }}'
           node scripts/build-repricer-team-policy.js \
             --input-dir data \
@@ -152,6 +174,11 @@ jobs:
           node scripts/build-repricer-shadow-report.js \
             --input-dir data \
             --output-dir data
+          node scripts/build-repricer-intelligence-control.js \
+            --input-dir data \
+            --output-dir data \
+            --as-of-date '${{ steps.run_date.outputs.value }}' \
+            --lookback-days 60
           node scripts/build-legacy-repricer-layer.js
           node scripts/portal-repricer-price-apply.js plan \
             --input-dir data \
@@ -165,7 +192,7 @@ jobs:
         run: >-
           node scripts/portal-google-sheet-upload.js
           --input-dir data
-          --snapshot repricer_live_prices,repricer_live_signals,repricer_price_observation_history,repricer_market_observation_history,canonical_repricer,portal_repricing_reconciliation,repricer_team_policy_proposals,repricer_shadow_report,repricer_price_apply_plan,repricer
+          --snapshot repricer_live_prices,repricer_live_signals,repricer_price_observation_history,repricer_market_observation_history,repricer_competitor_prices,repricer_competitor_history,repricer_calendar_factors,repricer_learning_report,repricer_decision_center,canonical_repricer,portal_repricing_reconciliation,repricer_team_policy_proposals,repricer_shadow_report,repricer_price_apply_plan,repricer
           --commit-manifest repricer_price_sync_manifest
           --bundle-id "${{ github.run_id }}-${{ github.run_attempt }}"
           --source repricer-live-prices
@@ -180,6 +207,11 @@ jobs:
             data/repricer_live_signals.json
             data/repricer_price_observation_history.json
             data/repricer_market_observation_history.json
+            data/repricer_competitor_prices.json
+            data/repricer_competitor_history.json
+            data/repricer_calendar_factors.json
+            data/repricer_learning_report.json
+            data/repricer_decision_center.json
             data/canonical_repricer.json
             data/portal_repricing_reconciliation.json
             data/repricer_team_policy_proposals.json

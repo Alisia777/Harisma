@@ -96,6 +96,9 @@ jobs:
           node scripts/repricer-live-price-logic.selftest.js
           node scripts/build-repricer-market-observation-history.selftest.js
           node scripts/import-repricer-competitor-prices.selftest.js
+          node scripts/portal-repricer-competitor-sync.selftest.js
+          node scripts/build-repricer-competitor-history.selftest.js
+          node scripts/build-repricer-intelligence-control.selftest.js
           node scripts/repricer-market-intelligence.selftest.js
           node scripts/repricer-demand-intelligence.selftest.js
           node scripts/build-repricer-team-policy.selftest.js
@@ -134,6 +137,8 @@ jobs:
           node scripts/portal-repricer-live-prices-merge.selftest.js
           node scripts/portal-wb-finance-rate-limit.selftest.js
           node scripts/portal-wb-orders-fallback.selftest.js
+          node scripts/portal-wb-feedback-sync.selftest.js
+          node scripts/portal-wb-rating-performance.selftest.js
           node scripts/portal-sku-alias-integrity.selftest.js
           node scripts/portal-order-lifecycle.selftest.js
           node scripts/portal-sync-health-quarantine.selftest.js

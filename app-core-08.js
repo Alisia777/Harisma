@@ -2593,6 +2593,14 @@ function repricerRowsCacheSignature() {
     state.repricerShadowReport?.summary?.price_agreement || 0,
     state.repricerMarginMinMaxGaps?.generatedAt || '',
     state.repricerMarginMinMaxGaps?.summary?.blockedRows || 0,
+    state.repricerDecisionCenter?.generatedAt || '',
+    state.repricerDecisionCenter?.summary?.pendingRop || 0,
+    state.repricerLearningReport?.generatedAt || '',
+    state.repricerLearningReport?.backtest?.summary?.modelledRows || 0,
+    state.repricerCompetitorPrices?.generatedAt || '',
+    state.repricerCompetitorPrices?.summary?.trusted_offers || 0,
+    state.repricerCompetitorHistory?.generatedAt || '',
+    state.repricerCompetitorHistory?.summary?.trusted_observations || 0,
     (state.portalRuntimeWiring?.artifacts || []).map((artifact) => `${artifact.id}:${artifact.checksum || ''}`).join(','),
     state.portalFeatureReadiness?.features?.repricer?.status || '',
     state.repricer?.generatedAt || '',
@@ -3877,6 +3885,13 @@ function repricerDemandReasonLabel(reason = '') {
     demand_competitor_gap_inside_tolerance: 'цена в диапазоне конкурентов',
     demand_competitor_gap_actionable: 'есть значимый разрыв с конкурентами',
     demand_competitor_coverage_insufficient: 'мало сопоставимых цен конкурентов',
+    demand_competitor_history_missing: 'история срезов конкурентов ещё не накоплена',
+    demand_competitor_history_stale: 'история срезов конкурентов устарела',
+    demand_competitor_history_days_insufficient: 'меньше 7 надёжных срезов конкурентов',
+    demand_competitor_history_span_insufficient: 'срезы конкурентов покрывают меньше 14 дней',
+    demand_competitor_current_snapshot_required: 'история не применяется без свежего текущего среза',
+    demand_competitor_history_trend_inside_tolerance: 'история цен конкурентов стабильна',
+    demand_competitor_history_trend_actionable: 'подтверждён тренд цен конкурентов',
     demand_cross_platform_gap_inside_tolerance: 'цены площадок согласованы',
     demand_cross_platform_gap_actionable: 'цены площадок заметно расходятся',
     demand_cross_platform_signal_insufficient: 'недостаточно цен других площадок',
@@ -4010,6 +4025,9 @@ function renderRepricerSide(title, side) {
           конкуренты ${market.competitors?.usable
             ? `${fmt.money(market.competitors.benchmark_client_price)} · ${fmt.int(market.competitors.trusted_offers)} цен · разрыв ${fmt.pct(market.competitors.own_price_gap_pct)}`
             : `нет надёжной выборки (${fmt.int(market.competitors?.trusted_offers || 0)})`};
+          история конкурентов ${market.competitor_history?.structurally_usable
+            ? `${fmt.int(market.competitor_history.trusted_days)} срезов за ${fmt.int(market.competitor_history.calendar_span_days)} дн. · тренд ${market.competitor_history.trend_pct == null ? '—' : fmt.pct(market.competitor_history.trend_pct)}${market.competitor_history.usable ? '' : ' · только справочно'}`
+            : `${fmt.int(market.competitor_history?.trusted_days || 0)} срезов · ещё не влияет на цену`};
           другие площадки ${market.cross_platform?.usable
             ? `${fmt.money(market.cross_platform.sibling_client_price)} · разрыв ${fmt.pct(market.cross_platform.own_price_gap_pct)}`
             : 'нет свежего сравнения'}.
@@ -7488,6 +7506,13 @@ function repricerExportRows(platform = 'all', sourceRows = null) {
       competitor_trusted_offers: repricerExportNumber(side.demandIntelligence?.market_intelligence?.competitors?.trusted_offers, 0),
       competitor_confidence: side.demandIntelligence?.market_intelligence?.competitors?.confidence || '',
       competitor_observed_at: side.demandIntelligence?.market_intelligence?.competitors?.observed_at || '',
+      competitor_history_trusted_days: repricerExportNumber(side.demandIntelligence?.market_intelligence?.competitor_history?.trusted_days, 0),
+      competitor_history_span_days: repricerExportNumber(side.demandIntelligence?.market_intelligence?.competitor_history?.calendar_span_days, 0),
+      competitor_history_trend_pct: side.demandIntelligence?.market_intelligence?.competitor_history?.trend_pct == null
+        ? null
+        : repricerExportNumber(side.demandIntelligence.market_intelligence.competitor_history.trend_pct * 100, 2),
+      competitor_history_confidence: side.demandIntelligence?.market_intelligence?.competitor_history?.confidence || '',
+      competitor_history_reason: side.demandIntelligence?.market_intelligence?.competitor_history?.reason || '',
       cross_platform_client_price_rub: repricerExportNumber(side.demandIntelligence?.market_intelligence?.cross_platform?.sibling_client_price, 2),
       cross_platform_price_gap_pct: side.demandIntelligence?.market_intelligence?.cross_platform?.own_price_gap_pct == null
         ? ''
@@ -7696,6 +7721,11 @@ function downloadRepricerExcel(platform = 'all', sourceRows = null) {
     ['competitor_trusted_offers', 'Конкуренты: сопоставимых цен'],
     ['competitor_confidence', 'Конкуренты: надёжность'],
     ['competitor_observed_at', 'Конкуренты: данные на дату'],
+    ['competitor_history_trusted_days', 'Конкуренты: надёжных исторических срезов'],
+    ['competitor_history_span_days', 'Конкуренты: исторический период, дней'],
+    ['competitor_history_trend_pct', 'Конкуренты: исторический тренд, %'],
+    ['competitor_history_confidence', 'Конкуренты: надёжность истории'],
+    ['competitor_history_reason', 'Конкуренты: статус истории'],
     ['cross_platform_client_price_rub', 'Площадки: клиентская цена другого канала, ₽'],
     ['cross_platform_price_gap_pct', 'Площадки: разрыв клиентских цен, %'],
     ['market_influence_applied_pct', 'Рынок: влияние на шаг цены, %'],
@@ -8369,6 +8399,12 @@ const REPRICER_PRICE_SYNC_REQUIRED_SNAPSHOTS = Object.freeze([
   'repricer_live_prices',
   'repricer_live_signals',
   'repricer_price_observation_history',
+  'repricer_market_observation_history',
+  'repricer_competitor_prices',
+  'repricer_competitor_history',
+  'repricer_calendar_factors',
+  'repricer_learning_report',
+  'repricer_decision_center',
   'canonical_repricer',
   'portal_repricing_reconciliation',
   'repricer_team_policy_proposals',
@@ -8448,6 +8484,34 @@ function applyRepricerPriceSnapshotBundle(snapshots = {}) {
   }
   if (snapshots.repricer_price_apply_verification) {
     state.repricerPriceApplyVerification = snapshots.repricer_price_apply_verification;
+    applied = true;
+  }
+  if (snapshots.repricer_competitor_prices) {
+    state.repricerCompetitorPrices = snapshots.repricer_competitor_prices;
+    applied = true;
+  }
+  if (snapshots.repricer_competitor_history) {
+    state.repricerCompetitorHistory = snapshots.repricer_competitor_history;
+    applied = true;
+  }
+  if (snapshots.repricer_calendar_factors) {
+    state.repricerCalendarFactors = snapshots.repricer_calendar_factors;
+    applied = true;
+  }
+  if (snapshots.repricer_learning_report) {
+    state.repricerLearningReport = snapshots.repricer_learning_report;
+    applied = true;
+  }
+  if (snapshots.repricer_decision_center) {
+    state.repricerDecisionCenter = snapshots.repricer_decision_center;
+    applied = true;
+  }
+  if (snapshots.repricer_price_rollback_receipt) {
+    state.repricerPriceRollbackReceipt = snapshots.repricer_price_rollback_receipt;
+    applied = true;
+  }
+  if (snapshots.repricer_price_rollback_verification) {
+    state.repricerPriceRollbackVerification = snapshots.repricer_price_rollback_verification;
     applied = true;
   }
   if (snapshots.repricer) {
@@ -8739,6 +8803,205 @@ function renderRepricerPriceApplyCard() {
       <div class="small muted" style="margin-top:8px" data-repricer-price-apply-status>${endpoint ? 'Клиентская цена «станет» до отправки — прогноз при текущей СПП/скидке; после API-сверки — фактическая цена.' : 'Не настроен защищённый server endpoint применения цен.'}</div>
     </div>
   `;
+}
+
+function renderRepricerDecisionCenterCard() {
+  const center = state.repricerDecisionCenter || {};
+  const learning = state.repricerLearningReport || {};
+  const competitors = state.repricerCompetitorPrices || {};
+  const competitorHistory = state.repricerCompetitorHistory || {};
+  const summary = center.summary || {};
+  const backtest = learning?.backtest?.summary || {};
+  const outcomes = learning?.outcomes?.summary || {};
+  const resolvedDecisionKeys = new Set((state.storage?.skuDecisionApprovals || [])
+    .filter((decision) => ['applied', 'changes_requested', 'rejected'].includes(String(decision?.status || '').toLowerCase()))
+    .map((decision) => {
+      const targetPrice = numberOrZero(
+        decision?.payload?.override?.forcePrice
+        || decision?.proposedValue
+        || decision?.payload?.requestedPrice
+      );
+      return [
+        String(decision?.articleKey || '').trim(),
+        String(decision?.platform || '').trim().toLowerCase(),
+        targetPrice
+      ].join('|');
+    }));
+  const pendingRows = (center.rows || [])
+    .filter((row) => (
+      row?.approval?.status === 'PENDING_ROP'
+      && row?.decisionKinds?.priceRecommendation === true
+      && !resolvedDecisionKeys.has([
+        String(row?.articleKey || '').trim(),
+        String(row?.platform || '').trim().toLowerCase(),
+        numberOrZero(row?.price?.sellerAfter)
+      ].join('|'))
+    ))
+    .sort((left, right) => (
+      ({ high: 0, medium: 1, low: 2 }[left?.risk?.level] ?? 3)
+      - ({ high: 0, medium: 1, low: 2 }[right?.risk?.level] ?? 3)
+    ))
+    .slice(0, 8);
+  const decisionRows = pendingRows.map((row) => {
+    const spp = numberOrZero(row?.price?.buyerDiscountPct);
+    const sourceBlocks = row?.dataQuality?.blockers || [];
+    const reason = (row.reasonCodes || []).slice(0, 3).join(' · ') || row.reason || 'проверка рекомендации';
+    return `
+      <div class="repricer-empty-reason">
+        <strong>${escapeHtml(`${String(row.platform || '').toUpperCase()} · ${row.articleKey || 'SKU'}`)}</strong>
+        <span>${escapeHtml(`продавец ${row.price?.sellerBefore == null ? '—' : fmt.money(row.price.sellerBefore)} → ${row.price?.sellerAfter == null ? '—' : fmt.money(row.price.sellerAfter)} · клиент ${row.price?.clientBefore == null ? '—' : fmt.money(row.price.clientBefore)} → ${row.price?.clientAfter == null ? '—' : fmt.money(row.price.clientAfter)} · СПП ${fmt.pct(spp)}`)}</span>
+        <em>${escapeHtml(`маржа ${row.margin?.beforePct == null ? '—' : fmt.pct(row.margin.beforePct)} → ${row.margin?.afterPct == null ? '—' : fmt.pct(row.margin.afterPct)} · риск ${row.risk?.level || '—'} · ${reason}${sourceBlocks.length ? ` · стоп данных: ${sourceBlocks.join(', ')}` : ''}`)}</em>
+        <div class="quick-actions" style="margin-top:7px">
+          <button type="button" class="quick-chip repricer-price-apply-primary" data-repricer-decision-action="approve" data-article-key="${escapeHtml(row.articleKey)}" data-platform="${escapeHtml(row.platform)}">Одобрить</button>
+          <button type="button" class="quick-chip" data-repricer-decision-action="reject" data-article-key="${escapeHtml(row.articleKey)}" data-platform="${escapeHtml(row.platform)}">Отклонить</button>
+        </div>
+      </div>
+    `;
+  }).join('');
+  const turnoverDelta = backtest.turnoverDeltaPct;
+  const contributionDelta = backtest.contributionDeltaPct;
+  return `
+    <div class="repricer-operator-focus-card repricer-decision-center-card" style="margin-top:14px">
+      <div class="section-subhead">
+        <div>
+          <h3>Центр решений РОП</h3>
+          <p class="small muted">Цена «было → станет», клиентская цена с СПП, маржа, причина, риск и решение — на одном экране. Любая отправка остаётся через предпросмотр и API-сверку.</p>
+        </div>
+        ${badge(`ждут РОП ${fmt.int(summary.pendingRop || 0)}`, summary.pendingRop ? 'warn' : 'ok')}
+      </div>
+      <div class="badge-stack" style="margin-top:10px">
+        ${badge(`данные свежие ${fmt.int(Math.max(0, numberOrZero(summary.rows) - numberOrZero(summary.dataBlocked)))}/${fmt.int(summary.rows || 0)}`, summary.dataBlocked ? 'warn' : 'ok')}
+        ${badge(`пороги маржи/MIN–MAX ${fmt.int(summary.policyPendingRop || 0)}`, summary.policyPendingRop ? 'warn' : 'ok')}
+        ${badge(`надёжные конкуренты ${fmt.int(summary.trustedCompetitorRows || 0)}`, summary.trustedCompetitorRows ? 'ok' : 'warn')}
+        ${badge(`сигналы конкурентов ${fmt.int(competitors?.summary?.trusted_offers || 0)}`, competitors?.summary?.trusted_offers ? 'ok' : 'warn')}
+        ${badge(
+          `история конкурентов ${fmt.int(competitorHistory?.summary?.trusted_observations || 0)} срезов · ${fmt.int(competitorHistory?.summary?.calendar_days || 0)} дн.`,
+          competitorHistory?.summary?.trusted_series_7d ? 'ok' : 'warn'
+        )}
+        ${badge(
+          `история влияет ${fmt.int(summary.competitorHistoryReadyRows || 0)}/${fmt.int(summary.competitorHistoryObservedRows || summary.rows || 0)}`,
+          summary.competitorHistoryReadyRows ? 'ok' : 'info'
+        )}
+        ${badge(`задачи статуса ${fmt.int(summary.statusTasksPendingRop || 0)}`, summary.statusTasksPendingRop ? 'info' : 'ok')}
+        ${badge(`backtest ${fmt.int(backtest.modelledRows || 0)}/${fmt.int(backtest.rows || 0)}`, backtest.modelledRows ? 'info' : 'warn')}
+        ${badge(`результаты 3–7 дней ${fmt.int(outcomes.evaluated || 0)}/${fmt.int(outcomes.events || 0)}`, outcomes.evaluated ? 'ok' : 'info')}
+      </div>
+      <div class="small muted" style="margin-top:8px">
+        Конкуренты обновляются той же кнопкой «Получить актуальные цены»: WB — из публичного каталожного поиска с проверкой товара, объёма, продавца, наличия и акции; Ozon — из настроенного защищённого фида. Каждый принятый срез хранится 180 дней. До 7 надёжных дат на интервале не короче 14 дней история видна, но цену не меняет; без свежего текущего среза история всегда только справочная.
+      </div>
+      <div class="small muted" style="margin-top:8px">
+        ${backtest.modelledRows
+          ? escapeHtml(`Сценарий 60 дней: оборот ${turnoverDelta == null ? '—' : fmt.pct(turnoverDelta)}, вклад после переменных затрат ${contributionDelta == null ? '—' : fmt.pct(contributionDelta)}. Это калибровочный сценарий, не причинный прогноз.`)
+          : 'Для backtest пока недостаточно непрерывной истории; репрайсер накапливает факты и не подставляет нули.'}
+      </div>
+      ${decisionRows ? `<div class="repricer-empty-reasons" style="margin-top:10px">${decisionRows}</div>` : '<div class="small muted" style="margin-top:10px">Нет рекомендаций, ожидающих решения РОП.</div>'}
+      <div class="small muted" style="margin-top:8px" data-repricer-decision-status>Решение применяется только через существующую задачу РОП и попадает в журнал.</div>
+    </div>
+  `;
+}
+
+function repricerDecisionCenterRecord(articleKey = '', platform = '') {
+  return (state.repricerDecisionCenter?.rows || []).find((row) => (
+    String(row?.articleKey || '').trim() === String(articleKey || '').trim()
+    && String(row?.platform || '').trim().toLowerCase() === String(platform || '').trim().toLowerCase()
+  )) || null;
+}
+
+function repricerDecisionActorCanApprove() {
+  const role = [
+    state.team?.member?.role,
+    state.team?.member?.position,
+    state.access?.role,
+    window.__ALTEA_PORTAL_ACCESS__?.role
+  ].filter(Boolean).join(' ').trim().toLowerCase();
+  return /(роп|руковод|head|admin|owner|директор)/i.test(role);
+}
+
+async function requestRepricerDecisionCenterAction(button) {
+  const action = String(button?.getAttribute('data-repricer-decision-action') || '').trim().toLowerCase();
+  const articleKey = String(button?.getAttribute('data-article-key') || '').trim();
+  const platform = String(button?.getAttribute('data-platform') || '').trim().toLowerCase();
+  const row = repricerDecisionCenterRecord(articleKey, platform);
+  const root = button?.closest?.('#view-repricer') || document.getElementById('view-repricer');
+  const statusNode = root?.querySelector?.('[data-repricer-decision-status]');
+  if (!row || !['approve', 'reject'].includes(action)) return;
+  if (!repricerDecisionActorCanApprove()) {
+    window.alert('Одобрить или отклонить рекомендацию может пользователь с ролью РОП/руководитель.');
+    return;
+  }
+  if (typeof window.requestSkuDecisionApproval !== 'function') {
+    window.alert('Модуль задач РОП не загружен. Решение не применено.');
+    return;
+  }
+  button.disabled = true;
+  try {
+    const existing = typeof window.skuDecisionApprovals === 'function'
+      ? window.skuDecisionApprovals().find((decision) => (
+        String(decision.articleKey || '').trim() === articleKey
+        && String(decision.platform || '').trim().toLowerCase() === platform
+        && ['waiting_rop', 'preparing', 'changes_requested'].includes(String(decision.status || '').toLowerCase())
+      ))
+      : null;
+    const requestedPrice = numberOrZero(row?.price?.sellerAfter);
+    const currentPrice = numberOrZero(row?.price?.sellerBefore);
+    const reason = (row.reasonCodes || []).join(' · ') || row.reason || 'Рекомендация умного репрайсера';
+    const decision = existing || await window.requestSkuDecisionApproval({
+      type: Math.abs(numberOrZero(requestedPrice - currentPrice) / Math.max(1, currentPrice)) >= REPRICER_SHARP_PRICE_APPROVAL_PCT
+        ? 'SHARP_PRICE_CHANGE'
+        : 'DEMAND_PRICE_REVIEW',
+      articleKey,
+      platform,
+      currentValue: currentPrice,
+      proposedValue: requestedPrice,
+      reason,
+      payload: {
+        autoGenerated: true,
+        approvalTtlHours: 72,
+        override: normalizeRepricerOverride({
+          articleKey,
+          platform,
+          mode: 'force',
+          forcePrice: requestedPrice,
+          note: reason,
+          updatedAt: new Date().toISOString(),
+          updatedBy: 'Центр решений РОП'
+        })
+      },
+      metrics: {
+        currentSellerPrice: currentPrice,
+        proposedSellerPrice: requestedPrice,
+        currentClientPrice: row?.price?.clientBefore ?? null,
+        proposedClientPrice: row?.price?.clientAfter ?? null,
+        currentMarginPct: row?.margin?.beforePct ?? null,
+        proposedMarginPct: row?.margin?.afterPct ?? null,
+        requiredMarginPct: row?.margin?.minimumPct ?? null,
+        stock: null
+      }
+    });
+    if (!decision?.taskId) throw new Error('Задача РОП не получила taskId.');
+    const comment = window.prompt(
+      action === 'approve' ? 'Комментарий РОП к одобрению:' : 'Причина отклонения:',
+      action === 'approve' ? 'Проверено в центре решений репрайсера' : ''
+    );
+    if (comment === null) return;
+    if (action === 'approve') {
+      if (typeof window.approveSkuDecisionForTask !== 'function') throw new Error('Функция одобрения задачи недоступна.');
+      await window.approveSkuDecisionForTask(decision.taskId, comment);
+    } else {
+      if (typeof window.markSkuDecisionChangesRequested !== 'function') throw new Error('Функция отклонения задачи недоступна.');
+      await window.markSkuDecisionChangesRequested(decision.taskId, comment);
+    }
+    if (statusNode) statusNode.textContent = action === 'approve'
+      ? `Одобрено РОПом: ${platform.toUpperCase()} · ${articleKey}. Решение записано в журнал.`
+      : `Отклонено РОПом: ${platform.toUpperCase()} · ${articleKey}. Причина записана в журнал.`;
+    delete root.dataset.repricerRenderSignature;
+    renderRepricer();
+  } catch (error) {
+    console.error('[repricer.decisionCenter]', error);
+    window.alert(`Решение не применено: ${error?.message || error}`);
+  } finally {
+    button.disabled = false;
+  }
 }
 
 function setRepricerPriceApplyStatus(root, message, tone = 'info') {
@@ -9328,6 +9591,11 @@ function attachRepricerEvents(root) {
       await requestRepricerPriceApply(event.currentTarget);
     });
   });
+  root.querySelectorAll('[data-repricer-decision-action]').forEach((button) => {
+    button.addEventListener('click', async (event) => {
+      await requestRepricerDecisionCenterAction(event.currentTarget);
+    });
+  });
   root.querySelector('[data-repricer-margin-bulk-form]')?.addEventListener('submit', async (event) => {
     event.preventDefault();
     const form = event.currentTarget;
@@ -9602,6 +9870,7 @@ function renderRepricer() {
   scheduleRepricerAutomaticSharpPriceApprovals(sourceRows);
   const health = repricerHealthcheck(sourceRows);
   const livePriceSyncCard = renderRepricerLivePriceSyncCard();
+  const decisionCenterCard = renderRepricerDecisionCenterCard();
   const priceApplyCard = renderRepricerPriceApplyCard();
   const smokeTests = health.smokeTests;
   const sideRows = sourceRows.flatMap((row) => [row.wb, row.ozon].filter(Boolean));
@@ -9834,6 +10103,7 @@ function renderRepricer() {
         <div class="badge-stack repricer-runtime-status" style="margin:0 0 12px">${summaryBadges}</div>
         ${repricerGameHeroHtml(readiness)}
         ${livePriceSyncCard}
+        ${decisionCenterCard}
         ${priceApplyCard}
         ${repricerMarketplaceHtml}
         ${arrivalSignalCard}
@@ -9998,6 +10268,7 @@ function renderRepricer() {
     <div class="muted small" style="margin-top:8px">Проверка дублей в репрайсере сейчас идёт по совпадающим названиям карточек. Если названия похожи, дополнительно сверяйте артикул и площадку перед выгрузкой.</div>
 
     ${livePriceSyncCard}
+    ${decisionCenterCard}
     ${priceApplyCard}
     ${safetyCard}
     ${arrivalSignalCard}

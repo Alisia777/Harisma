@@ -34,6 +34,8 @@
   repricer: { generatedAt: '', summary: {}, rows: [] },
   repricerLive: { generatedAt: '', rows: [] },
   repricerLivePrices: { generatedAt: '', asOfDate: '', summary: {}, platforms: {}, unresolved: [] },
+  repricerCompetitorPrices: { generatedAt: '', status: 'missing', summary: {}, rows: [] },
+  repricerCompetitorHistory: { generatedAt: '', status: 'missing', summary: {}, observations: [], series: [] },
   storage: {
     comments: [],
     tasks: [],
@@ -460,6 +462,13 @@ const PORTAL_SNAPSHOT_PATH_MAP = {
   'data/repricer_price_apply_plan.json': 'repricer_price_apply_plan',
   'data/repricer_price_apply_receipt.json': 'repricer_price_apply_receipt',
   'data/repricer_price_apply_verification.json': 'repricer_price_apply_verification',
+  'data/repricer_competitor_prices.json': 'repricer_competitor_prices',
+  'data/repricer_competitor_history.json': 'repricer_competitor_history',
+  'data/repricer_calendar_factors.json': 'repricer_calendar_factors',
+  'data/repricer_learning_report.json': 'repricer_learning_report',
+  'data/repricer_decision_center.json': 'repricer_decision_center',
+  'data/repricer_price_rollback_receipt.json': 'repricer_price_rollback_receipt',
+  'data/repricer_price_rollback_verification.json': 'repricer_price_rollback_verification',
   'data/portal_data_quality.json': 'portal_data_quality',
   'data/portal_data_quarantine.json': 'portal_data_quarantine',
   'data/portal_daily_intake.json': 'portal_daily_intake',
@@ -3278,7 +3287,14 @@ const LAZY_DATA_LOADERS = {
       repricerMarginMinMaxGaps,
       repricerPriceApplyPlan,
       repricerPriceApplyReceipt,
-      repricerPriceApplyVerification
+      repricerPriceApplyVerification,
+      repricerCompetitorPrices,
+      repricerCompetitorHistory,
+      repricerCalendarFactors,
+      repricerLearningReport,
+      repricerDecisionCenter,
+      repricerPriceRollbackReceipt,
+      repricerPriceRollbackVerification
     ] = await Promise.all([
       loadJsonOrFallback('data/repricer.json', { generatedAt: '', summary: {}, rows: [] }, 'Репрайсер'),
       loadJsonOrFallback('data/smart_price_workbench.json', { generatedAt: '', platforms: {} }, 'Ценовой контур'),
@@ -3299,7 +3315,14 @@ const LAZY_DATA_LOADERS = {
       loadJsonOrFallback('data/repricer_margin_minmax_gaps.json', { generatedAt: '', summary: {}, rows: [] }, 'Пробелы маржа/MIN/MAX'),
       loadJsonOrFallback('data/repricer_price_apply_plan.json', { generatedAt: '', status: 'missing', applyAllowed: false, summary: {}, actions: [], globalBlockers: [] }, 'План загрузки цен'),
       loadJsonOrFallback('data/repricer_price_apply_receipt.json', { generatedAt: '', status: 'missing', actions: [] }, 'Квитанция загрузки цен'),
-      loadJsonOrFallback('data/repricer_price_apply_verification.json', { generatedAt: '', status: 'missing', summary: {}, rows: [] }, 'Сверка загруженных цен')
+      loadJsonOrFallback('data/repricer_price_apply_verification.json', { generatedAt: '', status: 'missing', summary: {}, rows: [] }, 'Сверка загруженных цен'),
+      loadJsonOrFallback('data/repricer_competitor_prices.json', { generatedAt: '', status: 'missing', summary: {}, rows: [] }, 'Цены конкурентов'),
+      loadJsonOrFallback('data/repricer_competitor_history.json', { generatedAt: '', status: 'missing', summary: {}, observations: [], series: [] }, 'История цен конкурентов'),
+      loadJsonOrFallback('data/repricer_calendar_factors.json', { generatedAt: '', summary: {}, dates: [], skuEvents: [] }, 'Календарные факторы'),
+      loadJsonOrFallback('data/repricer_learning_report.json', { generatedAt: '', status: 'missing', backtest: { summary: {}, rows: [] }, outcomes: { summary: {}, rows: [] } }, 'Обучение репрайсера'),
+      loadJsonOrFallback('data/repricer_decision_center.json', { generatedAt: '', status: 'missing', summary: {}, rows: [], statusTasks: [] }, 'Центр решений РОП'),
+      loadJsonOrFallback('data/repricer_price_rollback_receipt.json', { generatedAt: '', status: 'missing', actions: [] }, 'Квитанция отката цен'),
+      loadJsonOrFallback('data/repricer_price_rollback_verification.json', { generatedAt: '', status: 'missing', summary: {}, rows: [] }, 'Сверка отката цен')
     ]);
     state.repricer = repricer || { generatedAt: '', summary: {}, rows: [] };
     state.repricerLive = repricerLive || { generatedAt: '', rows: [] };
@@ -3329,6 +3352,13 @@ const LAZY_DATA_LOADERS = {
     state.repricerPriceApplyPlan = repricerPriceApplyPlan || { generatedAt: '', status: 'missing', applyAllowed: false, summary: {}, actions: [], globalBlockers: [] };
     state.repricerPriceApplyReceipt = repricerPriceApplyReceipt || { generatedAt: '', status: 'missing', actions: [] };
     state.repricerPriceApplyVerification = repricerPriceApplyVerification || { generatedAt: '', status: 'missing', summary: {}, rows: [] };
+    state.repricerCompetitorPrices = repricerCompetitorPrices || { generatedAt: '', status: 'missing', summary: {}, rows: [] };
+    state.repricerCompetitorHistory = repricerCompetitorHistory || { generatedAt: '', status: 'missing', summary: {}, observations: [], series: [] };
+    state.repricerCalendarFactors = repricerCalendarFactors || { generatedAt: '', summary: {}, dates: [], skuEvents: [] };
+    state.repricerLearningReport = repricerLearningReport || { generatedAt: '', status: 'missing', backtest: { summary: {}, rows: [] }, outcomes: { summary: {}, rows: [] } };
+    state.repricerDecisionCenter = repricerDecisionCenter || { generatedAt: '', status: 'missing', summary: {}, rows: [], statusTasks: [] };
+    state.repricerPriceRollbackReceipt = repricerPriceRollbackReceipt || { generatedAt: '', status: 'missing', actions: [] };
+    state.repricerPriceRollbackVerification = repricerPriceRollbackVerification || { generatedAt: '', status: 'missing', summary: {}, rows: [] };
     state.smartPriceWorkbenchBase = mergeSmartWorkbenchPayload(
       smartPriceWorkbench || { generatedAt: '', platforms: {} },
       smartPriceWorkbenchLive || null

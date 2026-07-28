@@ -816,6 +816,10 @@ async function main() {
 
     await clickView(page, 'repricer');
     await assertVisible(page, '#view-repricer', 'repricer');
+    await page.waitForFunction(() => (
+      typeof window.buildRepricerRows === 'function'
+      && (window.buildRepricerRows(true) || []).length > 0
+    ), undefined, { timeout: 30000 });
     const repricerLifecycleCheck = await page.evaluate(() => {
       if (typeof window.buildRepricerRows !== 'function') {
         return { ok: false, reason: 'buildRepricerRows is unavailable.' };

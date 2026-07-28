@@ -1,0 +1,1129 @@
+{
+  "schema": "repricer-calendar-factors-v1",
+  "generatedAt": "2026-07-28T11:55:59.584Z",
+  "asOfDate": "2026-07-28",
+  "model": "ru_holidays_salary_windows_marketplace_events_v1",
+  "policy": {
+    "salaryDayRanges": [
+      [
+        5,
+        10
+      ],
+      [
+        20,
+        25
+      ]
+    ],
+    "holidayDemandPct": 0.08,
+    "salaryWindowDemandPct": 0.05,
+    "promotionsExcludedFromElasticity": true,
+    "advertisingChangesExcludedFromElasticity": true
+  },
+  "summary": {
+    "dates": 74,
+    "holidays": 1,
+    "salaryWindowDays": 30,
+    "skuExceptionalEvents": 0
+  },
+  "dates": [
+    {
+      "date": "2026-05-30",
+      "holiday": false,
+      "salaryWindow": false,
+      "promotion": false,
+      "promotionStart": false,
+      "promotionEnd": false,
+      "advertisingChange": false,
+      "advertisingStart": false,
+      "advertisingEnd": false,
+      "exceptional": false,
+      "demandFactor": 1,
+      "reasons": []
+    },
+    {
+      "date": "2026-05-31",
+      "holiday": false,
+      "salaryWindow": false,
+      "promotion": false,
+      "promotionStart": false,
+      "promotionEnd": false,
+      "advertisingChange": false,
+      "advertisingStart": false,
+      "advertisingEnd": false,
+      "exceptional": false,
+      "demandFactor": 1,
+      "reasons": []
+    },
+    {
+      "date": "2026-06-01",
+      "holiday": false,
+      "salaryWindow": false,
+      "promotion": false,
+      "promotionStart": false,
+      "promotionEnd": false,
+      "advertisingChange": false,
+      "advertisingStart": false,
+      "advertisingEnd": false,
+      "exceptional": false,
+      "demandFactor": 1,
+      "reasons": []
+    },
+    {
+      "date": "2026-06-02",
+      "holiday": false,
+      "salaryWindow": false,
+      "promotion": false,
+      "promotionStart": false,
+      "promotionEnd": false,
+      "advertisingChange": false,
+      "advertisingStart": false,
+      "advertisingEnd": false,
+      "exceptional": false,
+      "demandFactor": 1,
+      "reasons": []
+    },
+    {
+      "date": "2026-06-03",
+      "holiday": false,
+      "salaryWindow": false,
+      "promotion": false,
+      "promotionStart": false,
+      "promotionEnd": false,
+      "advertisingChange": false,
+      "advertisingStart": false,
+      "advertisingEnd": false,
+      "exceptional": false,
+      "demandFactor": 1,
+      "reasons": []
+    },
+    {
+      "date": "2026-06-04",
+      "holiday": false,
+      "salaryWindow": false,
+      "promotion": false,
+      "promotionStart": false,
+      "promotionEnd": false,
+      "advertisingChange": false,
+      "advertisingStart": false,
+      "advertisingEnd": false,
+      "exceptional": false,
+      "demandFactor": 1,
+      "reasons": []
+    },
+    {
+      "date": "2026-06-05",
+      "holiday": false,
+      "salaryWindow": true,
+      "promotion": false,
+      "promotionStart": false,
+      "promotionEnd": false,
+      "advertisingChange": false,
+      "advertisingStart": false,
+      "advertisingEnd": false,
+      "exceptional": false,
+      "demandFactor": 1.05,
+      "reasons": [
+        "salary_window"
+      ]
+    },
+    {
+      "date": "2026-06-06",
+      "holiday": false,
+      "salaryWindow": true,
+      "promotion": false,
+      "promotionStart": false,
+      "promotionEnd": false,
+      "advertisingChange": false,
+      "advertisingStart": false,
+      "advertisingEnd": false,
+      "exceptional": false,
+      "demandFactor": 1.05,
+      "reasons": [
+        "salary_window"
+      ]
+    },
+    {
+      "date": "2026-06-07",
+      "holiday": false,
+      "salaryWindow": true,
+      "promotion": false,
+      "promotionStart": false,
+      "promotionEnd": false,
+      "advertisingChange": false,
+      "advertisingStart": false,
+      "advertisingEnd": false,
+      "exceptional": false,
+      "demandFactor": 1.05,
+      "reasons": [
+        "salary_window"
+      ]
+    },
+    {
+      "date": "2026-06-08",
+      "holiday": false,
+      "salaryWindow": true,
+      "promotion": false,
+      "promotionStart": false,
+      "promotionEnd": false,
+      "advertisingChange": false,
+      "advertisingStart": false,
+      "advertisingEnd": false,
+      "exceptional": false,
+      "demandFactor": 1.05,
+      "reasons": [
+        "salary_window"
+      ]
+    },
+    {
+      "date": "2026-06-09",
+      "holiday": false,
+      "salaryWindow": true,
+      "promotion": false,
+      "promotionStart": false,
+      "promotionEnd": false,
+      "advertisingChange": false,
+      "advertisingStart": false,
+      "advertisingEnd": false,
+      "exceptional": false,
+      "demandFactor": 1.05,
+      "reasons": [
+        "salary_window"
+      ]
+    },
+    {
+      "date": "2026-06-10",
+      "holiday": false,
+      "salaryWindow": true,
+      "promotion": false,
+      "promotionStart": false,
+      "promotionEnd": false,
+      "advertisingChange": false,
+      "advertisingStart": false,
+      "advertisingEnd": false,
+      "exceptional": false,
+      "demandFactor": 1.05,
+      "reasons": [
+        "salary_window"
+      ]
+    },
+    {
+      "date": "2026-06-11",
+      "holiday": false,
+      "salaryWindow": false,
+      "promotion": false,
+      "promotionStart": false,
+      "promotionEnd": false,
+      "advertisingChange": false,
+      "advertisingStart": false,
+      "advertisingEnd": false,
+      "exceptional": false,
+      "demandFactor": 1,
+      "reasons": []
+    },
+    {
+      "date": "2026-06-12",
+      "holiday": true,
+      "salaryWindow": false,
+      "promotion": false,
+      "promotionStart": false,
+      "promotionEnd": false,
+      "advertisingChange": false,
+      "advertisingStart": false,
+      "advertisingEnd": false,
+      "exceptional": false,
+      "demandFactor": 1.08,
+      "reasons": [
+        "ru_holiday"
+      ]
+    },
+    {
+      "date": "2026-06-13",
+      "holiday": false,
+      "salaryWindow": false,
+      "promotion": false,
+      "promotionStart": false,
+      "promotionEnd": false,
+      "advertisingChange": false,
+      "advertisingStart": false,
+      "advertisingEnd": false,
+      "exceptional": false,
+      "demandFactor": 1,
+      "reasons": []
+    },
+    {
+      "date": "2026-06-14",
+      "holiday": false,
+      "salaryWindow": false,
+      "promotion": false,
+      "promotionStart": false,
+      "promotionEnd": false,
+      "advertisingChange": false,
+      "advertisingStart": false,
+      "advertisingEnd": false,
+      "exceptional": false,
+      "demandFactor": 1,
+      "reasons": []
+    },
+    {
+      "date": "2026-06-15",
+      "holiday": false,
+      "salaryWindow": false,
+      "promotion": false,
+      "promotionStart": false,
+      "promotionEnd": false,
+      "advertisingChange": false,
+      "advertisingStart": false,
+      "advertisingEnd": false,
+      "exceptional": false,
+      "demandFactor": 1,
+      "reasons": []
+    },
+    {
+      "date": "2026-06-16",
+      "holiday": false,
+      "salaryWindow": false,
+      "promotion": false,
+      "promotionStart": false,
+      "promotionEnd": false,
+      "advertisingChange": false,
+      "advertisingStart": false,
+      "advertisingEnd": false,
+      "exceptional": false,
+      "demandFactor": 1,
+      "reasons": []
+    },
+    {
+      "date": "2026-06-17",
+      "holiday": false,
+      "salaryWindow": false,
+      "promotion": false,
+      "promotionStart": false,
+      "promotionEnd": false,
+      "advertisingChange": false,
+      "advertisingStart": false,
+      "advertisingEnd": false,
+      "exceptional": false,
+      "demandFactor": 1,
+      "reasons": []
+    },
+    {
+      "date": "2026-06-18",
+      "holiday": false,
+      "salaryWindow": false,
+      "promotion": false,
+      "promotionStart": false,
+      "promotionEnd": false,
+      "advertisingChange": false,
+      "advertisingStart": false,
+      "advertisingEnd": false,
+      "exceptional": false,
+      "demandFactor": 1,
+      "reasons": []
+    },
+    {
+      "date": "2026-06-19",
+      "holiday": false,
+      "salaryWindow": false,
+      "promotion": false,
+      "promotionStart": false,
+      "promotionEnd": false,
+      "advertisingChange": false,
+      "advertisingStart": false,
+      "advertisingEnd": false,
+      "exceptional": false,
+      "demandFactor": 1,
+      "reasons": []
+    },
+    {
+      "date": "2026-06-20",
+      "holiday": false,
+      "salaryWindow": true,
+      "promotion": false,
+      "promotionStart": false,
+      "promotionEnd": false,
+      "advertisingChange": false,
+      "advertisingStart": false,
+      "advertisingEnd": false,
+      "exceptional": false,
+      "demandFactor": 1.05,
+      "reasons": [
+        "salary_window"
+      ]
+    },
+    {
+      "date": "2026-06-21",
+      "holiday": false,
+      "salaryWindow": true,
+      "promotion": false,
+      "promotionStart": false,
+      "promotionEnd": false,
+      "advertisingChange": false,
+      "advertisingStart": false,
+      "advertisingEnd": false,
+      "exceptional": false,
+      "demandFactor": 1.05,
+      "reasons": [
+        "salary_window"
+      ]
+    },
+    {
+      "date": "2026-06-22",
+      "holiday": false,
+      "salaryWindow": true,
+      "promotion": false,
+      "promotionStart": false,
+      "promotionEnd": false,
+      "advertisingChange": false,
+      "advertisingStart": false,
+      "advertisingEnd": false,
+      "exceptional": false,
+      "demandFactor": 1.05,
+      "reasons": [
+        "salary_window"
+      ]
+    },
+    {
+      "date": "2026-06-23",
+      "holiday": false,
+      "salaryWindow": true,
+      "promotion": false,
+      "promotionStart": false,
+      "promotionEnd": false,
+      "advertisingChange": false,
+      "advertisingStart": false,
+      "advertisingEnd": false,
+      "exceptional": false,
+      "demandFactor": 1.05,
+      "reasons": [
+        "salary_window"
+      ]
+    },
+    {
+      "date": "2026-06-24",
+      "holiday": false,
+      "salaryWindow": true,
+      "promotion": false,
+      "promotionStart": false,
+      "promotionEnd": false,
+      "advertisingChange": false,
+      "advertisingStart": false,
+      "advertisingEnd": false,
+      "exceptional": false,
+      "demandFactor": 1.05,
+      "reasons": [
+        "salary_window"
+      ]
+    },
+    {
+      "date": "2026-06-25",
+      "holiday": false,
+      "salaryWindow": true,
+      "promotion": false,
+      "promotionStart": false,
+      "promotionEnd": false,
+      "advertisingChange": false,
+      "advertisingStart": false,
+      "advertisingEnd": false,
+      "exceptional": false,
+      "demandFactor": 1.05,
+      "reasons": [
+        "salary_window"
+      ]
+    },
+    {
+      "date": "2026-06-26",
+      "holiday": false,
+      "salaryWindow": false,
+      "promotion": false,
+      "promotionStart": false,
+      "promotionEnd": false,
+      "advertisingChange": false,
+      "advertisingStart": false,
+      "advertisingEnd": false,
+      "exceptional": false,
+      "demandFactor": 1,
+      "reasons": []
+    },
+    {
+      "date": "2026-06-27",
+      "holiday": false,
+      "salaryWindow": false,
+      "promotion": false,
+      "promotionStart": false,
+      "promotionEnd": false,
+      "advertisingChange": false,
+      "advertisingStart": false,
+      "advertisingEnd": false,
+      "exceptional": false,
+      "demandFactor": 1,
+      "reasons": []
+    },
+    {
+      "date": "2026-06-28",
+      "holiday": false,
+      "salaryWindow": false,
+      "promotion": false,
+      "promotionStart": false,
+      "promotionEnd": false,
+      "advertisingChange": false,
+      "advertisingStart": false,
+      "advertisingEnd": false,
+      "exceptional": false,
+      "demandFactor": 1,
+      "reasons": []
+    },
+    {
+      "date": "2026-06-29",
+      "holiday": false,
+      "salaryWindow": false,
+      "promotion": false,
+      "promotionStart": false,
+      "promotionEnd": false,
+      "advertisingChange": false,
+      "advertisingStart": false,
+      "advertisingEnd": false,
+      "exceptional": false,
+      "demandFactor": 1,
+      "reasons": []
+    },
+    {
+      "date": "2026-06-30",
+      "holiday": false,
+      "salaryWindow": false,
+      "promotion": false,
+      "promotionStart": false,
+      "promotionEnd": false,
+      "advertisingChange": false,
+      "advertisingStart": false,
+      "advertisingEnd": false,
+      "exceptional": false,
+      "demandFactor": 1,
+      "reasons": []
+    },
+    {
+      "date": "2026-07-01",
+      "holiday": false,
+      "salaryWindow": false,
+      "promotion": false,
+      "promotionStart": false,
+      "promotionEnd": false,
+      "advertisingChange": false,
+      "advertisingStart": false,
+      "advertisingEnd": false,
+      "exceptional": false,
+      "demandFactor": 1,
+      "reasons": []
+    },
+    {
+      "date": "2026-07-02",
+      "holiday": false,
+      "salaryWindow": false,
+      "promotion": false,
+      "promotionStart": false,
+      "promotionEnd": false,
+      "advertisingChange": false,
+      "advertisingStart": false,
+      "advertisingEnd": false,
+      "exceptional": false,
+      "demandFactor": 1,
+      "reasons": []
+    },
+    {
+      "date": "2026-07-03",
+      "holiday": false,
+      "salaryWindow": false,
+      "promotion": false,
+      "promotionStart": false,
+      "promotionEnd": false,
+      "advertisingChange": false,
+      "advertisingStart": false,
+      "advertisingEnd": false,
+      "exceptional": false,
+      "demandFactor": 1,
+      "reasons": []
+    },
+    {
+      "date": "2026-07-04",
+      "holiday": false,
+      "salaryWindow": false,
+      "promotion": false,
+      "promotionStart": false,
+      "promotionEnd": false,
+      "advertisingChange": false,
+      "advertisingStart": false,
+      "advertisingEnd": false,
+      "exceptional": false,
+      "demandFactor": 1,
+      "reasons": []
+    },
+    {
+      "date": "2026-07-05",
+      "holiday": false,
+      "salaryWindow": true,
+      "promotion": false,
+      "promotionStart": false,
+      "promotionEnd": false,
+      "advertisingChange": false,
+      "advertisingStart": false,
+      "advertisingEnd": false,
+      "exceptional": false,
+      "demandFactor": 1.05,
+      "reasons": [
+        "salary_window"
+      ]
+    },
+    {
+      "date": "2026-07-06",
+      "holiday": false,
+      "salaryWindow": true,
+      "promotion": false,
+      "promotionStart": false,
+      "promotionEnd": false,
+      "advertisingChange": false,
+      "advertisingStart": false,
+      "advertisingEnd": false,
+      "exceptional": false,
+      "demandFactor": 1.05,
+      "reasons": [
+        "salary_window"
+      ]
+    },
+    {
+      "date": "2026-07-07",
+      "holiday": false,
+      "salaryWindow": true,
+      "promotion": false,
+      "promotionStart": false,
+      "promotionEnd": false,
+      "advertisingChange": false,
+      "advertisingStart": false,
+      "advertisingEnd": false,
+      "exceptional": false,
+      "demandFactor": 1.05,
+      "reasons": [
+        "salary_window"
+      ]
+    },
+    {
+      "date": "2026-07-08",
+      "holiday": false,
+      "salaryWindow": true,
+      "promotion": false,
+      "promotionStart": false,
+      "promotionEnd": false,
+      "advertisingChange": false,
+      "advertisingStart": false,
+      "advertisingEnd": false,
+      "exceptional": false,
+      "demandFactor": 1.05,
+      "reasons": [
+        "salary_window"
+      ]
+    },
+    {
+      "date": "2026-07-09",
+      "holiday": false,
+      "salaryWindow": true,
+      "promotion": false,
+      "promotionStart": false,
+      "promotionEnd": false,
+      "advertisingChange": false,
+      "advertisingStart": false,
+      "advertisingEnd": false,
+      "exceptional": false,
+      "demandFactor": 1.05,
+      "reasons": [
+        "salary_window"
+      ]
+    },
+    {
+      "date": "2026-07-10",
+      "holiday": false,
+      "salaryWindow": true,
+      "promotion": false,
+      "promotionStart": false,
+      "promotionEnd": false,
+      "advertisingChange": false,
+      "advertisingStart": false,
+      "advertisingEnd": false,
+      "exceptional": false,
+      "demandFactor": 1.05,
+      "reasons": [
+        "salary_window"
+      ]
+    },
+    {
+      "date": "2026-07-11",
+      "holiday": false,
+      "salaryWindow": false,
+      "promotion": false,
+      "promotionStart": false,
+      "promotionEnd": false,
+      "advertisingChange": false,
+      "advertisingStart": false,
+      "advertisingEnd": false,
+      "exceptional": false,
+      "demandFactor": 1,
+      "reasons": []
+    },
+    {
+      "date": "2026-07-12",
+      "holiday": false,
+      "salaryWindow": false,
+      "promotion": false,
+      "promotionStart": false,
+      "promotionEnd": false,
+      "advertisingChange": false,
+      "advertisingStart": false,
+      "advertisingEnd": false,
+      "exceptional": false,
+      "demandFactor": 1,
+      "reasons": []
+    },
+    {
+      "date": "2026-07-13",
+      "holiday": false,
+      "salaryWindow": false,
+      "promotion": false,
+      "promotionStart": false,
+      "promotionEnd": false,
+      "advertisingChange": false,
+      "advertisingStart": false,
+      "advertisingEnd": false,
+      "exceptional": false,
+      "demandFactor": 1,
+      "reasons": []
+    },
+    {
+      "date": "2026-07-14",
+      "holiday": false,
+      "salaryWindow": false,
+      "promotion": false,
+      "promotionStart": false,
+      "promotionEnd": false,
+      "advertisingChange": false,
+      "advertisingStart": false,
+      "advertisingEnd": false,
+      "exceptional": false,
+      "demandFactor": 1,
+      "reasons": []
+    },
+    {
+      "date": "2026-07-15",
+      "holiday": false,
+      "salaryWindow": false,
+      "promotion": false,
+      "promotionStart": false,
+      "promotionEnd": false,
+      "advertisingChange": false,
+      "advertisingStart": false,
+      "advertisingEnd": false,
+      "exceptional": false,
+      "demandFactor": 1,
+      "reasons": []
+    },
+    {
+      "date": "2026-07-16",
+      "holiday": false,
+      "salaryWindow": false,
+      "promotion": false,
+      "promotionStart": false,
+      "promotionEnd": false,
+      "advertisingChange": false,
+      "advertisingStart": false,
+      "advertisingEnd": false,
+      "exceptional": false,
+      "demandFactor": 1,
+      "reasons": []
+    },
+    {
+      "date": "2026-07-17",
+      "holiday": false,
+      "salaryWindow": false,
+      "promotion": false,
+      "promotionStart": false,
+      "promotionEnd": false,
+      "advertisingChange": false,
+      "advertisingStart": false,
+      "advertisingEnd": false,
+      "exceptional": false,
+      "demandFactor": 1,
+      "reasons": []
+    },
+    {
+      "date": "2026-07-18",
+      "holiday": false,
+      "salaryWindow": false,
+      "promotion": false,
+      "promotionStart": false,
+      "promotionEnd": false,
+      "advertisingChange": false,
+      "advertisingStart": false,
+      "advertisingEnd": false,
+      "exceptional": false,
+      "demandFactor": 1,
+      "reasons": []
+    },
+    {
+      "date": "2026-07-19",
+      "holiday": false,
+      "salaryWindow": false,
+      "promotion": false,
+      "promotionStart": false,
+      "promotionEnd": false,
+      "advertisingChange": false,
+      "advertisingStart": false,
+      "advertisingEnd": false,
+      "exceptional": false,
+      "demandFactor": 1,
+      "reasons": []
+    },
+    {
+      "date": "2026-07-20",
+      "holiday": false,
+      "salaryWindow": true,
+      "promotion": false,
+      "promotionStart": false,
+      "promotionEnd": false,
+      "advertisingChange": false,
+      "advertisingStart": false,
+      "advertisingEnd": false,
+      "exceptional": false,
+      "demandFactor": 1.05,
+      "reasons": [
+        "salary_window"
+      ]
+    },
+    {
+      "date": "2026-07-21",
+      "holiday": false,
+      "salaryWindow": true,
+      "promotion": false,
+      "promotionStart": false,
+      "promotionEnd": false,
+      "advertisingChange": false,
+      "advertisingStart": false,
+      "advertisingEnd": false,
+      "exceptional": false,
+      "demandFactor": 1.05,
+      "reasons": [
+        "salary_window"
+      ]
+    },
+    {
+      "date": "2026-07-22",
+      "holiday": false,
+      "salaryWindow": true,
+      "promotion": false,
+      "promotionStart": false,
+      "promotionEnd": false,
+      "advertisingChange": false,
+      "advertisingStart": false,
+      "advertisingEnd": false,
+      "exceptional": false,
+      "demandFactor": 1.05,
+      "reasons": [
+        "salary_window"
+      ]
+    },
+    {
+      "date": "2026-07-23",
+      "holiday": false,
+      "salaryWindow": true,
+      "promotion": false,
+      "promotionStart": false,
+      "promotionEnd": false,
+      "advertisingChange": false,
+      "advertisingStart": false,
+      "advertisingEnd": false,
+      "exceptional": false,
+      "demandFactor": 1.05,
+      "reasons": [
+        "salary_window"
+      ]
+    },
+    {
+      "date": "2026-07-24",
+      "holiday": false,
+      "salaryWindow": true,
+      "promotion": false,
+      "promotionStart": false,
+      "promotionEnd": false,
+      "advertisingChange": false,
+      "advertisingStart": false,
+      "advertisingEnd": false,
+      "exceptional": false,
+      "demandFactor": 1.05,
+      "reasons": [
+        "salary_window"
+      ]
+    },
+    {
+      "date": "2026-07-25",
+      "holiday": false,
+      "salaryWindow": true,
+      "promotion": false,
+      "promotionStart": false,
+      "promotionEnd": false,
+      "advertisingChange": false,
+      "advertisingStart": false,
+      "advertisingEnd": false,
+      "exceptional": false,
+      "demandFactor": 1.05,
+      "reasons": [
+        "salary_window"
+      ]
+    },
+    {
+      "date": "2026-07-26",
+      "holiday": false,
+      "salaryWindow": false,
+      "promotion": false,
+      "promotionStart": false,
+      "promotionEnd": false,
+      "advertisingChange": false,
+      "advertisingStart": false,
+      "advertisingEnd": false,
+      "exceptional": false,
+      "demandFactor": 1,
+      "reasons": []
+    },
+    {
+      "date": "2026-07-27",
+      "holiday": false,
+      "salaryWindow": false,
+      "promotion": false,
+      "promotionStart": false,
+      "promotionEnd": false,
+      "advertisingChange": false,
+      "advertisingStart": false,
+      "advertisingEnd": false,
+      "exceptional": false,
+      "demandFactor": 1,
+      "reasons": []
+    },
+    {
+      "date": "2026-07-28",
+      "holiday": false,
+      "salaryWindow": false,
+      "promotion": false,
+      "promotionStart": false,
+      "promotionEnd": false,
+      "advertisingChange": false,
+      "advertisingStart": false,
+      "advertisingEnd": false,
+      "exceptional": false,
+      "demandFactor": 1,
+      "reasons": []
+    },
+    {
+      "date": "2026-07-29",
+      "holiday": false,
+      "salaryWindow": false,
+      "promotion": false,
+      "promotionStart": false,
+      "promotionEnd": false,
+      "advertisingChange": false,
+      "advertisingStart": false,
+      "advertisingEnd": false,
+      "exceptional": false,
+      "demandFactor": 1,
+      "reasons": []
+    },
+    {
+      "date": "2026-07-30",
+      "holiday": false,
+      "salaryWindow": false,
+      "promotion": false,
+      "promotionStart": false,
+      "promotionEnd": false,
+      "advertisingChange": false,
+      "advertisingStart": false,
+      "advertisingEnd": false,
+      "exceptional": false,
+      "demandFactor": 1,
+      "reasons": []
+    },
+    {
+      "date": "2026-07-31",
+      "holiday": false,
+      "salaryWindow": false,
+      "promotion": false,
+      "promotionStart": false,
+      "promotionEnd": false,
+      "advertisingChange": false,
+      "advertisingStart": false,
+      "advertisingEnd": false,
+      "exceptional": false,
+      "demandFactor": 1,
+      "reasons": []
+    },
+    {
+      "date": "2026-08-01",
+      "holiday": false,
+      "salaryWindow": false,
+      "promotion": false,
+      "promotionStart": false,
+      "promotionEnd": false,
+      "advertisingChange": false,
+      "advertisingStart": false,
+      "advertisingEnd": false,
+      "exceptional": false,
+      "demandFactor": 1,
+      "reasons": []
+    },
+    {
+      "date": "2026-08-02",
+      "holiday": false,
+      "salaryWindow": false,
+      "promotion": false,
+      "promotionStart": false,
+      "promotionEnd": false,
+      "advertisingChange": false,
+      "advertisingStart": false,
+      "advertisingEnd": false,
+      "exceptional": false,
+      "demandFactor": 1,
+      "reasons": []
+    },
+    {
+      "date": "2026-08-03",
+      "holiday": false,
+      "salaryWindow": false,
+      "promotion": false,
+      "promotionStart": false,
+      "promotionEnd": false,
+      "advertisingChange": false,
+      "advertisingStart": false,
+      "advertisingEnd": false,
+      "exceptional": false,
+      "demandFactor": 1,
+      "reasons": []
+    },
+    {
+      "date": "2026-08-04",
+      "holiday": false,
+      "salaryWindow": false,
+      "promotion": false,
+      "promotionStart": false,
+      "promotionEnd": false,
+      "advertisingChange": false,
+      "advertisingStart": false,
+      "advertisingEnd": false,
+      "exceptional": false,
+      "demandFactor": 1,
+      "reasons": []
+    },
+    {
+      "date": "2026-08-05",
+      "holiday": false,
+      "salaryWindow": true,
+      "promotion": false,
+      "promotionStart": false,
+      "promotionEnd": false,
+      "advertisingChange": false,
+      "advertisingStart": false,
+      "advertisingEnd": false,
+      "exceptional": false,
+      "demandFactor": 1.05,
+      "reasons": [
+        "salary_window"
+      ]
+    },
+    {
+      "date": "2026-08-06",
+      "holiday": false,
+      "salaryWindow": true,
+      "promotion": false,
+      "promotionStart": false,
+      "promotionEnd": false,
+      "advertisingChange": false,
+      "advertisingStart": false,
+      "advertisingEnd": false,
+      "exceptional": false,
+      "demandFactor": 1.05,
+      "reasons": [
+        "salary_window"
+      ]
+    },
+    {
+      "date": "2026-08-07",
+      "holiday": false,
+      "salaryWindow": true,
+      "promotion": false,
+      "promotionStart": false,
+      "promotionEnd": false,
+      "advertisingChange": false,
+      "advertisingStart": false,
+      "advertisingEnd": false,
+      "exceptional": false,
+      "demandFactor": 1.05,
+      "reasons": [
+        "salary_window"
+      ]
+    },
+    {
+      "date": "2026-08-08",
+      "holiday": false,
+      "salaryWindow": true,
+      "promotion": false,
+      "promotionStart": false,
+      "promotionEnd": false,
+      "advertisingChange": false,
+      "advertisingStart": false,
+      "advertisingEnd": false,
+      "exceptional": false,
+      "demandFactor": 1.05,
+      "reasons": [
+        "salary_window"
+      ]
+    },
+    {
+      "date": "2026-08-09",
+      "holiday": false,
+      "salaryWindow": true,
+      "promotion": false,
+      "promotionStart": false,
+      "promotionEnd": false,
+      "advertisingChange": false,
+      "advertisingStart": false,
+      "advertisingEnd": false,
+      "exceptional": false,
+      "demandFactor": 1.05,
+      "reasons": [
+        "salary_window"
+      ]
+    },
+    {
+      "date": "2026-08-10",
+      "holiday": false,
+      "salaryWindow": true,
+      "promotion": false,
+      "promotionStart": false,
+      "promotionEnd": false,
+      "advertisingChange": false,
+      "advertisingStart": false,
+      "advertisingEnd": false,
+      "exceptional": false,
+      "demandFactor": 1.05,
+      "reasons": [
+        "salary_window"
+      ]
+    },
+    {
+      "date": "2026-08-11",
+      "holiday": false,
+      "salaryWindow": false,
+      "promotion": false,
+      "promotionStart": false,
+      "promotionEnd": false,
+      "advertisingChange": false,
+      "advertisingStart": false,
+      "advertisingEnd": false,
+      "exceptional": false,
+      "demandFactor": 1,
+      "reasons": []
+    }
+  ],
+  "skuEvents": []
+}

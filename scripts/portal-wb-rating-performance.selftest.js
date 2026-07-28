@@ -1,0 +1,128 @@
+#!/usr/bin/env node
+'use strict';
+
+const assert = require('assert');
+const fs = require('fs');
+const http = require('http');
+const path = require('path');
+const { chromium } = require('playwright');
+
+const ROOT = path.resolve(__dirname, '..');
+const MIME = {
+  '.css': 'text/css; charset=utf-8',
+  '.html': 'text/html; charset=utf-8',
+  '.js': 'application/javascript; charset=utf-8',
+  '.json': 'application/json; charset=utf-8',
+  '.png': 'image/png',
+  '.svg': 'image/svg+xml',
+  '.webm': 'video/webm'
+};
+
+function startStaticServer() {
+  const server = http.createServer((request, response) => {
+    const pathname = decodeURIComponent(new URL(request.url, 'http://127.0.0.1').pathname);
+    const relative = pathname === '/' ? 'index.html' : pathname.replace(/^\/+/, '');
+    const filePath = path.resolve(ROOT, relative);
+    if (filePath !== ROOT && !filePath.startsWith(`${ROOT}${path.sep}`)) {
+      response.writeHead(403);
+      response.end('forbidden');
+      return;
+    }
+    fs.readFile(filePath, (error, data) => {
+      if (error) {
+        response.writeHead(error.code === 'ENOENT' ? 404 : 500);
+        response.end(error.code || 'read_error');
+        return;
+      }
+      const body = relative === 'index.html'
+        ? Buffer.from(data.toString('utf8').replace(
+          '<head>',
+          '<head><script>window.APP_CONFIG={portalAuthRequired:false,teamMode:\"local\",supabase:{url:\"\",anonKey:\"\"}};window.__ALTEA_PORTAL_ACCESS__={name:\"Rating selftest\",email:\"rating@example.com\",role:\"admin\"};</script>'
+        ), 'utf8')
+        : data;
+      response.writeHead(200, {
+        'content-type': MIME[path.extname(filePath).toLowerCase()] || 'application/octet-stream',
+        'cache-control': 'no-store'
+      });
+      response.end(body);
+    });
+  });
+  return new Promise((resolve, reject) => {
+    server.once('error', reject);
+    server.listen(0, '127.0.0.1', () => resolve({
+      server,
+      url: `http://127.0.0.1:${server.address().port}/index.html#wb-rating`
+    }));
+  });
+}
+
+async function run() {
+  const { server, url } = await startStaticServer();
+  const browser = await chromium.launch({ headless: true });
+  const page = await browser.newPage({ viewport: { width: 1440, height: 1000 } });
+  page.setDefaultTimeout(90000);
+  const fatalErrors = [];
+  page.on('pageerror', (error) => fatalErrors.push(String(error?.message || error)));
+  try {
+    await page.goto(url, { waitUntil: 'domcontentloaded' });
+    await page.waitForSelector('#view-wb-rating .rating-structured-shell');
+    const bodyText = await page.locator('#view-wb-rating').innerText();
+    assert(bodyText.includes('WB рейтинг ЛК'));
+    assert(bodyText.includes('нет доступа'), 'derived card average must not impersonate WB cabinet rating');
+    assert(bodyText.includes('нужен сервисный токен'));
+    assert(
+      bodyText.includes('хвост API устарел') || bodyText.includes('хвост API свежий'),
+      'current-tail freshness must be explicit'
+    );
+
+    const tableStyle = await page.locator('#view-wb-rating .rating-work-table').first().evaluate((element) => ({
+      maxHeight: getComputedStyle(element).maxHeight,
+      overflowX: getComputedStyle(element).overflowX,
+      overflowY: getComputedStyle(element).overflowY
+    }));
+    assert(['none', 'max-content'].includes(tableStyle.maxHeight));
+    assert(['auto', 'scroll'].includes(tableStyle.overflowX));
+    assert(['visible', 'clip', 'auto'].includes(tableStyle.overflowY));
+
+    const search = page.locator('#view-wb-rating [data-rating-search]').first();
+    await search.focus();
+    const startedAt = Date.now();
+    await search.fill('retinait');
+    await page.waitForTimeout(450);
+    assert.strictEqual(await search.inputValue(), 'retinait');
+    const focusState = await page.evaluate(() => ({
+      activeTag: document.activeElement?.tagName || '',
+      activeSearch: document.activeElement?.hasAttribute?.('data-rating-search') || false,
+      activeValue: document.activeElement?.value || '',
+      searchCount: document.querySelectorAll('#view-wb-rating [data-rating-search]').length
+    }));
+    assert(focusState.activeSearch, `search focus was lost: ${JSON.stringify(focusState)}`);
+    assert(Date.now() - startedAt < 2000, 'debounced search must settle without freezing the page');
+
+    await page.evaluate(() => {
+      state.wbFeedbacks.currentState = {
+        observedAt: new Date().toISOString(),
+        basis: 'current_unanswered_list',
+        feedbacksUnansweredVerified: 0,
+        questionsUnansweredVerified: 0
+      };
+      state.wbFeedbacks.generatedAt = new Date().toISOString();
+      window.dispatchEvent(new CustomEvent('altea:datarefresh', {
+        detail: { keys: ['wb_feedbacks_summary'] }
+      }));
+    });
+    await page.waitForFunction(() => (
+      document.querySelector('#view-wb-rating')?.innerText.includes('проверено: закрыто')
+    ));
+    assert.strictEqual(fatalErrors.length, 0, `page errors: ${fatalErrors.join(' | ')}`);
+    process.stdout.write('portal-wb-rating-performance selftest: OK\n');
+  } finally {
+    await browser.close();
+    await new Promise((resolve) => server.close(resolve));
+  }
+}
+
+run().catch((error) => {
+  console.error(error);
+  process.exitCode = 1;
+});

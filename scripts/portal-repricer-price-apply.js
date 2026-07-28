@@ -14,7 +14,7 @@ function parseArgs(argv) {
   for (let index = 2; index < argv.length; index += 1) {
     const token = String(argv[index] || '').trim();
     if (!token) continue;
-    if (!token.startsWith('--') && ['plan', 'apply', 'verify'].includes(token)) {
+    if (!token.startsWith('--') && ['plan', 'apply', 'verify', 'rollback', 'verify-rollback'].includes(token)) {
       args.command = token;
       continue;
     }
@@ -86,6 +86,13 @@ function liveSignalsMap(liveSignals = {}) {
   return new Map((liveSignals?.rows || []).map((row) => [
     `${String(row?.platform || '').trim().toLowerCase()}|${normalizeKey(row?.articleKey || row?.article || '')}`,
     row
+  ]));
+}
+
+function decisionQualityMap(decisionCenter = {}) {
+  return new Map((decisionCenter?.rows || []).map((row) => [
+    `${String(row?.platform || '').trim().toLowerCase()}|${normalizeKey(row?.articleKey || row?.article_key || '')}`,
+    row?.dataQuality || {}
   ]));
 }
 
@@ -181,11 +188,64 @@ function ozonPayload(row, liveRow) {
   };
 }
 
+function rollbackPayload(platform, row, liveRow) {
+  if (platform === 'wb') {
+    const nmId = Math.trunc(numberOrNull(liveRow?.nmId) || 0);
+    const listPrice = Math.trunc(numberOrNull(liveRow?.currentListPrice) || 0);
+    const discount = Math.round(numberOrNull(liveRow?.discountPct) ?? -1);
+    const blockers = [];
+    if (!nmId) blockers.push('wb_previous_nm_id_missing');
+    if (!listPrice) blockers.push('wb_previous_list_price_missing');
+    if (discount < 0 || discount >= 100) blockers.push('wb_previous_discount_missing');
+    return {
+      eligible: blockers.length === 0,
+      blockers,
+      expectedSellerPrice: numberOrNull(row?.facts?.seller_price),
+      payload: blockers.length ? null : { nmID: nmId, price: listPrice, discount }
+    };
+  }
+  if (platform === 'ozon') {
+    const offerId = String(liveRow?.offerId || '').trim();
+    const productId = Math.trunc(numberOrNull(liveRow?.productId) || 0);
+    const previousSellerPrice = numberOrNull(row?.facts?.seller_price);
+    const previousListPrice = numberOrNull(liveRow?.currentListPrice);
+    const previousMinPrice = numberOrNull(
+      liveRow?.currentMinPrice,
+      liveRow?.minPrice,
+      liveRow?.minimumPrice
+    );
+    const blockers = [];
+    if (!offerId && !productId) blockers.push('ozon_previous_identifier_missing');
+    if (previousSellerPrice === null) blockers.push('ozon_previous_seller_price_missing');
+    if (previousMinPrice === null) blockers.push('ozon_previous_min_price_missing');
+    return {
+      eligible: blockers.length === 0,
+      blockers,
+      expectedSellerPrice: previousSellerPrice,
+      payload: blockers.length ? null : {
+        ...(offerId ? { offer_id: offerId } : { product_id: productId }),
+        price: String(previousSellerPrice),
+        old_price: String(previousListPrice !== null && previousListPrice > previousSellerPrice ? previousListPrice : 0),
+        min_price: String(previousMinPrice),
+        currency_code: String(liveRow?.currency || 'RUB'),
+        auto_action_enabled: 'UNKNOWN'
+      }
+    };
+  }
+  return {
+    eligible: false,
+    blockers: ['rollback_unsupported_platform'],
+    expectedSellerPrice: null,
+    payload: null
+  };
+}
+
 function buildApplyPlan({
   canonical,
   livePrices,
   liveSignals,
   shadow,
+  decisionCenter = {},
   now = new Date(),
   maxSnapshotAgeMinutes = 120,
   maxRows = 20,
@@ -208,6 +268,7 @@ function buildApplyPlan({
 
   const maps = priceMaps(livePrices);
   const stockMap = liveSignalsMap(liveSignals);
+  const qualityMap = decisionQualityMap(decisionCenter);
   const candidateActions = [];
   const rejected = [];
   const ignored = [];
@@ -223,6 +284,7 @@ function buildApplyPlan({
     const key = `${row.platform}|${normalizeKey(row.article_key)}`;
     const liveRow = maps[row.platform]?.get(normalizeKey(row.article_key));
     const stockRow = stockMap.get(key);
+    const sourceQuality = qualityMap.get(key);
     const reasons = [];
     const changePct = Math.abs((targetPrice - currentPrice) / currentPrice);
     if (!liveRow) reasons.push('live_api_identifier_missing');
@@ -239,6 +301,11 @@ function buildApplyPlan({
     )) reasons.push('target_margin_violation');
     if (changePct > maxChangePct + 1e-9) reasons.push('apply_change_limit_exceeded');
     if (row?.approval_gate?.type === 'MARGIN_POLICY_REVIEW') reasons.push('margin_policy_review_required');
+    if (sourceQuality && sourceQuality.usable !== true) {
+      (sourceQuality.blockers || ['data_quality_blocked']).forEach((reason) => {
+        reasons.push(`source_quality:${reason}`);
+      });
+    }
     const platformPayload = row.platform === 'wb'
       ? wbPayload(row, liveRow)
       : (row.platform === 'ozon' ? ozonPayload(row, liveRow) : { error: 'unsupported_platform' });
@@ -252,6 +319,7 @@ function buildApplyPlan({
       continue;
     }
     const clientProjection = clientPriceProjection(liveRow, platformPayload.expectedSellerPrice);
+    const rollback = rollbackPayload(row.platform, row, liveRow);
     candidateActions.push({
       platform: row.platform,
       articleKey: row.article_key,
@@ -266,7 +334,11 @@ function buildApplyPlan({
       changePct: round((targetPrice - currentPrice) / currentPrice),
       lifecycle: facts.lifecycle_key || '',
       approvalId: row?.approval?.id || '',
-      apiPayload: platformPayload.payload
+      apiPayload: platformPayload.payload,
+      rollbackEligible: rollback.eligible,
+      rollbackBlockers: rollback.blockers,
+      rollbackExpectedSellerPrice: rollback.expectedSellerPrice,
+      rollbackApiPayload: rollback.payload
     });
   }
   const lifecycleRank = { new: 0, active: 1, exit: 2 };
@@ -411,23 +483,103 @@ function verifyReceipt(receipt, livePrices, toleranceRub = 0.01) {
         : null,
       clientPriceMatchedProjection,
       sellerMatched,
-      matched: sellerMatched
+      matched: sellerMatched,
+      rollbackEligible: !sellerMatched && action.rollbackEligible === true && Boolean(action.rollbackApiPayload),
+      rollbackBlockers: sellerMatched ? [] : (action.rollbackBlockers || []),
+      remediationTaskId: sellerMatched
+        ? ''
+        : `repricer-price-mismatch:${String(action.platform || '').toLowerCase()}:${normalizeKey(action.articleKey)}:${String(receipt?.confirmationHash || '').slice(0, 12)}`
     };
   });
+  const mismatches = rows.filter((row) => !row.matched);
+  const remediationTasks = mismatches.map((row) => ({
+    id: row.remediationTaskId,
+    type: 'REPRICER_PRICE_APPLY_MISMATCH',
+    status: 'OPEN',
+    priority: 'URGENT',
+    platform: row.platform,
+    articleKey: row.articleKey,
+    expectedSellerPrice: row.expectedSellerPrice,
+    actualSellerPrice: row.actualSellerPrice,
+    previousSellerPrice: row.previousSellerPrice,
+    rollbackEligible: row.rollbackEligible,
+    assignedRole: 'ROP',
+    requiredAction: row.rollbackEligible
+      ? 'AUTO_ROLLBACK_OR_ROP_CONFIRMATION'
+      : 'ROP_MANUAL_CORRECTION',
+    confirmationHash: String(receipt?.confirmationHash || '').trim()
+  }));
   return {
     schema: 'repricer-price-apply-verification-v2',
     generatedAt: new Date().toISOString(),
     requestedBy: String(receipt?.requestedBy || '').trim().slice(0, 320),
     confirmationHash: String(receipt?.confirmationHash || '').trim(),
-    status: rows.length && rows.every((row) => row.matched) ? 'verified' : 'pending_or_failed',
+    status: rows.length && rows.every((row) => row.matched) ? 'verified' : 'mismatch_action_required',
     summary: {
       rows: rows.length,
       matched: rows.filter((row) => row.matched).length,
       mismatched: rows.filter((row) => !row.matched).length,
       clientPricesObserved: rows.filter((row) => row.actualClientPrice !== null).length,
-      clientPricesMatchedProjection: rows.filter((row) => row.clientPriceMatchedProjection).length
+      clientPricesMatchedProjection: rows.filter((row) => row.clientPriceMatchedProjection).length,
+      rollbackEligible: mismatches.filter((row) => row.rollbackEligible).length,
+      remediationTasks: remediationTasks.length
     },
-    rows
+    rows,
+    remediation: {
+      status: mismatches.length ? 'required' : 'not_required',
+      policy: 'automatic rollback only when the exact previous API payload is complete; otherwise create an urgent ROP task',
+      automaticRollbackAllowed: mismatches.length > 0 && mismatches.every((row) => row.rollbackEligible),
+      tasks: remediationTasks
+    }
+  };
+}
+
+function buildRollbackPlan(receipt = {}, verification = {}) {
+  const mismatchKeys = new Set((verification?.rows || [])
+    .filter((row) => !row.matched)
+    .map((row) => `${String(row.platform || '').toLowerCase()}|${normalizeKey(row.articleKey)}`));
+  const rejected = [];
+  const actions = [];
+  (receipt?.actions || []).forEach((action) => {
+    const key = `${String(action.platform || '').toLowerCase()}|${normalizeKey(action.articleKey)}`;
+    if (!mismatchKeys.has(key)) return;
+    if (action.rollbackEligible !== true || !action.rollbackApiPayload) {
+      rejected.push({
+        platform: action.platform,
+        articleKey: action.articleKey,
+        reasons: action.rollbackBlockers || ['exact_previous_payload_missing']
+      });
+      return;
+    }
+    actions.push({
+      platform: action.platform,
+      articleKey: action.articleKey,
+      currentSellerPrice: action.expectedSellerPrice,
+      expectedSellerPrice: action.rollbackExpectedSellerPrice ?? action.currentSellerPrice,
+      currentClientPrice: action.expectedClientPriceAfter,
+      expectedClientPriceAfter: action.currentClientPrice,
+      apiPayload: action.rollbackApiPayload,
+      rollbackOfConfirmationHash: receipt.confirmationHash || ''
+    });
+  });
+  return {
+    schema: 'repricer-price-rollback-plan-v1',
+    generatedAt: new Date().toISOString(),
+    requestedBy: String(receipt?.requestedBy || '').trim().slice(0, 320),
+    confirmationHash: String(receipt?.confirmationHash || '').trim(),
+    status: actions.length && rejected.length === 0 ? 'ready' : 'blocked',
+    applyAllowed: actions.length > 0 && rejected.length === 0,
+    globalBlockers: actions.length
+      ? (rejected.length ? ['not_all_mismatches_have_exact_previous_payload'] : [])
+      : ['no_rollback_actions'],
+    summary: {
+      actions: actions.length,
+      wb: actions.filter((row) => row.platform === 'wb').length,
+      ozon: actions.filter((row) => row.platform === 'ozon').length,
+      rejected: rejected.length
+    },
+    actions,
+    rejected
   };
 }
 
@@ -441,6 +593,8 @@ function resolveOptions(args) {
     planPath: path.resolve(args.plan || path.join(outputDir, 'repricer_price_apply_plan.json')),
     receiptPath: path.resolve(args.receipt || path.join(outputDir, 'repricer_price_apply_receipt.json')),
     verificationPath: path.resolve(args.verification || path.join(outputDir, 'repricer_price_apply_verification.json')),
+    rollbackReceiptPath: path.resolve(args['rollback-receipt'] || path.join(outputDir, 'repricer_price_rollback_receipt.json')),
+    rollbackVerificationPath: path.resolve(args['rollback-verification'] || path.join(outputDir, 'repricer_price_rollback_verification.json')),
     confirmation: String(args.confirmation || '').trim(),
     requestedBy: String(args['requested-by'] || '').trim().slice(0, 320),
     maxSnapshotAgeMinutes: Math.max(1, Number(args['max-snapshot-age-minutes'] || 120)),
@@ -451,13 +605,49 @@ function resolveOptions(args) {
 
 async function main() {
   const options = resolveOptions(parseArgs(process.argv));
-  if (options.command === 'verify') {
-    const receipt = readJson(options.receiptPath);
+  if (options.command === 'verify' || options.command === 'verify-rollback') {
+    const rollbackVerification = options.command === 'verify-rollback';
+    const receiptPath = rollbackVerification ? options.rollbackReceiptPath : options.receiptPath;
+    const verificationPath = rollbackVerification ? options.rollbackVerificationPath : options.verificationPath;
+    const receipt = readJson(receiptPath);
     if (!receipt) throw new Error(`receipt not found: ${options.receiptPath}`);
     const verification = verifyReceipt(receipt, readJson(path.join(options.inputDir, 'repricer_live_prices.json'), {}));
-    writeJson(options.verificationPath, verification);
-    console.log(JSON.stringify({ output: options.verificationPath, status: verification.status, summary: verification.summary }, null, 2));
+    verification.schema = rollbackVerification
+      ? 'repricer-price-rollback-verification-v1'
+      : verification.schema;
+    writeJson(verificationPath, verification);
+    console.log(JSON.stringify({ output: verificationPath, status: verification.status, summary: verification.summary }, null, 2));
     if (verification.status !== 'verified') process.exitCode = 1;
+    return;
+  }
+
+  if (options.command === 'rollback') {
+    if (process.env.ALTEA_REPRICER_PRICE_ROLLBACK_ENABLED !== 'true') {
+      throw new Error('price rollback is disabled; set ALTEA_REPRICER_PRICE_ROLLBACK_ENABLED=true on the protected server');
+    }
+    const receipt = readJson(options.receiptPath);
+    const verification = readJson(options.verificationPath);
+    if (!receipt || !verification) throw new Error('apply receipt and failed verification are required for rollback');
+    if (!options.confirmation || options.confirmation !== String(receipt.confirmationHash || '')) {
+      throw new Error('confirmation hash does not match the applied price receipt');
+    }
+    const rollbackPlan = buildRollbackPlan(receipt, verification);
+    const submissions = await submitApplyPlan(rollbackPlan, {
+      wbToken: String(process.env.ALTEA_WB_API_TOKEN || '').trim(),
+      ozonClientId: String(process.env.ALTEA_OZON_CLIENT_ID || '').trim(),
+      ozonApiKey: String(process.env.ALTEA_OZON_API_KEY || '').trim()
+    });
+    const rollbackReceipt = {
+      schema: 'repricer-price-rollback-receipt-v1',
+      generatedAt: new Date().toISOString(),
+      status: 'rollback_submitted_pending_verification',
+      requestedBy: options.requestedBy || receipt.requestedBy || '',
+      confirmationHash: receipt.confirmationHash || '',
+      submissions,
+      actions: rollbackPlan.actions
+    };
+    writeJson(options.rollbackReceiptPath, rollbackReceipt);
+    console.log(JSON.stringify({ output: options.rollbackReceiptPath, status: rollbackReceipt.status, submissions }, null, 2));
     return;
   }
 
@@ -466,6 +656,7 @@ async function main() {
     livePrices: readJson(path.join(options.inputDir, 'repricer_live_prices.json'), {}),
     liveSignals: readJson(path.join(options.inputDir, 'repricer_live_signals.json'), {}),
     shadow: readJson(path.join(options.inputDir, 'repricer_shadow_report.json'), {}),
+    decisionCenter: readJson(path.join(options.inputDir, 'repricer_decision_center.json'), {}),
     maxSnapshotAgeMinutes: options.maxSnapshotAgeMinutes,
     maxRows: options.maxRows,
     maxChangePct: options.maxChangePct,
@@ -504,6 +695,24 @@ async function main() {
     actions: plan.actions
   };
   writeJson(options.receiptPath, receipt);
+  writeJson(options.rollbackReceiptPath, {
+    schema: 'repricer-price-rollback-receipt-v1',
+    generatedAt: receipt.generatedAt,
+    status: 'not_required_pending_readback',
+    requestedBy: options.requestedBy,
+    confirmationHash: plan.confirmationHash,
+    submissions: {},
+    actions: []
+  });
+  writeJson(options.rollbackVerificationPath, {
+    schema: 'repricer-price-rollback-verification-v1',
+    generatedAt: receipt.generatedAt,
+    status: 'not_required_pending_readback',
+    requestedBy: options.requestedBy,
+    confirmationHash: plan.confirmationHash,
+    summary: { rows: 0, matched: 0, mismatched: 0 },
+    rows: []
+  });
   console.log(JSON.stringify({ output: options.receiptPath, status: receipt.status, submissions }, null, 2));
 }
 
@@ -517,10 +726,13 @@ if (require.main === module) {
 module.exports = {
   buildApplyPlan,
   clientPriceProjection,
+  decisionQualityMap,
   parseArgs,
   planHash,
   submitApplyPlan,
   verifyReceipt,
+  buildRollbackPlan,
+  rollbackPayload,
   wbPayload,
   ozonPayload
 };

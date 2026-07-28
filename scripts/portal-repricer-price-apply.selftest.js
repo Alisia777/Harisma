@@ -6,6 +6,7 @@ const fs = require('fs');
 const path = require('path');
 const {
   buildApplyPlan,
+  buildRollbackPlan,
   submitApplyPlan,
   verifyReceipt
 } = require('./portal-repricer-price-apply');
@@ -76,7 +77,8 @@ function fixture() {
             currentSellerPrice: 1000,
             currentClientPrice: 920,
             currentBuyerDiscountPct: 0.08,
-            currentListPrice: 1500
+            currentListPrice: 1500,
+            currentMinPrice: 900
           }]
         }
       }
@@ -113,6 +115,13 @@ async function run() {
   assert.strictEqual(plan.actions[0].expectedClientPriceAfter, 1140);
   assert.strictEqual(plan.actions[0].currentBuyerDiscountPct, 0.05);
   assert.strictEqual(plan.actions[1].expectedClientPriceAfter, 1012);
+  assert.strictEqual(plan.actions[0].rollbackEligible, true);
+  assert.deepStrictEqual(plan.actions[0].rollbackApiPayload, {
+    nmID: 101,
+    price: 1250,
+    discount: 20
+  });
+  assert.strictEqual(plan.actions[1].rollbackEligible, true);
   assert.deepStrictEqual(
     canonicalClientPriceProjection(1000, 950, null, 1200),
     {
@@ -192,6 +201,23 @@ async function run() {
   assert.strictEqual(verified.rows[0].sellerMatched, true);
   assert.strictEqual(verified.rows[0].clientPriceMatchedProjection, false);
   assert.strictEqual(verified.rows[1].clientPriceMatchedProjection, true);
+  assert.strictEqual(verified.remediation.status, 'not_required');
+
+  const mismatch = verifyReceipt(receipt, {
+    platforms: {
+      wb: { rows: [{ articleKey: 'wb-safe', currentSellerPrice: 1190, currentClientPrice: 1130 }] },
+      ozon: { rows: [{ articleKey: 'oz-safe', currentSellerPrice: 1080, currentClientPrice: 995 }] }
+    }
+  });
+  assert.strictEqual(mismatch.status, 'mismatch_action_required');
+  assert.strictEqual(mismatch.summary.remediationTasks, 2);
+  assert.strictEqual(mismatch.remediation.automaticRollbackAllowed, true);
+  assert(mismatch.remediation.tasks.every((task) => task.status === 'OPEN'));
+  const rollback = buildRollbackPlan(receipt, mismatch);
+  assert.strictEqual(rollback.status, 'ready');
+  assert.strictEqual(rollback.actions.length, 2);
+  assert.strictEqual(rollback.actions[0].expectedSellerPrice, 1000);
+  assert.strictEqual(rollback.actions[1].apiPayload.min_price, '900');
 
   const fallback = fixture();
   fallback.liveSignals.summary.directPlatforms = [];
@@ -236,7 +262,7 @@ async function run() {
   );
   assert.match(applyWorkflow, /--requested-by "\$REQUESTED_BY"/);
 
-  console.log('[repricer-price-apply] PASS: plan hash, audit identity, direct-stock gate, workflow preflight, safe inputs, submission and post-verification');
+  console.log('[repricer-price-apply] PASS: plan hash, audit identity, direct-stock gate, safe inputs, submission, readback and exact rollback/task remediation');
 }
 
 run().catch((error) => {

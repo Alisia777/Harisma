@@ -14,8 +14,10 @@ const {
 } = require('./smart-price-contour');
 const { evaluateIndicator, readJson: readPolicyJson } = require('./portal-indicator-engine');
 const {
+  buildCompetitorHistoryMap,
   buildCompetitorPriceMap,
   buildCrossPlatformPriceMap,
+  competitorHistorySignal,
   competitorPriceSignal,
   crossPlatformPriceSignal,
   estimateOwnPriceElasticity,
@@ -66,6 +68,7 @@ function resolveOptions(args = {}) {
     priceObservationHistoryPath: path.resolve(args['price-history'] || path.join(inputDir, 'repricer_price_observation_history.json')),
     marketObservationHistoryPath: path.resolve(args['market-history'] || path.join(inputDir, 'repricer_market_observation_history.json')),
     competitorPricesPath: path.resolve(args['competitor-prices'] || path.join(inputDir, 'repricer_competitor_prices.json')),
+    competitorHistoryPath: path.resolve(args['competitor-history'] || path.join(inputDir, 'repricer_competitor_history.json')),
     noFail: Boolean(args['no-fail']),
     noWrite: Boolean(args['no-write'])
   };
@@ -909,6 +912,7 @@ function buildDemandIntelligence({
   marketHistory = null,
   sourceRow = null,
   competitorRecord = null,
+  competitorHistoryRecord = null,
   siblingPrices = []
 } = {}) {
   const config = demandPricingPolicy(economicsPolicy, platform, policy.target_turnover_days);
@@ -960,6 +964,19 @@ function buildDemandIntelligence({
     snapshotAsOf,
     marketPolicy
   );
+  const competitorHistory = competitorHistorySignal(
+    competitorHistoryRecord,
+    snapshotAsOf,
+    marketPolicy,
+    competitor
+  );
+  const effectiveCompetitor = {
+    ...competitor,
+    suggested_influence_pct: Number((
+      (competitor.suggested_influence_pct || 0)
+      + (competitorHistory.suggested_influence_pct || 0)
+    ).toFixed(6))
+  };
   const crossPlatform = crossPlatformPriceSignal(
     platform,
     currentClientPrice,
@@ -1075,6 +1092,7 @@ function buildDemandIntelligence({
     reasons.push(`demand_${seasonality.reason || 'seasonality_unavailable'}`);
     reasons.push(`demand_${elasticity.reason || 'elasticity_unavailable'}`);
     reasons.push(`demand_${competitor.reason || 'competitor_signal_unavailable'}`);
+    reasons.push(`demand_${competitorHistory.reason || 'competitor_history_unavailable'}`);
     reasons.push(`demand_${crossPlatform.reason || 'cross_platform_signal_unavailable'}`);
   }
   if (
@@ -1093,9 +1111,9 @@ function buildDemandIntelligence({
     && action === 'keep'
     && competitor.usable
     && dataQualityScore >= config.decreaseMinDataQualityScore
-    && Math.abs(competitor.suggested_influence_pct || 0) >= 0.005
+    && Math.abs(effectiveCompetitor.suggested_influence_pct || 0) >= 0.005
   ) {
-    const direction = Math.sign(competitor.suggested_influence_pct);
+    const direction = Math.sign(effectiveCompetitor.suggested_influence_pct);
     const canDecrease = direction < 0
       && !oosDecreaseGuard
       && !(seasonality.usable && seasonality.index >= marketPolicy.seasonality.peakDecreaseBlockIndex);
@@ -1106,7 +1124,7 @@ function buildDemandIntelligence({
       action = direction > 0 ? 'increase' : 'decrease';
       stepPct = Math.min(
         marketPolicy.competitors.maxInfluencePct,
-        Math.abs(competitor.suggested_influence_pct)
+        Math.abs(effectiveCompetitor.suggested_influence_pct)
       );
       marketOnlyDecision = true;
       reasons.push('demand_competitor_gap_price_review');
@@ -1116,7 +1134,7 @@ function buildDemandIntelligence({
     marketAdjustment = marketStepAdjustment({
       action,
       baseStepPct: marketOnlyDecision ? 0 : stepPct,
-      competitor,
+      competitor: effectiveCompetitor,
       crossPlatform,
       elasticity,
       policy: marketPolicy
@@ -1243,6 +1261,7 @@ function buildDemandIntelligence({
       seasonality,
       elasticity,
       competitors: competitor,
+      competitor_history: competitorHistory,
       cross_platform: crossPlatform,
       review_required: Boolean(
         eligible
@@ -1839,6 +1858,7 @@ function buildCanonicalSide({
   priceHistory,
   marketHistory,
   competitorRecord,
+  competitorHistoryRecord,
   siblingPrices
 }) {
   const articleKey = String(sourceRow?.articleKey || sourceRow?.article || '').trim();
@@ -1970,6 +1990,7 @@ function buildCanonicalSide({
     marketHistory,
     sourceRow,
     competitorRecord,
+    competitorHistoryRecord,
     siblingPrices
   });
   const proposed = canRecommend
@@ -2284,6 +2305,8 @@ function buildCanonicalRepricer(options = resolveOptions({})) {
     || file(options.inputDir, 'repricer_market_observation_history.json');
   const competitorPricesPath = options.competitorPricesPath
     || file(options.inputDir, 'repricer_competitor_prices.json');
+  const competitorHistoryPath = options.competitorHistoryPath
+    || file(options.inputDir, 'repricer_competitor_history.json');
   const sourceFiles = [
     'smart_price_workbench.json',
     'smart_price_overlay.json',
@@ -2296,6 +2319,7 @@ function buildCanonicalRepricer(options = resolveOptions({})) {
     'repricer_price_observation_history.json',
     'repricer_market_observation_history.json',
     'repricer_competitor_prices.json',
+    'repricer_competitor_history.json',
     'skus.json',
     'portal_metric_registry.json',
     'portal_indicator_policy.json',
@@ -2347,6 +2371,10 @@ function buildCanonicalRepricer(options = resolveOptions({})) {
     competitorPricesPath,
     { generatedAt: '', rows: [] }
   ));
+  const competitorHistory = buildCompetitorHistoryMap(safeReadJson(
+    competitorHistoryPath,
+    { generatedAt: '', observations: [], series: [] }
+  ));
   const policyPayload = readPolicyJson(options.policyPath, {});
   const metricRegistry = readJsonFile(options.metricRegistryPath, {});
   const featurePolicy = readJsonFile(options.featurePolicyPath, {});
@@ -2379,6 +2407,10 @@ function buildCanonicalRepricer(options = resolveOptions({})) {
     [path.basename(competitorPricesPath)]: sourcePathMeta(
       competitorPricesPath,
       path.basename(competitorPricesPath)
+    ),
+    [path.basename(competitorHistoryPath)]: sourcePathMeta(
+      competitorHistoryPath,
+      path.basename(competitorHistoryPath)
     ),
     [path.basename(liveWorkbenchPath)]: sourcePathMeta(
       liveWorkbenchPath,
@@ -2457,6 +2489,9 @@ function buildCanonicalRepricer(options = resolveOptions({})) {
         competitorRecord: competitorPrices.get(`${skuKey}|${articleKey.toLowerCase()}`)
           || competitorPrices.get(skuKey)
           || null,
+        competitorHistoryRecord: competitorHistory.get(`${skuKey}|${articleKey.toLowerCase()}`)
+          || competitorHistory.get(skuKey)
+          || null,
         siblingPrices: crossPlatformPrices.get(normalizedArticle) || []
       }));
     });
@@ -2481,6 +2516,8 @@ function buildCanonicalRepricer(options = resolveOptions({})) {
     if (market.seasonality?.usable) summary.seasonality_usable_rows += 1;
     if (market.elasticity?.usable) summary.elasticity_learned_rows += 1;
     if (market.competitors?.usable) summary.competitor_usable_rows += 1;
+    if ((market.competitor_history?.trusted_days || 0) > 0) summary.competitor_history_observed_rows += 1;
+    if (market.competitor_history?.usable) summary.competitor_history_usable_rows += 1;
     if (market.cross_platform?.usable) summary.cross_platform_usable_rows += 1;
     if (Math.abs(firstNumber(demand.market_influence_applied_pct, 0) || 0) > 0) {
       summary.market_adjusted_rows += 1;
@@ -2492,6 +2529,8 @@ function buildCanonicalRepricer(options = resolveOptions({})) {
     seasonality_usable_rows: 0,
     elasticity_learned_rows: 0,
     competitor_usable_rows: 0,
+    competitor_history_observed_rows: 0,
+    competitor_history_usable_rows: 0,
     cross_platform_usable_rows: 0,
     market_adjusted_rows: 0,
     market_only_rows: 0

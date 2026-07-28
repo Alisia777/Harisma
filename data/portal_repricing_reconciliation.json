@@ -2,12 +2,12 @@
   "schema": "portal-repricing-reconciliation-v1",
   "generatedAt": "2026-07-28T08:43:23.395Z",
   "freshness_reference_date": "2026-07-28",
-  "snapshot_id": "repricer:0c942517c13b67d3",
+  "snapshot_id": "repricer:9ccaaf0f03e6d623",
   "status": "ok",
   "publish_allowed": true,
   "feature_publish_allowed": true,
   "feature_status": "ok",
-  "business_fingerprint": "cbdfa2a886ab832379d967489bb2708eef8e5c9e7bb5f60398481776a2cebfc7",
+  "business_fingerprint": "23d85aa7dfcf159806f1ec71f527e933b3866b151365e55655746a09f3ab7ae5",
   "summary": {
     "rows": 414,
     "eligible_rows": 414,
@@ -20,7 +20,18 @@
     "blocked_recommendations": 350,
     "duplicate_platform_keys": 0,
     "normalized_article_collisions": 0,
-    "deduped_exact_duplicates": 0
+    "deduped_exact_duplicates": 0,
+    "market_intelligence": {
+      "enabled_rows": 414,
+      "seasonality_usable_rows": 58,
+      "elasticity_learned_rows": 23,
+      "competitor_usable_rows": 0,
+      "competitor_history_observed_rows": 0,
+      "competitor_history_usable_rows": 0,
+      "cross_platform_usable_rows": 102,
+      "market_adjusted_rows": 0,
+      "market_only_rows": 0
+    }
   },
   "blockingReasons": [],
   "warnings": [

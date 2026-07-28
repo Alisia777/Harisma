@@ -171,6 +171,10 @@ function resolveOptions(args) {
       || process.env.ALTEA_WB_PROMOTION_TOKEN
       || process.env.ALTEA_WB_API_TOKEN
       || '',
+    ratingToken: args['rating-token']
+      || process.env.ALTEA_WB_FEEDBACKS_SERVICE_TOKEN
+      || process.env.ALTEA_WB_FEEDBACKS_TOKEN
+      || '',
     apiBaseUrl: String(args['api-base-url'] || process.env.ALTEA_WB_FEEDBACKS_API_BASE_URL || WB_FEEDBACKS_API_BASE_URL).replace(/\/+$/, ''),
     baseDataDir,
     inputDir,
@@ -204,7 +208,7 @@ async function wbRequest(options, apiPath, requestOptions = {}, attempt = 0) {
   const response = await fetch(url, {
     method,
     headers: {
-      Authorization: options.token,
+      Authorization: requestOptions.token || options.token,
       Accept: 'application/json',
       'Content-Type': 'application/json; charset=utf-8'
     },
@@ -245,7 +249,7 @@ function extractList(payload, kind) {
   return [];
 }
 
-async function fetchPagedList(options, diagnostics, kind, isAnswered) {
+async function fetchPagedList(options, diagnostics, kind, isAnswered, queryOptions = {}) {
   const apiPath = kind === 'feedbacks' ? '/api/v1/feedbacks' : '/api/v1/questions';
   const limit = kind === 'feedbacks' ? options.maxFeedbacks : options.maxQuestions;
   const maxSkip = kind === 'feedbacks' ? 199990 : 10000;
@@ -253,15 +257,18 @@ async function fetchPagedList(options, diagnostics, kind, isAnswered) {
   let skip = 0;
   while (rows.length < limit && skip <= maxSkip) {
     const take = Math.min(options.take, limit - rows.length);
+    const query = {
+      isAnswered,
+      take,
+      skip,
+      order: 'dateDesc'
+    };
+    if (queryOptions.currentState !== true) {
+      query.dateFrom = toUnixStart(options.from);
+      query.dateTo = toUnixEnd(options.to);
+    }
     const payload = await safeWbRequest(options, apiPath, {
-      query: {
-        isAnswered,
-        take,
-        skip,
-        order: 'dateDesc',
-        dateFrom: toUnixStart(options.from),
-        dateTo: toUnixEnd(options.to)
-      }
+      query
     }, diagnostics, `${kind} ${isAnswered ? 'answered' : 'unanswered'} skip=${skip}`);
     const pageRows = extractList(payload, kind).map((row) => ({
       ...row,
@@ -284,12 +291,25 @@ async function fetchCounts(options, diagnostics) {
     feedbacksUnansweredWindow: null,
     questionsAnsweredWindow: null,
     questionsUnansweredWindow: null,
+    questionsUnansweredNow: null,
+    questionsUnansweredToday: null,
     sellerRating: null
   };
   const unanswered = await safeWbRequest(options, '/api/v1/feedbacks/count-unanswered', {}, diagnostics, 'feedbacks unanswered count');
   if (unanswered?.data) {
     counts.feedbacksUnansweredNow = numberOrNull(unanswered.data.countUnanswered);
     counts.feedbacksUnansweredToday = numberOrNull(unanswered.data.countUnansweredToday);
+  }
+  const unansweredQuestions = await safeWbRequest(
+    options,
+    '/api/v1/questions/count-unanswered',
+    {},
+    diagnostics,
+    'questions unanswered count'
+  );
+  if (unansweredQuestions?.data) {
+    counts.questionsUnansweredNow = numberOrNull(unansweredQuestions.data.countUnanswered);
+    counts.questionsUnansweredToday = numberOrNull(unansweredQuestions.data.countUnansweredToday);
   }
   for (const [target, apiPath, isAnswered] of [
     ['feedbacksAnsweredWindow', '/api/v1/feedbacks/count', true],
@@ -306,7 +326,13 @@ async function fetchCounts(options, diagnostics) {
     }, diagnostics, `${target} count`);
     counts[target] = numberOrNull(payload?.data);
   }
-  const rating = await safeWbRequest(options, '/api/common/v1/rating', {}, diagnostics, 'seller rating');
+  const rating = await safeWbRequest(
+    options,
+    '/api/common/v1/rating',
+    { token: options.ratingToken },
+    diagnostics,
+    'seller rating (service token required)'
+  );
   if (rating && typeof rating === 'object' && !rating.error) {
     counts.sellerRating = {
       valuation: numberOrNull(rating.valuation),
@@ -314,6 +340,22 @@ async function fetchCounts(options, diagnostics) {
     };
   }
   return counts;
+}
+
+function reconcileCommunicationRows(openRows = [], answeredRows = []) {
+  const byId = new Map();
+  for (const row of openRows) {
+    const id = normalizeText(row?.id);
+    if (id) byId.set(id, { ...row, __isAnsweredQuery: false });
+  }
+  // If a record moves from the open queue to answered between the two API
+  // requests, the answered state wins. This prevents a race from creating a
+  // false current tail until the next refresh.
+  for (const row of answeredRows) {
+    const id = normalizeText(row?.id);
+    if (id) byId.set(id, { ...row, __isAnsweredQuery: true });
+  }
+  return [...byId.values()];
 }
 
 function normalizeFeedback(row, lookups) {
@@ -986,14 +1028,12 @@ async function buildPayload(options) {
   const previousSnapshot = latestPreviousSnapshot(previousPayload, options.to);
   const lookups = buildSkuLookups(skus);
   const counts = await fetchCounts(options, diagnostics);
-  const feedbackRows = [
-    ...await fetchPagedList(options, diagnostics, 'feedbacks', false),
-    ...await fetchPagedList(options, diagnostics, 'feedbacks', true)
-  ];
-  const questionRows = [
-    ...await fetchPagedList(options, diagnostics, 'questions', false),
-    ...await fetchPagedList(options, diagnostics, 'questions', true)
-  ];
+  const openFeedbackRows = await fetchPagedList(options, diagnostics, 'feedbacks', false, { currentState: true });
+  const answeredFeedbackRows = await fetchPagedList(options, diagnostics, 'feedbacks', true);
+  const openQuestionRows = await fetchPagedList(options, diagnostics, 'questions', false, { currentState: true });
+  const answeredQuestionRows = await fetchPagedList(options, diagnostics, 'questions', true);
+  const feedbackRows = reconcileCommunicationRows(openFeedbackRows, answeredFeedbackRows);
+  const questionRows = reconcileCommunicationRows(openQuestionRows, answeredQuestionRows);
   const feedbacks = feedbackRows.map((row) => normalizeFeedback(row, lookups)).filter((row) => row.id);
   const questions = questionRows.map((row) => normalizeQuestion(row, lookups)).filter((row) => row.id);
   let cards = buildCards(feedbacks, questions, skus, options, previousSnapshot);
@@ -1038,8 +1078,12 @@ async function buildPayload(options) {
   })).filter((item) => numberOrZero(item.spend) > 0 || numberOrZero(item.feedbacks) > 0);
   const monthPredicate = (row) => row.date >= options.currentMonthFrom && row.date <= options.to;
   const last7Predicate = (row) => row.date >= options.last7From && row.date <= options.to;
+  const windowPredicate = (row) => row.date >= options.from && row.date <= options.to;
+  const currentOpenFeedbacks = feedbacks.filter((row) => row.answered === false);
+  const currentOpenQuestions = questions.filter((row) => row.answered === false);
   const payload = {
     generatedAt: new Date().toISOString(),
+    asOfDate: options.to,
     source: 'wb-feedbacks-api',
     docsUrl: options.docsUrl,
     window: {
@@ -1062,13 +1106,30 @@ async function buildPayload(options) {
       questions: summarizeQuestions(questions, last7Predicate)
     },
     summary: {
-      feedbacks: summarizeRows(feedbacks),
-      questions: summarizeQuestions(questions),
+      feedbacks: summarizeRows(feedbacks, windowPredicate),
+      questions: summarizeQuestions(questions, windowPredicate),
       counters: counts,
       cardsWithFeedbacks: cards.filter((card) => card.feedbackCount > 0).length,
       cardsWithQuestions: cards.filter((card) => card.questionCount > 0).length,
       cardsWithLowRating: cards.filter((card) => card.lowRatingCount > 0).length,
       cardsWithRatingDrop: cards.filter((card) => numberOrZero(card.ratingDeltaVsPrevious) < 0).length
+    },
+    currentState: {
+      observedAt: new Date().toISOString(),
+      basis: 'current_unanswered_list',
+      feedbacksUnansweredVerified: currentOpenFeedbacks.length,
+      questionsUnansweredVerified: currentOpenQuestions.length,
+      feedbacksCountEndpoint: counts.feedbacksUnansweredNow,
+      questionsCountEndpoint: counts.questionsUnansweredNow,
+      feedbacksCountMatchesList: counts.feedbacksUnansweredNow === null
+        ? null
+        : counts.feedbacksUnansweredNow === currentOpenFeedbacks.length,
+      questionsCountMatchesList: counts.questionsUnansweredNow === null
+        ? null
+        : counts.questionsUnansweredNow === currentOpenQuestions.length,
+      sellerRatingAvailable: counts.sellerRating?.valuation !== null
+        && counts.sellerRating?.valuation !== undefined,
+      sellerRatingSource: counts.sellerRating ? 'wb_service_token_api' : 'unavailable_service_token_required'
     },
     reviewsForPoints: {
       label: 'Отзывы за баллы',
@@ -1096,12 +1157,15 @@ async function buildPayload(options) {
       ...diagnostics,
       feedbackRows: feedbackRows.length,
       questionRows: questionRows.length,
+      openFeedbackRows: openFeedbackRows.length,
+      openQuestionRows: openQuestionRows.length,
+      answeredFeedbackRows: answeredFeedbackRows.length,
+      answeredQuestionRows: answeredQuestionRows.length,
       matchedCards: cards.filter((card) => card.articleKey).length,
       previousSnapshotDate: previousSnapshot?.date || ''
     }
   };
   payload.history = buildHistory(previousPayload, payload, options);
-  payload.ratingDynamics.snapshot = buildSnapshotRatingHistory(payload.history, payload.cards);
   return payload;
 }
 
@@ -1132,7 +1196,22 @@ async function main() {
   }, null, 2));
 }
 
-main().catch((error) => {
-  console.error(error?.stack || String(error));
-  process.exitCode = 1;
-});
+if (require.main === module) {
+  main().catch((error) => {
+    console.error(error?.stack || String(error));
+    process.exitCode = 1;
+  });
+}
+
+module.exports = {
+  buildCards,
+  buildPayload,
+  fetchCounts,
+  fetchPagedList,
+  normalizeFeedback,
+  normalizeQuestion,
+  reconcileCommunicationRows,
+  resolveOptions,
+  summarizeQuestions,
+  summarizeRows
+};

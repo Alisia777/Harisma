@@ -1,6 +1,6 @@
 {
   "schema": "repricer-economics-policy-v1",
-  "version": "2026-07-28.2-market-intelligence-v4",
+  "version": "2026-07-28.4-competitor-history-v6",
   "liveSignals": {
     "requiredPlatforms": [
       "wb",
@@ -29,6 +29,15 @@
   ],
   "priceFreshness": {
     "maxAgeDays": 2
+  },
+  "dataFreshness": {
+    "priceMaxAgeDays": 2,
+    "commissionMaxAgeDays": 31,
+    "advertisingMaxAgeDays": 3,
+    "costMaxAgeDays": 90,
+    "stockMaxAgeDays": 2,
+    "competitorMaxAgeDays": 1,
+    "guardRule": "Missing or stale sources are excluded from the calculation and block price application; they are never replaced by zero."
   },
   "approval": {
     "sharpPriceChangePct": 10,
@@ -127,6 +136,10 @@
       "minimumMatchScore": 0.85,
       "triggerGapPct": 0.1,
       "maxInfluencePct": 0.02,
+      "historyMinimumTrustedDays": 7,
+      "historyMinimumSpanDays": 14,
+      "historyMaxAgeDays": 3,
+      "historyMaxInfluencePct": 0.005,
       "outlierRatioLow": 0.5,
       "outlierRatioHigh": 2
     },
@@ -136,7 +149,17 @@
       "triggerGapPct": 0.1,
       "maxInfluencePct": 0.01
     },
-    "guardRule": "Market v4 uses seasonality, learned own-price elasticity, the same SKU on other marketplaces and a trusted competitor median. A signal without enough fresh comparable observations stays advisory. The combined additional price step is capped at 3%, a seasonal peak blocks decreases, OOS and margin guards have priority, and every proposed move remains pending ROP approval."
+    "calendarEvents": {
+      "enabled": true,
+      "holidayDemandPct": 0.08,
+      "salaryWindowDemandPct": 0.05,
+      "salaryDayRanges": [
+        [5, 10],
+        [20, 25]
+      ],
+      "guardRule": "Marketplace promotions and advertising starts/ends are excluded from price-elasticity learning. Holidays and salary windows are separate calendar controls."
+    },
+    "guardRule": "Market v6 uses seasonality, calendar controls, learned own-price elasticity, the same SKU on other marketplaces, a trusted current competitor median and a 180-day competitor snapshot history. Competitor history needs at least 7 trusted dates over 14 calendar days and never controls price without a fresh usable current snapshot. Promotions and advertising changes are separated from elasticity. A signal without enough fresh comparable observations stays advisory. The combined additional price step is capped at 3%, the history-only contribution is capped at 0.5%, a seasonal peak blocks decreases, OOS and margin guards have priority, and every proposed move remains pending ROP approval."
   },
   "safety": {
     "minimumResidualContributionPct": 5,

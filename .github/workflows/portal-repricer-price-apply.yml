@@ -72,7 +72,7 @@ jobs:
         run: >-
           node scripts/portal-snapshot-pull.js
           --output-dir data
-          --snapshot repricer_market_observation_history,repricer_competitor_prices
+          --snapshot repricer_market_observation_history,repricer_competitor_prices,repricer_competitor_history
 
       - name: Collect fresh prices and direct stock
         env:
@@ -82,6 +82,7 @@ jobs:
           ALTEA_OZON_API_KEY: ${{ secrets.ALTEA_OZON_API_KEY }}
           ALTEA_YM_API_KEY: ${{ secrets.ALTEA_YM_API_KEY }}
           ALTEA_YM_CAMPAIGN_ID: ${{ secrets.ALTEA_YM_CAMPAIGN_ID }}
+          ALTEA_REPRICER_COMPETITOR_FEED_URL: ${{ secrets.ALTEA_REPRICER_COMPETITOR_FEED_URL || vars.ALTEA_REPRICER_COMPETITOR_FEED_URL }}
         run: |
           mkdir -p .portal-truth-output/repricer-price
           node scripts/portal-yandex-market-price-sync.js \
@@ -111,6 +112,20 @@ jobs:
             --output data/repricer_market_observation_history.json \
             --as-of-date '${{ steps.run_date.outputs.value }}' \
             --retention-days 400
+          node scripts/portal-repricer-competitor-sync.js sync \
+            --input-dir data \
+            --previous data/repricer_competitor_prices.json \
+            --output data/repricer_competitor_prices.json \
+            --as-of-date '${{ steps.run_date.outputs.value }}' \
+            --max-skus 60 \
+            --delay-ms 1200
+          node scripts/build-repricer-competitor-history.js \
+            --input-dir data \
+            --history data/repricer_competitor_history.json \
+            --current data/repricer_competitor_prices.json \
+            --output data/repricer_competitor_history.json \
+            --as-of-date '${{ steps.run_date.outputs.value }}' \
+            --retention-days 180
 
       - name: Materialize approved portal decisions
         env:
@@ -134,6 +149,11 @@ jobs:
           node scripts/build-repricer-shadow-report.js \
             --input-dir data \
             --output-dir data
+          node scripts/build-repricer-intelligence-control.js \
+            --input-dir data \
+            --output-dir data \
+            --as-of-date '${{ steps.run_date.outputs.value }}' \
+            --lookback-days 60
 
       - name: Build immutable price plan
         env:
@@ -153,7 +173,7 @@ jobs:
         run: >-
           node scripts/portal-google-sheet-upload.js
           --input-dir data
-          --snapshot repricer_live_prices,repricer_live_signals,repricer_market_observation_history,canonical_repricer,portal_repricing_reconciliation,repricer_team_policy_proposals,repricer_shadow_report,repricer_price_apply_plan
+          --snapshot repricer_live_prices,repricer_live_signals,repricer_market_observation_history,repricer_competitor_prices,repricer_competitor_history,repricer_calendar_factors,repricer_learning_report,repricer_decision_center,canonical_repricer,portal_repricing_reconciliation,repricer_team_policy_proposals,repricer_shadow_report,repricer_price_apply_plan
           --source repricer-price-plan
 
       - name: Apply exact confirmed plan
@@ -173,6 +193,7 @@ jobs:
           --requested-by "$REQUESTED_BY"
 
       - name: Refresh and verify marketplace prices
+        id: price_readback
         if: inputs.mode == 'apply'
         env:
           ALTEA_WB_API_TOKEN: ${{ secrets.ALTEA_WB_API_TOKEN }}
@@ -198,15 +219,67 @@ jobs:
             if node scripts/portal-repricer-price-apply.js verify \
               --input-dir data \
               --output-dir data; then
+              echo "verified=true" >> "$GITHUB_OUTPUT"
               exit 0
             fi
             echo "Price verification attempt $attempt/10 is not complete"
           done
           echo "::error::Marketplace prices did not match the approved plan"
-          exit 1
+          echo "verified=false" >> "$GITHUB_OUTPUT"
 
-      - name: Rebuild snapshots after verified apply
-        if: inputs.mode == 'apply'
+      - name: Roll back exact previous prices after mismatch
+        id: auto_rollback
+        if: inputs.mode == 'apply' && steps.price_readback.outputs.verified != 'true'
+        continue-on-error: true
+        env:
+          ALTEA_REPRICER_PRICE_ROLLBACK_ENABLED: ${{ vars.ALTEA_REPRICER_PRICE_ROLLBACK_ENABLED }}
+          ALTEA_WB_API_TOKEN: ${{ secrets.ALTEA_WB_API_TOKEN }}
+          ALTEA_OZON_CLIENT_ID: ${{ secrets.ALTEA_OZON_CLIENT_ID }}
+          ALTEA_OZON_API_KEY: ${{ secrets.ALTEA_OZON_API_KEY }}
+          CONFIRMATION_HASH: ${{ inputs.confirmation_hash }}
+          REQUESTED_BY: ${{ inputs.requested_by }}
+        shell: bash
+        run: |
+          if [ "$ALTEA_REPRICER_PRICE_ROLLBACK_ENABLED" != "true" ]; then
+            echo "Automatic rollback is disabled; the published verification contains an urgent ROP task."
+            echo "submitted=false" >> "$GITHUB_OUTPUT"
+            exit 0
+          fi
+          node scripts/portal-repricer-price-apply.js rollback \
+            --input-dir data \
+            --output-dir data \
+            --confirmation "$CONFIRMATION_HASH" \
+            --requested-by "$REQUESTED_BY"
+          echo "submitted=true" >> "$GITHUB_OUTPUT"
+
+      - name: Read back rolled-back prices
+        id: rollback_readback
+        if: inputs.mode == 'apply' && steps.auto_rollback.outputs.submitted == 'true'
+        continue-on-error: true
+        env:
+          ALTEA_WB_API_TOKEN: ${{ secrets.ALTEA_WB_API_TOKEN }}
+          ALTEA_OZON_CLIENT_ID: ${{ secrets.ALTEA_OZON_CLIENT_ID }}
+          ALTEA_OZON_API_KEY: ${{ secrets.ALTEA_OZON_API_KEY }}
+        shell: bash
+        run: |
+          for attempt in 1 2 3 4 5 6; do
+            sleep 30
+            node scripts/portal-repricer-live-prices-sync.js sync \
+              --input-dir data \
+              --output data/repricer_live_prices.json \
+              --as-of-date '${{ steps.run_date.outputs.value }}' \
+              --strict
+            if node scripts/portal-repricer-price-apply.js verify-rollback \
+              --input-dir data \
+              --output-dir data; then
+              echo "verified=true" >> "$GITHUB_OUTPUT"
+              exit 0
+            fi
+          done
+          echo "verified=false" >> "$GITHUB_OUTPUT"
+
+      - name: Rebuild snapshots after price operation
+        if: always() && inputs.mode == 'apply'
         run: |
           node scripts/build-canonical-repricer.js \
             --input-dir data \
@@ -215,9 +288,14 @@ jobs:
           node scripts/build-repricer-shadow-report.js \
             --input-dir data \
             --output-dir data
+          node scripts/build-repricer-intelligence-control.js \
+            --input-dir data \
+            --output-dir data \
+            --as-of-date '${{ steps.run_date.outputs.value }}' \
+            --lookback-days 60
 
-      - name: Publish verified result
-        if: inputs.mode == 'apply'
+      - name: Publish price result and remediation
+        if: always() && inputs.mode == 'apply'
         env:
           ALTEA_SUPABASE_URL: ${{ secrets.SUPABASE_URL || vars.SUPABASE_URL || 'https://iyckwryrucqrxwlowxow.supabase.co' }}
           ALTEA_SUPABASE_KEY: ${{ secrets.SUPABASE_SERVICE_ROLE_KEY || secrets.ALTEA_SUPABASE_SERVICE_ROLE_KEY }}
@@ -225,8 +303,14 @@ jobs:
         run: >-
           node scripts/portal-google-sheet-upload.js
           --input-dir data
-          --snapshot repricer_live_prices,repricer_live_signals,repricer_market_observation_history,canonical_repricer,portal_repricing_reconciliation,repricer_team_policy_proposals,repricer_shadow_report,repricer_price_apply_plan,repricer_price_apply_receipt,repricer_price_apply_verification
+          --snapshot repricer_live_prices,repricer_live_signals,repricer_market_observation_history,repricer_competitor_prices,repricer_competitor_history,repricer_calendar_factors,repricer_learning_report,repricer_decision_center,canonical_repricer,portal_repricing_reconciliation,repricer_team_policy_proposals,repricer_shadow_report,repricer_price_apply_plan,repricer_price_apply_receipt,repricer_price_apply_verification,repricer_price_rollback_receipt,repricer_price_rollback_verification
           --source repricer-price-apply
+
+      - name: Fail if neither apply nor rollback was verified
+        if: always() && inputs.mode == 'apply' && steps.price_readback.outputs.verified != 'true' && steps.rollback_readback.outputs.verified != 'true'
+        run: |
+          echo "::error::Price apply mismatch remains; an urgent ROP remediation task was published."
+          exit 1
 
       - uses: actions/upload-artifact@v4
         if: always()
@@ -237,11 +321,18 @@ jobs:
             data/repricer_live_prices.json
             data/repricer_live_signals.json
             data/repricer_market_observation_history.json
+            data/repricer_competitor_prices.json
+            data/repricer_competitor_history.json
+            data/repricer_calendar_factors.json
+            data/repricer_learning_report.json
+            data/repricer_decision_center.json
             data/canonical_repricer.json
             data/portal_repricing_reconciliation.json
             data/repricer_shadow_report.json
             data/repricer_price_apply_plan.json
             data/repricer_price_apply_receipt.json
             data/repricer_price_apply_verification.json
+            data/repricer_price_rollback_receipt.json
+            data/repricer_price_rollback_verification.json
           if-no-files-found: warn
           retention-days: 30

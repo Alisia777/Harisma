@@ -94,6 +94,9 @@ jobs:
           node scripts/repricer-shared-product-cost.selftest.js
           node scripts/repricer-iu-price-correctness.selftest.js
           node scripts/repricer-live-price-logic.selftest.js
+          node scripts/build-repricer-market-observation-history.selftest.js
+          node scripts/import-repricer-competitor-prices.selftest.js
+          node scripts/repricer-market-intelligence.selftest.js
           node scripts/repricer-demand-intelligence.selftest.js
           node scripts/build-repricer-team-policy.selftest.js
           node scripts/build-canonical-repricer-freshness.selftest.js

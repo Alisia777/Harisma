@@ -1,6 +1,6 @@
 {
   "schema": "repricer-economics-policy-v1",
-  "version": "2026-07-28.1-policy-workflow-v3",
+  "version": "2026-07-28.2-market-intelligence-v4",
   "liveSignals": {
     "requiredPlatforms": [
       "wb",
@@ -90,6 +90,53 @@
       }
     },
     "guardRule": "Demand v2 uses a weighted 7/14/28-day forecast, current stock plus inbound, trend and persistent price observations. It may suggest a small move only inside the margin-first MIN/MAX corridor. Decreases require high-confidence data, accelerating demand blocks a decrease, every move stays shadow-only until ROP approval, OOS risk can never lower price, and a changed price receives a three-day cooldown."
+  },
+  "marketIntelligence": {
+    "enabled": true,
+    "reviewRequired": true,
+    "maxCombinedInfluencePct": 0.03,
+    "seasonality": {
+      "enabled": true,
+      "minimumDays": 56,
+      "highConfidenceDays": 330,
+      "lookbackDays": 400,
+      "maxAgeDays": 7,
+      "minimumCalendarCoverage": 0.75,
+      "minIndex": 0.8,
+      "maxIndex": 1.2,
+      "peakDecreaseBlockIndex": 1.12
+    },
+    "elasticity": {
+      "enabled": true,
+      "minimumDays": 42,
+      "maxAgeDays": 30,
+      "minimumCalendarCoverage": 0.75,
+      "minimumPriceChanges": 3,
+      "minimumDistinctPriceLevels": 3,
+      "minimumR2": 0.12,
+      "minValue": -2.5,
+      "maxValue": -0.2,
+      "fallbackValue": -0.9,
+      "minStepMultiplier": 0.65,
+      "maxStepMultiplier": 1.25
+    },
+    "competitors": {
+      "enabled": true,
+      "maxAgeDays": 1,
+      "minimumOffers": 3,
+      "minimumMatchScore": 0.85,
+      "triggerGapPct": 0.1,
+      "maxInfluencePct": 0.02,
+      "outlierRatioLow": 0.5,
+      "outlierRatioHigh": 2
+    },
+    "crossPlatform": {
+      "enabled": true,
+      "maxAgeDays": 2,
+      "triggerGapPct": 0.1,
+      "maxInfluencePct": 0.01
+    },
+    "guardRule": "Market v4 uses seasonality, learned own-price elasticity, the same SKU on other marketplaces and a trusted competitor median. A signal without enough fresh comparable observations stays advisory. The combined additional price step is capped at 3%, a seasonal peak blocks decreases, OOS and margin guards have priority, and every proposed move remains pending ROP approval."
   },
   "safety": {
     "minimumResidualContributionPct": 5,

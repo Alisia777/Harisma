@@ -56,14 +56,14 @@ jobs:
             fi
           done
 
-      - name: Hydrate previous price observations
+      - name: Hydrate previous price and market observations
         env:
           ALTEA_SUPABASE_URL: ${{ secrets.SUPABASE_URL || vars.SUPABASE_URL || 'https://iyckwryrucqrxwlowxow.supabase.co' }}
           ALTEA_SUPABASE_KEY: ${{ secrets.SUPABASE_SERVICE_ROLE_KEY || secrets.ALTEA_SUPABASE_SERVICE_ROLE_KEY }}
         run: >-
           node scripts/portal-snapshot-pull.js
           --output-dir .portal-truth-output/repricer-previous
-          --snapshot repricer_price_observation_history,repricer_live_prices
+          --snapshot repricer_price_observation_history,repricer_market_observation_history,repricer_competitor_prices,repricer_live_prices
 
       - name: Refresh advertising facts used by margin
         env:
@@ -122,6 +122,12 @@ jobs:
             --output data/repricer_price_observation_history.json \
             --as-of-date '${{ steps.run_date.outputs.value }}' \
             --retention-days 90
+          node scripts/build-repricer-market-observation-history.js \
+            --input-dir data \
+            --history .portal-truth-output/repricer-previous/repricer_market_observation_history.json \
+            --output data/repricer_market_observation_history.json \
+            --as-of-date '${{ steps.run_date.outputs.value }}' \
+            --retention-days 400
 
       - name: Materialize approved portal decisions
         env:
@@ -138,6 +144,7 @@ jobs:
           node scripts/build-canonical-repricer.js \
             --input-dir data \
             --output-dir data \
+            --competitor-prices .portal-truth-output/repricer-previous/repricer_competitor_prices.json \
             --as-of-date '${{ steps.run_date.outputs.value }}'
           node scripts/build-repricer-team-policy.js \
             --input-dir data \
@@ -158,7 +165,7 @@ jobs:
         run: >-
           node scripts/portal-google-sheet-upload.js
           --input-dir data
-          --snapshot repricer_live_prices,repricer_live_signals,repricer_price_observation_history,canonical_repricer,portal_repricing_reconciliation,repricer_team_policy_proposals,repricer_shadow_report,repricer_price_apply_plan,repricer
+          --snapshot repricer_live_prices,repricer_live_signals,repricer_price_observation_history,repricer_market_observation_history,canonical_repricer,portal_repricing_reconciliation,repricer_team_policy_proposals,repricer_shadow_report,repricer_price_apply_plan,repricer
           --commit-manifest repricer_price_sync_manifest
           --bundle-id "${{ github.run_id }}-${{ github.run_attempt }}"
           --source repricer-live-prices
@@ -172,6 +179,7 @@ jobs:
             data/repricer_live_prices.json
             data/repricer_live_signals.json
             data/repricer_price_observation_history.json
+            data/repricer_market_observation_history.json
             data/canonical_repricer.json
             data/portal_repricing_reconciliation.json
             data/repricer_team_policy_proposals.json

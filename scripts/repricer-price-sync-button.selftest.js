@@ -75,16 +75,20 @@ async function run() {
     'the same price-refresh job must rebuild the immutable upload plan'
   );
   assert(
-    workflow.includes('--snapshot repricer_price_observation_history,repricer_live_prices'),
-    'price refresh must hydrate the previous observation history before collecting the next price'
+    workflow.includes('--snapshot repricer_price_observation_history,repricer_market_observation_history,repricer_competitor_prices,repricer_live_prices'),
+    'price refresh must hydrate previous price, demand and competitor observations before collecting the next price'
   );
   assert(
     workflow.includes('node scripts/build-repricer-price-observation-history.js'),
     'price refresh must persist compact price-change observations for cooldown and audit'
   );
   assert(
-    workflow.includes('repricer_live_signals,repricer_price_observation_history,canonical_repricer'),
-    'the atomic price bundle must publish price history together with canonical recommendations'
+    workflow.includes('node scripts/build-repricer-market-observation-history.js'),
+    'price refresh must persist daily demand and price observations for seasonality and learned elasticity'
+  );
+  assert(
+    workflow.includes('repricer_live_signals,repricer_price_observation_history,repricer_market_observation_history,canonical_repricer'),
+    'the atomic price bundle must publish price and market history together with canonical recommendations'
   );
   assert(
     workflow.includes('--commit-manifest repricer_price_sync_manifest'),

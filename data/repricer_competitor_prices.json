@@ -1,0 +1,13 @@
+{
+  "schema": "repricer-competitor-prices-v1",
+  "generatedAt": "",
+  "currency": "RUB",
+  "rules": {
+    "grain": "platform + article_key + competitor offer",
+    "price": "Use the current client price. If pack_units is not 1, comparable_unit_price is required.",
+    "matching": "match_score must be independently confirmed and at least 0.85; brand, product type, volume or weight and pack count must match.",
+    "freshness": "An offer older than one day is rejected.",
+    "decision": "At least three fresh in-stock comparable offers are required. The repricer uses their median and never the cheapest offer."
+  },
+  "rows": []
+}

@@ -841,6 +841,71 @@ function summarizeQuestions(rows, predicate = () => true) {
   };
 }
 
+function dedupeCurrentRows(rows, kind, diagnostics) {
+  const byId = new Map();
+  let duplicates = 0;
+  for (const row of rows) {
+    const id = normalizeText(row?.id);
+    if (!id) continue;
+    const existing = byId.get(id);
+    if (!existing) {
+      byId.set(id, row);
+      continue;
+    }
+    duplicates += 1;
+    byId.set(id, {
+      ...existing,
+      ...row,
+      answered: Boolean(existing.answered || row.answered)
+    });
+  }
+  diagnostics[`${kind}DuplicateRows`] = duplicates;
+  if (duplicates > 0) {
+    diagnostics.warnings.push(`${kind}: removed ${duplicates} duplicate rows returned across answered/unanswered queries`);
+  }
+  return [...byId.values()];
+}
+
+function reconcileCurrentUnanswered(feedbacks, questions, counts, diagnostics) {
+  const before = {
+    feedbacks: feedbacks.filter((row) => !row.answered).length,
+    questions: questions.filter((row) => !row.answered).length
+  };
+  const feedbacksAuthoritative = numberOrNull(counts?.feedbacksUnansweredNow);
+  const questionsAuthoritative = numberOrNull(counts?.questionsUnansweredWindow);
+  const feedbacksReconciled = feedbacksAuthoritative === 0
+    ? feedbacks.map((row) => row.answered ? row : { ...row, answered: true })
+    : feedbacks;
+  const questionsReconciled = questionsAuthoritative === 0
+    ? questions.map((row) => row.answered ? row : { ...row, answered: true })
+    : questions;
+  const after = {
+    feedbacks: feedbacksReconciled.filter((row) => !row.answered).length,
+    questions: questionsReconciled.filter((row) => !row.answered).length
+  };
+  if (before.feedbacks > 0 && after.feedbacks === 0) {
+    diagnostics.warnings.push('feedbacks: card tails reset because WB current unanswered counter is zero');
+  }
+  if (before.questions > 0 && after.questions === 0) {
+    diagnostics.warnings.push('questions: card tails reset because WB unanswered window counter is zero');
+  }
+  return {
+    feedbacks: feedbacksReconciled,
+    questions: questionsReconciled,
+    details: {
+      source: 'wb-current-counters',
+      before,
+      after,
+      authoritative: {
+        feedbacks: feedbacksAuthoritative,
+        questions: questionsAuthoritative
+      },
+      feedbacksResetToZero: feedbacksAuthoritative === 0 && before.feedbacks > 0,
+      questionsResetToZero: questionsAuthoritative === 0 && before.questions > 0
+    }
+  };
+}
+
 function latestPreviousSnapshot(previousPayload, to) {
   const history = Array.isArray(previousPayload?.history) ? previousPayload.history : [];
   return history
@@ -994,8 +1059,19 @@ async function buildPayload(options) {
     ...await fetchPagedList(options, diagnostics, 'questions', false),
     ...await fetchPagedList(options, diagnostics, 'questions', true)
   ];
-  const feedbacks = feedbackRows.map((row) => normalizeFeedback(row, lookups)).filter((row) => row.id);
-  const questions = questionRows.map((row) => normalizeQuestion(row, lookups)).filter((row) => row.id);
+  let feedbacks = dedupeCurrentRows(
+    feedbackRows.map((row) => normalizeFeedback(row, lookups)).filter((row) => row.id),
+    'feedbacks',
+    diagnostics
+  );
+  let questions = dedupeCurrentRows(
+    questionRows.map((row) => normalizeQuestion(row, lookups)).filter((row) => row.id),
+    'questions',
+    diagnostics
+  );
+  const reconciliation = reconcileCurrentUnanswered(feedbacks, questions, counts, diagnostics);
+  feedbacks = reconciliation.feedbacks;
+  questions = reconciliation.questions;
   let cards = buildCards(feedbacks, questions, skus, options, previousSnapshot);
   const ratingDynamics = buildCardRatingDynamics(feedbacks, cards, options);
   const ratingRowsByKey = new Map((ratingDynamics.matrix || []).map((row) => [cardIdentityKey(row), row]));
@@ -1065,6 +1141,7 @@ async function buildPayload(options) {
       feedbacks: summarizeRows(feedbacks),
       questions: summarizeQuestions(questions),
       counters: counts,
+      reconciliation: reconciliation.details,
       cardsWithFeedbacks: cards.filter((card) => card.feedbackCount > 0).length,
       cardsWithQuestions: cards.filter((card) => card.questionCount > 0).length,
       cardsWithLowRating: cards.filter((card) => card.lowRatingCount > 0).length,
@@ -1132,7 +1209,14 @@ async function main() {
   }, null, 2));
 }
 
-main().catch((error) => {
-  console.error(error?.stack || String(error));
-  process.exitCode = 1;
-});
+if (require.main === module) {
+  main().catch((error) => {
+    console.error(error?.stack || String(error));
+    process.exitCode = 1;
+  });
+}
+
+module.exports = {
+  dedupeCurrentRows,
+  reconcileCurrentUnanswered
+};

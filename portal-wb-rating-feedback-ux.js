@@ -150,7 +150,9 @@
       button.disabled = dataSyncRuntime.busy || !endpoint;
       button.setAttribute('aria-busy', dataSyncRuntime.busy ? 'true' : 'false');
       button.textContent = dataSyncRuntime.busy
-        ? `Обновляем · ${dataSyncRuntime.attempt}/${dataSyncRuntime.maxAttempts}`
+        ? (dataSyncRuntime.attempt > 0
+          ? `Обновляем · ${dataSyncRuntime.attempt}/${dataSyncRuntime.maxAttempts}`
+          : 'Обновляем · запуск')
         : 'Обновить отзывы и вопросы';
     }
     const meta = root.querySelector('[data-rating-data-freshness]');

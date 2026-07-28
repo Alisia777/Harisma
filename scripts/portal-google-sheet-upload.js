@@ -69,6 +69,7 @@ const OPTIONAL_SNAPSHOT_KEYS = new Set([
 const INLINE_BODY_LIMIT = 18000;
 const DEFAULT_CHUNK_SIZE = 16000;
 const LARGE_LOGISTICS_CHUNK_SIZE = 16000;
+const WB_FEEDBACK_CHUNK_SIZE = 96 * 1024;
 const DEFAULT_CHUNK_CONCURRENCY = 6;
 
 function parseArgs(argv) {
@@ -155,6 +156,12 @@ function snapshotFilePath(inputDir, snapshotKey) {
   return path.join(inputDir, `${snapshotKey}.json`);
 }
 
+function snapshotChunkSize(snapshotKey) {
+  if (snapshotKey === 'wb_feedbacks_summary') return WB_FEEDBACK_CHUNK_SIZE;
+  if (snapshotKey === 'logistics') return LARGE_LOGISTICS_CHUNK_SIZE;
+  return DEFAULT_CHUNK_SIZE;
+}
+
 function readSnapshot(inputDir, snapshotKey) {
   const filePath = snapshotFilePath(inputDir, snapshotKey);
   if (!fs.existsSync(filePath)) {
@@ -212,7 +219,7 @@ async function uploadSnapshot(snapshotKey, payload, options) {
   }
 
   const payloadText = JSON.stringify(payload);
-  const chunkSize = snapshotKey === 'logistics' ? LARGE_LOGISTICS_CHUNK_SIZE : DEFAULT_CHUNK_SIZE;
+  const chunkSize = snapshotChunkSize(snapshotKey);
   const chunks = chunkUtf8String(payloadText, chunkSize);
 
   await postRow({
@@ -311,5 +318,6 @@ module.exports = {
   main,
   parseArgs,
   resolveOptions,
+  snapshotChunkSize,
   snapshotGeneratedAt
 };

@@ -7,6 +7,8 @@ const WB_FEEDBACKS_API_BASE_URL = 'https://feedbacks-api.wildberries.ru';
 const WB_FEEDBACKS_DOCS_URL = 'https://dev.wildberries.ru/en/docs/openapi/user-communication';
 const DEFAULT_OUTPUT_FILE = 'wb_feedbacks_summary.json';
 const MOSCOW_OFFSET = '+03:00';
+const PORTAL_RATING_HISTORY_DAYS = 30;
+const PORTAL_DAILY_SNAPSHOT_DAYS = 14;
 
 function parseArgs(argv) {
   const args = { command: 'sync' };
@@ -628,7 +630,8 @@ function buildDaily(feedbacks, questions, options) {
 
 function buildCardRatingDynamics(feedbacks, cards, options) {
   const dates = [];
-  let cursor = options.from;
+  const ratingHistoryFrom = addDays(options.to, -PORTAL_RATING_HISTORY_DAYS + 1);
+  let cursor = String(options.from).localeCompare(ratingHistoryFrom) > 0 ? options.from : ratingHistoryFrom;
   while (cursor <= options.to) {
     dates.push(cursor);
     cursor = addDays(cursor, 1);
@@ -1046,7 +1049,7 @@ function buildHistory(previousPayload, payload, options) {
   return [
     ...history.filter((item) => item?.date !== options.to),
     entry
-  ].sort((left, right) => String(left.date).localeCompare(String(right.date))).slice(-120);
+  ].sort((left, right) => String(left.date).localeCompare(String(right.date))).slice(-PORTAL_DAILY_SNAPSHOT_DAYS);
 }
 
 async function buildPayload(options) {
@@ -1186,7 +1189,6 @@ async function buildPayload(options) {
     }
   };
   payload.history = buildHistory(previousPayload, payload, options);
-  payload.ratingDynamics.snapshot = buildSnapshotRatingHistory(payload.history, payload.cards);
   return payload;
 }
 
@@ -1225,6 +1227,8 @@ if (require.main === module) {
 }
 
 module.exports = {
+  buildCardRatingDynamics,
+  buildHistory,
   dedupeCurrentRows,
   reconcileCurrentUnanswered
 };

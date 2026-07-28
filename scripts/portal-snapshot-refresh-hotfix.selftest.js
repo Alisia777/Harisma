@@ -7,6 +7,7 @@ const vm = require('vm');
 const root = path.resolve(__dirname, '..');
 const source = fs.readFileSync(path.join(root, 'portal-snapshot-refresh-hotfix.js'), 'utf8');
 const supabaseSource = fs.readFileSync(path.join(root, 'portal-supabase-snapshot-hotfix.js'), 'utf8');
+const coreSource = fs.readFileSync(path.join(root, 'app-core-01.js'), 'utf8');
 
 function extractAsyncFunction(name) {
   const start = source.indexOf(`async function ${name}`);
@@ -90,6 +91,38 @@ result = requestRowsForExactKeys({}, '', 'Алтея', Array.from({ length: 19 }
   }
   if (source.includes('index += 40') || supabaseSource.includes('index += 40')) {
     throw new Error('Legacy forty-key snapshot queries must not remain in active refresh loaders.');
+  }
+
+  const prefixFilters = [];
+  const prefixSandbox = {
+    URL,
+    buildSnapshotUrl: () => new URL('https://example.supabase.co/rest/v1/portal_data_snapshots'),
+    requestSnapshotRows: async (url) => {
+      prefixFilters.push({
+        key: url.searchParams.get('snapshot_key'),
+        order: url.searchParams.get('order'),
+        limit: url.searchParams.get('limit')
+      });
+      return [];
+    },
+    result: null
+  };
+  vm.createContext(prefixSandbox);
+  vm.runInContext(`${extractAsyncFunction('requestRowsForChunkPrefix')}
+result = requestRowsForChunkPrefix({}, '', 'Алтея', 'wb_feedbacks_summary', 658);`, prefixSandbox);
+  await prefixSandbox.result;
+  if (JSON.stringify(prefixFilters) !== JSON.stringify([{
+    key: 'like.wb_feedbacks_summary__part__*',
+    order: 'snapshot_key.asc',
+    limit: '658'
+  }])) {
+    throw new Error(`Chunked snapshots must load in one ordered prefix request, received ${JSON.stringify(prefixFilters)}.`);
+  }
+  if (!coreSource.includes("url.searchParams.set('snapshot_key', `like.${snapshotKey}__part__*`)")) {
+    throw new Error('Core snapshot loader must use a single prefix request for chunk parts.');
+  }
+  if (!supabaseSource.includes("url.searchParams.set('snapshot_key', `like.${snapshotKey}__part__*`)")) {
+    throw new Error('Live Supabase loader must use a single prefix request for chunk parts.');
   }
 
   console.log('portal-snapshot-refresh-hotfix selftest ok');

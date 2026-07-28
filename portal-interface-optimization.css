@@ -3,5 +3,5 @@
  * The stable compatibility layer is preserved byte-for-byte in the local
  * core file; route-specific presentation upgrades are composed below it.
  */
-@import url("./portal-interface-optimization-core.css?v=20260728ratingux2");
-@import url("./portal-wb-rating-workbench-v2.css?v=20260728ratingux2");
+@import url("./portal-interface-optimization-core.css?v=20260728ratingux3");
+@import url("./portal-wb-rating-workbench-v3.css?v=20260728ratingux3");

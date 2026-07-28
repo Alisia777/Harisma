@@ -1,0 +1,137 @@
+/*
+ * Plan-Fact interface parity.
+ * Keeps the native 19-column data contract intact while removing night-theme
+ * residue from the light shell and keeping sticky columns visually continuous.
+ */
+
+html[data-theme] body.v87-imperial.altea-premium-shell #view-sku-plan-fact
+  .pf-v1-platform em {
+  color: var(--text) !important;
+  opacity: .74;
+  text-shadow: none !important;
+}
+
+html[data-theme] body.v87-imperial.altea-premium-shell #view-sku-plan-fact
+  .pf-v1-progress {
+  background: color-mix(in srgb, var(--line) 72%, transparent) !important;
+}
+
+html[data-theme] body.v87-imperial.altea-premium-shell #view-sku-plan-fact
+  .pf-v1-status {
+  background: var(--portal-theme-control) !important;
+  color: var(--text) !important;
+  text-shadow: none !important;
+}
+
+html[data-theme] body.v87-imperial.altea-premium-shell #view-sku-plan-fact
+  .pf-v1-status.ok {
+  border-color: color-mix(in srgb, var(--ok) 58%, var(--line)) !important;
+  background: color-mix(in srgb, var(--ok) 9%, var(--surface)) !important;
+  color: var(--ok) !important;
+}
+
+html[data-theme] body.v87-imperial.altea-premium-shell #view-sku-plan-fact
+  .pf-v1-status.warn {
+  border-color: color-mix(in srgb, var(--warn) 58%, var(--line)) !important;
+  background: color-mix(in srgb, var(--warn) 9%, var(--surface)) !important;
+  color: var(--warn) !important;
+}
+
+html[data-theme] body.v87-imperial.altea-premium-shell #view-sku-plan-fact
+  .pf-v1-status.danger {
+  border-color: color-mix(in srgb, var(--danger, var(--bad)) 58%, var(--line)) !important;
+  background: color-mix(in srgb, var(--danger, var(--bad)) 9%, var(--surface)) !important;
+  color: var(--danger, var(--bad)) !important;
+}
+
+html[data-theme] body.v87-imperial.altea-premium-shell #view-sku-plan-fact
+  .pf-v1-drawer {
+  border-color: var(--line) !important;
+  background: var(--portal-theme-surface-strong) !important;
+  color: var(--text) !important;
+  box-shadow:
+    0 28px 80px color-mix(in srgb, var(--bg) 44%, transparent),
+    inset 0 1px 0 color-mix(in srgb, var(--text) 7%, transparent) !important;
+}
+
+html[data-theme] body.v87-imperial.altea-premium-shell #view-sku-plan-fact :is(
+  .pf-v1-drawer__head h3,
+  .pf-v1-drawer__group,
+  .pf-v1-drawer__actions
+) {
+  color: var(--text) !important;
+  text-shadow: none !important;
+}
+
+html[data-theme] body.v87-imperial.altea-premium-shell #view-sku-plan-fact
+  .pf-v1-drawer__head p {
+  color: var(--muted) !important;
+}
+
+html[data-theme] body.v87-imperial.altea-premium-shell #view-sku-plan-fact
+  .pf-v1-drawer__group > strong {
+  color: var(--accent) !important;
+}
+
+html[data-theme] body.v87-imperial.altea-premium-shell #view-sku-plan-fact :is(
+  .pf-v1-check,
+  .pf-v1-icon-btn,
+  .pf-v1-drawer__actions button
+) {
+  border-color: var(--line) !important;
+  background: var(--portal-theme-control) !important;
+  color: var(--text) !important;
+  text-shadow: none !important;
+  box-shadow: none !important;
+}
+
+html[data-theme] body.v87-imperial.altea-premium-shell #view-sku-plan-fact
+  .pf-v1-drawer__actions button:last-child {
+  border-color: color-mix(in srgb, var(--accent) 58%, var(--line)) !important;
+  background: var(--portal-theme-primary) !important;
+  color: var(--portal-theme-primary-text) !important;
+}
+
+html[data-theme] body.v87-imperial.altea-premium-shell #view-sku-plan-fact
+  .pf-v1-table :is(
+    thead tr:nth-child(2) th:nth-child(3),
+    tbody td:nth-child(3)
+  ) {
+  box-shadow:
+    1px 0 0 var(--line),
+    14px 0 24px color-mix(in srgb, var(--bg) 34%, transparent) !important;
+}
+
+html[data-theme] body.v87-imperial.altea-premium-shell #view-sku-plan-fact
+  .pf-v1-groups th {
+  color: var(--accent) !important;
+  text-shadow: none !important;
+}
+
+@media (min-width: 861px) {
+  html[data-theme] body.v87-imperial.altea-premium-shell #view-sku-plan-fact
+    .pf-v1-groups th:first-child {
+    position: sticky !important;
+    left: 0 !important;
+    z-index: 90 !important;
+    background: var(--portal-theme-surface-strong) !important;
+    box-shadow:
+      1px 0 0 var(--line),
+      14px 0 24px color-mix(in srgb, var(--bg) 34%, transparent) !important;
+  }
+}
+
+@media (max-width: 560px) {
+  html[data-theme] body.v87-imperial.altea-premium-shell #view-sku-plan-fact
+    .pf-v1-drawer {
+    inset: 72px 10px 76px !important;
+    width: auto !important;
+    max-width: none !important;
+    padding: 16px !important;
+  }
+
+  html[data-theme] body.v87-imperial.altea-premium-shell #view-sku-plan-fact
+    .pf-v1-drawer__actions {
+    grid-template-columns: minmax(0, 1fr) !important;
+  }
+}

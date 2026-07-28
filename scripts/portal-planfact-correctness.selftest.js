@@ -324,6 +324,94 @@ async function run() {
     assert.ok(actual.statusOptions.includes('unmapped'), 'Должен быть отдельный фильтр API без пары');
     assert.ok(actual.statusOptions.includes('unallocated'), 'Должен быть отдельный фильтр агрегата без SKU');
 
+    await page.evaluate(() => {
+      document.documentElement.dataset.theme = 'porcelain-day';
+      document.body.dataset.portalTheme = 'light';
+    });
+    await page.waitForTimeout(80);
+    const interfaceMetrics = await page.evaluate(() => {
+      const root = document.getElementById('view-sku-plan-fact');
+      const wrap = root?.querySelector('.pf-v1-table-wrap');
+      const table = root?.querySelector('.pf-v1-table');
+      const row = table?.querySelector('tbody tr');
+      const cells = Array.from(row?.cells || []);
+      const platformValue = table?.querySelector('.pf-v1-platform em');
+      const statuses = Array.from(table?.querySelectorAll('.pf-v1-status') || []);
+      const drawer = root?.querySelector('.pf-v1-drawer');
+      const group = table?.querySelector('.pf-v1-groups th:first-child');
+      const stickyEdge = cells[2];
+      const textColor = table?.querySelector('tbody td')
+        ? getComputedStyle(table.querySelector('tbody td')).color
+        : getComputedStyle(root).color;
+      const wrapRect = wrap?.getBoundingClientRect();
+      const groupRectBefore = group?.getBoundingClientRect();
+      const cellRects = cells.slice(0, 3).map((cell) => cell.getBoundingClientRect());
+      if (wrap) wrap.scrollLeft = 760;
+      const groupRectAfter = group?.getBoundingClientRect();
+      return {
+        documentOverflow: document.documentElement.scrollWidth - document.documentElement.clientWidth,
+        wrapOverflowY: wrap ? getComputedStyle(wrap).overflowY : '',
+        wrapHasHorizontalScroll: Boolean(wrap && wrap.scrollWidth > wrap.clientWidth),
+        stickyColumnsMeet: cellRects.length === 3
+          && Math.abs(cellRects[0].right - cellRects[1].left) <= 1
+          && Math.abs(cellRects[1].right - cellRects[2].left) <= 1,
+        stickyGroupPosition: group ? getComputedStyle(group).position : '',
+        stickyGroupStartsAtWrap: Boolean(
+          groupRectAfter
+          && wrapRect
+          && Math.abs(groupRectAfter.left - wrapRect.left) <= 1
+        ),
+        stickyGroupStable: Boolean(
+          groupRectBefore
+          && groupRectAfter
+          && Math.abs(groupRectBefore.left - groupRectAfter.left) <= 1
+        ),
+        stickyEdgeShadow: stickyEdge ? getComputedStyle(stickyEdge).boxShadow : '',
+        platformValueColor: platformValue ? getComputedStyle(platformValue).color : '',
+        textColor,
+        statusColors: Array.from(new Set(statuses.map((status) => getComputedStyle(status).color))),
+        drawerBackground: drawer ? getComputedStyle(drawer).backgroundColor : '',
+        drawerBackgroundImage: drawer ? getComputedStyle(drawer).backgroundImage : '',
+        drawerText: drawer ? getComputedStyle(drawer).color : ''
+      };
+    });
+    assert.strictEqual(interfaceMetrics.documentOverflow, 0, 'Plan-Fact не должен расширять страницу');
+    assert.strictEqual(interfaceMetrics.wrapOverflowY, 'hidden', 'Таблица не должна создавать отдельный вертикальный скролл');
+    assert.strictEqual(interfaceMetrics.wrapHasHorizontalScroll, true, 'Полный набор метрик должен оставаться доступен горизонтально');
+    assert.strictEqual(interfaceMetrics.stickyColumnsMeet, true, 'Закрепленные колонки должны примыкать без дырок');
+    assert.strictEqual(interfaceMetrics.stickyGroupPosition, 'sticky', 'Групповой заголовок идентификации должен следовать за закрепленными колонками');
+    assert.strictEqual(interfaceMetrics.stickyGroupStartsAtWrap, true, 'Групповой заголовок не должен уезжать под закрепленные колонки');
+    assert.strictEqual(interfaceMetrics.stickyGroupStable, true, 'Групповой заголовок не должен смещаться при горизонтальном скролле');
+    assert.doesNotMatch(interfaceMetrics.stickyEdgeShadow, /rgba?\(0,\s*0,\s*0,\s*0\.22\)/, 'Светлая тема не должна сохранять черную тень');
+    assert.strictEqual(interfaceMetrics.platformValueColor, interfaceMetrics.textColor, 'Проценты площадок должны использовать читаемый текст темы');
+    assert.ok(interfaceMetrics.statusColors.length >= 3, 'Статусы ok/warn/danger должны различаться цветом');
+    assert.doesNotMatch(
+      interfaceMetrics.drawerBackgroundImage,
+      /rgb\(\s*(?:24,\s*20,\s*15|8,\s*7,\s*6)\s*\)/,
+      'Фильтры не должны сохранять темный градиент в светлой теме'
+    );
+    assert.strictEqual(interfaceMetrics.drawerText, interfaceMetrics.textColor, 'Текст фильтров должен совпадать с активной темой');
+
+    await page.setViewportSize({ width: 390, height: 844 });
+    await page.waitForTimeout(60);
+    const mobileInterfaceMetrics = await page.evaluate(() => {
+      const wrap = document.querySelector('#view-sku-plan-fact .pf-v1-table-wrap');
+      const row = document.querySelector('#view-sku-plan-fact .pf-v1-table tbody tr');
+      return {
+        documentOverflow: document.documentElement.scrollWidth - document.documentElement.clientWidth,
+        horizontalTableScroll: Boolean(wrap && wrap.scrollWidth > wrap.clientWidth),
+        firstColumnWidth: row?.cells?.[0]?.getBoundingClientRect().width || 0,
+        ownerPosition: row?.cells?.[1] ? getComputedStyle(row.cells[1]).position : '',
+        platformPosition: row?.cells?.[2] ? getComputedStyle(row.cells[2]).position : ''
+      };
+    });
+    assert.strictEqual(mobileInterfaceMetrics.documentOverflow, 0, 'Мобильный Plan-Fact не должен расширять страницу');
+    assert.strictEqual(mobileInterfaceMetrics.horizontalTableScroll, true, 'Мобильная таблица должна сохранять доступ ко всем метрикам');
+    assert.ok(mobileInterfaceMetrics.firstColumnWidth <= 211, 'Закрепленный SKU не должен занимать весь мобильный экран');
+    assert.strictEqual(mobileInterfaceMetrics.ownerPosition, 'static', 'Owner не должен перекрывать метрики на мобильном');
+    assert.strictEqual(mobileInterfaceMetrics.platformPosition, 'static', 'Площадки не должны перекрывать метрики на мобильном');
+    await page.setViewportSize({ width: 1600, height: 1000 });
+
     await selectFilter(page, 'status', 'all');
     const all = await snapshot(page);
     assertScope(all, 'Все SKU');
@@ -398,6 +486,8 @@ async function run() {
     const refreshSource = readSource('portal-snapshot-refresh-hotfix.js');
     const supabaseRefreshSource = readSource('portal-supabase-snapshot-hotfix.js');
     const v4Source = readSource('portal-planfact-general-to-detail-v4.js');
+    const planFactInterfaceSource = readSource('portal-planfact-interface-fix.css');
+    const interfaceEntrySource = readSource('portal-interface-optimization.css');
     assert.match(bootstrapSource, /void warmSkuPlanFactWbSubstitutionTraffic\(\);/);
     assert.doesNotMatch(
       bootstrapSource.match(/skuPlanFact: async \(\) => \{[\s\S]*?\n  \},\n  productLeaderboard:/)?.[0] || '',
@@ -434,9 +524,17 @@ async function run() {
     assert.match(wbAdsSyncSource, /readSubstitutionNmMap/);
     assert.match(v4Source, /function applyPlanFactFilterPatch[\s\S]*?lastShellSignature = '';\s*renderBase\(\);/);
     assert.doesNotMatch(v4Source, /needsBaseRender/);
+    assert.match(planFactInterfaceSource, /\.pf-v1-platform em[\s\S]*?color:\s*var\(--text\) !important/);
+    assert.match(planFactInterfaceSource, /\.pf-v1-drawer[\s\S]*?background:\s*var\(--portal-theme-surface-strong\) !important/);
+    assert.match(planFactInterfaceSource, /\.pf-v1-groups th:first-child[\s\S]*?position:\s*sticky !important/);
+    assert.match(interfaceEntrySource, /portal-planfact-interface-fix\.css\?v=20260728planfacttheme1/);
 
     ['index.html', 'live-index.html', 'docs/index.html'].forEach((fileName) => {
       const html = readSource(fileName);
+      assert.ok(
+        html.includes('portal-interface-optimization.css?v=20260728planfacttheme1'),
+        `${fileName} должен обновить кэш интерфейса Plan-Fact`
+      );
       assert.ok(
         html.includes('app-core-01.js?v=20260728smartrepricer3'),
         `${fileName} должен обновить кэш неблокирующей загрузки WB substitution и умного репрайсера`

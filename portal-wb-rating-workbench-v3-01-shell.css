@@ -1,0 +1,213 @@
+/*
+ * Reviews workbench UI v3.
+ * Layout-only patch for the WB/Ozon reviews workspace.
+ * Data loading, API calls, filters, comments and workflow logic stay in the
+ * existing report and feedback modules.
+ */
+
+body.v87-imperial.altea-premium-shell #view-wb-rating {
+  --rw-accent: #d8b066;
+  --rw-accent-strong: #f1cf86;
+  --rw-accent-soft: rgba(216, 176, 102, .13);
+  --rw-panel: rgba(18, 16, 20, .96);
+  --rw-panel-strong: rgba(11, 10, 13, .985);
+  --rw-control: rgba(255, 255, 255, .045);
+  --rw-line: rgba(255, 255, 255, .095);
+  --rw-line-accent: rgba(216, 176, 102, .29);
+  --rw-positive: #9cdeb9;
+  --rw-warning: #f1c978;
+  --rw-danger: #ffabab;
+  --rw-blue: #b9d4ff;
+  --rw-radius: 12px;
+  --rw-first-col: 224px;
+  --rw-second-col: 216px;
+  width: 100%;
+  max-width: 100%;
+  min-width: 0;
+  margin: 0;
+  scroll-margin-top: 8px;
+}
+
+/* Give the data grid the width that was previously spent on route gutters. */
+@supports selector(body:has(#view-wb-rating.active)) {
+  body.v87-imperial.altea-premium-shell:has(#view-wb-rating.active)
+    .altea-premium-route-stage--legacy {
+    padding: 10px 8px 28px !important;
+  }
+}
+
+body.v87-imperial.altea-premium-shell
+  .altea-premium-route-stage--legacy > #view-wb-rating.active {
+  padding: 0 !important;
+  overflow: visible !important;
+}
+
+/* ---------- Route heading ---------- */
+body.v87-imperial.altea-premium-shell #view-wb-rating > .section-title {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) auto;
+  align-items: end;
+  gap: 10px 20px;
+  margin: 0 0 9px;
+  padding: 0 2px;
+}
+
+body.v87-imperial.altea-premium-shell #view-wb-rating > .section-title > div:first-child {
+  min-width: 0;
+}
+
+body.v87-imperial.altea-premium-shell #view-wb-rating > .section-title h2 {
+  margin: 0;
+  font-size: clamp(30px, 2.9vw, 46px);
+  line-height: 1;
+  letter-spacing: -.03em;
+}
+
+body.v87-imperial.altea-premium-shell #view-wb-rating > .section-title p {
+  max-width: 900px;
+  margin: 7px 0 0;
+  color: var(--muted);
+  font-size: 12px;
+  line-height: 1.42;
+}
+
+body.v87-imperial.altea-premium-shell #view-wb-rating > .section-title .badge-stack {
+  justify-content: flex-end;
+  align-self: center;
+  max-width: min(44vw, 580px);
+}
+
+/* ---------- Command deck ---------- */
+body.v87-imperial.altea-premium-shell #view-wb-rating .rating-feedback-toolbar {
+  position: relative !important;
+  top: auto !important;
+  z-index: 18;
+  display: grid !important;
+  grid-template-columns: minmax(0, 1fr);
+  gap: 8px;
+  margin: 0 0 9px;
+  padding: 9px;
+  overflow: visible;
+  border: 1px solid var(--rw-line-accent);
+  border-radius: var(--rw-radius);
+  background:
+    radial-gradient(circle at 8% -80%, rgba(216, 176, 102, .14), transparent 48%),
+    linear-gradient(145deg, var(--rw-panel), var(--rw-panel-strong));
+  box-shadow: 0 12px 34px rgba(0, 0, 0, .22), inset 0 1px 0 rgba(255, 255, 255, .035);
+}
+
+body.v87-imperial.altea-premium-shell #view-wb-rating .rating-feedback-toolbar__main {
+  display: grid !important;
+  grid-template-columns: minmax(270px, auto) minmax(190px, 245px) minmax(430px, 1fr);
+  grid-template-areas:
+    "density workflow refresh"
+    "sync api refresh";
+  align-items: center;
+  gap: 7px 10px;
+  min-width: 0;
+}
+
+body.v87-imperial.altea-premium-shell #view-wb-rating .rating-feedback-toolbar__main > * {
+  min-width: 0;
+}
+
+body.v87-imperial.altea-premium-shell #view-wb-rating .rating-density-switch {
+  grid-area: density;
+  display: inline-grid !important;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 3px;
+  width: min(100%, 310px);
+  padding: 3px;
+  border: 1px solid var(--rw-line);
+  border-radius: 10px;
+  background: rgba(0, 0, 0, .2);
+}
+
+body.v87-imperial.altea-premium-shell #view-wb-rating .rating-density-switch button {
+  min-width: 0;
+  min-height: 34px;
+  padding: 0 10px;
+  overflow: hidden;
+  border: 0;
+  border-radius: 7px;
+  background: transparent;
+  color: var(--muted);
+  font-size: 11px;
+  font-weight: 850;
+  line-height: 1.05;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+  box-shadow: none;
+}
+
+body.v87-imperial.altea-premium-shell #view-wb-rating .rating-density-switch button.active {
+  background: linear-gradient(135deg, rgba(216, 176, 102, .26), rgba(216, 176, 102, .1));
+  color: #fff1ca;
+  box-shadow: inset 0 0 0 1px rgba(216, 176, 102, .28);
+}
+
+body.v87-imperial.altea-premium-shell #view-wb-rating .rating-workflow-filter {
+  grid-area: workflow;
+  display: grid !important;
+  grid-template-columns: auto minmax(0, 1fr);
+  align-items: center;
+  gap: 7px;
+  min-width: 0;
+}
+
+body.v87-imperial.altea-premium-shell #view-wb-rating .rating-workflow-filter > span {
+  color: var(--muted);
+  font-size: 10px;
+  font-weight: 850;
+  white-space: nowrap;
+}
+
+body.v87-imperial.altea-premium-shell #view-wb-rating .rating-ux-select,
+body.v87-imperial.altea-premium-shell #view-wb-rating .rating-queue-controls select,
+body.v87-imperial.altea-premium-shell #view-wb-rating .rating-queue-controls input {
+  width: 100%;
+  min-width: 0;
+  height: 38px;
+  border: 1px solid var(--rw-line-accent);
+  border-radius: 9px;
+  background-color: rgba(8, 7, 10, .82);
+  color: var(--text);
+  padding-inline: 10px 32px;
+  font: inherit;
+  font-size: 12px;
+  font-weight: 800;
+  box-shadow: inset 0 1px 0 rgba(255, 255, 255, .025);
+}
+
+body.v87-imperial.altea-premium-shell #view-wb-rating .rating-team-sync {
+  grid-area: sync;
+  display: flex;
+  align-items: center;
+  min-width: 0;
+  color: var(--rw-positive);
+  font-size: 10px;
+  line-height: 1.3;
+  white-space: normal;
+}
+
+body.v87-imperial.altea-premium-shell #view-wb-rating .rating-team-sync::before {
+  flex: 0 0 auto;
+  width: 6px;
+  height: 6px;
+  box-shadow: 0 0 0 3px rgba(97, 201, 155, .08);
+}
+
+body.v87-imperial.altea-premium-shell #view-wb-rating .rating-api-truth {
+  grid-area: api;
+  min-width: 0;
+  overflow: visible;
+  color: var(--muted);
+  font-size: 10px;
+  line-height: 1.32;
+  white-space: normal;
+}
+
+body.v87-imperial.altea-premium-shell #view-wb-rating .rating-api-truth strong {
+  color: var(--rw-warning);
+}
+

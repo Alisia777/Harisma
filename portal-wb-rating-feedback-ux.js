@@ -566,9 +566,9 @@
       }
       #${ROOT_ID} .rating-work-table {
         max-width:100%;
-        max-height:none;
-        overflow-x:auto;
-        overflow-y:visible;
+        max-height:none !important;
+        overflow-x:auto !important;
+        overflow-y:visible !important;
         overscroll-behavior-inline:contain;
         scrollbar-gutter:stable;
         scrollbar-width:auto;

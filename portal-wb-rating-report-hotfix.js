@@ -292,7 +292,7 @@
       .rating-inline-search { flex:1 1 260px; min-width:220px; height:36px; border:1px solid rgba(216,176,102,.2); border-radius:999px; background:rgba(0,0,0,.32); color:#fff7e6; padding:0 12px; font:inherit; font-size:12px; outline:none; }
       .rating-inline-search::placeholder { color:rgba(255,247,230,.52); }
       .rating-inline-search:focus { border-color:rgba(216,176,102,.62); box-shadow:0 0 0 3px rgba(216,176,102,.12); }
-      .rating-work-table { max-height:none; overflow-x:auto; overflow-y:visible; overscroll-behavior-inline:contain; scrollbar-gutter:stable; -webkit-overflow-scrolling:touch; touch-action:pan-x pan-y; }
+      #view-wb-rating .rating-work-table { max-height:none !important; overflow-x:auto !important; overflow-y:visible !important; overscroll-behavior-inline:contain; scrollbar-gutter:stable; -webkit-overflow-scrolling:touch; touch-action:pan-x pan-y; }
       .rating-work-table table { width:100%; min-width:2060px; border-collapse:separate; border-spacing:0; table-layout:fixed; }
       .rating-work-table thead th { position:sticky; top:0; z-index:4; padding:10px 12px; border-bottom:1px solid var(--line); background:rgba(12,8,7,.96); color:#f8e9c7; font-size:11px; text-align:left; text-transform:uppercase; letter-spacing:0; }
       .rating-work-table td { padding:10px 12px; border-bottom:1px solid rgba(255,255,255,.06); vertical-align:top; overflow:hidden; background:linear-gradient(90deg,hsl(var(--pf-hue,205) 74% 34% / var(--pf-row-fill,.025)),rgba(255,255,255,.012)); }

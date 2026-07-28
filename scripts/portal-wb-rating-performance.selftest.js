@@ -96,6 +96,9 @@ async function run() {
       }
       return now - marker.since >= 900;
     });
+    await page.addStyleTag({
+      content: '#view-wb-rating .rating-work-table { max-height:70vh; overflow:auto; }'
+    });
     const tableLayout = await page.locator('#view-wb-rating .rating-work-table').first().evaluate((element) => {
       const style = getComputedStyle(element);
       return {

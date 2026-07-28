@@ -699,6 +699,142 @@ body.v87-imperial.altea-premium-shell #view-wb-rating :is(button, input, select,
   }
 }
 
+/* ---------- Late feedback controls: theme parity ---------- */
+html[data-theme] body.v87-imperial.altea-premium-shell #view-wb-rating
+  .rating-planfact-card .wb-rating-trend {
+  border-color: var(--line) !important;
+  background: var(--portal-theme-control) !important;
+  color: var(--text) !important;
+  text-shadow: none !important;
+  box-shadow: none !important;
+}
+
+html[data-theme] body.v87-imperial.altea-premium-shell #view-wb-rating
+  .rating-planfact-card .wb-rating-trend.up {
+  border-color: color-mix(in srgb, var(--ok) 44%, var(--line)) !important;
+  background: color-mix(in srgb, var(--ok) 10%, var(--surface)) !important;
+  color: var(--ok) !important;
+}
+
+html[data-theme] body.v87-imperial.altea-premium-shell #view-wb-rating
+  .rating-planfact-card .wb-rating-trend.down {
+  border-color: color-mix(in srgb, var(--danger) 44%, var(--line)) !important;
+  background: color-mix(in srgb, var(--danger) 10%, var(--surface)) !important;
+  color: var(--danger) !important;
+}
+
+html[data-theme] body.v87-imperial.altea-premium-shell #view-wb-rating
+  .rating-planfact-card .wb-rating-trend.flat {
+  border-color: var(--line) !important;
+  background: var(--portal-theme-control) !important;
+  color: var(--muted) !important;
+}
+
+html[data-theme] body.v87-imperial.altea-premium-shell .rating-note-backdrop {
+  background: color-mix(in srgb, var(--bg) 76%, transparent) !important;
+}
+
+html[data-theme] body.v87-imperial.altea-premium-shell .rating-note-dialog {
+  border-color: var(--line) !important;
+  background: var(--portal-theme-surface-strong) !important;
+  color: var(--text) !important;
+  text-shadow: none !important;
+  box-shadow: 0 28px 90px color-mix(in srgb, var(--bg) 54%, transparent) !important;
+}
+
+html[data-theme] body.v87-imperial.altea-premium-shell .rating-note-dialog :is(
+  .rating-note-dialog__head,
+  .rating-note-dialog__actions,
+  .rating-note-history__item
+) {
+  border-color: var(--line) !important;
+}
+
+html[data-theme] body.v87-imperial.altea-premium-shell .rating-note-dialog :is(
+  h3,
+  h4,
+  p,
+  .rating-note-history__item p
+) {
+  color: var(--text) !important;
+  text-shadow: none !important;
+}
+
+html[data-theme] body.v87-imperial.altea-premium-shell .rating-note-dialog :is(
+  label,
+  small,
+  .rating-note-history__meta,
+  .rating-note-sync-hint
+) {
+  color: var(--muted) !important;
+}
+
+html[data-theme] body.v87-imperial.altea-premium-shell .rating-note-dialog :is(
+  textarea,
+  select,
+  input,
+  .rating-note-history__item,
+  .rating-note-dialog__actions button
+) {
+  border-color: var(--line) !important;
+  background: var(--portal-theme-control) !important;
+  color: var(--text) !important;
+  text-shadow: none !important;
+  box-shadow: none !important;
+}
+
+html[data-theme] body.v87-imperial.altea-premium-shell
+  .rating-note-dialog__actions button[data-rating-note-save] {
+  border-color: color-mix(in srgb, var(--portal-theme-accent, var(--accent)) 58%, var(--line)) !important;
+  background: var(--portal-theme-primary) !important;
+  color: color-mix(in srgb, var(--bg) 14%, #000) !important;
+}
+
+@media (max-width: 560px) {
+  html[data-theme] body.v87-imperial.altea-premium-shell #view-wb-rating
+    .rating-platform-selector {
+    display: grid !important;
+    grid-template-columns: minmax(0, 1fr) !important;
+    width: 100% !important;
+  }
+
+  html[data-theme] body.v87-imperial.altea-premium-shell #view-wb-rating
+    .rating-platform-selector button {
+    width: 100% !important;
+    min-width: 0 !important;
+    white-space: normal !important;
+  }
+
+  html[data-theme] body.v87-imperial.altea-premium-shell #view-wb-rating
+    .rating-work-tabs {
+    display: grid !important;
+    grid-template-columns: repeat(2, minmax(0, 1fr)) !important;
+  }
+
+  html[data-theme] body.v87-imperial.altea-premium-shell #view-wb-rating
+    .rating-work-tabs button {
+    width: 100% !important;
+    min-width: 0 !important;
+  }
+
+  html[data-theme] body.v87-imperial.altea-premium-shell .rating-note-backdrop {
+    align-items: end !important;
+    padding: 10px !important;
+  }
+
+  html[data-theme] body.v87-imperial.altea-premium-shell .rating-note-dialog {
+    width: 100% !important;
+    max-height: calc(100dvh - 20px) !important;
+    border-radius: 16px !important;
+  }
+
+  html[data-theme] body.v87-imperial.altea-premium-shell .rating-note-dialog__head,
+  html[data-theme] body.v87-imperial.altea-premium-shell .rating-note-dialog__body,
+  html[data-theme] body.v87-imperial.altea-premium-shell .rating-note-dialog__actions {
+    padding: 13px !important;
+  }
+}
+
 @media (hover: none) and (pointer: coarse) {
   body.v87-imperial.altea-premium-shell #view-wb-rating :is(
     .rating-platform-selector button,
@@ -780,6 +916,13 @@ html[data-theme] body.v87-imperial.altea-premium-shell #view-wb-rating :is(
   .rating-work-card
 ) {
   width: 100% !important;
+}
+
+html[data-theme] body.v87-imperial.altea-premium-shell #view-wb-rating
+  .rating-feedback-toolbar {
+  position: relative !important;
+  top: auto !important;
+  z-index: auto !important;
 }
 
 html[data-theme] body.v87-imperial.altea-premium-shell #view-wb-rating :is(
@@ -925,7 +1068,7 @@ html[data-theme] body.v87-imperial.altea-premium-shell #view-wb-rating :is(
 ) {
   border-color: color-mix(in srgb, var(--portal-theme-accent, var(--accent)) 62%, var(--line)) !important;
   background: var(--portal-theme-primary) !important;
-  color: var(--portal-theme-primary-text) !important;
+  color: color-mix(in srgb, var(--bg) 14%, #000) !important;
 }
 
 html[data-theme] body.v87-imperial.altea-premium-shell #view-wb-rating
@@ -974,6 +1117,9 @@ html[data-theme] body.v87-imperial.altea-premium-shell #view-wb-rating :is(
 html[data-theme] body.v87-imperial.altea-premium-shell #view-wb-rating
   .rating-work-table {
   max-width: 100% !important;
+  max-height: none !important;
+  overflow-x: auto !important;
+  overflow-y: hidden !important;
   border-color: var(--line) !important;
   background: var(--portal-theme-surface) !important;
 }

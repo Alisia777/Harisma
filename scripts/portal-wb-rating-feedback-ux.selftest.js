@@ -14,6 +14,8 @@ const authSource = fs.readFileSync(path.join(ROOT, 'portal-auth-access.js'), 'ut
 const coreSource = fs.readFileSync(path.join(ROOT, 'app-core-01.js'), 'utf8');
 const coreUiSource = fs.readFileSync(path.join(ROOT, 'app-core-02.js'), 'utf8');
 const indexSource = fs.readFileSync(path.join(ROOT, 'index.html'), 'utf8');
+const liveIndexSource = fs.readFileSync(path.join(ROOT, 'live-index.html'), 'utf8');
+const docsIndexSource = fs.readFileSync(path.join(ROOT, 'docs/index.html'), 'utf8');
 
 function metricCard(platform, index) {
   return `<button class="rating-planfact-card" data-rating-platform="${platform}"><span>${platform}-${index}</span></button>`;
@@ -69,14 +71,21 @@ async function main() {
   assert.match(coreSource, /comments:\s*'portal_comments'/, 'workflow must reuse the shared comments table');
   assert.match(
     indexSource,
-    /portal-wb-rating-feedback-ux\.js\?v=20260728ratinglayout2/,
+    /portal-wb-rating-feedback-ux\.js\?v=20260728ratinglayout6/,
     'reviews UX must cache-bust the corrected header and theme contract'
   );
   assert.match(
     interfaceSource,
-    /portal-wb-rating-workbench-v2\.css\?v=20260728ratinglayout2/,
+    /portal-wb-rating-workbench-v2\.css\?v=20260728ratinglayout6/,
     'interface entrypoint must cache-bust the reviews workbench theme contract'
   );
+  [indexSource, liveIndexSource, docsIndexSource].forEach((html, index) => {
+    assert.match(
+      html,
+      /portal-wb-rating-feedback-ux\.js\?v=20260728ratinglayout6/,
+      `reviews feedback UX must load in HTML entrypoint ${index + 1}`
+    );
+  });
 
   const commentHelpers = coreUiSource.slice(
     coreUiSource.indexOf('function commentTypeChip'),
@@ -259,6 +268,7 @@ async function main() {
     assert.equal(lightThemeMetrics.cellText, 'rgb(36, 31, 26)', 'light table cells must use the active theme text');
 
     const tableGeometry = await page.evaluate(() => {
+      const wrap = document.querySelector('.rating-work-table');
       const table = document.querySelector('.rating-work-table table');
       const first = table.querySelector('thead th:nth-child(1)').getBoundingClientRect();
       const second = table.querySelector('thead th:nth-child(2)').getBoundingClientRect();
@@ -269,7 +279,9 @@ async function main() {
         firstWidth: first.width,
         secondWidth: second.width,
         adjacentGap: second.left - first.right,
-        noteInside: note.left >= noteBox.left && note.right <= noteBox.right
+        noteInside: note.left >= noteBox.left && note.right <= noteBox.right,
+        verticalOverflow: getComputedStyle(wrap).overflowY,
+        hasSeparateVerticalScroll: wrap.scrollHeight > wrap.clientHeight
       };
     });
     assert.equal(tableGeometry.tableWidth, 2244, 'table width must equal the complete 19-column contract');
@@ -277,6 +289,8 @@ async function main() {
     assert.equal(tableGeometry.secondWidth, 280, 'team comment column must keep its declared width');
     assert.equal(tableGeometry.adjacentGap, 0, 'sticky columns must meet without overlap or a gap');
     assert.equal(tableGeometry.noteInside, true, 'comment action must remain inside its cell');
+    assert.equal(tableGeometry.verticalOverflow, 'hidden', 'reviews table must not create a second vertical scrollbar');
+    assert.equal(tableGeometry.hasSeparateVerticalScroll, false, 'reviews rows must scroll with the page');
 
     await page.evaluate(() => {
       const header = document.querySelector('.rating-work-table thead th:nth-child(3)');
@@ -372,6 +386,18 @@ async function main() {
 
     await page.locator('[data-rating-note]').first().click();
     assert.match(await page.locator('.rating-note-dialog').innerText(), /внутренняя запись для коллег/);
+    const noteDialogTheme = await page.evaluate(() => {
+      const dialog = document.querySelector('.rating-note-dialog');
+      const save = dialog.querySelector('[data-rating-note-save]');
+      return {
+        background: getComputedStyle(dialog).backgroundColor,
+        text: getComputedStyle(dialog).color,
+        saveText: getComputedStyle(save).color
+      };
+    });
+    assert.equal(noteDialogTheme.background, 'rgb(255, 250, 242)', 'light note dialog must use the active light surface');
+    assert.equal(noteDialogTheme.text, 'rgb(36, 31, 26)', 'light note dialog text must remain readable');
+    assert.notEqual(noteDialogTheme.saveText, 'rgb(255, 240, 200)', 'light save button must not keep pale night-theme text');
     await page.locator('[data-rating-note-kind]').selectOption('feedback');
     await page.locator('[data-rating-note-status]').selectOption('progress');
     await page.locator('[data-rating-note-owner]').fill('Тестовый сотрудник');

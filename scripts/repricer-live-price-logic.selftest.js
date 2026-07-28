@@ -131,7 +131,13 @@ for (const row of rows) {
 
   if (recommendation.price !== null) {
     assert(recommendation.price + 1e-9 >= policy.floor, `${row.platform}/${row.article_key}: proposal below effective MIN`);
-    assert(recommendation.price <= policy.cap + 1e-9, `${row.platform}/${row.article_key}: proposal above effective MAX`);
+    if (policy.cap !== null && policy.cap !== undefined) {
+      assert(Number.isFinite(Number(policy.cap)), `${row.platform}/${row.article_key}: effective MAX is invalid`);
+      assert(recommendation.price <= policy.cap + 1e-9, `${row.platform}/${row.article_key}: proposal above effective MAX`);
+    } else {
+      assert.strictEqual(policy.min_max_cap, null, `${row.platform}/${row.article_key}: missing effective MAX hides a price MAX`);
+      assert.strictEqual(policy.margin_cap, null, `${row.platform}/${row.article_key}: missing effective MAX hides a margin MAX`);
+    }
     const expectedMargin = marginAtPrice(recommendation.price, economics);
     assert(closeEnough(expectedMargin, recommendation.margin_pct), `${row.platform}/${row.article_key}: proposed margin mismatch`);
   }

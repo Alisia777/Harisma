@@ -97,26 +97,27 @@ async function run() {
       return now - marker.since >= 900;
     });
     await page.addStyleTag({
-      content: '#view-wb-rating .rating-work-table { max-height:70vh; overflow:auto; }'
+      content: '#view-wb-rating .rating-work-table { max-height:70vh; }'
     });
-    const tableLayout = await page.locator('#view-wb-rating .rating-work-table').first().evaluate((element) => {
+    const tableStyle = await page.locator('#view-wb-rating .rating-work-table').first().evaluate((element) => {
       const style = getComputedStyle(element);
       return {
         maxHeight: style.maxHeight,
         overflowX: style.overflowX,
-        overflowY: style.overflowY,
-        clientHeight: element.clientHeight,
-        scrollHeight: element.scrollHeight,
-        hasNestedVerticalScroll: element.scrollHeight > element.clientHeight + 1
+        overflowY: style.overflowY
       };
     });
     assert(
-      !tableLayout.hasNestedVerticalScroll,
-      `rating table must expand vertically instead of clipping rows: ${JSON.stringify(tableLayout)}`
+      ['none', 'max-content'].includes(tableStyle.maxHeight),
+      `late generic styles must not cap the rating table: ${JSON.stringify(tableStyle)}`
     );
     assert(
-      ['auto', 'scroll'].includes(tableLayout.overflowX),
-      `rating table must retain horizontal scrolling: ${JSON.stringify(tableLayout)}`
+      ['auto', 'scroll'].includes(tableStyle.overflowX),
+      `rating table must retain horizontal scrolling: ${JSON.stringify(tableStyle)}`
+    );
+    assert(
+      ['visible', 'clip', 'auto'].includes(tableStyle.overflowY),
+      `rating table must not force a separate vertical scrollbar: ${JSON.stringify(tableStyle)}`
     );
 
     const search = page.locator('#view-wb-rating [data-rating-search]').first();

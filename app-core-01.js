@@ -2395,6 +2395,12 @@ function normalizeRepricerSkuProfile(item = {}) {
       ?? item.allowedMarginPct
   );
   const maxMarginPct = repricerNumberOrBlank(item.maxMarginPct ?? item.max_margin_pct);
+  const liquidationMinMarginPct = repricerNumberOrBlank(
+    item.liquidationMinMarginPct
+      ?? item.liquidation_min_margin_pct
+      ?? item.exitMinMarginPct
+      ?? item.exit_min_margin_pct
+  );
   return {
     id: item.id || stableId('repricer-sku', articleKey),
     articleKey,
@@ -2405,6 +2411,7 @@ function normalizeRepricerSkuProfile(item = {}) {
     targetMarginPct: minMarginPct,
     minMarginPct,
     maxMarginPct,
+    liquidationMinMarginPct,
     updatedAt: item.updatedAt || new Date().toISOString(),
     updatedBy: String(item.updatedBy || item.updatedByName || state.team.member.name || 'Команда').trim() || 'Команда'
   };
@@ -2425,7 +2432,18 @@ function normalizeRepricerCorridor(item = {}) {
     promoFloor: repricerNumberOrBlank(item.promoFloor),
     elasticity: repricerSignedNumberOrBlank(item.elasticity),
     updatedAt: item.updatedAt || new Date().toISOString(),
-    updatedBy: String(item.updatedBy || item.updatedByName || state.team.member.name || 'Команда').trim() || 'Команда'
+    updatedBy: String(item.updatedBy || item.updatedByName || state.team.member.name || 'Команда').trim() || 'Команда',
+    approvalStatus: String(item.approvalStatus || item.approval_status || '').trim(),
+    sourceStore: String(item.sourceStore || item.source_store || '').trim(),
+    author: String(item.author || item.createdBy || item.created_by || '').trim(),
+    role: String(item.role || item.authorRole || item.author_role || '').trim(),
+    reason: String(item.reason || item.note || '').trim(),
+    createdAt: String(item.createdAt || item.created_at || item.updatedAt || '').trim(),
+    approvedBy: String(item.approvedBy || item.approved_by || '').trim(),
+    approvedAt: String(item.approvedAt || item.approved_at || '').trim(),
+    batchId: String(item.batchId || item.batch_id || '').trim(),
+    sourceFile: String(item.sourceFile || item.source_file || '').trim(),
+    sourceChecksum: String(item.sourceChecksum || item.source_checksum || '').trim()
   };
 }
 

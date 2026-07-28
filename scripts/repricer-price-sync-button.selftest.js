@@ -392,7 +392,16 @@ async function run() {
       null,
       { timeout: 90000 }
     );
-    await page.waitForSelector('[data-premium-primary-action][data-premium-proxy="repricerPriceSync"]', { timeout: 30000 });
+    await page.waitForFunction(
+      () => {
+        const button = document.querySelector(
+          '[data-premium-primary-action][data-premium-proxy="repricerPriceSync"]'
+        );
+        return Boolean(button && button.getClientRects().length);
+      },
+      null,
+      { timeout: 30000 }
+    );
     await page.waitForFunction(
       () => document.querySelector('#view-repricer')?.dataset?.repricerDataSource === 'canonical-audit',
       null,

@@ -10,6 +10,7 @@ const SNAPSHOT_TABLE = 'portal_data_snapshots';
 const CONTROLS_SNAPSHOT_KEY = 'repricer_controls';
 const PRICE_OUTPUT_FILE = 'repricer_approved_overrides.json';
 const LIFECYCLE_OUTPUT_FILE = 'product_lifecycle_approved.json';
+const MARGIN_OUTPUT_FILE = 'repricer_minmax_registry.json';
 const DEFAULT_REMOTE_MAX_ATTEMPTS = 6;
 const DEFAULT_REMOTE_RETRY_DELAY_MS = 5000;
 const DEFAULT_REMOTE_RETRY_MAX_DELAY_MS = 120000;
@@ -66,6 +67,7 @@ function resolveOptions(args = {}) {
     controlsPath: path.resolve(args.controls || path.join(inputDir, 'repricer_controls.json')),
     priceOutputPath: path.resolve(args['price-output'] || path.join(outputDir, PRICE_OUTPUT_FILE)),
     lifecycleOutputPath: path.resolve(args['lifecycle-output'] || path.join(outputDir, LIFECYCLE_OUTPUT_FILE)),
+    marginOutputPath: path.resolve(args['margin-output'] || path.join(outputDir, MARGIN_OUTPUT_FILE)),
     remote: Boolean(args.remote),
     strict: Boolean(args.strict),
     noWrite: Boolean(args['no-write']),
@@ -122,6 +124,15 @@ function positive(...values) {
     if (Number.isFinite(number) && number > 0) return number;
   }
   return null;
+}
+
+function marginRatio(value, options = {}) {
+  if (value === '' || value === null || value === undefined) return null;
+  const number = Number(value);
+  if (!Number.isFinite(number)) return null;
+  const ratio = number > 1 && number <= 100 ? number / 100 : number;
+  const minimum = options.allowZero ? 0 : Number.EPSILON;
+  return ratio >= minimum && ratio < 1 ? ratio : null;
 }
 
 function stamp(value) {
@@ -253,7 +264,9 @@ function portalMaterialized(record = {}) {
 
 function preserveExternalRecords(filePath) {
   const payload = readJson(filePath, { records: [] });
-  const records = Array.isArray(payload) ? payload : list(payload?.records);
+  const records = Array.isArray(payload)
+    ? payload
+    : list(Array.isArray(payload?.records) ? payload.records : payload?.rows);
   return records.filter((record) => !portalMaterialized(record));
 }
 
@@ -312,18 +325,82 @@ function lifecycleRecordsFromControls(controls = {}, now = Date.now()) {
   return records;
 }
 
+function marginRecordsFromControls(controls = {}, now = Date.now()) {
+  const decisions = list(controls.skuDecisionApprovals)
+    .filter((decision) => (
+      text(decision.type, decision.decisionType).toUpperCase() === 'MARGIN_POLICY_CHANGE'
+      && ['applied', 'approved'].includes(text(decision.status, decision.approvalStatus).toLowerCase())
+      && metadataComplete(decision)
+      && notExpired(decision, now)
+    ));
+  const latestDecisions = latestBy(
+    decisions,
+    (decision) => `${platformKey(decision.platform)}|${articleKey(decision)}`
+  );
+  const records = [];
+  latestDecisions.forEach((decision) => {
+    const payload = decision.payload && typeof decision.payload === 'object' ? decision.payload : {};
+    const key = articleKey(decision);
+    const platform = platformKey(decision.platform);
+    const lifecycle = lifecycleKey(payload.lifecycleKey);
+    const minPrice = positive(payload.minPrice);
+    const maxPrice = positive(payload.maxPrice);
+    const minMarginPct = marginRatio(payload.minMarginPct);
+    const maxMarginPct = marginRatio(payload.maxMarginPct);
+    const liquidationMinMarginPct = marginRatio(payload.liquidationMinMarginPct, { allowZero: true });
+    const normalMarginComplete = minMarginPct !== null
+      && maxMarginPct !== null
+      && maxMarginPct > minMarginPct;
+    const liquidationMarginComplete = lifecycle === 'exit' && liquidationMinMarginPct !== null;
+    if (!key || !['wb', 'ozon'].includes(platform)) return;
+    if (!(minPrice !== null && maxPrice !== null && maxPrice >= minPrice)) return;
+    if (!normalMarginComplete && !liquidationMarginComplete) return;
+    const meta = metadata(decision);
+    records.push({
+      id: text(decision.id, `${key}|${platform}|margin|${meta.approvedAt}`),
+      batchId: text(decision.id),
+      articleKey: key,
+      platform,
+      ...(normalMarginComplete ? {
+        targetMarginPct: minMarginPct,
+        minMarginPct,
+        maxMarginPct
+      } : {}),
+      ...(liquidationMarginComplete ? { liquidationMinMarginPct } : {}),
+      minPrice,
+      maxPrice,
+      effectiveFrom: String(meta.approvedAt).slice(0, 10),
+      approvalStatus: 'approved',
+      sourceStore: 'portal_task_approval',
+      ...meta,
+      updatedAt: text(decision.updatedAt, meta.approvedAt),
+      sourceFile: `portal-task:${text(decision.taskId, decision.id)}`,
+      sourceChecksum: text(
+        decision.sourceChecksum,
+        `portal-margin:${text(decision.id)}:${platform}:${key}:${minPrice}:${maxPrice}`
+      ),
+      note: text(decision.reason)
+    });
+  });
+  return records;
+}
+
 function materializeApprovedDecisions(controls = {}, options = {}) {
   const now = options.now || Date.now();
   const priceRecords = list(controls.overrides || controls.repricerOverrides)
     .filter((record) => approvedOverride(record, now))
     .map(normalizedApprovedOverride);
   const lifecycleRecords = lifecycleRecordsFromControls(controls, now);
+  const marginRecords = marginRecordsFromControls(controls, now);
   const existingPriceRecords = options.preserveExisting === false
     ? []
     : preserveExternalRecords(options.priceOutputPath);
   const existingLifecycleRecords = options.preserveExisting === false
     ? []
     : preserveExternalRecords(options.lifecycleOutputPath);
+  const existingMarginRecords = options.preserveExisting === false
+    ? []
+    : preserveExternalRecords(options.marginOutputPath);
   const mergedPriceRecords = mergeLatest(
     [...existingPriceRecords, ...priceRecords],
     (record) => `${platformKey(record.platform)}|${articleKey(record)}`
@@ -331,6 +408,10 @@ function materializeApprovedDecisions(controls = {}, options = {}) {
   const mergedLifecycleRecords = mergeLatest(
     [...existingLifecycleRecords, ...lifecycleRecords],
     (record) => `all|${articleKey(record)}`
+  );
+  const mergedMarginRecords = mergeLatest(
+    [...existingMarginRecords, ...marginRecords],
+    (record) => `${platformKey(record.platform)}|${articleKey(record)}`
   );
   const generatedAt = new Date(now).toISOString();
   return {
@@ -346,12 +427,21 @@ function materializeApprovedDecisions(controls = {}, options = {}) {
       source: CONTROLS_SNAPSHOT_KEY,
       records: mergedLifecycleRecords
     },
+    margins: {
+      schema: 'repricer-minmax-registry-v1',
+      generatedAt,
+      source: CONTROLS_SNAPSHOT_KEY,
+      rows: mergedMarginRecords
+    },
     summary: {
       controlsOverrides: list(controls.overrides || controls.repricerOverrides).length,
       approvedPriceOverrides: priceRecords.length,
       lifecycleDecisions: list(controls.skuDecisionApprovals)
         .filter((record) => text(record.type, record.decisionType).toUpperCase() === 'PRODUCT_STATUS_CHANGE').length,
-      approvedLifecycleOverrides: lifecycleRecords.length
+      approvedLifecycleOverrides: lifecycleRecords.length,
+      marginDecisions: list(controls.skuDecisionApprovals)
+        .filter((record) => text(record.type, record.decisionType).toUpperCase() === 'MARGIN_POLICY_CHANGE').length,
+      approvedMarginPolicies: marginRecords.length
     }
   };
 }
@@ -478,11 +568,13 @@ async function run(options) {
   if (!options.noWrite) {
     writeJson(options.priceOutputPath, result.prices);
     writeJson(options.lifecycleOutputPath, result.lifecycle);
+    writeJson(options.marginOutputPath, result.margins);
   }
   return {
     ...result.summary,
     priceOutputPath: options.priceOutputPath,
     lifecycleOutputPath: options.lifecycleOutputPath,
+    marginOutputPath: options.marginOutputPath,
     noWrite: options.noWrite
   };
 }
@@ -504,6 +596,7 @@ module.exports = {
   approvedOverride,
   fetchRemoteControls,
   lifecycleKey,
+  marginRecordsFromControls,
   materializeApprovedDecisions,
   remoteRetryDelayMs,
   retryableRemoteStatus,

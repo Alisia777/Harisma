@@ -1,7 +1,7 @@
 {
   "schema": "portal-dashboard-metrics-v1",
-  "generatedAt": "2026-07-28T08:49:48.001Z",
-  "snapshot_id": "dashboard:c3bc9191e36dd7d8",
+  "generatedAt": "2026-07-28T10:02:46.678Z",
+  "snapshot_id": "dashboard:78c7095f06514061",
   "metric_registry_version": "2026-06-20.1",
   "indicator_policy_version": "2026-06-20.1",
   "cutoffDate": "2026-07-27",
@@ -9,7 +9,7 @@
   "source_checksums": {
     "platform_trends.json": {
       "exists": true,
-      "sha256": "e5051a171768b9017580e1507b763e3d674466e973fefc2b8d420aa6371e56b8"
+      "sha256": "6447c141a00adf2d918ce6ed3e499e743e8cf5e963386020224b8c3dd3e178df"
     },
     "company_plan.json": {
       "exists": true,
@@ -17,7 +17,7 @@
     },
     "ads_summary.json": {
       "exists": true,
-      "sha256": "a074faaaa524304aaa50f23466c54efcb7863d6ff7d3b881887eaf674c3d87cc"
+      "sha256": "097f52c92a504f797a53a1701f114564df0b969908a3a9262239eae3c7a25931"
     },
     "portal_metric_registry.json": {
       "exists": true,
@@ -32,8 +32,8 @@
     "metrics": 14,
     "factRevenue": 425916993.49,
     "salaryFactRevenue": 425916993.49,
-    "allChannelFactRevenue": 428581558.76,
-    "outsidePlanScopeFactRevenue": 2664565.27,
+    "allChannelFactRevenue": 428652030.76,
+    "outsidePlanScopeFactRevenue": 2735037.27,
     "planScopePlatforms": [
       "wb",
       "ozon",
@@ -151,25 +151,25 @@
       },
       "period_from": "2026-07-01",
       "period_to": "2026-07-27",
-      "raw_value": 1520000,
-      "displayed_value": 1520000,
+      "raw_value": 1590472,
+      "displayed_value": 1590472,
       "transforms": [
         "sum_daily_marketplace_sales_fact"
       ],
       "source_dates": {
-        "platform_trends": "2026-07-26"
+        "platform_trends": "2026-07-27"
       },
-      "data_status": "incomplete",
-      "reconciliation_status": "blocked",
+      "data_status": "trusted",
+      "reconciliation_status": "ok",
       "business_status": "neutral",
-      "confidence": "low",
+      "confidence": "high",
       "drilldown": [
         {
           "platform": "goldapple",
-          "revenue": 1520000,
-          "units": 2193,
+          "revenue": 1590472,
+          "units": 2323,
           "date_from": "2026-07-01",
-          "date_to": "2026-07-26"
+          "date_to": "2026-07-27"
         }
       ]
     },
@@ -321,7 +321,7 @@
         "wb": "2026-07-27",
         "ozon": "2026-07-27",
         "ya": "2026-07-27",
-        "goldapple": "2026-07-26",
+        "goldapple": "2026-07-27",
         "letu": "2026-07-27",
         "megamarket": "2026-07-27",
         "samokat": "",
@@ -333,13 +333,13 @@
       "confidence": "high",
       "drilldown": [
         {
-          "all_revenue": 428581558.75999993,
+          "all_revenue": 428652030.75999993,
           "core_revenue": 425916993.49,
-          "included_revenue": 428581558.76,
+          "included_revenue": 428652030.76,
           "unallocated_revenue": 0,
-          "all_units": 355246,
+          "all_units": 355376,
           "core_units": 350963,
-          "included_units": 355246,
+          "included_units": 355376,
           "unallocated_units": 0
         }
       ]
@@ -404,8 +404,8 @@
       "drilldown": [
         {
           "factRevenue": 425916993.49,
-          "allChannelFactRevenue": 428581558.76,
-          "outsidePlanScopeFactRevenue": 2664565.27,
+          "allChannelFactRevenue": 428652030.76,
+          "outsidePlanScopeFactRevenue": 2735037.27,
           "includedPlatforms": [
             "wb",
             "ozon",

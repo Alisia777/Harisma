@@ -1,7 +1,7 @@
 {
   "schema": "portal-dashboard-v2",
-  "generatedAt": "2026-07-28T08:49:48.001Z",
-  "snapshot_id": "dashboard:c3bc9191e36dd7d8",
+  "generatedAt": "2026-07-28T10:02:46.678Z",
+  "snapshot_id": "dashboard:78c7095f06514061",
   "asOfDate": "2026-07-27",
   "latestMarketplaceDate": "2026-07-27",
   "monthKey": "2026-07",
@@ -115,8 +115,8 @@
     "metrics": 14,
     "factRevenue": 425916993.49,
     "salaryFactRevenue": 425916993.49,
-    "allChannelFactRevenue": 428581558.76,
-    "outsidePlanScopeFactRevenue": 2664565.27,
+    "allChannelFactRevenue": 428652030.76,
+    "outsidePlanScopeFactRevenue": 2735037.27,
     "planScopePlatforms": [
       "wb",
       "ozon",
@@ -128,7 +128,7 @@
     "unallocatedRevenue": 0,
     "cutoffDate": "2026-07-27",
     "monthKey": "2026-07",
-    "factUnits": 355246,
+    "factUnits": 355376,
     "warehouseStock": 591848,
     "marketplaceStock": 220574
   },
@@ -204,9 +204,9 @@
     {
       "id": "sales-revenue-goldapple",
       "label": "Revenue GOLDAPPLE",
-      "value": 1520000,
+      "value": 1590472,
       "format": "money",
-      "period": "2026-07-26",
+      "period": "2026-07-27",
       "hint": "Fact from platform_trends.json.",
       "metricId": "sales.raw_revenue:goldapple"
     },
@@ -276,7 +276,7 @@
     {
       "id": "all-channel-fact-revenue",
       "label": "All-channel fact",
-      "value": 428581558.76,
+      "value": 428652030.76,
       "format": "money",
       "period": "2026-07-27",
       "hint": "All visible marketplace and retail channels; kept separate from plan completion.",
@@ -332,9 +332,9 @@
       "total_stock": 220574,
       "warehouse_stock": 591848,
       "plan_units": 0,
-      "fact_units_to_date": 355246,
-      "fact_revenue_to_date": 428581558.76,
-      "all_channel_fact_revenue_to_date": 428581558.76,
+      "fact_units_to_date": 355376,
+      "fact_revenue_to_date": 428652030.76,
+      "all_channel_fact_revenue_to_date": 428652030.76,
       "plan_completion_to_date_pct": 1.516139,
       "company_plan_month_key": "2026-07",
       "company_plan_month_label": "июль 2026",
@@ -367,9 +367,9 @@
         },
         "goldapple": {
           "dateFrom": "2026-07-01",
-          "dateTo": "2026-07-26",
-          "revenue": 1520000,
-          "units": 2193
+          "dateTo": "2026-07-27",
+          "revenue": 1590472,
+          "units": 2323
         },
         "letu": {
           "dateFrom": "2026-07-01",

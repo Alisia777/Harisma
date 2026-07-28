@@ -218,7 +218,7 @@ async function run() {
     await page.waitForSelector('[data-repricer-price-sync]', { state: 'attached', timeout: 30000 });
     assert.strictEqual(
       await page.locator('[data-repricer-price-sync]').first().innerText(),
-      'Получить актуальные цены',
+      'Обновить всё',
       'repricer must expose the protected live-price refresh button'
     );
     await page.waitForSelector('.repricer-decision-center-card', { timeout: 30000 });

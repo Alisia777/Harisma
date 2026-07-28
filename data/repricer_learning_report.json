@@ -1,6 +1,6 @@
 {
   "schema": "repricer-learning-report-v1",
-  "generatedAt": "2026-07-28T11:55:59.556Z",
+  "generatedAt": "2026-07-28T16:08:02.236Z",
   "asOfDate": "2026-07-28",
   "lookbackDays": 60,
   "status": "ready_for_calibration",
@@ -4212,12 +4212,37 @@
   "outcomes": {
     "evaluationWindowDays": [
       3,
-      7
+      7,
+      14,
+      30
     ],
     "summary": {
       "events": 0,
       "evaluated": 0,
-      "waiting": 0
+      "fullyEvaluated": 0,
+      "waiting": 0,
+      "checkpoints": {
+        "3": {
+          "events": 0,
+          "evaluated": 0,
+          "waiting": 0
+        },
+        "7": {
+          "events": 0,
+          "evaluated": 0,
+          "waiting": 0
+        },
+        "14": {
+          "events": 0,
+          "evaluated": 0,
+          "waiting": 0
+        },
+        "30": {
+          "events": 0,
+          "evaluated": 0,
+          "waiting": 0
+        }
+      }
     },
     "rows": []
   }

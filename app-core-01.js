@@ -146,6 +146,9 @@
     economicSource: 'all',
     listSize: 'focus'
   },
+  repricerDecisionFilters: {
+    group: 'all'
+  },
   orderCalc: {
     articleKey: '',
     scope: 'all',

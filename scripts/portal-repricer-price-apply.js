@@ -96,6 +96,13 @@ function decisionQualityMap(decisionCenter = {}) {
   ]));
 }
 
+function decisionPolicyMap(decisionCenter = {}) {
+  return new Map((decisionCenter?.rows || []).map((row) => [
+    `${String(row?.platform || '').trim().toLowerCase()}|${normalizeKey(row?.articleKey || row?.article_key || '')}`,
+    row
+  ]));
+}
+
 function clientPriceProjection(liveRow = {}, sellerPriceAfter = null) {
   const sellerBefore = numberOrNull(liveRow.currentSellerPrice);
   const clientBefore = numberOrNull(liveRow.currentClientPrice);
@@ -269,6 +276,7 @@ function buildApplyPlan({
   const maps = priceMaps(livePrices);
   const stockMap = liveSignalsMap(liveSignals);
   const qualityMap = decisionQualityMap(decisionCenter);
+  const policyMap = decisionPolicyMap(decisionCenter);
   const candidateActions = [];
   const rejected = [];
   const ignored = [];
@@ -285,6 +293,7 @@ function buildApplyPlan({
     const liveRow = maps[row.platform]?.get(normalizeKey(row.article_key));
     const stockRow = stockMap.get(key);
     const sourceQuality = qualityMap.get(key);
+    const decisionPolicy = policyMap.get(key) || {};
     const reasons = [];
     const changePct = Math.abs((targetPrice - currentPrice) / currentPrice);
     if (!liveRow) reasons.push('live_api_identifier_missing');
@@ -305,6 +314,15 @@ function buildApplyPlan({
       (sourceQuality.blockers || ['data_quality_blocked']).forEach((reason) => {
         reasons.push(`source_quality:${reason}`);
       });
+    }
+    const automationTier = String(decisionPolicy?.automation?.tier || '').trim().toLowerCase();
+    const approvalStatus = String(decisionPolicy?.approval?.status || '').trim().toUpperCase();
+    const approvalRecorded = ['APPROVED', 'ACTIVE', 'VERIFIED'].includes(approvalStatus)
+      || Boolean(row?.approval?.id);
+    if (automationTier === 'blocked') reasons.push('automation_source_data_blocked');
+    if (automationTier === 'rop_approval' && !approvalRecorded) reasons.push('rop_approval_required');
+    if (automationTier === 'double_confirmation' && !approvalRecorded) {
+      reasons.push('first_confirmation_rop_task_required');
     }
     const platformPayload = row.platform === 'wb'
       ? wbPayload(row, liveRow)
@@ -334,6 +352,11 @@ function buildApplyPlan({
       changePct: round((targetPrice - currentPrice) / currentPrice),
       lifecycle: facts.lifecycle_key || '',
       approvalId: row?.approval?.id || '',
+      automationTier: automationTier || (changePct <= 0.03 + 1e-9 ? 'automatic' : 'rop_approval'),
+      autoApplyEligible: automationTier === 'automatic' && sourceQuality?.usable === true,
+      confirmationsRequired: numberOrNull(decisionPolicy?.approval?.confirmationsRequired) || 0,
+      confirmationsRecordedAtPlan: approvalRecorded ? 1 : 0,
+      confirmationStages: decisionPolicy?.approval?.confirmationStages || [],
       apiPayload: platformPayload.payload,
       rollbackEligible: rollback.eligible,
       rollbackBlockers: rollback.blockers,
@@ -388,6 +411,9 @@ function buildApplyPlan({
       deferred: deferred.length,
       wb: actions.filter((row) => row.platform === 'wb').length,
       ozon: actions.filter((row) => row.platform === 'ozon').length,
+      automaticEligible: actions.filter((row) => row.autoApplyEligible).length,
+      ropApproved: actions.filter((row) => row.automationTier === 'rop_approval').length,
+      doubleConfirmedAtApply: actions.filter((row) => row.automationTier === 'double_confirmation').length,
       rejected: rejected.length,
       ignored: ignored.length
     },
@@ -727,6 +753,7 @@ module.exports = {
   buildApplyPlan,
   clientPriceProjection,
   decisionQualityMap,
+  decisionPolicyMap,
   parseArgs,
   planHash,
   submitApplyPlan,

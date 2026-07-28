@@ -1,9 +1,9 @@
 {
   "schema": "repricer-team-policy-proposals-v1",
-  "generatedAt": "2026-07-28T11:55:59.431Z",
-  "sourceSnapshotId": "repricer:9ccaaf0f03e6d623",
+  "generatedAt": "2026-07-28T15:57:10.321Z",
+  "sourceSnapshotId": "repricer:b003a845fb06f406",
   "sourceFreshnessReferenceDate": "2026-07-28",
-  "economicsPolicyVersion": "2026-07-28.4-competitor-history-v6",
+  "economicsPolicyVersion": "2026-07-28.5-automation-outcomes-v7",
   "status": "PENDING_ROP",
   "policy": {
     "baselineMarginPct": 0.25,

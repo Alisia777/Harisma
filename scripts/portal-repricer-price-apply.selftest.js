@@ -92,6 +92,32 @@ function fixture() {
         { platform: 'ozon', articleKey: 'oz-safe', available: 20, oos: false, sourceMode: 'ozon_stock_api_v4' }
       ]
     },
+    decisionCenter: {
+      rows: [
+        {
+          platform: 'wb',
+          articleKey: 'wb-safe',
+          dataQuality: { usable: true, blockers: [] },
+          automation: { tier: 'double_confirmation', autoApplyEligible: false },
+          approval: {
+            status: 'APPROVED',
+            confirmationsRequired: 2,
+            confirmationStages: ['ROP_TASK', 'API_APPLY_PREVIEW']
+          }
+        },
+        {
+          platform: 'ozon',
+          articleKey: 'oz-safe',
+          dataQuality: { usable: true, blockers: [] },
+          automation: { tier: 'rop_approval', autoApplyEligible: false },
+          approval: {
+            status: 'APPROVED',
+            confirmationsRequired: 1,
+            confirmationStages: ['ROP_TASK']
+          }
+        }
+      ]
+    },
     shadow: { cutover_allowed: true }
   };
 }
@@ -122,6 +148,10 @@ async function run() {
     discount: 20
   });
   assert.strictEqual(plan.actions[1].rollbackEligible, true);
+  assert.strictEqual(plan.actions[0].automationTier, 'double_confirmation');
+  assert.strictEqual(plan.actions[0].confirmationsRequired, 2);
+  assert.strictEqual(plan.actions[0].confirmationsRecordedAtPlan, 1);
+  assert.strictEqual(plan.actions[1].automationTier, 'rop_approval');
   assert.deepStrictEqual(
     canonicalClientPriceProjection(1000, 950, null, 1200),
     {
@@ -242,6 +272,37 @@ async function run() {
   assert(excessivePlan.rejected.some((row) => row.reasons.includes('apply_change_limit_exceeded')));
   assert(excessivePlan.warnings.includes('ready_rows_rejected:1'));
   assert.strictEqual(excessivePlan.status, 'ready', 'one rejected row must not block independent safe actions');
+
+  const missingApproval = fixture();
+  missingApproval.decisionCenter.rows[0].approval.status = 'PENDING_ROP';
+  const missingApprovalPlan = buildApplyPlan({
+    ...missingApproval,
+    now: new Date(missingApproval.livePrices.generatedAt)
+  });
+  assert(missingApprovalPlan.rejected.some((row) => (
+    row.articleKey === 'wb-safe'
+    && row.reasons.includes('first_confirmation_rop_task_required')
+  )));
+
+  const automatic = fixture();
+  automatic.canonical.rows[0].recommendation.price = 1020;
+  automatic.canonical.rows[0].recommendation.margin_pct = 0.21;
+  automatic.canonical.rows[0].policy.floor = 1020;
+  automatic.canonical.rows[0].policy.cap = 1020;
+  automatic.decisionCenter.rows[0].automation = { tier: 'automatic', autoApplyEligible: true };
+  automatic.decisionCenter.rows[0].approval = {
+    status: 'NOT_REQUIRED',
+    confirmationsRequired: 0,
+    confirmationStages: []
+  };
+  const automaticPlan = buildApplyPlan({
+    ...automatic,
+    now: new Date(automatic.livePrices.generatedAt)
+  });
+  const automaticAction = automaticPlan.actions.find((row) => row.articleKey === 'wb-safe');
+  assert.strictEqual(automaticAction.autoApplyEligible, true);
+  assert.strictEqual(automaticAction.automationTier, 'automatic');
+  assert.strictEqual(automaticPlan.summary.automaticEligible, 1);
 
   const applyWorkflow = fs.readFileSync(
     path.join(__dirname, '..', '.github', 'workflows', 'portal-repricer-price-apply.yml'),

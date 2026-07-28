@@ -87,6 +87,10 @@ async function run() {
     'price refresh must persist daily demand and price observations for seasonality and learned elasticity'
   );
   assert(
+    workflow.includes('--canonical data/canonical_repricer.json'),
+    'the unified refresh must append daily margin, DRR and stock economics for 3/7/14/30 outcome learning'
+  );
+  assert(
     workflow.includes('node scripts/build-repricer-competitor-history.js')
       && workflow.includes('--retention-days 180'),
     'price refresh must append a 180-day trusted competitor snapshot history'
@@ -501,6 +505,33 @@ async function run() {
       ['1. Скачать рабочий Excel', '2. Загрузить заполненный Excel'],
       'simple mode must expose one clear Excel download/upload workflow'
     );
+    const freshnessText = await page.locator('.repricer-live-price-sync-card').innerText();
+    for (const sourceLabel of [
+      'Цена продавца:',
+      'Цена клиента / СПП:',
+      'Комиссия:',
+      'Реклама:',
+      'Остатки:',
+      'OOS:',
+      'Конкуренты:'
+    ]) {
+      assert(
+        freshnessText.includes(sourceLabel),
+        `unified refresh card must show freshness for ${sourceLabel}`
+      );
+    }
+    const decisionText = await page.locator('.repricer-decision-center-card').innerText();
+    for (const label of ['Ниже маржи', 'Резкое изменение', 'Вывод', 'Нет данных', '3д:', '7д:', '14д:', '30д:', 'Контроль результата 3 / 7 / 14 / 30 дней']) {
+      assert(decisionText.includes(label), `ROP decision center must expose ${label}`);
+    }
+    assert(
+      decisionText.includes('Конкуренты не учтены в цене'),
+      'each price decision must explain why insufficient competitor history did not influence the price'
+    );
+    const marginEditorText = await page.locator('[data-repricer-margin-policy-editor]').innerText();
+    for (const label of ['Проставить группе', 'Копировать WB → Ozon', 'Копировать Ozon → WB']) {
+      assert(marginEditorText.includes(label), `bulk margin editor must expose ${label}`);
+    }
 
     const baselineStamp = await page.evaluate(() => {
       window.__alteaAppState.team.accessToken = 'selftest-user-session';
@@ -512,8 +543,8 @@ async function run() {
     await topbarPriceAction.waitFor({ state: 'visible', timeout: 30000 });
     assert.strictEqual(
       (await topbarPriceAction.innerText()).trim(),
-      'Получить актуальные цены',
-      'repricer topbar must expose the real WB/Ozon refresh action'
+      'Обновить всё',
+      'repricer topbar must expose the complete atomic WB/Ozon refresh action'
     );
     assert.strictEqual(
       await topbarPriceAction.getAttribute('data-premium-proxy'),

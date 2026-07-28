@@ -4,9 +4,10 @@
   "retention_days": 400,
   "summary": {
     "rows": 593,
-    "observations": 31565,
+    "observations": 31621,
     "demand_observations": 24076,
-    "price_observations": 31055
+    "price_observations": 31099,
+    "economics_observations": 414
   },
   "rows": [
     {
@@ -17575,7 +17576,11 @@
           "units": null,
           "seller_price": 691,
           "client_price": 691,
-          "source": "repricer_live_prices"
+          "margin_pct": 0.181281,
+          "margin_rub": 125.27,
+          "drr_pct": 0.24878,
+          "stock": 0,
+          "source": "canonical_daily_economics_snapshot"
         }
       ]
     },
@@ -18072,7 +18077,11 @@
           "units": null,
           "seller_price": 670,
           "client_price": 670,
-          "source": "repricer_live_prices"
+          "margin_pct": 0.164587,
+          "margin_rub": 110.27,
+          "drr_pct": 0.24878,
+          "stock": 0,
+          "source": "canonical_daily_economics_snapshot"
         }
       ]
     },
@@ -18640,6 +18649,17 @@
           "seller_price": 605,
           "client_price": 605,
           "source": "smart_price_workbench"
+        },
+        {
+          "date": "2026-07-28",
+          "units": null,
+          "seller_price": 605,
+          "client_price": 605,
+          "margin_pct": 0.135242,
+          "margin_rub": 81.82,
+          "drr_pct": 0.24878,
+          "stock": 0,
+          "source": "canonical_daily_economics_snapshot"
         }
       ]
     },
@@ -19493,7 +19513,11 @@
           "units": null,
           "seller_price": 246,
           "client_price": 246,
-          "source": "repricer_live_prices"
+          "margin_pct": -0.294393,
+          "margin_rub": -72.42,
+          "drr_pct": 0.24878,
+          "stock": 4,
+          "source": "canonical_daily_economics_snapshot"
         }
       ]
     },
@@ -19739,6 +19763,17 @@
           "seller_price": 1100,
           "client_price": 1100,
           "source": "smart_price_overlay"
+        },
+        {
+          "date": "2026-07-28",
+          "units": null,
+          "seller_price": 1100,
+          "client_price": 1100,
+          "margin_pct": 0.226812,
+          "margin_rub": 249.49,
+          "drr_pct": 0.24878,
+          "stock": 0,
+          "source": "canonical_daily_economics_snapshot"
         }
       ]
     },
@@ -19753,6 +19788,17 @@
           "seller_price": null,
           "client_price": null,
           "source": "smart_price_workbench"
+        },
+        {
+          "date": "2026-07-28",
+          "units": null,
+          "seller_price": 2800,
+          "client_price": 2800,
+          "margin_pct": 0.321817,
+          "margin_rub": 901.09,
+          "drr_pct": 0.24878,
+          "stock": 0,
+          "source": "canonical_daily_economics_snapshot"
         }
       ]
     },
@@ -20438,7 +20484,11 @@
           "units": null,
           "seller_price": 3000,
           "client_price": 3000,
-          "source": "repricer_live_prices"
+          "margin_pct": 0.376831,
+          "margin_rub": 1130.49,
+          "drr_pct": 0.24878,
+          "stock": 41,
+          "source": "canonical_daily_economics_snapshot"
         }
       ]
     },
@@ -21313,7 +21363,11 @@
           "units": null,
           "seller_price": 215,
           "client_price": 215,
-          "source": "repricer_live_prices"
+          "margin_pct": -0.344093,
+          "margin_rub": -73.98,
+          "drr_pct": 0.24878,
+          "stock": 2194,
+          "source": "canonical_daily_economics_snapshot"
         }
       ]
     },
@@ -21810,7 +21864,11 @@
           "units": null,
           "seller_price": 508,
           "client_price": 508,
-          "source": "repricer_live_prices"
+          "margin_pct": -0.060665,
+          "margin_rub": -30.82,
+          "drr_pct": 0.24878,
+          "stock": 0,
+          "source": "canonical_daily_economics_snapshot"
         }
       ]
     },
@@ -22671,7 +22729,11 @@
           "units": null,
           "seller_price": 764,
           "client_price": 764,
-          "source": "repricer_live_prices"
+          "margin_pct": -0.005041,
+          "margin_rub": -3.85,
+          "drr_pct": 0.24878,
+          "stock": 928,
+          "source": "canonical_daily_economics_snapshot"
         }
       ]
     },
@@ -23539,7 +23601,11 @@
           "units": null,
           "seller_price": 745,
           "client_price": 745,
-          "source": "repricer_live_prices"
+          "margin_pct": 0.161144,
+          "margin_rub": 120.05,
+          "drr_pct": 0.24878,
+          "stock": 0,
+          "source": "canonical_daily_economics_snapshot"
         }
       ]
     },
@@ -24351,7 +24417,11 @@
           "units": null,
           "seller_price": 1218,
           "client_price": 1218,
-          "source": "repricer_live_prices"
+          "margin_pct": 0.167524,
+          "margin_rub": 204.04,
+          "drr_pct": 0.24878,
+          "stock": 0,
+          "source": "canonical_daily_economics_snapshot"
         }
       ]
     },
@@ -25226,7 +25296,11 @@
           "units": null,
           "seller_price": 937,
           "client_price": 937,
-          "source": "repricer_live_prices"
+          "margin_pct": 0.191616,
+          "margin_rub": 179.54,
+          "drr_pct": 0.24878,
+          "stock": 0,
+          "source": "canonical_daily_economics_snapshot"
         }
       ]
     },
@@ -25268,7 +25342,11 @@
           "units": null,
           "seller_price": 1250,
           "client_price": 1250,
-          "source": "repricer_live_prices"
+          "margin_pct": 0.237961,
+          "margin_rub": 297.45,
+          "drr_pct": 0.24878,
+          "stock": 378,
+          "source": "canonical_daily_economics_snapshot"
         }
       ]
     },
@@ -26150,7 +26228,11 @@
           "units": null,
           "seller_price": 850,
           "client_price": 850,
-          "source": "repricer_live_prices"
+          "margin_pct": 0.042392,
+          "margin_rub": 36.03,
+          "drr_pct": 0.24878,
+          "stock": 684,
+          "source": "canonical_daily_economics_snapshot"
         }
       ]
     },
@@ -26165,6 +26247,17 @@
           "seller_price": null,
           "client_price": null,
           "source": "smart_price_workbench"
+        },
+        {
+          "date": "2026-07-28",
+          "units": null,
+          "seller_price": null,
+          "client_price": 860,
+          "drr_pct": 0.24878,
+          "stock": 0,
+          "source": "canonical_daily_economics_snapshot",
+          "margin_pct": null,
+          "margin_rub": null
         }
       ]
     },
@@ -26179,6 +26272,17 @@
           "seller_price": null,
           "client_price": null,
           "source": "smart_price_workbench"
+        },
+        {
+          "date": "2026-07-28",
+          "units": null,
+          "seller_price": null,
+          "client_price": 3000,
+          "drr_pct": 0.24878,
+          "source": "canonical_daily_economics_snapshot",
+          "margin_pct": null,
+          "margin_rub": null,
+          "stock": null
         }
       ]
     },
@@ -26270,6 +26374,17 @@
           "seller_price": 637,
           "client_price": 637,
           "source": "smart_price_workbench"
+        },
+        {
+          "date": "2026-07-28",
+          "units": null,
+          "seller_price": 637,
+          "client_price": 637,
+          "margin_pct": 0.099181,
+          "margin_rub": 63.18,
+          "drr_pct": 0.24878,
+          "stock": 0,
+          "source": "canonical_daily_economics_snapshot"
         }
       ]
     },
@@ -26969,7 +27084,11 @@
           "units": null,
           "seller_price": 665,
           "client_price": 665,
-          "source": "repricer_live_prices"
+          "margin_pct": 0.182082,
+          "margin_rub": 121.08,
+          "drr_pct": 0.24878,
+          "stock": 308,
+          "source": "canonical_daily_economics_snapshot"
         }
       ]
     },
@@ -27851,7 +27970,11 @@
           "units": null,
           "seller_price": 250,
           "client_price": 250,
-          "source": "repricer_live_prices"
+          "margin_pct": -0.794279,
+          "margin_rub": -198.57,
+          "drr_pct": 0.24878,
+          "stock": 378,
+          "source": "canonical_daily_economics_snapshot"
         }
       ]
     },
@@ -28362,7 +28485,11 @@
           "units": null,
           "seller_price": 650,
           "client_price": 650,
-          "source": "repricer_live_prices"
+          "margin_pct": 0.097075,
+          "margin_rub": 63.1,
+          "drr_pct": 0.24878,
+          "stock": 0,
+          "source": "canonical_daily_economics_snapshot"
         }
       ]
     },
@@ -28629,6 +28756,17 @@
           "seller_price": null,
           "client_price": null,
           "source": "smart_price_workbench"
+        },
+        {
+          "date": "2026-07-28",
+          "units": null,
+          "seller_price": 1010,
+          "client_price": 681.9,
+          "margin_pct": 0.081444,
+          "margin_rub": 82.26,
+          "drr_pct": 0.24878,
+          "stock": 0,
+          "source": "canonical_daily_economics_snapshot"
         }
       ]
     },
@@ -28720,6 +28858,17 @@
           "seller_price": 483,
           "client_price": 483,
           "source": "smart_price_workbench"
+        },
+        {
+          "date": "2026-07-28",
+          "units": null,
+          "seller_price": 483,
+          "client_price": 483,
+          "margin_pct": -0.034329,
+          "margin_rub": -16.58,
+          "drr_pct": 0.24878,
+          "stock": 0,
+          "source": "canonical_daily_economics_snapshot"
         }
       ]
     },
@@ -29538,7 +29687,11 @@
           "units": null,
           "seller_price": 297,
           "client_price": 297,
-          "source": "repricer_live_prices"
+          "margin_pct": -0.235309,
+          "margin_rub": -69.89,
+          "drr_pct": 0.24878,
+          "stock": 792,
+          "source": "canonical_daily_economics_snapshot"
         }
       ]
     },
@@ -29553,6 +29706,17 @@
           "seller_price": 283.64,
           "client_price": 220.9,
           "source": "smart_price_overlay"
+        },
+        {
+          "date": "2026-07-28",
+          "units": null,
+          "seller_price": 283.64,
+          "client_price": 220.9,
+          "drr_pct": 0.24878,
+          "source": "canonical_daily_economics_snapshot",
+          "margin_pct": null,
+          "margin_rub": null,
+          "stock": null
         }
       ]
     },
@@ -30623,7 +30787,11 @@
           "units": null,
           "seller_price": 1350,
           "client_price": 1350,
-          "source": "repricer_live_prices"
+          "margin_pct": 0.280314,
+          "margin_rub": 378.42,
+          "drr_pct": 0.24878,
+          "stock": 4386,
+          "source": "canonical_daily_economics_snapshot"
         }
       ]
     },
@@ -31456,7 +31624,11 @@
           "units": null,
           "seller_price": 242,
           "client_price": 242,
-          "source": "repricer_live_prices"
+          "margin_pct": -0.30075,
+          "margin_rub": -72.78,
+          "drr_pct": 0.24878,
+          "stock": 11,
+          "source": "canonical_daily_economics_snapshot"
         }
       ]
     },
@@ -32331,7 +32503,11 @@
           "units": null,
           "seller_price": 457,
           "client_price": 457,
-          "source": "repricer_live_prices"
+          "margin_pct": -0.137771,
+          "margin_rub": -62.96,
+          "drr_pct": 0.24878,
+          "stock": 0,
+          "source": "canonical_daily_economics_snapshot"
         }
       ]
     },
@@ -32800,7 +32976,11 @@
           "units": null,
           "seller_price": 1275,
           "client_price": 1275,
-          "source": "repricer_live_prices"
+          "margin_pct": 0.281054,
+          "margin_rub": 358.34,
+          "drr_pct": 0.24878,
+          "stock": 308,
+          "source": "canonical_daily_economics_snapshot"
         }
       ]
     },
@@ -33584,7 +33764,11 @@
           "units": null,
           "seller_price": 640,
           "client_price": 640,
-          "source": "repricer_live_prices"
+          "margin_pct": -0.05681,
+          "margin_rub": -36.36,
+          "drr_pct": 0.24878,
+          "stock": 0,
+          "source": "canonical_daily_economics_snapshot"
         }
       ]
     },
@@ -33886,6 +34070,17 @@
           "seller_price": 363.76190476190476,
           "client_price": 324.84615384615387,
           "source": "smart_price_workbench"
+        },
+        {
+          "date": "2026-07-28",
+          "units": null,
+          "seller_price": 363.76190476190476,
+          "client_price": 324.84615384615387,
+          "margin_pct": -0.134082,
+          "margin_rub": -48.77,
+          "drr_pct": 0.24878,
+          "stock": 0,
+          "source": "canonical_daily_economics_snapshot"
         }
       ]
     },
@@ -34369,6 +34564,17 @@
           "seller_price": 374.5,
           "client_price": 374.5,
           "source": "smart_price_overlay"
+        },
+        {
+          "date": "2026-07-28",
+          "units": null,
+          "seller_price": 374.5,
+          "client_price": 374.5,
+          "margin_pct": -0.049729,
+          "margin_rub": -18.62,
+          "drr_pct": 0.24878,
+          "stock": 0,
+          "source": "canonical_daily_economics_snapshot"
         }
       ]
     },
@@ -35250,7 +35456,11 @@
           "units": null,
           "seller_price": 900,
           "client_price": 900,
-          "source": "repricer_live_prices"
+          "margin_pct": 0.144743,
+          "margin_rub": 130.27,
+          "drr_pct": 0.24878,
+          "stock": 41,
+          "source": "canonical_daily_economics_snapshot"
         }
       ]
     },
@@ -36125,7 +36335,11 @@
           "units": null,
           "seller_price": 700,
           "client_price": 700,
-          "source": "repricer_live_prices"
+          "margin_pct": 0.147135,
+          "margin_rub": 102.99,
+          "drr_pct": 0.24878,
+          "stock": 839,
+          "source": "canonical_daily_economics_snapshot"
         }
       ]
     },
@@ -36811,7 +37025,11 @@
           "units": null,
           "seller_price": 489,
           "client_price": 489,
-          "source": "repricer_live_prices"
+          "margin_pct": 0.018539,
+          "margin_rub": 9.07,
+          "drr_pct": 0.24878,
+          "stock": 14,
+          "source": "canonical_daily_economics_snapshot"
         }
       ]
     },
@@ -37035,7 +37253,11 @@
           "units": null,
           "seller_price": 779,
           "client_price": 779,
-          "source": "repricer_live_prices"
+          "margin_pct": 0.184062,
+          "margin_rub": 143.38,
+          "drr_pct": 0.24878,
+          "stock": 0,
+          "source": "canonical_daily_economics_snapshot"
         }
       ]
     },
@@ -37966,7 +38188,11 @@
           "units": null,
           "seller_price": 999,
           "client_price": 999,
-          "source": "repricer_live_prices"
+          "margin_pct": 0.235118,
+          "margin_rub": 234.88,
+          "drr_pct": 0.24878,
+          "stock": 76,
+          "source": "canonical_daily_economics_snapshot"
         }
       ]
     },
@@ -38708,7 +38934,11 @@
           "units": null,
           "seller_price": 777,
           "client_price": 777,
-          "source": "repricer_live_prices"
+          "margin_pct": 0.171904,
+          "margin_rub": 133.57,
+          "drr_pct": 0.24878,
+          "stock": 0,
+          "source": "canonical_daily_economics_snapshot"
         }
       ]
     },
@@ -39416,6 +39646,17 @@
           "seller_price": 242,
           "client_price": 359,
           "source": "smart_price_overlay"
+        },
+        {
+          "date": "2026-07-28",
+          "units": null,
+          "seller_price": 242,
+          "client_price": 359,
+          "margin_pct": -0.294552,
+          "margin_rub": -71.28,
+          "drr_pct": 0.24878,
+          "stock": 0,
+          "source": "canonical_daily_economics_snapshot"
         }
       ]
     },
@@ -40234,7 +40475,11 @@
           "units": null,
           "seller_price": 738,
           "client_price": 738,
-          "source": "repricer_live_prices"
+          "margin_pct": 0.034754,
+          "margin_rub": 25.65,
+          "drr_pct": 0.24878,
+          "stock": 0,
+          "source": "canonical_daily_economics_snapshot"
         }
       ]
     },
@@ -41088,7 +41333,11 @@
           "units": null,
           "seller_price": 326,
           "client_price": 326,
-          "source": "repricer_live_prices"
+          "margin_pct": -0.285254,
+          "margin_rub": -92.99,
+          "drr_pct": 0.24878,
+          "stock": 1,
+          "source": "canonical_daily_economics_snapshot"
         }
       ]
     },
@@ -41103,6 +41352,17 @@
           "seller_price": null,
           "client_price": null,
           "source": "smart_price_workbench"
+        },
+        {
+          "date": "2026-07-28",
+          "units": null,
+          "seller_price": 1450,
+          "client_price": 1450,
+          "margin_pct": 0.326624,
+          "margin_rub": 473.6,
+          "drr_pct": 0.24878,
+          "stock": 0,
+          "source": "canonical_daily_economics_snapshot"
         }
       ]
     },
@@ -42180,7 +42440,11 @@
           "units": null,
           "seller_price": 1200,
           "client_price": 1200,
-          "source": "repricer_live_prices"
+          "margin_pct": 0.302996,
+          "margin_rub": 363.6,
+          "drr_pct": 0.24878,
+          "stock": 5875,
+          "source": "canonical_daily_economics_snapshot"
         }
       ]
     },
@@ -42985,7 +43249,11 @@
           "units": null,
           "seller_price": 250,
           "client_price": 250,
-          "source": "repricer_live_prices"
+          "margin_pct": -0.187279,
+          "margin_rub": -46.82,
+          "drr_pct": 0.24878,
+          "stock": 193,
+          "source": "canonical_daily_economics_snapshot"
         }
       ]
     },
@@ -43853,7 +44121,11 @@
           "units": null,
           "seller_price": 600,
           "client_price": 600,
-          "source": "repricer_live_prices"
+          "margin_pct": 0.089921,
+          "margin_rub": 53.95,
+          "drr_pct": 0.24878,
+          "stock": 756,
+          "source": "canonical_daily_economics_snapshot"
         }
       ]
     },
@@ -44721,7 +44993,11 @@
           "units": null,
           "seller_price": 372,
           "client_price": 372,
-          "source": "repricer_live_prices"
+          "margin_pct": 0.002909,
+          "margin_rub": 1.08,
+          "drr_pct": 0.24878,
+          "stock": 413,
+          "source": "canonical_daily_economics_snapshot"
         }
       ]
     },
@@ -45575,7 +45851,11 @@
           "units": null,
           "seller_price": 1059,
           "client_price": 1059,
-          "source": "repricer_live_prices"
+          "margin_pct": 0.24892,
+          "margin_rub": 263.61,
+          "drr_pct": 0.24878,
+          "stock": 95,
+          "source": "canonical_daily_economics_snapshot"
         }
       ]
     },
@@ -45610,7 +45890,11 @@
           "units": null,
           "seller_price": 1150,
           "client_price": 1150,
-          "source": "repricer_live_prices"
+          "margin_pct": 0.235112,
+          "margin_rub": 270.38,
+          "drr_pct": 0.24878,
+          "stock": 383,
+          "source": "canonical_daily_economics_snapshot"
         }
       ]
     },
@@ -46387,7 +46671,11 @@
           "units": null,
           "seller_price": 353,
           "client_price": 353,
-          "source": "repricer_live_prices"
+          "margin_pct": -0.120919,
+          "margin_rub": -42.68,
+          "drr_pct": 0.24878,
+          "stock": 423,
+          "source": "canonical_daily_economics_snapshot"
         }
       ]
     },
@@ -46415,7 +46703,11 @@
           "units": null,
           "seller_price": 2500,
           "client_price": 2500,
-          "source": "repricer_live_prices"
+          "margin_pct": 0.352421,
+          "margin_rub": 881.05,
+          "drr_pct": 0.24878,
+          "stock": 0,
+          "source": "canonical_daily_economics_snapshot"
         }
       ]
     },
@@ -47297,7 +47589,11 @@
           "units": null,
           "seller_price": 249,
           "client_price": 249,
-          "source": "repricer_live_prices"
+          "margin_pct": -0.290673,
+          "margin_rub": -72.38,
+          "drr_pct": 0.24878,
+          "stock": 0,
+          "source": "canonical_daily_economics_snapshot"
         }
       ]
     },
@@ -47438,6 +47734,17 @@
           "seller_price": 504.8,
           "client_price": 504.8,
           "source": "smart_price_workbench"
+        },
+        {
+          "date": "2026-07-28",
+          "units": null,
+          "seller_price": 504.8,
+          "client_price": 504.8,
+          "margin_pct": -0.068044,
+          "margin_rub": -34.35,
+          "drr_pct": 0.24878,
+          "stock": 0,
+          "source": "canonical_daily_economics_snapshot"
         }
       ]
     },
@@ -48018,7 +48325,11 @@
           "units": null,
           "seller_price": 302,
           "client_price": 302,
-          "source": "repricer_live_prices"
+          "margin_pct": -0.231915,
+          "margin_rub": -70.04,
+          "drr_pct": 0.24878,
+          "stock": 0,
+          "source": "canonical_daily_economics_snapshot"
         }
       ]
     },
@@ -48606,7 +48917,11 @@
           "units": null,
           "seller_price": 469,
           "client_price": 469,
-          "source": "repricer_live_prices"
+          "margin_pct": -0.064774,
+          "margin_rub": -30.38,
+          "drr_pct": 0.24878,
+          "stock": 115,
+          "source": "canonical_daily_economics_snapshot"
         }
       ]
     },
@@ -49208,7 +49523,11 @@
           "units": null,
           "seller_price": 183,
           "client_price": 183,
-          "source": "repricer_live_prices"
+          "margin_pct": -0.436596,
+          "margin_rub": -79.9,
+          "drr_pct": 0.24878,
+          "stock": 949,
+          "source": "canonical_daily_economics_snapshot"
         }
       ]
     },
@@ -50083,7 +50402,11 @@
           "units": null,
           "seller_price": 908,
           "client_price": 908,
-          "source": "repricer_live_prices"
+          "margin_pct": 0.037941,
+          "margin_rub": 34.45,
+          "drr_pct": 0.24878,
+          "stock": 511,
+          "source": "canonical_daily_economics_snapshot"
         }
       ]
     },
@@ -50958,7 +51281,11 @@
           "units": null,
           "seller_price": 580,
           "client_price": 580,
-          "source": "repricer_live_prices"
+          "margin_pct": -0.043917,
+          "margin_rub": -25.47,
+          "drr_pct": 0.24878,
+          "stock": 362,
+          "source": "canonical_daily_economics_snapshot"
         }
       ]
     },
@@ -51840,7 +52167,11 @@
           "units": null,
           "seller_price": 364,
           "client_price": 364,
-          "source": "repricer_live_prices"
+          "margin_pct": -0.184175,
+          "margin_rub": -67.04,
+          "drr_pct": 0.24878,
+          "stock": 519,
+          "source": "canonical_daily_economics_snapshot"
         }
       ]
     },
@@ -52666,7 +52997,11 @@
           "units": null,
           "seller_price": 721,
           "client_price": 721,
-          "source": "repricer_live_prices"
+          "margin_pct": -0.075095,
+          "margin_rub": -54.14,
+          "drr_pct": 0.24878,
+          "stock": 3,
+          "source": "canonical_daily_economics_snapshot"
         }
       ]
     },
@@ -53541,7 +53876,11 @@
           "units": null,
           "seller_price": 500,
           "client_price": 500,
-          "source": "repricer_live_prices"
+          "margin_pct": -0.057659,
+          "margin_rub": -28.83,
+          "drr_pct": 0.24878,
+          "stock": 447,
+          "source": "canonical_daily_economics_snapshot"
         }
       ]
     },
@@ -53556,6 +53895,17 @@
           "seller_price": null,
           "client_price": null,
           "source": "smart_price_workbench"
+        },
+        {
+          "date": "2026-07-28",
+          "units": null,
+          "seller_price": 640,
+          "client_price": 640,
+          "margin_pct": 0.171315,
+          "margin_rub": 109.64,
+          "drr_pct": 0.24878,
+          "stock": 0,
+          "source": "canonical_daily_economics_snapshot"
         }
       ]
     },
@@ -54465,7 +54815,11 @@
           "units": null,
           "seller_price": 500,
           "client_price": 500,
-          "source": "repricer_live_prices"
+          "margin_pct": 0.061921,
+          "margin_rub": 30.96,
+          "drr_pct": 0.24878,
+          "stock": 191,
+          "source": "canonical_daily_economics_snapshot"
         }
       ]
     },
@@ -55123,7 +55477,11 @@
           "units": null,
           "seller_price": 717,
           "client_price": 717,
-          "source": "repricer_live_prices"
+          "margin_pct": 0.177651,
+          "margin_rub": 127.38,
+          "drr_pct": 0.24878,
+          "stock": 36,
+          "source": "canonical_daily_economics_snapshot"
         }
       ]
     },
@@ -55830,7 +56188,11 @@
           "units": null,
           "seller_price": 1175,
           "client_price": 1175,
-          "source": "repricer_live_prices"
+          "margin_pct": 0.190964,
+          "margin_rub": 224.38,
+          "drr_pct": 0.24878,
+          "stock": 1,
+          "source": "canonical_daily_economics_snapshot"
         }
       ]
     },
@@ -56607,7 +56969,11 @@
           "units": null,
           "seller_price": 1754,
           "client_price": 1754,
-          "source": "repricer_live_prices"
+          "margin_pct": 0.213428,
+          "margin_rub": 374.35,
+          "drr_pct": 0.24878,
+          "stock": 0,
+          "source": "canonical_daily_economics_snapshot"
         }
       ]
     },
@@ -57489,7 +57855,11 @@
           "units": null,
           "seller_price": 305,
           "client_price": 305,
-          "source": "repricer_live_prices"
+          "margin_pct": -0.229492,
+          "margin_rub": -70,
+          "drr_pct": 0.24878,
+          "stock": 1432,
+          "source": "canonical_daily_economics_snapshot"
         }
       ]
     },
@@ -58371,7 +58741,11 @@
           "units": null,
           "seller_price": 721,
           "client_price": 721,
-          "source": "repricer_live_prices"
+          "margin_pct": -0.011655,
+          "margin_rub": -8.4,
+          "drr_pct": 0.24878,
+          "stock": 5,
+          "source": "canonical_daily_economics_snapshot"
         }
       ]
     },
@@ -59253,7 +59627,11 @@
           "units": null,
           "seller_price": 365,
           "client_price": 365,
-          "source": "repricer_live_prices"
+          "margin_pct": -0.156526,
+          "margin_rub": -57.13,
+          "drr_pct": 0.24878,
+          "stock": 1198,
+          "source": "canonical_daily_economics_snapshot"
         }
       ]
     },
@@ -59981,7 +60359,11 @@
           "units": null,
           "seller_price": 400,
           "client_price": 400,
-          "source": "repricer_live_prices"
+          "margin_pct": -0.056804,
+          "margin_rub": -22.72,
+          "drr_pct": 0.24878,
+          "stock": 492,
+          "source": "canonical_daily_economics_snapshot"
         }
       ]
     },
@@ -60667,7 +61049,11 @@
           "units": null,
           "seller_price": 597,
           "client_price": 597,
-          "source": "repricer_live_prices"
+          "margin_pct": -0.085931,
+          "margin_rub": -51.3,
+          "drr_pct": 0.24878,
+          "stock": 434,
+          "source": "canonical_daily_economics_snapshot"
         }
       ]
     },
@@ -61549,7 +61935,11 @@
           "units": null,
           "seller_price": 304,
           "client_price": 304,
-          "source": "repricer_live_prices"
+          "margin_pct": -0.230799,
+          "margin_rub": -70.16,
+          "drr_pct": 0.24878,
+          "stock": 635,
+          "source": "canonical_daily_economics_snapshot"
         }
       ]
     },
@@ -62417,7 +62807,11 @@
           "units": null,
           "seller_price": 719,
           "client_price": 719,
-          "source": "repricer_live_prices"
+          "margin_pct": -0.012154,
+          "margin_rub": -8.74,
+          "drr_pct": 0.24878,
+          "stock": 264,
+          "source": "canonical_daily_economics_snapshot"
         }
       ]
     },
@@ -63481,7 +63875,11 @@
           "units": null,
           "seller_price": 920,
           "client_price": 920,
-          "source": "repricer_live_prices"
+          "margin_pct": 0.208428,
+          "margin_rub": 191.75,
+          "drr_pct": 0.24878,
+          "stock": 1046,
+          "source": "canonical_daily_economics_snapshot"
         }
       ]
     },
@@ -63614,7 +64012,11 @@
           "units": null,
           "seller_price": 1750,
           "client_price": 1750,
-          "source": "repricer_live_prices"
+          "margin_pct": 0.288407,
+          "margin_rub": 504.71,
+          "drr_pct": 0.24878,
+          "stock": 518,
+          "source": "canonical_daily_economics_snapshot"
         }
       ]
     },
@@ -64692,7 +65094,11 @@
           "units": null,
           "seller_price": 556,
           "client_price": 556,
-          "source": "repricer_live_prices"
+          "margin_pct": 0.160563,
+          "margin_rub": 89.27,
+          "drr_pct": 0.24878,
+          "stock": 7474,
+          "source": "canonical_daily_economics_snapshot"
         }
       ]
     },
@@ -65707,7 +66113,11 @@
           "units": null,
           "seller_price": 1857,
           "client_price": 1857,
-          "source": "repricer_live_prices"
+          "margin_pct": 0.323505,
+          "margin_rub": 600.75,
+          "drr_pct": 0.24878,
+          "stock": 484,
+          "source": "canonical_daily_economics_snapshot"
         }
       ]
     },
@@ -66331,6 +66741,17 @@
           "seller_price": null,
           "client_price": null,
           "source": "smart_price_workbench"
+        },
+        {
+          "date": "2026-07-28",
+          "units": null,
+          "seller_price": 30000,
+          "client_price": 30000,
+          "margin_pct": 0.429737,
+          "margin_rub": 12892.11,
+          "drr_pct": 0.24878,
+          "stock": 0,
+          "source": "canonical_daily_economics_snapshot"
         }
       ]
     },
@@ -67408,7 +67829,11 @@
           "units": null,
           "seller_price": 1200,
           "client_price": 1200,
-          "source": "repricer_live_prices"
+          "margin_pct": 0.260221,
+          "margin_rub": 312.27,
+          "drr_pct": 0.24878,
+          "stock": 963,
+          "source": "canonical_daily_economics_snapshot"
         }
       ]
     },
@@ -68486,7 +68911,11 @@
           "units": null,
           "seller_price": 1414,
           "client_price": 1414,
-          "source": "repricer_live_prices"
+          "margin_pct": 0.316787,
+          "margin_rub": 447.94,
+          "drr_pct": 0.24878,
+          "stock": 999,
+          "source": "canonical_daily_economics_snapshot"
         }
       ]
     },
@@ -69564,7 +69993,11 @@
           "units": null,
           "seller_price": 1150,
           "client_price": 1150,
-          "source": "repricer_live_prices"
+          "margin_pct": 0.250243,
+          "margin_rub": 287.78,
+          "drr_pct": 0.24878,
+          "stock": 3672,
+          "source": "canonical_daily_economics_snapshot"
         }
       ]
     },
@@ -70642,7 +71075,11 @@
           "units": null,
           "seller_price": 1230,
           "client_price": 1230,
-          "source": "repricer_live_prices"
+          "margin_pct": 0.28081,
+          "margin_rub": 345.4,
+          "drr_pct": 0.24878,
+          "stock": 4863,
+          "source": "canonical_daily_economics_snapshot"
         }
       ]
     },
@@ -70782,7 +71219,11 @@
           "units": null,
           "seller_price": 1300,
           "client_price": 1300,
-          "source": "repricer_live_prices"
+          "margin_pct": 0.273875,
+          "margin_rub": 356.04,
+          "drr_pct": 0.24878,
+          "stock": 608,
+          "source": "canonical_daily_economics_snapshot"
         }
       ]
     },
@@ -71664,7 +72105,11 @@
           "units": null,
           "seller_price": 900,
           "client_price": 900,
-          "source": "repricer_live_prices"
+          "margin_pct": 0.194354,
+          "margin_rub": 174.92,
+          "drr_pct": 0.24878,
+          "stock": 1406,
+          "source": "canonical_daily_economics_snapshot"
         }
       ]
     },
@@ -72714,7 +73159,11 @@
           "units": null,
           "seller_price": 680,
           "client_price": 680,
-          "source": "repricer_live_prices"
+          "margin_pct": 0.13625,
+          "margin_rub": 92.65,
+          "drr_pct": 0.24878,
+          "stock": 730,
+          "source": "canonical_daily_economics_snapshot"
         }
       ]
     },
@@ -73750,7 +74199,11 @@
           "units": null,
           "seller_price": 850,
           "client_price": 850,
-          "source": "repricer_live_prices"
+          "margin_pct": 0.166721,
+          "margin_rub": 141.71,
+          "drr_pct": 0.24878,
+          "stock": 325,
+          "source": "canonical_daily_economics_snapshot"
         }
       ]
     },
@@ -74828,7 +75281,11 @@
           "units": null,
           "seller_price": 825,
           "client_price": 825,
-          "source": "repricer_live_prices"
+          "margin_pct": 0.172085,
+          "margin_rub": 141.97,
+          "drr_pct": 0.24878,
+          "stock": 717,
+          "source": "canonical_daily_economics_snapshot"
         }
       ]
     },
@@ -75801,7 +76258,11 @@
           "units": null,
           "seller_price": 1550,
           "client_price": 1550,
-          "source": "repricer_live_prices"
+          "margin_pct": 0.319592,
+          "margin_rub": 495.37,
+          "drr_pct": 0.24878,
+          "stock": 1162,
+          "source": "canonical_daily_economics_snapshot"
         }
       ]
     },
@@ -75829,7 +76290,11 @@
           "units": null,
           "seller_price": 2500,
           "client_price": 2500,
-          "source": "repricer_live_prices"
+          "drr_pct": 0.24878,
+          "stock": 379,
+          "source": "canonical_daily_economics_snapshot",
+          "margin_pct": null,
+          "margin_rub": null
         }
       ]
     },
@@ -76697,7 +77162,11 @@
           "units": null,
           "seller_price": 600,
           "client_price": 600,
-          "source": "repricer_live_prices"
+          "margin_pct": 0.114054,
+          "margin_rub": 68.43,
+          "drr_pct": 0.24878,
+          "stock": 132,
+          "source": "canonical_daily_economics_snapshot"
         }
       ]
     },
@@ -76824,6 +77293,17 @@
           "seller_price": 950,
           "client_price": 950,
           "source": "smart_price_overlay"
+        },
+        {
+          "date": "2026-07-28",
+          "units": null,
+          "seller_price": 950,
+          "client_price": 950,
+          "margin_pct": 0.192858,
+          "margin_rub": 183.22,
+          "drr_pct": 0.24878,
+          "stock": 0,
+          "source": "canonical_daily_economics_snapshot"
         }
       ]
     },
@@ -77439,7 +77919,11 @@
           "units": null,
           "seller_price": 780,
           "client_price": 780,
-          "source": "repricer_live_prices"
+          "margin_pct": 0.13949,
+          "margin_rub": 108.8,
+          "drr_pct": 0.24878,
+          "stock": 69,
+          "source": "canonical_daily_economics_snapshot"
         }
       ]
     },
@@ -77467,7 +77951,11 @@
           "units": null,
           "seller_price": 2500,
           "client_price": 2500,
-          "source": "repricer_live_prices"
+          "drr_pct": 0.24878,
+          "stock": 382,
+          "source": "canonical_daily_economics_snapshot",
+          "margin_pct": null,
+          "margin_rub": null
         }
       ]
     },
@@ -78272,7 +78760,11 @@
           "units": null,
           "seller_price": 800,
           "client_price": 800,
-          "source": "repricer_live_prices"
+          "margin_pct": 0.189096,
+          "margin_rub": 151.28,
+          "drr_pct": 0.24878,
+          "stock": 414,
+          "source": "canonical_daily_economics_snapshot"
         }
       ]
     },
@@ -79070,7 +79562,11 @@
           "units": null,
           "seller_price": 1617,
           "client_price": 1617,
-          "source": "repricer_live_prices"
+          "margin_pct": 0.281258,
+          "margin_rub": 454.79,
+          "drr_pct": 0.24878,
+          "stock": 0,
+          "source": "canonical_daily_economics_snapshot"
         }
       ]
     },
@@ -79735,7 +80231,11 @@
           "units": null,
           "seller_price": 775,
           "client_price": 775,
-          "source": "repricer_live_prices"
+          "margin_pct": 0.197102,
+          "margin_rub": 152.75,
+          "drr_pct": 0.24878,
+          "stock": 107,
+          "source": "canonical_daily_economics_snapshot"
         }
       ]
     },
@@ -80309,7 +80809,11 @@
           "units": null,
           "seller_price": 1013,
           "client_price": 1013,
-          "source": "repricer_live_prices"
+          "margin_pct": 0.151482,
+          "margin_rub": 153.45,
+          "drr_pct": 0.24878,
+          "stock": 52,
+          "source": "canonical_daily_economics_snapshot"
         }
       ]
     },
@@ -80988,7 +81492,11 @@
           "units": null,
           "seller_price": 1777,
           "client_price": 1777,
-          "source": "repricer_live_prices"
+          "margin_pct": 0.216314,
+          "margin_rub": 384.39,
+          "drr_pct": 0.24878,
+          "stock": 131,
+          "source": "canonical_daily_economics_snapshot"
         }
       ]
     },
@@ -81849,7 +82357,11 @@
           "units": null,
           "seller_price": 791,
           "client_price": 791,
-          "source": "repricer_live_prices"
+          "margin_pct": 0.18207,
+          "margin_rub": 144.02,
+          "drr_pct": 0.24878,
+          "stock": 0,
+          "source": "canonical_daily_economics_snapshot"
         }
       ]
     },
@@ -82528,7 +83040,11 @@
           "units": null,
           "seller_price": 562,
           "client_price": 562,
-          "source": "repricer_live_prices"
+          "margin_pct": 0.116725,
+          "margin_rub": 65.6,
+          "drr_pct": 0.24878,
+          "stock": 0,
+          "source": "canonical_daily_economics_snapshot"
         }
       ]
     },
@@ -82543,6 +83059,17 @@
           "seller_price": null,
           "client_price": null,
           "source": "smart_price_workbench"
+        },
+        {
+          "date": "2026-07-28",
+          "units": null,
+          "seller_price": null,
+          "client_price": 1128,
+          "drr_pct": 0.24878,
+          "source": "canonical_daily_economics_snapshot",
+          "margin_pct": null,
+          "margin_rub": null,
+          "stock": null
         }
       ]
     },
@@ -82557,6 +83084,17 @@
           "seller_price": null,
           "client_price": null,
           "source": "smart_price_workbench"
+        },
+        {
+          "date": "2026-07-28",
+          "units": null,
+          "seller_price": 545,
+          "client_price": 545,
+          "margin_pct": 0.07295,
+          "margin_rub": 39.76,
+          "drr_pct": 0.24878,
+          "stock": 0,
+          "source": "canonical_daily_economics_snapshot"
         }
       ]
     },
@@ -83438,7 +83976,11 @@
           "units": null,
           "seller_price": 270,
           "client_price": 270,
-          "source": "repricer_live_prices"
+          "margin_pct": -0.291501,
+          "margin_rub": -78.71,
+          "drr_pct": 0.24878,
+          "stock": 809,
+          "source": "canonical_daily_economics_snapshot"
         }
       ]
     },
@@ -83921,7 +84463,11 @@
           "units": null,
           "seller_price": 713,
           "client_price": 713,
-          "source": "repricer_live_prices"
+          "margin_pct": 0.001844,
+          "margin_rub": 1.31,
+          "drr_pct": 0.24878,
+          "stock": 223,
+          "source": "canonical_daily_economics_snapshot"
         }
       ]
     },
@@ -84768,7 +85314,11 @@
           "units": null,
           "seller_price": 1350,
           "client_price": 1350,
-          "source": "repricer_live_prices"
+          "margin_pct": 0.309091,
+          "margin_rub": 417.27,
+          "drr_pct": 0.24878,
+          "stock": 248,
+          "source": "canonical_daily_economics_snapshot"
         }
       ]
     },
@@ -85650,7 +86200,11 @@
           "units": null,
           "seller_price": 750,
           "client_price": 750,
-          "source": "repricer_live_prices"
+          "margin_pct": 0.261054,
+          "margin_rub": 195.79,
+          "drr_pct": 0.24878,
+          "stock": 798,
+          "source": "canonical_daily_economics_snapshot"
         }
       ]
     },
@@ -85756,6 +86310,17 @@
           "seller_price": 1150,
           "client_price": 1150,
           "source": "smart_price_overlay"
+        },
+        {
+          "date": "2026-07-28",
+          "units": null,
+          "seller_price": 1150,
+          "client_price": 1150,
+          "margin_pct": 0.273721,
+          "margin_rub": 314.78,
+          "drr_pct": 0.24878,
+          "stock": 0,
+          "source": "canonical_daily_economics_snapshot"
         }
       ]
     },
@@ -86833,7 +87398,11 @@
           "units": null,
           "seller_price": 600,
           "client_price": 600,
-          "source": "repricer_live_prices"
+          "margin_pct": 0.133338,
+          "margin_rub": 80,
+          "drr_pct": 0.24878,
+          "stock": 3673,
+          "source": "canonical_daily_economics_snapshot"
         }
       ]
     },
@@ -87715,7 +88284,11 @@
           "units": null,
           "seller_price": 1370,
           "client_price": 1370,
-          "source": "repricer_live_prices"
+          "margin_pct": 0.300991,
+          "margin_rub": 412.36,
+          "drr_pct": 0.24878,
+          "stock": 558,
+          "source": "canonical_daily_economics_snapshot"
         }
       ]
     },
@@ -88394,7 +88967,11 @@
           "units": null,
           "seller_price": 490,
           "client_price": 490,
-          "source": "repricer_live_prices"
+          "margin_pct": 0.101027,
+          "margin_rub": 49.5,
+          "drr_pct": 0.24878,
+          "stock": 90,
+          "source": "canonical_daily_economics_snapshot"
         }
       ]
     },
@@ -89087,7 +89664,11 @@
           "units": null,
           "seller_price": 650,
           "client_price": 650,
-          "source": "repricer_live_prices"
+          "margin_pct": 0.11729,
+          "margin_rub": 76.24,
+          "drr_pct": 0.24878,
+          "stock": 0,
+          "source": "canonical_daily_economics_snapshot"
         }
       ]
     },
@@ -89878,7 +90459,11 @@
           "units": null,
           "seller_price": 400,
           "client_price": 400,
-          "source": "repricer_live_prices"
+          "margin_pct": -0.114779,
+          "margin_rub": -45.91,
+          "drr_pct": 0.24878,
+          "stock": 88,
+          "source": "canonical_daily_economics_snapshot"
         }
       ]
     },
@@ -90726,6 +91311,17 @@
           "seller_price": 483.875,
           "client_price": 625,
           "source": "smart_price_overlay"
+        },
+        {
+          "date": "2026-07-28",
+          "units": null,
+          "seller_price": 483.875,
+          "client_price": 625,
+          "margin_pct": -0.018719,
+          "margin_rub": -9.06,
+          "drr_pct": 0.24878,
+          "stock": 0,
+          "source": "canonical_daily_economics_snapshot"
         }
       ]
     },
@@ -91327,7 +91923,11 @@
           "units": null,
           "seller_price": 605,
           "client_price": 605,
-          "source": "repricer_live_prices"
+          "margin_pct": 0.098795,
+          "margin_rub": 59.77,
+          "drr_pct": 0.24878,
+          "stock": 0,
+          "source": "canonical_daily_economics_snapshot"
         }
       ]
     },
@@ -92027,7 +92627,11 @@
           "units": null,
           "seller_price": 546,
           "client_price": 546,
-          "source": "repricer_live_prices"
+          "margin_pct": -0.063543,
+          "margin_rub": -34.69,
+          "drr_pct": 0.24878,
+          "stock": 0,
+          "source": "canonical_daily_economics_snapshot"
         }
       ]
     },
@@ -92623,6 +93227,17 @@
           "seller_price": 248.5,
           "client_price": 255,
           "source": "smart_price_overlay"
+        },
+        {
+          "date": "2026-07-28",
+          "units": null,
+          "seller_price": 248.5,
+          "client_price": 255,
+          "margin_pct": -0.2958,
+          "margin_rub": -73.51,
+          "drr_pct": 0.24878,
+          "stock": 0,
+          "source": "canonical_daily_economics_snapshot"
         }
       ]
     },
@@ -93064,6 +93679,17 @@
           "seller_price": 3000,
           "client_price": 3000,
           "source": "smart_price_workbench"
+        },
+        {
+          "date": "2026-07-28",
+          "units": null,
+          "seller_price": 3000,
+          "client_price": 3000,
+          "margin_pct": 0.371121,
+          "margin_rub": 1113.36,
+          "drr_pct": 0.24878,
+          "stock": 0,
+          "source": "canonical_daily_economics_snapshot"
         }
       ]
     },
@@ -93994,7 +94620,11 @@
           "units": null,
           "seller_price": 1350,
           "client_price": 1350,
-          "source": "repricer_live_prices"
+          "margin_pct": 0.271869,
+          "margin_rub": 367.02,
+          "drr_pct": 0.24878,
+          "stock": 2970,
+          "source": "canonical_daily_economics_snapshot"
         }
       ]
     },
@@ -94380,6 +95010,17 @@
           "seller_price": 700,
           "client_price": 700,
           "source": "smart_price_workbench"
+        },
+        {
+          "date": "2026-07-28",
+          "units": null,
+          "seller_price": 700,
+          "client_price": 700,
+          "margin_pct": 0.171721,
+          "margin_rub": 120.2,
+          "drr_pct": 0.24878,
+          "stock": 0,
+          "source": "canonical_daily_economics_snapshot"
         }
       ]
     },
@@ -95429,7 +96070,11 @@
           "units": null,
           "seller_price": 1515,
           "client_price": 1515,
-          "source": "repricer_live_prices"
+          "margin_pct": 0.285345,
+          "margin_rub": 432.3,
+          "drr_pct": 0.24878,
+          "stock": 81,
+          "source": "canonical_daily_economics_snapshot"
         }
       ]
     },
@@ -95444,6 +96089,17 @@
           "seller_price": null,
           "client_price": null,
           "source": "smart_price_workbench"
+        },
+        {
+          "date": "2026-07-28",
+          "units": null,
+          "seller_price": 827,
+          "client_price": 827,
+          "margin_pct": 0.083428,
+          "margin_rub": 68.99,
+          "drr_pct": 0.24878,
+          "stock": 0,
+          "source": "canonical_daily_economics_snapshot"
         }
       ]
     },
@@ -95864,6 +96520,17 @@
           "seller_price": 512,
           "client_price": 512,
           "source": "smart_price_workbench"
+        },
+        {
+          "date": "2026-07-28",
+          "units": null,
+          "seller_price": 512,
+          "client_price": 512,
+          "margin_pct": 0.054987,
+          "margin_rub": 28.15,
+          "drr_pct": 0.24878,
+          "source": "canonical_daily_economics_snapshot",
+          "stock": null
         }
       ]
     },
@@ -96298,6 +96965,17 @@
           "seller_price": 825,
           "client_price": 271.9189189189189,
           "source": "smart_price_overlay"
+        },
+        {
+          "date": "2026-07-28",
+          "units": null,
+          "seller_price": 825,
+          "client_price": 271.9189189189189,
+          "margin_pct": 0.208182,
+          "margin_rub": 171.75,
+          "drr_pct": 0.24878,
+          "stock": 0,
+          "source": "canonical_daily_economics_snapshot"
         }
       ]
     },
@@ -96312,6 +96990,17 @@
           "seller_price": null,
           "client_price": null,
           "source": "smart_price_workbench"
+        },
+        {
+          "date": "2026-07-28",
+          "units": null,
+          "seller_price": null,
+          "client_price": 2000,
+          "drr_pct": 0.24878,
+          "source": "canonical_daily_economics_snapshot",
+          "margin_pct": null,
+          "margin_rub": null,
+          "stock": null
         }
       ]
     },
@@ -97074,7 +97763,11 @@
           "units": null,
           "seller_price": 913,
           "client_price": 913,
-          "source": "repricer_live_prices"
+          "margin_pct": 0.202869,
+          "margin_rub": 185.22,
+          "drr_pct": 0.24878,
+          "stock": 0,
+          "source": "canonical_daily_economics_snapshot"
         }
       ]
     },
@@ -97697,7 +98390,11 @@
           "units": null,
           "seller_price": 550,
           "client_price": 550,
-          "source": "repricer_live_prices"
+          "margin_pct": -0.047188,
+          "margin_rub": -25.95,
+          "drr_pct": 0.24878,
+          "stock": 982,
+          "source": "canonical_daily_economics_snapshot"
         }
       ]
     },
@@ -97712,6 +98409,17 @@
           "seller_price": null,
           "client_price": null,
           "source": "smart_price_workbench"
+        },
+        {
+          "date": "2026-07-28",
+          "units": null,
+          "seller_price": null,
+          "client_price": null,
+          "drr_pct": 0.24878,
+          "stock": 0,
+          "source": "canonical_daily_economics_snapshot",
+          "margin_pct": null,
+          "margin_rub": null
         }
       ]
     },
@@ -98789,7 +99497,11 @@
           "units": null,
           "seller_price": 250,
           "client_price": 250,
-          "source": "repricer_live_prices"
+          "margin_pct": -0.271479,
+          "margin_rub": -67.87,
+          "drr_pct": 0.24878,
+          "stock": 95,
+          "source": "canonical_daily_economics_snapshot"
         }
       ]
     },
@@ -99797,7 +100509,11 @@
           "units": null,
           "seller_price": 1150,
           "client_price": 1150,
-          "source": "repricer_live_prices"
+          "margin_pct": 0.267817,
+          "margin_rub": 307.99,
+          "drr_pct": 0.24878,
+          "stock": 763,
+          "source": "canonical_daily_economics_snapshot"
         }
       ]
     },
@@ -100826,7 +101542,11 @@
           "units": null,
           "seller_price": 1173,
           "client_price": 1173,
-          "source": "repricer_live_prices"
+          "margin_pct": 0.292367,
+          "margin_rub": 342.95,
+          "drr_pct": 0.24878,
+          "stock": 1127,
+          "source": "canonical_daily_economics_snapshot"
         }
       ]
     },
@@ -101904,7 +102624,11 @@
           "units": null,
           "seller_price": 1150,
           "client_price": 1150,
-          "source": "repricer_live_prices"
+          "margin_pct": 0.270912,
+          "margin_rub": 311.55,
+          "drr_pct": 0.24878,
+          "stock": 1333,
+          "source": "canonical_daily_economics_snapshot"
         }
       ]
     },
@@ -102982,7 +103706,11 @@
           "units": null,
           "seller_price": 1700,
           "client_price": 1700,
-          "source": "repricer_live_prices"
+          "margin_pct": 0.330427,
+          "margin_rub": 561.73,
+          "drr_pct": 0.24878,
+          "stock": 1374,
+          "source": "canonical_daily_economics_snapshot"
         }
       ]
     },
@@ -104018,7 +104746,11 @@
           "units": null,
           "seller_price": 1550,
           "client_price": 1550,
-          "source": "repricer_live_prices"
+          "margin_pct": 0.309986,
+          "margin_rub": 480.48,
+          "drr_pct": 0.24878,
+          "stock": 2340,
+          "source": "canonical_daily_economics_snapshot"
         }
       ]
     },
@@ -104774,7 +105506,11 @@
           "units": null,
           "seller_price": 2505,
           "client_price": 2505,
-          "source": "repricer_live_prices"
+          "margin_pct": 0.355885,
+          "margin_rub": 891.49,
+          "drr_pct": 0.24878,
+          "stock": 4,
+          "source": "canonical_daily_economics_snapshot"
         }
       ]
     },
@@ -105600,7 +106336,11 @@
           "units": null,
           "seller_price": 1475,
           "client_price": 1475,
-          "source": "repricer_live_prices"
+          "margin_pct": 0.291958,
+          "margin_rub": 430.64,
+          "drr_pct": 0.24878,
+          "stock": 195,
+          "source": "canonical_daily_economics_snapshot"
         }
       ]
     },
@@ -106643,7 +107383,11 @@
           "units": null,
           "seller_price": 2100,
           "client_price": 2100,
-          "source": "repricer_live_prices"
+          "margin_pct": 0.329711,
+          "margin_rub": 692.39,
+          "drr_pct": 0.24878,
+          "stock": 2652,
+          "source": "canonical_daily_economics_snapshot"
         }
       ]
     },
@@ -107518,7 +108262,11 @@
           "units": null,
           "seller_price": 1600,
           "client_price": 1600,
-          "source": "repricer_live_prices"
+          "margin_pct": 0.310846,
+          "margin_rub": 497.35,
+          "drr_pct": 0.24878,
+          "stock": 4637,
+          "source": "canonical_daily_economics_snapshot"
         }
       ]
     },
@@ -107595,7 +108343,11 @@
           "units": null,
           "seller_price": 3200,
           "client_price": 3200,
-          "source": "repricer_live_prices"
+          "margin_pct": 0.310512,
+          "margin_rub": 993.64,
+          "drr_pct": 0.24878,
+          "stock": 87,
+          "source": "canonical_daily_economics_snapshot"
         }
       ]
     },
@@ -107651,7 +108403,11 @@
           "units": null,
           "seller_price": 1700,
           "client_price": 1700,
-          "source": "repricer_live_prices"
+          "margin_pct": 0.269827,
+          "margin_rub": 458.71,
+          "drr_pct": 0.24878,
+          "stock": 91,
+          "source": "canonical_daily_economics_snapshot"
         }
       ]
     },
@@ -108330,7 +109086,11 @@
           "units": null,
           "seller_price": 1142,
           "client_price": 1142,
-          "source": "repricer_live_prices"
+          "margin_pct": 0.183211,
+          "margin_rub": 209.23,
+          "drr_pct": 0.24878,
+          "stock": 135,
+          "source": "canonical_daily_economics_snapshot"
         }
       ]
     },
@@ -109072,7 +109832,11 @@
           "units": null,
           "seller_price": 460,
           "client_price": 460,
-          "source": "repricer_live_prices"
+          "margin_pct": 0.004786,
+          "margin_rub": 2.2,
+          "drr_pct": 0.24878,
+          "stock": 0,
+          "source": "canonical_daily_economics_snapshot"
         }
       ]
     },
@@ -109731,6 +110495,17 @@
           "seller_price": 998,
           "client_price": 998,
           "source": "smart_price_overlay"
+        },
+        {
+          "date": "2026-07-28",
+          "units": null,
+          "seller_price": 998,
+          "client_price": 998,
+          "margin_pct": 0.121789,
+          "margin_rub": 121.55,
+          "drr_pct": 0.24878,
+          "stock": 0,
+          "source": "canonical_daily_economics_snapshot"
         }
       ]
     },
@@ -109745,6 +110520,17 @@
           "seller_price": null,
           "client_price": null,
           "source": "smart_price_workbench"
+        },
+        {
+          "date": "2026-07-28",
+          "units": null,
+          "seller_price": null,
+          "client_price": 1000,
+          "drr_pct": 0.24878,
+          "stock": 0,
+          "source": "canonical_daily_economics_snapshot",
+          "margin_pct": null,
+          "margin_rub": null
         }
       ]
     },
@@ -109772,7 +110558,11 @@
           "units": null,
           "seller_price": 2500,
           "client_price": 2500,
-          "source": "repricer_live_prices"
+          "margin_pct": 0.342969,
+          "margin_rub": 857.42,
+          "drr_pct": 0.24878,
+          "stock": 0,
+          "source": "canonical_daily_economics_snapshot"
         }
       ]
     },
@@ -110850,7 +111640,11 @@
           "units": null,
           "seller_price": 714,
           "client_price": 714,
-          "source": "repricer_live_prices"
+          "margin_pct": 0.160494,
+          "margin_rub": 114.59,
+          "drr_pct": 0.24878,
+          "stock": 1473,
+          "source": "canonical_daily_economics_snapshot"
         }
       ]
     },
@@ -111165,7 +111959,11 @@
           "units": null,
           "seller_price": 1168,
           "client_price": 1168,
-          "source": "repricer_live_prices"
+          "margin_pct": 0.219656,
+          "margin_rub": 256.56,
+          "drr_pct": 0.24878,
+          "stock": 326,
+          "source": "canonical_daily_economics_snapshot"
         }
       ]
     },
@@ -112033,7 +112831,11 @@
           "units": null,
           "seller_price": 1000,
           "client_price": 1000,
-          "source": "repricer_live_prices"
+          "margin_pct": 0.248521,
+          "margin_rub": 248.52,
+          "drr_pct": 0.24878,
+          "stock": 2,
+          "source": "canonical_daily_economics_snapshot"
         }
       ]
     },
@@ -113111,7 +113913,11 @@
           "units": null,
           "seller_price": 1080,
           "client_price": 1080,
-          "source": "repricer_live_prices"
+          "margin_pct": 0.240962,
+          "margin_rub": 260.24,
+          "drr_pct": 0.24878,
+          "stock": 812,
+          "source": "canonical_daily_economics_snapshot"
         }
       ]
     },
@@ -113833,6 +114639,17 @@
           "seller_price": 674.068,
           "client_price": 635,
           "source": "smart_price_overlay"
+        },
+        {
+          "date": "2026-07-28",
+          "units": null,
+          "seller_price": 674.068,
+          "client_price": 635,
+          "margin_pct": -0.052675,
+          "margin_rub": -35.51,
+          "drr_pct": 0.24878,
+          "stock": 0,
+          "source": "canonical_daily_economics_snapshot"
         }
       ]
     },
@@ -114714,7 +115531,11 @@
           "units": null,
           "seller_price": 580,
           "client_price": 580,
-          "source": "repricer_live_prices"
+          "margin_pct": 0.087721,
+          "margin_rub": 50.88,
+          "drr_pct": 0.24878,
+          "stock": 257,
+          "source": "canonical_daily_economics_snapshot"
         }
       ]
     },
@@ -115079,6 +115900,17 @@
           "seller_price": 635,
           "client_price": 635,
           "source": "smart_price_workbench"
+        },
+        {
+          "date": "2026-07-28",
+          "units": null,
+          "seller_price": 635,
+          "client_price": 635,
+          "margin_pct": 0.133658,
+          "margin_rub": 84.87,
+          "drr_pct": 0.24878,
+          "source": "canonical_daily_economics_snapshot",
+          "stock": null
         }
       ]
     },
@@ -116156,7 +116988,11 @@
           "units": null,
           "seller_price": 850,
           "client_price": 850,
-          "source": "repricer_live_prices"
+          "margin_pct": 0.223956,
+          "margin_rub": 190.36,
+          "drr_pct": 0.24878,
+          "stock": 77,
+          "source": "canonical_daily_economics_snapshot"
         }
       ]
     },
@@ -116695,7 +117531,11 @@
           "units": null,
           "seller_price": 2000,
           "client_price": 2000,
-          "source": "repricer_live_prices"
+          "margin_pct": 0.312906,
+          "margin_rub": 625.81,
+          "drr_pct": 0.24878,
+          "stock": 256,
+          "source": "canonical_daily_economics_snapshot"
         }
       ]
     },
@@ -117122,7 +117962,11 @@
           "units": null,
           "seller_price": 1952,
           "client_price": 1952,
-          "source": "repricer_live_prices"
+          "margin_pct": 0.328602,
+          "margin_rub": 641.43,
+          "drr_pct": 0.24878,
+          "stock": 7,
+          "source": "canonical_daily_economics_snapshot"
         }
       ]
     },
@@ -117157,7 +118001,11 @@
           "units": null,
           "seller_price": 2500,
           "client_price": 2500,
-          "source": "repricer_live_prices"
+          "margin_pct": 0.346305,
+          "margin_rub": 865.76,
+          "drr_pct": 0.24878,
+          "stock": 370,
+          "source": "canonical_daily_economics_snapshot"
         }
       ]
     },
@@ -118235,7 +119083,11 @@
           "units": null,
           "seller_price": 1100,
           "client_price": 1100,
-          "source": "repricer_live_prices"
+          "margin_pct": 0.240766,
+          "margin_rub": 264.84,
+          "drr_pct": 0.24878,
+          "stock": 613,
+          "source": "canonical_daily_economics_snapshot"
         }
       ]
     },
@@ -118586,6 +119438,17 @@
           "seller_price": null,
           "client_price": null,
           "source": "smart_price_workbench"
+        },
+        {
+          "date": "2026-07-28",
+          "units": null,
+          "seller_price": 910,
+          "client_price": 515,
+          "margin_pct": 0.217908,
+          "margin_rub": 198.3,
+          "drr_pct": 0.24878,
+          "stock": 0,
+          "source": "canonical_daily_economics_snapshot"
         }
       ]
     },
@@ -118620,7 +119483,11 @@
           "units": null,
           "seller_price": 2050,
           "client_price": 2050,
-          "source": "repricer_live_prices"
+          "margin_pct": 0.257662,
+          "margin_rub": 528.21,
+          "drr_pct": 0.24878,
+          "stock": 31,
+          "source": "canonical_daily_economics_snapshot"
         }
       ]
     },
@@ -119488,7 +120355,11 @@
           "units": null,
           "seller_price": 618,
           "client_price": 618,
-          "source": "repricer_live_prices"
+          "margin_pct": 0.099727,
+          "margin_rub": 61.63,
+          "drr_pct": 0.24878,
+          "stock": 0,
+          "source": "canonical_daily_economics_snapshot"
         }
       ]
     },
@@ -120370,7 +121241,11 @@
           "units": null,
           "seller_price": 401,
           "client_price": 401,
-          "source": "repricer_live_prices"
+          "margin_pct": -0.164523,
+          "margin_rub": -65.97,
+          "drr_pct": 0.24878,
+          "stock": 23,
+          "source": "canonical_daily_economics_snapshot"
         }
       ]
     },
@@ -121154,7 +122029,11 @@
           "units": null,
           "seller_price": 950,
           "client_price": 950,
-          "source": "repricer_live_prices"
+          "margin_pct": 0.185005,
+          "margin_rub": 175.75,
+          "drr_pct": 0.24878,
+          "stock": 0,
+          "source": "canonical_daily_economics_snapshot"
         }
       ]
     },
@@ -121917,7 +122796,11 @@
           "units": null,
           "seller_price": 1557,
           "client_price": 1557,
-          "source": "repricer_live_prices"
+          "margin_pct": 0.285891,
+          "margin_rub": 445.13,
+          "drr_pct": 0.24878,
+          "stock": 10,
+          "source": "canonical_daily_economics_snapshot"
         }
       ]
     },
@@ -122953,7 +123836,11 @@
           "units": null,
           "seller_price": 1940,
           "client_price": 1940,
-          "source": "repricer_live_prices"
+          "margin_pct": 0.326587,
+          "margin_rub": 633.58,
+          "drr_pct": 0.24878,
+          "stock": 3437,
+          "source": "canonical_daily_economics_snapshot"
         }
       ]
     },
@@ -122988,7 +123875,11 @@
           "units": null,
           "seller_price": 2500,
           "client_price": 2500,
-          "source": "repricer_live_prices"
+          "margin_pct": 0.350121,
+          "margin_rub": 875.3,
+          "drr_pct": 0.24878,
+          "stock": 375,
+          "source": "canonical_daily_economics_snapshot"
         }
       ]
     },
@@ -123562,7 +124453,11 @@
           "units": null,
           "seller_price": 721,
           "client_price": 721,
-          "source": "repricer_live_prices"
+          "margin_pct": 0.249718,
+          "margin_rub": 180.05,
+          "drr_pct": 0.24878,
+          "stock": 0,
+          "source": "canonical_daily_economics_snapshot"
         }
       ]
     },
@@ -124605,7 +125500,11 @@
           "units": null,
           "seller_price": 3294,
           "client_price": 3294,
-          "source": "repricer_live_prices"
+          "margin_pct": 0.39657,
+          "margin_rub": 1306.3,
+          "drr_pct": 0.24878,
+          "stock": 874,
+          "source": "canonical_daily_economics_snapshot"
         }
       ]
     },
@@ -125487,7 +126386,11 @@
           "units": null,
           "seller_price": 590,
           "client_price": 590,
-          "source": "repricer_live_prices"
+          "margin_pct": 0.145687,
+          "margin_rub": 85.96,
+          "drr_pct": 0.24878,
+          "stock": 65,
+          "source": "canonical_daily_economics_snapshot"
         }
       ]
     },
@@ -126327,7 +127230,11 @@
           "units": null,
           "seller_price": 1500,
           "client_price": 1500,
-          "source": "repricer_live_prices"
+          "margin_pct": 0.299721,
+          "margin_rub": 449.58,
+          "drr_pct": 0.24878,
+          "stock": 641,
+          "source": "canonical_daily_economics_snapshot"
         }
       ]
     },
@@ -126726,7 +127633,11 @@
           "units": null,
           "seller_price": 1550,
           "client_price": 1550,
-          "source": "repricer_live_prices"
+          "margin_pct": 0.306753,
+          "margin_rub": 475.47,
+          "drr_pct": 0.24878,
+          "stock": 220,
+          "source": "canonical_daily_economics_snapshot"
         }
       ]
     },
@@ -126881,6 +127792,17 @@
           "seller_price": 296,
           "client_price": 296,
           "source": "smart_price_overlay"
+        },
+        {
+          "date": "2026-07-28",
+          "units": null,
+          "seller_price": 296,
+          "client_price": 296,
+          "margin_pct": -0.232583,
+          "margin_rub": -68.84,
+          "drr_pct": 0.24878,
+          "stock": 0,
+          "source": "canonical_daily_economics_snapshot"
         }
       ]
     },
@@ -127517,7 +128439,11 @@
           "units": null,
           "seller_price": 3613,
           "client_price": 3613,
-          "source": "repricer_live_prices"
+          "margin_pct": 0.249711,
+          "margin_rub": 902.21,
+          "drr_pct": 0.24878,
+          "stock": 73,
+          "source": "canonical_daily_economics_snapshot"
         }
       ]
     },
@@ -127552,7 +128478,11 @@
           "units": null,
           "seller_price": 1050,
           "client_price": 1050,
-          "source": "repricer_live_prices"
+          "margin_pct": 0.206292,
+          "margin_rub": 216.61,
+          "drr_pct": 0.24878,
+          "stock": 377,
+          "source": "canonical_daily_economics_snapshot"
         }
       ]
     },
@@ -128329,7 +129259,11 @@
           "units": null,
           "seller_price": 416,
           "client_price": 416,
-          "source": "repricer_live_prices"
+          "margin_pct": -0.040885,
+          "margin_rub": -17.01,
+          "drr_pct": 0.24878,
+          "stock": 276,
+          "source": "canonical_daily_economics_snapshot"
         }
       ]
     },
@@ -128357,7 +129291,11 @@
           "units": null,
           "seller_price": 2500,
           "client_price": 2500,
-          "source": "repricer_live_prices"
+          "margin_pct": 0.358081,
+          "margin_rub": 895.2,
+          "drr_pct": 0.24878,
+          "stock": 0,
+          "source": "canonical_daily_economics_snapshot"
         }
       ]
     },
@@ -129400,7 +130338,11 @@
           "units": null,
           "seller_price": 1815,
           "client_price": 1815,
-          "source": "repricer_live_prices"
+          "margin_pct": 0.332652,
+          "margin_rub": 603.76,
+          "drr_pct": 0.24878,
+          "stock": 15,
+          "source": "canonical_daily_economics_snapshot"
         }
       ]
     },
@@ -130282,7 +131224,11 @@
           "units": null,
           "seller_price": 718,
           "client_price": 718,
-          "source": "repricer_live_prices"
+          "margin_pct": 0.220451,
+          "margin_rub": 158.28,
+          "drr_pct": 0.24878,
+          "stock": 1801,
+          "source": "canonical_daily_economics_snapshot"
         }
       ]
     },
@@ -131081,6 +132027,17 @@
           "seller_price": 217.125,
           "client_price": 184.3846153846154,
           "source": "smart_price_overlay"
+        },
+        {
+          "date": "2026-07-28",
+          "units": null,
+          "seller_price": 217.125,
+          "client_price": 184.3846153846154,
+          "margin_pct": -0.418238,
+          "margin_rub": -90.81,
+          "drr_pct": 0.24878,
+          "stock": 0,
+          "source": "canonical_daily_economics_snapshot"
         }
       ]
     },
@@ -131962,7 +132919,11 @@
           "units": null,
           "seller_price": 690,
           "client_price": 690,
-          "source": "repricer_live_prices"
+          "margin_pct": 0.147402,
+          "margin_rub": 101.71,
+          "drr_pct": 0.24878,
+          "stock": 634,
+          "source": "canonical_daily_economics_snapshot"
         }
       ]
     },
@@ -132844,7 +133805,11 @@
           "units": null,
           "seller_price": 1861,
           "client_price": 1861,
-          "source": "repricer_live_prices"
+          "margin_pct": 0.331799,
+          "margin_rub": 617.48,
+          "drr_pct": 0.24878,
+          "stock": 909,
+          "source": "canonical_daily_economics_snapshot"
         }
       ]
     },
@@ -133530,7 +134495,11 @@
           "units": null,
           "seller_price": 1210,
           "client_price": 1210,
-          "source": "repricer_live_prices"
+          "margin_pct": 0.282349,
+          "margin_rub": 341.64,
+          "drr_pct": 0.24878,
+          "stock": 0,
+          "source": "canonical_daily_economics_snapshot"
         }
       ]
     },
@@ -134398,7 +135367,11 @@
           "units": null,
           "seller_price": 332,
           "client_price": 332,
-          "source": "repricer_live_prices"
+          "margin_pct": -0.206616,
+          "margin_rub": -68.6,
+          "drr_pct": 0.24878,
+          "stock": 1219,
+          "source": "canonical_daily_economics_snapshot"
         }
       ]
     },
@@ -135056,7 +136029,11 @@
           "units": null,
           "seller_price": 343,
           "client_price": 343,
-          "source": "repricer_live_prices"
+          "margin_pct": -0.075778,
+          "margin_rub": -25.99,
+          "drr_pct": 0.24878,
+          "stock": 660,
+          "source": "canonical_daily_economics_snapshot"
         }
       ]
     },
@@ -135938,7 +136915,11 @@
           "units": null,
           "seller_price": 266,
           "client_price": 266,
-          "source": "repricer_live_prices"
+          "margin_pct": -0.269046,
+          "margin_rub": -71.57,
+          "drr_pct": 0.24878,
+          "stock": 2043,
+          "source": "canonical_daily_economics_snapshot"
         }
       ]
     },
@@ -136820,7 +137801,11 @@
           "units": null,
           "seller_price": 460,
           "client_price": 460,
-          "source": "repricer_live_prices"
+          "margin_pct": -0.199236,
+          "margin_rub": -91.65,
+          "drr_pct": 0.24878,
+          "stock": 2,
+          "source": "canonical_daily_economics_snapshot"
         }
       ]
     },
@@ -137681,7 +138666,11 @@
           "units": null,
           "seller_price": 297,
           "client_price": 297,
-          "source": "repricer_live_prices"
+          "margin_pct": -0.235175,
+          "margin_rub": -69.85,
+          "drr_pct": 0.24878,
+          "stock": 882,
+          "source": "canonical_daily_economics_snapshot"
         }
       ]
     },
@@ -138304,7 +139293,11 @@
           "units": null,
           "seller_price": 778,
           "client_price": 778,
-          "source": "repricer_live_prices"
+          "margin_pct": 0.030652,
+          "margin_rub": 23.85,
+          "drr_pct": 0.24878,
+          "stock": 0,
+          "source": "canonical_daily_economics_snapshot"
         }
       ]
     },
@@ -138871,7 +139864,11 @@
           "units": null,
           "seller_price": 650,
           "client_price": 650,
-          "source": "repricer_live_prices"
+          "margin_pct": 0.152183,
+          "margin_rub": 98.92,
+          "drr_pct": 0.24878,
+          "stock": 0,
+          "source": "canonical_daily_economics_snapshot"
         }
       ]
     },
@@ -139439,6 +140436,17 @@
           "seller_price": 380,
           "client_price": 380,
           "source": "smart_price_overlay"
+        },
+        {
+          "date": "2026-07-28",
+          "units": null,
+          "seller_price": 380,
+          "client_price": 380,
+          "margin_pct": -0.224384,
+          "margin_rub": -85.27,
+          "drr_pct": 0.24878,
+          "stock": 0,
+          "source": "canonical_daily_economics_snapshot"
         }
       ]
     },
@@ -139851,7 +140859,11 @@
           "units": null,
           "seller_price": 1300,
           "client_price": 1300,
-          "source": "repricer_live_prices"
+          "margin_pct": 0.216029,
+          "margin_rub": 280.84,
+          "drr_pct": 0.24878,
+          "stock": 2,
+          "source": "canonical_daily_economics_snapshot"
         }
       ]
     },
@@ -139866,6 +140878,17 @@
           "seller_price": null,
           "client_price": null,
           "source": "smart_price_workbench"
+        },
+        {
+          "date": "2026-07-28",
+          "units": null,
+          "seller_price": null,
+          "client_price": 300,
+          "drr_pct": 0.24878,
+          "source": "canonical_daily_economics_snapshot",
+          "margin_pct": null,
+          "margin_rub": null,
+          "stock": null
         }
       ]
     },
@@ -140691,7 +141714,11 @@
           "units": null,
           "seller_price": 500,
           "client_price": 500,
-          "source": "repricer_live_prices"
+          "margin_pct": 0.103381,
+          "margin_rub": 51.69,
+          "drr_pct": 0.24878,
+          "stock": 253,
+          "source": "canonical_daily_economics_snapshot"
         }
       ]
     },
@@ -141140,6 +142167,17 @@
           "seller_price": 649,
           "client_price": 649,
           "source": "smart_price_workbench"
+        },
+        {
+          "date": "2026-07-28",
+          "units": null,
+          "seller_price": 649,
+          "client_price": 649,
+          "margin_pct": 0.158522,
+          "margin_rub": 102.88,
+          "drr_pct": 0.24878,
+          "stock": 0,
+          "source": "canonical_daily_economics_snapshot"
         }
       ]
     },
@@ -141825,7 +142863,11 @@
           "units": null,
           "seller_price": 1222,
           "client_price": 1222,
-          "source": "repricer_live_prices"
+          "margin_pct": 0.274579,
+          "margin_rub": 335.54,
+          "drr_pct": 0.24878,
+          "stock": 0,
+          "source": "canonical_daily_economics_snapshot"
         }
       ]
     },
@@ -142400,6 +143442,17 @@
           "seller_price": 597,
           "client_price": 597,
           "source": "smart_price_overlay"
+        },
+        {
+          "date": "2026-07-28",
+          "units": null,
+          "seller_price": 597,
+          "client_price": 597,
+          "margin_pct": -0.091123,
+          "margin_rub": -54.4,
+          "drr_pct": 0.24878,
+          "stock": 0,
+          "source": "canonical_daily_economics_snapshot"
         }
       ]
     },
@@ -142890,6 +143943,17 @@
           "seller_price": 895,
           "client_price": 1260,
           "source": "smart_price_overlay"
+        },
+        {
+          "date": "2026-07-28",
+          "units": null,
+          "seller_price": 895,
+          "client_price": 1260,
+          "margin_pct": -0.04505,
+          "margin_rub": -40.32,
+          "drr_pct": 0.24878,
+          "stock": 0,
+          "source": "canonical_daily_economics_snapshot"
         }
       ]
     },
@@ -143680,7 +144744,11 @@
           "units": null,
           "seller_price": 714,
           "client_price": 714,
-          "source": "repricer_live_prices"
+          "margin_pct": -0.109198,
+          "margin_rub": -77.97,
+          "drr_pct": 0.24878,
+          "stock": 9,
+          "source": "canonical_daily_economics_snapshot"
         }
       ]
     },
@@ -143695,6 +144763,17 @@
           "seller_price": null,
           "client_price": null,
           "source": "smart_price_workbench"
+        },
+        {
+          "date": "2026-07-28",
+          "units": null,
+          "seller_price": null,
+          "client_price": 2154,
+          "drr_pct": 0.24878,
+          "stock": 0,
+          "source": "canonical_daily_economics_snapshot",
+          "margin_pct": null,
+          "margin_rub": null
         }
       ]
     },
@@ -144436,7 +145515,11 @@
           "units": null,
           "seller_price": 1000,
           "client_price": 1000,
-          "source": "repricer_live_prices"
+          "margin_pct": 0.269221,
+          "margin_rub": 269.22,
+          "drr_pct": 0.24878,
+          "stock": 0,
+          "source": "canonical_daily_economics_snapshot"
         }
       ]
     },
@@ -145318,7 +146401,11 @@
           "units": null,
           "seller_price": 295,
           "client_price": 295,
-          "source": "repricer_live_prices"
+          "margin_pct": -0.237804,
+          "margin_rub": -70.15,
+          "drr_pct": 0.24878,
+          "stock": 591,
+          "source": "canonical_daily_economics_snapshot"
         }
       ]
     },
@@ -145808,7 +146895,11 @@
           "units": null,
           "seller_price": 776,
           "client_price": 776,
-          "source": "repricer_live_prices"
+          "margin_pct": 0.031072,
+          "margin_rub": 24.11,
+          "drr_pct": 0.24878,
+          "stock": 85,
+          "source": "canonical_daily_economics_snapshot"
         }
       ]
     },
@@ -145830,6 +146921,17 @@
           "seller_price": 635,
           "client_price": 635,
           "source": "smart_price_workbench"
+        },
+        {
+          "date": "2026-07-28",
+          "units": null,
+          "seller_price": 635,
+          "client_price": 635,
+          "margin_pct": 0.044052,
+          "margin_rub": 27.97,
+          "drr_pct": 0.24878,
+          "stock": 0,
+          "source": "canonical_daily_economics_snapshot"
         }
       ]
     },
@@ -146299,6 +147401,17 @@
           "seller_price": null,
           "client_price": null,
           "source": "smart_price_workbench"
+        },
+        {
+          "date": "2026-07-28",
+          "units": null,
+          "seller_price": 319,
+          "client_price": 167,
+          "margin_pct": -0.164755,
+          "margin_rub": -52.56,
+          "drr_pct": 0.24878,
+          "stock": 0,
+          "source": "canonical_daily_economics_snapshot"
         }
       ]
     },
@@ -146956,7 +148069,11 @@
           "units": null,
           "seller_price": 680,
           "client_price": 680,
-          "source": "repricer_live_prices"
+          "margin_pct": 0.143059,
+          "margin_rub": 97.28,
+          "drr_pct": 0.24878,
+          "stock": 0,
+          "source": "canonical_daily_economics_snapshot"
         }
       ]
     },
@@ -147643,6 +148760,17 @@
           "seller_price": 1240,
           "client_price": 1240,
           "source": "smart_price_overlay"
+        },
+        {
+          "date": "2026-07-28",
+          "units": null,
+          "seller_price": 1240,
+          "client_price": 1240,
+          "margin_pct": 0.162866,
+          "margin_rub": 201.95,
+          "drr_pct": 0.24878,
+          "stock": 0,
+          "source": "canonical_daily_economics_snapshot"
         }
       ]
     },
@@ -148447,7 +149575,11 @@
           "units": null,
           "seller_price": 703,
           "client_price": 703,
-          "source": "repricer_live_prices"
+          "margin_pct": 0.143582,
+          "margin_rub": 100.94,
+          "drr_pct": 0.24878,
+          "stock": 0,
+          "source": "canonical_daily_economics_snapshot"
         }
       ]
     },
@@ -148462,6 +149594,17 @@
           "seller_price": null,
           "client_price": null,
           "source": "smart_price_workbench"
+        },
+        {
+          "date": "2026-07-28",
+          "units": null,
+          "seller_price": null,
+          "client_price": 620,
+          "drr_pct": 0.24878,
+          "stock": 0,
+          "source": "canonical_daily_economics_snapshot",
+          "margin_pct": null,
+          "margin_rub": null
         }
       ]
     },
@@ -148994,6 +150137,17 @@
           "seller_price": null,
           "client_price": null,
           "source": "smart_price_workbench"
+        },
+        {
+          "date": "2026-07-28",
+          "units": null,
+          "seller_price": 512,
+          "client_price": 260,
+          "margin_pct": 0.049596,
+          "margin_rub": 25.39,
+          "drr_pct": 0.24878,
+          "stock": 0,
+          "source": "canonical_daily_economics_snapshot"
         }
       ]
     },
@@ -149323,6 +150477,17 @@
           "seller_price": 466,
           "client_price": 562,
           "source": "smart_price_workbench"
+        },
+        {
+          "date": "2026-07-28",
+          "units": null,
+          "seller_price": 466,
+          "client_price": 562,
+          "margin_pct": 0.014309,
+          "margin_rub": 6.67,
+          "drr_pct": 0.24878,
+          "source": "canonical_daily_economics_snapshot",
+          "stock": null
         }
       ]
     },
@@ -149960,6 +151125,17 @@
           "seller_price": 1498,
           "client_price": 1488.3333333333333,
           "source": "smart_price_workbench"
+        },
+        {
+          "date": "2026-07-28",
+          "units": null,
+          "seller_price": 1498,
+          "client_price": 1488.3333333333333,
+          "margin_pct": 0.305899,
+          "margin_rub": 458.24,
+          "drr_pct": 0.24878,
+          "stock": 0,
+          "source": "canonical_daily_economics_snapshot"
         }
       ]
     },
@@ -150841,7 +152017,11 @@
           "units": null,
           "seller_price": 805,
           "client_price": 805,
-          "source": "repricer_live_prices"
+          "margin_pct": 0.162789,
+          "margin_rub": 131.05,
+          "drr_pct": 0.24878,
+          "stock": 1551,
+          "source": "canonical_daily_economics_snapshot"
         }
       ]
     },
@@ -151695,7 +152875,11 @@
           "units": null,
           "seller_price": 1550,
           "client_price": 1550,
-          "source": "repricer_live_prices"
+          "margin_pct": 0.205695,
+          "margin_rub": 318.83,
+          "drr_pct": 0.24878,
+          "stock": 11,
+          "source": "canonical_daily_economics_snapshot"
         }
       ]
     },
@@ -152256,6 +153440,17 @@
           "seller_price": 975,
           "client_price": 975,
           "source": "smart_price_overlay"
+        },
+        {
+          "date": "2026-07-28",
+          "units": null,
+          "seller_price": 975,
+          "client_price": 975,
+          "margin_pct": 0.091977,
+          "margin_rub": 89.68,
+          "drr_pct": 0.24878,
+          "stock": 0,
+          "source": "canonical_daily_economics_snapshot"
         }
       ]
     },
@@ -152458,7 +153653,11 @@
           "units": null,
           "seller_price": 263.2,
           "client_price": 250.04,
-          "source": "repricer_live_prices"
+          "margin_pct": -0.191245,
+          "margin_rub": -50.34,
+          "drr_pct": 0.0877,
+          "stock": 1,
+          "source": "canonical_daily_economics_snapshot"
         }
       ]
     },
@@ -152486,7 +153685,11 @@
           "units": null,
           "seller_price": 560,
           "client_price": 532,
-          "source": "repricer_live_prices"
+          "margin_pct": 0.252714,
+          "margin_rub": 141.52,
+          "drr_pct": 0.0877,
+          "stock": 0,
+          "source": "canonical_daily_economics_snapshot"
         }
       ]
     },
@@ -152514,7 +153717,11 @@
           "units": null,
           "seller_price": 547.2,
           "client_price": 519.84,
-          "source": "repricer_live_prices"
+          "margin_pct": 0.244778,
+          "margin_rub": 133.94,
+          "drr_pct": 0.0877,
+          "stock": 0,
+          "source": "canonical_daily_economics_snapshot"
         }
       ]
     },
@@ -152640,7 +153847,11 @@
           "units": null,
           "seller_price": 271.5,
           "client_price": 257.93,
-          "source": "repricer_live_prices"
+          "margin_pct": -0.097134,
+          "margin_rub": -26.37,
+          "drr_pct": 0.0877,
+          "stock": 0,
+          "source": "canonical_daily_economics_snapshot"
         }
       ]
     },
@@ -153207,7 +154418,11 @@
           "units": null,
           "seller_price": 699.6,
           "client_price": 664.62,
-          "source": "repricer_live_prices"
+          "margin_pct": 0.250376,
+          "margin_rub": 175.16,
+          "drr_pct": 0.0877,
+          "stock": 178,
+          "source": "canonical_daily_economics_snapshot"
         }
       ]
     },
@@ -153592,7 +154807,11 @@
           "units": null,
           "seller_price": 1525,
           "client_price": 1448.75,
-          "source": "repricer_live_prices"
+          "margin_pct": 0.374603,
+          "margin_rub": 571.27,
+          "drr_pct": 0.0877,
+          "stock": 0,
+          "source": "canonical_daily_economics_snapshot"
         }
       ]
     },
@@ -153620,7 +154839,11 @@
           "units": null,
           "seller_price": 3100,
           "client_price": 2945,
-          "source": "repricer_live_prices"
+          "margin_pct": 0.530816,
+          "margin_rub": 1645.53,
+          "drr_pct": 0.0877,
+          "stock": 0,
+          "source": "canonical_daily_economics_snapshot"
         }
       ]
     },
@@ -153648,7 +154871,11 @@
           "units": null,
           "seller_price": 646.8,
           "client_price": 614.46,
-          "source": "repricer_live_prices"
+          "margin_pct": 0.321298,
+          "margin_rub": 207.82,
+          "drr_pct": 0.0877,
+          "stock": 2,
+          "source": "canonical_daily_economics_snapshot"
         }
       ]
     },
@@ -153676,7 +154903,11 @@
           "units": null,
           "seller_price": 1632,
           "client_price": 1550.4,
-          "source": "repricer_live_prices"
+          "margin_pct": 0.380437,
+          "margin_rub": 620.87,
+          "drr_pct": 0.0877,
+          "stock": 0,
+          "source": "canonical_daily_economics_snapshot"
         }
       ]
     },
@@ -153879,7 +155110,11 @@
           "units": null,
           "seller_price": 344.4,
           "client_price": 327.18,
-          "source": "repricer_live_prices"
+          "margin_pct": -0.047866,
+          "margin_rub": -16.49,
+          "drr_pct": 0.0877,
+          "stock": 0,
+          "source": "canonical_daily_economics_snapshot"
         }
       ]
     },
@@ -153907,7 +155142,11 @@
           "units": null,
           "seller_price": 688.48,
           "client_price": 654.06,
-          "source": "repricer_live_prices"
+          "margin_pct": 0.103823,
+          "margin_rub": 71.48,
+          "drr_pct": 0.0877,
+          "stock": 1,
+          "source": "canonical_daily_economics_snapshot"
         }
       ]
     },
@@ -154110,7 +155349,11 @@
           "units": null,
           "seller_price": 1080,
           "client_price": 1026,
-          "source": "repricer_live_prices"
+          "margin_pct": 0.335463,
+          "margin_rub": 362.3,
+          "drr_pct": 0.0877,
+          "stock": 53,
+          "source": "canonical_daily_economics_snapshot"
         }
       ]
     },
@@ -154194,7 +155437,11 @@
           "units": null,
           "seller_price": 1800,
           "client_price": 1710,
-          "source": "repricer_live_prices"
+          "margin_pct": 0.449389,
+          "margin_rub": 808.9,
+          "drr_pct": 0.0877,
+          "stock": 1097,
+          "source": "canonical_daily_economics_snapshot"
         }
       ]
     },
@@ -154579,7 +155826,11 @@
           "units": null,
           "seller_price": 1250,
           "client_price": 1187.5,
-          "source": "repricer_live_prices"
+          "margin_pct": 0.317576,
+          "margin_rub": 396.97,
+          "drr_pct": 0.0877,
+          "stock": 11,
+          "source": "canonical_daily_economics_snapshot"
         }
       ]
     },
@@ -154607,7 +155858,11 @@
           "units": null,
           "seller_price": 117.6,
           "client_price": 111.72,
-          "source": "repricer_live_prices"
+          "margin_pct": -1.698221,
+          "margin_rub": -199.71,
+          "drr_pct": 0.0877,
+          "stock": 0,
+          "source": "canonical_daily_economics_snapshot"
         }
       ]
     },
@@ -154964,7 +156219,11 @@
           "units": null,
           "seller_price": 419.72,
           "client_price": 398.73,
-          "source": "repricer_live_prices"
+          "margin_pct": 0.061527,
+          "margin_rub": 25.82,
+          "drr_pct": 0.0877,
+          "stock": 0,
+          "source": "canonical_daily_economics_snapshot"
         }
       ]
     },
@@ -154992,7 +156251,11 @@
           "units": null,
           "seller_price": 243.36,
           "client_price": 231.19,
-          "source": "repricer_live_prices"
+          "margin_pct": -0.135318,
+          "margin_rub": -32.93,
+          "drr_pct": 0.0877,
+          "stock": 0,
+          "source": "canonical_daily_economics_snapshot"
         }
       ]
     },
@@ -155356,7 +156619,11 @@
           "units": null,
           "seller_price": 629.55,
           "client_price": 598.07,
-          "source": "repricer_live_prices"
+          "margin_pct": 0.091643,
+          "margin_rub": 57.69,
+          "drr_pct": 0.0877,
+          "stock": 821,
+          "source": "canonical_daily_economics_snapshot"
         }
       ]
     },
@@ -155384,7 +156651,11 @@
           "units": null,
           "seller_price": 303.75,
           "client_price": 288.56,
-          "source": "repricer_live_prices"
+          "margin_pct": -0.16,
+          "margin_rub": -48.6,
+          "drr_pct": 0.0877,
+          "stock": 0,
+          "source": "canonical_daily_economics_snapshot"
         }
       ]
     },
@@ -155412,7 +156683,11 @@
           "units": null,
           "seller_price": 614.25,
           "client_price": 583.54,
-          "source": "repricer_live_prices"
+          "margin_pct": -0.005216,
+          "margin_rub": -3.2,
+          "drr_pct": 0.0877,
+          "stock": 0,
+          "source": "canonical_daily_economics_snapshot"
         }
       ]
     },
@@ -155797,7 +157072,11 @@
           "units": null,
           "seller_price": 309.2,
           "client_price": 293.74,
-          "source": "repricer_live_prices"
+          "margin_pct": -0.168026,
+          "margin_rub": -51.95,
+          "drr_pct": 0.0877,
+          "stock": 0,
+          "source": "canonical_daily_economics_snapshot"
         }
       ]
     },
@@ -155825,7 +157104,11 @@
           "units": null,
           "seller_price": 661.2,
           "client_price": 628.14,
-          "source": "repricer_live_prices"
+          "margin_pct": 0.279099,
+          "margin_rub": 184.54,
+          "drr_pct": 0.0877,
+          "stock": 3,
+          "source": "canonical_daily_economics_snapshot"
         }
       ]
     },
@@ -155853,7 +157136,11 @@
           "units": null,
           "seller_price": 1200,
           "client_price": 1140,
-          "source": "repricer_live_prices"
+          "drr_pct": 0.0877,
+          "stock": 0,
+          "source": "canonical_daily_economics_snapshot",
+          "margin_pct": null,
+          "margin_rub": null
         }
       ]
     },
@@ -155868,6 +157155,17 @@
           "seller_price": 382.92,
           "client_price": 385.9,
           "source": "smart_price_overlay"
+        },
+        {
+          "date": "2026-07-28",
+          "units": null,
+          "seller_price": 382.92,
+          "client_price": 385.9,
+          "drr_pct": 0.0877,
+          "source": "canonical_daily_economics_snapshot",
+          "margin_pct": null,
+          "margin_rub": null,
+          "stock": null
         }
       ]
     },
@@ -156644,7 +157942,11 @@
           "units": null,
           "seller_price": 1712.34,
           "client_price": 1626.72,
-          "source": "repricer_live_prices"
+          "margin_pct": 0.462353,
+          "margin_rub": 791.71,
+          "drr_pct": 0.0877,
+          "stock": 12129,
+          "source": "canonical_daily_economics_snapshot"
         }
       ]
     },
@@ -156756,7 +158058,11 @@
           "units": null,
           "seller_price": 267.4,
           "client_price": 254.03,
-          "source": "repricer_live_prices"
+          "margin_pct": -0.132757,
+          "margin_rub": -35.5,
+          "drr_pct": 0.0877,
+          "stock": 2,
+          "source": "canonical_daily_economics_snapshot"
         }
       ]
     },
@@ -156973,7 +158279,11 @@
           "units": null,
           "seller_price": 503.4,
           "client_price": 478.23,
-          "source": "repricer_live_prices"
+          "margin_pct": 0.055647,
+          "margin_rub": 28.01,
+          "drr_pct": 0.0877,
+          "stock": 28,
+          "source": "canonical_daily_economics_snapshot"
         }
       ]
     },
@@ -157183,7 +158493,11 @@
           "units": null,
           "seller_price": 326.9,
           "client_price": 310.55,
-          "source": "repricer_live_prices"
+          "margin_pct": -0.079826,
+          "margin_rub": -26.1,
+          "drr_pct": 0.0877,
+          "stock": 157,
+          "source": "canonical_daily_economics_snapshot"
         }
       ]
     },
@@ -157379,7 +158693,11 @@
           "units": null,
           "seller_price": 653.2,
           "client_price": 620.54,
-          "source": "repricer_live_prices"
+          "margin_pct": 0.096746,
+          "margin_rub": 63.19,
+          "drr_pct": 0.0877,
+          "stock": 65,
+          "source": "canonical_daily_economics_snapshot"
         }
       ]
     },
@@ -157603,7 +158921,11 @@
           "units": null,
           "seller_price": 421.4,
           "client_price": 400.33,
-          "source": "repricer_live_prices"
+          "margin_pct": 0.081796,
+          "margin_rub": 34.47,
+          "drr_pct": 0.0877,
+          "stock": 42,
+          "source": "canonical_daily_economics_snapshot"
         }
       ]
     },
@@ -157722,7 +159044,11 @@
           "units": null,
           "seller_price": 278.6,
           "client_price": 264.67,
-          "source": "repricer_live_prices"
+          "margin_pct": -0.11281,
+          "margin_rub": -31.43,
+          "drr_pct": 0.0877,
+          "stock": 0,
+          "source": "canonical_daily_economics_snapshot"
         }
       ]
     },
@@ -158268,7 +159594,11 @@
           "units": null,
           "seller_price": 714,
           "client_price": 678.3,
-          "source": "repricer_live_prices"
+          "margin_pct": 0.212896,
+          "margin_rub": 152.01,
+          "drr_pct": 0.0877,
+          "stock": 962,
+          "source": "canonical_daily_economics_snapshot"
         }
       ]
     },
@@ -158492,7 +159822,11 @@
           "units": null,
           "seller_price": 336.7,
           "client_price": 319.86,
-          "source": "repricer_live_prices"
+          "margin_pct": -0.091338,
+          "margin_rub": -30.75,
+          "drr_pct": 0.0877,
+          "stock": 480,
+          "source": "canonical_daily_economics_snapshot"
         }
       ]
     },
@@ -158520,7 +159854,11 @@
           "units": null,
           "seller_price": 644.67,
           "client_price": 612.44,
-          "source": "repricer_live_prices"
+          "margin_pct": 0.263181,
+          "margin_rub": 169.66,
+          "drr_pct": 0.0877,
+          "stock": 0,
+          "source": "canonical_daily_economics_snapshot"
         }
       ]
     },
@@ -158912,7 +160250,11 @@
           "units": null,
           "seller_price": 745,
           "client_price": 707.75,
-          "source": "repricer_live_prices"
+          "margin_pct": 0.310926,
+          "margin_rub": 231.64,
+          "drr_pct": 0.0877,
+          "stock": 0,
+          "source": "canonical_daily_economics_snapshot"
         }
       ]
     },
@@ -159689,7 +161031,11 @@
           "units": null,
           "seller_price": 1095,
           "client_price": 1040.25,
-          "source": "repricer_live_prices"
+          "margin_pct": 0.396292,
+          "margin_rub": 433.94,
+          "drr_pct": 0.0877,
+          "stock": 37,
+          "source": "canonical_daily_economics_snapshot"
         }
       ]
     },
@@ -159906,7 +161252,11 @@
           "units": null,
           "seller_price": 345.6,
           "client_price": 328.32,
-          "source": "repricer_live_prices"
+          "margin_pct": -0.025882,
+          "margin_rub": -8.94,
+          "drr_pct": 0.0877,
+          "stock": 222,
+          "source": "canonical_daily_economics_snapshot"
         }
       ]
     },
@@ -160074,7 +161424,11 @@
           "units": null,
           "seller_price": 263.5,
           "client_price": 250.33,
-          "source": "repricer_live_prices"
+          "margin_pct": -0.193958,
+          "margin_rub": -51.11,
+          "drr_pct": 0.0877,
+          "stock": 1,
+          "source": "canonical_daily_economics_snapshot"
         }
       ]
     },
@@ -160536,7 +161890,11 @@
           "units": null,
           "seller_price": 729,
           "client_price": 692.55,
-          "source": "repricer_live_prices"
+          "margin_pct": 0.174455,
+          "margin_rub": 127.18,
+          "drr_pct": 0.0877,
+          "stock": 0,
+          "source": "canonical_daily_economics_snapshot"
         }
       ]
     },
@@ -161117,7 +162475,11 @@
           "units": null,
           "seller_price": 548.46,
           "client_price": 521.04,
-          "source": "repricer_live_prices"
+          "margin_pct": 0.142067,
+          "margin_rub": 77.92,
+          "drr_pct": 0.0877,
+          "stock": 38,
+          "source": "canonical_daily_economics_snapshot"
         }
       ]
     },
@@ -161579,7 +162941,11 @@
           "units": null,
           "seller_price": 780,
           "client_price": 741,
-          "source": "repricer_live_prices"
+          "margin_pct": 0.371872,
+          "margin_rub": 290.06,
+          "drr_pct": 0.0877,
+          "stock": 0,
+          "source": "canonical_daily_economics_snapshot"
         }
       ]
     },
@@ -162356,7 +163722,11 @@
           "units": null,
           "seller_price": 1275,
           "client_price": 1211.25,
-          "source": "repricer_live_prices"
+          "margin_pct": 0.459875,
+          "margin_rub": 586.34,
+          "drr_pct": 0.0877,
+          "stock": 22674,
+          "source": "canonical_daily_economics_snapshot"
         }
       ]
     },
@@ -162937,7 +164307,11 @@
           "units": null,
           "seller_price": 600,
           "client_price": 570,
-          "source": "repricer_live_prices"
+          "margin_pct": 0.291,
+          "margin_rub": 174.6,
+          "drr_pct": 0.0877,
+          "stock": 468,
+          "source": "canonical_daily_economics_snapshot"
         }
       ]
     },
@@ -163511,7 +164885,11 @@
           "units": null,
           "seller_price": 550,
           "client_price": 522.5,
-          "source": "repricer_live_prices"
+          "margin_pct": 0.199855,
+          "margin_rub": 109.92,
+          "drr_pct": 0.0877,
+          "stock": 436,
+          "source": "canonical_daily_economics_snapshot"
         }
       ]
     },
@@ -164092,7 +165470,11 @@
           "units": null,
           "seller_price": 456.96,
           "client_price": 434.11,
-          "source": "repricer_live_prices"
+          "margin_pct": 0.221946,
+          "margin_rub": 101.42,
+          "drr_pct": 0.0877,
+          "stock": 127,
+          "source": "canonical_daily_economics_snapshot"
         }
       ]
     },
@@ -164673,7 +166055,11 @@
           "units": null,
           "seller_price": 447.15,
           "client_price": 424.79,
-          "source": "repricer_live_prices"
+          "margin_pct": 0.12549,
+          "margin_rub": 56.11,
+          "drr_pct": 0.0877,
+          "stock": 1,
+          "source": "canonical_daily_economics_snapshot"
         }
       ]
     },
@@ -164701,7 +166087,11 @@
           "units": null,
           "seller_price": 1500,
           "client_price": 1425,
-          "source": "repricer_live_prices"
+          "margin_pct": 0.432,
+          "margin_rub": 648,
+          "drr_pct": 0.0877,
+          "stock": 563,
+          "source": "canonical_daily_economics_snapshot"
         }
       ]
     },
@@ -165282,7 +166672,11 @@
           "units": null,
           "seller_price": 445.48,
           "client_price": 423.21,
-          "source": "repricer_live_prices"
+          "margin_pct": 0.133618,
+          "margin_rub": 59.52,
+          "drr_pct": 0.0877,
+          "stock": 650,
+          "source": "canonical_daily_economics_snapshot"
         }
       ]
     },
@@ -165310,7 +166704,11 @@
           "units": null,
           "seller_price": 2500,
           "client_price": 2500,
-          "source": "repricer_live_prices"
+          "margin_pct": 0.5039,
+          "margin_rub": 1259.75,
+          "drr_pct": 0.0877,
+          "stock": 0,
+          "source": "canonical_daily_economics_snapshot"
         }
       ]
     },
@@ -165527,7 +166925,11 @@
           "units": null,
           "seller_price": 274.95,
           "client_price": 261.2,
-          "source": "repricer_live_prices"
+          "margin_pct": -0.093106,
+          "margin_rub": -25.6,
+          "drr_pct": 0.0877,
+          "stock": 0,
+          "source": "canonical_daily_economics_snapshot"
         }
       ]
     },
@@ -165849,7 +167251,11 @@
           "units": null,
           "seller_price": 528,
           "client_price": 501.6,
-          "source": "repricer_live_prices"
+          "margin_pct": 0.095201,
+          "margin_rub": 50.27,
+          "drr_pct": 0.0877,
+          "stock": 1,
+          "source": "canonical_daily_economics_snapshot"
         }
       ]
     },
@@ -165877,7 +167283,11 @@
           "units": null,
           "seller_price": 333.45,
           "client_price": 316.78,
-          "source": "repricer_live_prices"
+          "margin_pct": -0.03547,
+          "margin_rub": -11.83,
+          "drr_pct": 0.0877,
+          "stock": 0,
+          "source": "canonical_daily_economics_snapshot"
         }
       ]
     },
@@ -166388,7 +167798,11 @@
           "units": null,
           "seller_price": 502.25,
           "client_price": 477.14,
-          "source": "repricer_live_prices"
+          "margin_pct": 0.108834,
+          "margin_rub": 54.66,
+          "drr_pct": 0.0877,
+          "stock": 68,
+          "source": "canonical_daily_economics_snapshot"
         }
       ]
     },
@@ -166416,7 +167830,11 @@
           "units": null,
           "seller_price": 633.88,
           "client_price": 602.19,
-          "source": "repricer_live_prices"
+          "margin_pct": 0.328543,
+          "margin_rub": 208.26,
+          "drr_pct": 0.0877,
+          "stock": 0,
+          "source": "canonical_daily_economics_snapshot"
         }
       ]
     },
@@ -166969,7 +168387,11 @@
           "units": null,
           "seller_price": 800,
           "client_price": 760,
-          "source": "repricer_live_prices"
+          "margin_pct": 0.117,
+          "margin_rub": 93.6,
+          "drr_pct": 0.0877,
+          "stock": 924,
+          "source": "canonical_daily_economics_snapshot"
         }
       ]
     },
@@ -167550,7 +168972,11 @@
           "units": null,
           "seller_price": 600,
           "client_price": 570,
-          "source": "repricer_live_prices"
+          "margin_pct": 0.11475,
+          "margin_rub": 68.85,
+          "drr_pct": 0.0877,
+          "stock": 1074,
+          "source": "canonical_daily_economics_snapshot"
         }
       ]
     },
@@ -167578,7 +169004,11 @@
           "units": null,
           "seller_price": 401.2,
           "client_price": 381.14,
-          "source": "repricer_live_prices"
+          "margin_pct": 0.01032,
+          "margin_rub": 4.14,
+          "drr_pct": 0.0877,
+          "stock": 2,
+          "source": "canonical_daily_economics_snapshot"
         }
       ]
     },
@@ -168159,7 +169589,11 @@
           "units": null,
           "seller_price": 725,
           "client_price": 688.75,
-          "source": "repricer_live_prices"
+          "margin_pct": 0.240703,
+          "margin_rub": 174.51,
+          "drr_pct": 0.0877,
+          "stock": 554,
+          "source": "canonical_daily_economics_snapshot"
         }
       ]
     },
@@ -168187,7 +169621,11 @@
           "units": null,
           "seller_price": 2000,
           "client_price": 1900,
-          "source": "repricer_live_prices"
+          "drr_pct": 0.0877,
+          "stock": 0,
+          "source": "canonical_daily_economics_snapshot",
+          "margin_pct": null,
+          "margin_rub": null
         }
       ]
     },
@@ -168754,7 +170192,11 @@
           "units": null,
           "seller_price": 370.8,
           "client_price": 352.26,
-          "source": "repricer_live_prices"
+          "margin_pct": 0.113305,
+          "margin_rub": 42.01,
+          "drr_pct": 0.0877,
+          "stock": 1,
+          "source": "canonical_daily_economics_snapshot"
         }
       ]
     },
@@ -169524,7 +170966,11 @@
           "units": null,
           "seller_price": 552,
           "client_price": 524.4,
-          "source": "repricer_live_prices"
+          "margin_pct": 0.23892,
+          "margin_rub": 131.88,
+          "drr_pct": 0.0877,
+          "stock": 1541,
+          "source": "canonical_daily_economics_snapshot"
         }
       ]
     },
@@ -169552,7 +170998,11 @@
           "units": null,
           "seller_price": 605.55,
           "client_price": 575.27,
-          "source": "repricer_live_prices"
+          "margin_pct": 0.272505,
+          "margin_rub": 165.02,
+          "drr_pct": 0.0877,
+          "stock": 1,
+          "source": "canonical_daily_economics_snapshot"
         }
       ]
     },
@@ -169580,7 +171030,11 @@
           "units": null,
           "seller_price": 578.76,
           "client_price": 549.82,
-          "source": "repricer_live_prices"
+          "margin_pct": 0.078938,
+          "margin_rub": 45.69,
+          "drr_pct": 0.0877,
+          "stock": 1,
+          "source": "canonical_daily_economics_snapshot"
         }
       ]
     },
@@ -169608,7 +171062,11 @@
           "units": null,
           "seller_price": 868.14,
           "client_price": 824.73,
-          "source": "repricer_live_prices"
+          "margin_pct": 0.130773,
+          "margin_rub": 113.53,
+          "drr_pct": 0.0877,
+          "stock": 1,
+          "source": "canonical_daily_economics_snapshot"
         }
       ]
     },
@@ -169832,7 +171290,11 @@
           "units": null,
           "seller_price": 337.4,
           "client_price": 320.53,
-          "source": "repricer_live_prices"
+          "margin_pct": -0.063572,
+          "margin_rub": -21.45,
+          "drr_pct": 0.0877,
+          "stock": 1250,
+          "source": "canonical_daily_economics_snapshot"
         }
       ]
     },
@@ -169860,7 +171322,11 @@
           "units": null,
           "seller_price": 1351.84,
           "client_price": 1284.25,
-          "source": "repricer_live_prices"
+          "margin_pct": 0.311789,
+          "margin_rub": 421.49,
+          "drr_pct": 0.0877,
+          "stock": 0,
+          "source": "canonical_daily_economics_snapshot"
         }
       ]
     },
@@ -170084,7 +171550,11 @@
           "units": null,
           "seller_price": 374.4,
           "client_price": 355.68,
-          "source": "repricer_live_prices"
+          "margin_pct": -0.095607,
+          "margin_rub": -35.8,
+          "drr_pct": 0.0877,
+          "stock": 665,
+          "source": "canonical_daily_economics_snapshot"
         }
       ]
     },
@@ -170238,7 +171708,11 @@
           "units": null,
           "seller_price": 315.6,
           "client_price": 299.82,
-          "source": "repricer_live_prices"
+          "margin_pct": -0.095294,
+          "margin_rub": -30.07,
+          "drr_pct": 0.0877,
+          "stock": 771,
+          "source": "canonical_daily_economics_snapshot"
         }
       ]
     },
@@ -170364,7 +171838,11 @@
           "units": null,
           "seller_price": 735.7,
           "client_price": 698.91,
-          "source": "repricer_live_prices"
+          "margin_pct": 0.157557,
+          "margin_rub": 115.91,
+          "drr_pct": 0.0877,
+          "stock": 413,
+          "source": "canonical_daily_economics_snapshot"
         }
       ]
     },
@@ -170525,7 +172003,11 @@
           "units": null,
           "seller_price": 305.5,
           "client_price": 290.22,
-          "source": "repricer_live_prices"
+          "margin_pct": -0.096151,
+          "margin_rub": -29.37,
+          "drr_pct": 0.0877,
+          "stock": 414,
+          "source": "canonical_daily_economics_snapshot"
         }
       ]
     },
@@ -170553,7 +172035,11 @@
           "units": null,
           "seller_price": 672.7,
           "client_price": 639.07,
-          "source": "repricer_live_prices"
+          "margin_pct": 0.100756,
+          "margin_rub": 67.78,
+          "drr_pct": 0.0877,
+          "stock": 0,
+          "source": "canonical_daily_economics_snapshot"
         }
       ]
     },
@@ -171330,7 +172816,11 @@
           "units": null,
           "seller_price": 975,
           "client_price": 926.25,
-          "source": "repricer_live_prices"
+          "margin_pct": 0.368462,
+          "margin_rub": 359.25,
+          "drr_pct": 0.0877,
+          "stock": 1499,
+          "source": "canonical_daily_economics_snapshot"
         }
       ]
     },
@@ -171428,7 +172918,11 @@
           "units": null,
           "seller_price": 1750,
           "client_price": 1662.5,
-          "source": "repricer_live_prices"
+          "margin_pct": 0.438686,
+          "margin_rub": 767.7,
+          "drr_pct": 0.0877,
+          "stock": 1799,
+          "source": "canonical_daily_economics_snapshot"
         }
       ]
     },
@@ -172205,7 +173699,11 @@
           "units": null,
           "seller_price": 468,
           "client_price": 444.6,
-          "source": "repricer_live_prices"
+          "margin_pct": 0.22747,
+          "margin_rub": 106.46,
+          "drr_pct": 0.0877,
+          "stock": 2522,
+          "source": "canonical_daily_economics_snapshot"
         }
       ]
     },
@@ -172982,7 +174480,11 @@
           "units": null,
           "seller_price": 1038.96,
           "client_price": 987.01,
-          "source": "repricer_live_prices"
+          "margin_pct": 0.381116,
+          "margin_rub": 395.96,
+          "drr_pct": 0.0877,
+          "stock": 2710,
+          "source": "canonical_daily_economics_snapshot"
         }
       ]
     },
@@ -173214,6 +174716,17 @@
           "seller_price": null,
           "client_price": null,
           "source": "smart_price_workbench"
+        },
+        {
+          "date": "2026-07-28",
+          "units": null,
+          "seller_price": null,
+          "client_price": null,
+          "drr_pct": 0.0877,
+          "source": "canonical_daily_economics_snapshot",
+          "margin_pct": null,
+          "margin_rub": null,
+          "stock": null
         }
       ]
     },
@@ -173990,7 +175503,11 @@
           "units": null,
           "seller_price": 1026.75,
           "client_price": 975.41,
-          "source": "repricer_live_prices"
+          "margin_pct": 0.35874,
+          "margin_rub": 368.34,
+          "drr_pct": 0.0877,
+          "stock": 3766,
+          "source": "canonical_daily_economics_snapshot"
         }
       ]
     },
@@ -174767,7 +176284,11 @@
           "units": null,
           "seller_price": 885.3,
           "client_price": 841.04,
-          "source": "repricer_live_prices"
+          "margin_pct": 0.390938,
+          "margin_rub": 346.1,
+          "drr_pct": 0.0877,
+          "stock": 6992,
+          "source": "canonical_daily_economics_snapshot"
         }
       ]
     },
@@ -175544,7 +177065,11 @@
           "units": null,
           "seller_price": 1190,
           "client_price": 1130.5,
-          "source": "repricer_live_prices"
+          "margin_pct": 0.404941,
+          "margin_rub": 481.88,
+          "drr_pct": 0.0877,
+          "stock": 4841,
+          "source": "canonical_daily_economics_snapshot"
         }
       ]
     },
@@ -176321,7 +177846,11 @@
           "units": null,
           "seller_price": 1302,
           "client_price": 1236.9,
-          "source": "repricer_live_prices"
+          "margin_pct": 0.4367,
+          "margin_rub": 568.58,
+          "drr_pct": 0.0877,
+          "stock": 14867,
+          "source": "canonical_daily_economics_snapshot"
         }
       ]
     },
@@ -176398,7 +177927,11 @@
           "units": null,
           "seller_price": 1200,
           "client_price": 1200,
-          "source": "repricer_live_prices"
+          "margin_pct": 0.408667,
+          "margin_rub": 490.4,
+          "drr_pct": 0.0877,
+          "stock": 1904,
+          "source": "canonical_daily_economics_snapshot"
         }
       ]
     },
@@ -176979,7 +178512,11 @@
           "units": null,
           "seller_price": 990,
           "client_price": 940.5,
-          "source": "repricer_live_prices"
+          "margin_pct": 0.366192,
+          "margin_rub": 362.53,
+          "drr_pct": 0.0877,
+          "stock": 4604,
+          "source": "canonical_daily_economics_snapshot"
         }
       ]
     },
@@ -177756,7 +179293,11 @@
           "units": null,
           "seller_price": 599.85,
           "client_price": 569.86,
-          "source": "repricer_live_prices"
+          "margin_pct": 0.238578,
+          "margin_rub": 143.11,
+          "drr_pct": 0.0877,
+          "stock": 1567,
+          "source": "canonical_daily_economics_snapshot"
         }
       ]
     },
@@ -178519,7 +180060,11 @@
           "units": null,
           "seller_price": 750,
           "client_price": 712.5,
-          "source": "repricer_live_prices"
+          "margin_pct": 0.275533,
+          "margin_rub": 206.65,
+          "drr_pct": 0.0877,
+          "stock": 1835,
+          "source": "canonical_daily_economics_snapshot"
         }
       ]
     },
@@ -179296,7 +180841,11 @@
           "units": null,
           "seller_price": 849.73,
           "client_price": 807.24,
-          "source": "repricer_live_prices"
+          "margin_pct": 0.325268,
+          "margin_rub": 276.39,
+          "drr_pct": 0.0877,
+          "stock": 2003,
+          "source": "canonical_daily_economics_snapshot"
         }
       ]
     },
@@ -180073,7 +181622,11 @@
           "units": null,
           "seller_price": 1475,
           "client_price": 1401.25,
-          "source": "repricer_live_prices"
+          "margin_pct": 0.460949,
+          "margin_rub": 679.9,
+          "drr_pct": 0.0877,
+          "stock": 9747,
+          "source": "canonical_daily_economics_snapshot"
         }
       ]
     },
@@ -180654,7 +182207,11 @@
           "units": null,
           "seller_price": 585.55,
           "client_price": 556.27,
-          "source": "repricer_live_prices"
+          "margin_pct": 0.224875,
+          "margin_rub": 131.68,
+          "drr_pct": 0.0877,
+          "stock": 5327,
+          "source": "canonical_daily_economics_snapshot"
         }
       ]
     },
@@ -181207,7 +182764,11 @@
           "units": null,
           "seller_price": 215.25,
           "client_price": 204.49,
-          "source": "repricer_live_prices"
+          "margin_pct": -0.521217,
+          "margin_rub": -112.19,
+          "drr_pct": 0.0877,
+          "stock": 0,
+          "source": "canonical_daily_economics_snapshot"
         }
       ]
     },
@@ -181228,7 +182789,11 @@
           "units": null,
           "seller_price": 660,
           "client_price": 627,
-          "source": "repricer_live_prices"
+          "margin_pct": 0.228939,
+          "margin_rub": 151.1,
+          "drr_pct": 0.0877,
+          "stock": 804,
+          "source": "canonical_daily_economics_snapshot"
         }
       ]
     },
@@ -181809,7 +183374,11 @@
           "units": null,
           "seller_price": 600,
           "client_price": 570,
-          "source": "repricer_live_prices"
+          "margin_pct": 0.248833,
+          "margin_rub": 149.3,
+          "drr_pct": 0.0877,
+          "stock": 4,
+          "source": "canonical_daily_economics_snapshot"
         }
       ]
     },
@@ -182390,7 +183959,11 @@
           "units": null,
           "seller_price": 907.92,
           "client_price": 862.52,
-          "source": "repricer_live_prices"
+          "margin_pct": 0.298252,
+          "margin_rub": 270.79,
+          "drr_pct": 0.0877,
+          "stock": 162,
+          "source": "canonical_daily_economics_snapshot"
         }
       ]
     },
@@ -182579,7 +184152,11 @@
           "units": null,
           "seller_price": 289.8,
           "client_price": 275.31,
-          "source": "repricer_live_prices"
+          "margin_pct": -0.096509,
+          "margin_rub": -27.97,
+          "drr_pct": 0.0877,
+          "stock": 2,
+          "source": "canonical_daily_economics_snapshot"
         }
       ]
     },
@@ -182803,7 +184380,11 @@
           "units": null,
           "seller_price": 578.9,
           "client_price": 549.95,
-          "source": "repricer_live_prices"
+          "margin_pct": 0.079027,
+          "margin_rub": 45.75,
+          "drr_pct": 0.0877,
+          "stock": 1,
+          "source": "canonical_daily_economics_snapshot"
         }
       ]
     },
@@ -182985,7 +184566,11 @@
           "units": null,
           "seller_price": 868.64,
           "client_price": 825.21,
-          "source": "repricer_live_prices"
+          "margin_pct": 0.131003,
+          "margin_rub": 113.79,
+          "drr_pct": 0.0877,
+          "stock": 1,
+          "source": "canonical_daily_economics_snapshot"
         }
       ]
     },
@@ -183013,7 +184598,11 @@
           "units": null,
           "seller_price": 272.32,
           "client_price": 258.7,
-          "source": "repricer_live_prices"
+          "margin_pct": -0.128513,
+          "margin_rub": -35,
+          "drr_pct": 0.0877,
+          "stock": 0,
+          "source": "canonical_daily_economics_snapshot"
         }
       ]
     },
@@ -183041,7 +184630,11 @@
           "units": null,
           "seller_price": 1083,
           "client_price": 1028.85,
-          "source": "repricer_live_prices"
+          "margin_pct": 0.307863,
+          "margin_rub": 333.42,
+          "drr_pct": 0.0877,
+          "stock": 0,
+          "source": "canonical_daily_economics_snapshot"
         }
       ]
     },
@@ -183406,6 +184999,17 @@
           "seller_price": null,
           "client_price": null,
           "source": "smart_price_workbench"
+        },
+        {
+          "date": "2026-07-28",
+          "units": null,
+          "seller_price": 75,
+          "client_price": 75,
+          "margin_pct": -2.152,
+          "margin_rub": -161.4,
+          "drr_pct": 0.0877,
+          "source": "canonical_daily_economics_snapshot",
+          "stock": null
         }
       ]
     },
@@ -183629,7 +185233,11 @@
           "units": null,
           "seller_price": 318.5,
           "client_price": 302.58,
-          "source": "repricer_live_prices"
+          "margin_pct": -0.048157,
+          "margin_rub": -15.34,
+          "drr_pct": 0.0877,
+          "stock": 2765,
+          "source": "canonical_daily_economics_snapshot"
         }
       ]
     },
@@ -183657,7 +185265,11 @@
           "units": null,
           "seller_price": 1450,
           "client_price": 1377.5,
-          "source": "repricer_live_prices"
+          "margin_pct": 0.372841,
+          "margin_rub": 540.62,
+          "drr_pct": 0.0877,
+          "stock": 0,
+          "source": "canonical_daily_economics_snapshot"
         }
       ]
     },
@@ -184042,7 +185654,11 @@
           "units": null,
           "seller_price": 936,
           "client_price": 889.2,
-          "source": "repricer_live_prices"
+          "margin_pct": 0.398998,
+          "margin_rub": 373.46,
+          "drr_pct": 0.0877,
+          "stock": 0,
+          "source": "canonical_daily_economics_snapshot"
         }
       ]
     },
@@ -184623,7 +186239,11 @@
           "units": null,
           "seller_price": 299.88,
           "client_price": 284.89,
-          "source": "repricer_live_prices"
+          "margin_pct": 0.107406,
+          "margin_rub": 32.21,
+          "drr_pct": 0.0877,
+          "stock": 592,
+          "source": "canonical_daily_economics_snapshot"
         }
       ]
     },
@@ -185162,7 +186782,11 @@
           "units": null,
           "seller_price": 384.6,
           "client_price": 365.37,
-          "source": "repricer_live_prices"
+          "margin_pct": 0.070315,
+          "margin_rub": 27.04,
+          "drr_pct": 0.0877,
+          "stock": 3,
+          "source": "canonical_daily_economics_snapshot"
         }
       ]
     },
@@ -185939,7 +187563,11 @@
           "units": null,
           "seller_price": 470.4,
           "client_price": 446.88,
-          "source": "repricer_live_prices"
+          "margin_pct": 0.188875,
+          "margin_rub": 88.85,
+          "drr_pct": 0.0877,
+          "stock": 1230,
+          "source": "canonical_daily_economics_snapshot"
         }
       ]
     },
@@ -185967,7 +187595,11 @@
           "units": null,
           "seller_price": 680.4,
           "client_price": 646.38,
-          "source": "repricer_live_prices"
+          "margin_pct": 0.306403,
+          "margin_rub": 208.48,
+          "drr_pct": 0.0877,
+          "stock": 0,
+          "source": "canonical_daily_economics_snapshot"
         }
       ]
     },
@@ -185995,7 +187627,11 @@
           "units": null,
           "seller_price": 607.2,
           "client_price": 576.84,
-          "source": "repricer_live_prices"
+          "margin_pct": 0.308765,
+          "margin_rub": 187.48,
+          "drr_pct": 0.0877,
+          "stock": 1,
+          "source": "canonical_daily_economics_snapshot"
         }
       ]
     },
@@ -186023,7 +187659,11 @@
           "units": null,
           "seller_price": 350.28,
           "client_price": 332.77,
-          "source": "repricer_live_prices"
+          "margin_pct": -0.022594,
+          "margin_rub": -7.91,
+          "drr_pct": 0.0877,
+          "stock": 0,
+          "source": "canonical_daily_economics_snapshot"
         }
       ]
     },
@@ -186226,7 +187866,11 @@
           "units": null,
           "seller_price": 385.7,
           "client_price": 366.42,
-          "source": "repricer_live_prices"
+          "margin_pct": -0.011085,
+          "margin_rub": -4.28,
+          "drr_pct": 0.0877,
+          "stock": 206,
+          "source": "canonical_daily_economics_snapshot"
         }
       ]
     },
@@ -186268,7 +187912,11 @@
           "units": null,
           "seller_price": 385.65,
           "client_price": 366.37,
-          "source": "repricer_live_prices"
+          "margin_pct": 0.001153,
+          "margin_rub": 0.44,
+          "drr_pct": 0.0877,
+          "stock": 0,
+          "source": "canonical_daily_economics_snapshot"
         }
       ]
     },
@@ -186303,7 +187951,11 @@
           "units": null,
           "seller_price": 300,
           "client_price": 285,
-          "source": "repricer_live_prices"
+          "drr_pct": 0.0877,
+          "stock": 0,
+          "source": "canonical_daily_economics_snapshot",
+          "margin_pct": null,
+          "margin_rub": null
         }
       ]
     },
@@ -186338,7 +187990,11 @@
           "units": null,
           "seller_price": 533.44,
           "client_price": 506.77,
-          "source": "repricer_live_prices"
+          "margin_pct": 0.032631,
+          "margin_rub": 17.41,
+          "drr_pct": 0.0877,
+          "stock": 0,
+          "source": "canonical_daily_economics_snapshot"
         }
       ]
     },
@@ -186639,7 +188295,11 @@
           "units": null,
           "seller_price": 717.6,
           "client_price": 681.72,
-          "source": "repricer_live_prices"
+          "margin_pct": 0.302424,
+          "margin_rub": 217.02,
+          "drr_pct": 0.0877,
+          "stock": 0,
+          "source": "canonical_daily_economics_snapshot"
         }
       ]
     },
@@ -187416,7 +189076,11 @@
           "units": null,
           "seller_price": 1479,
           "client_price": 1405.05,
-          "source": "repricer_live_prices"
+          "margin_pct": 0.435881,
+          "margin_rub": 644.67,
+          "drr_pct": 0.0877,
+          "stock": 7261,
+          "source": "canonical_daily_economics_snapshot"
         }
       ]
     },
@@ -187801,7 +189465,11 @@
           "units": null,
           "seller_price": 213.15,
           "client_price": 202.49,
-          "source": "repricer_live_prices"
+          "margin_pct": -0.319095,
+          "margin_rub": -68.02,
+          "drr_pct": 0.0877,
+          "stock": 0,
+          "source": "canonical_daily_economics_snapshot"
         }
       ]
     },
@@ -188368,7 +190036,11 @@
           "units": null,
           "seller_price": 810,
           "client_price": 769.5,
-          "source": "repricer_live_prices"
+          "margin_pct": 0.298358,
+          "margin_rub": 241.67,
+          "drr_pct": 0.0877,
+          "stock": 0,
+          "source": "canonical_daily_economics_snapshot"
         }
       ]
     },
@@ -188753,7 +190425,11 @@
           "units": null,
           "seller_price": 470,
           "client_price": 446.5,
-          "source": "repricer_live_prices"
+          "margin_pct": -0.046298,
+          "margin_rub": -21.76,
+          "drr_pct": 0.0877,
+          "stock": 0,
+          "source": "canonical_daily_economics_snapshot"
         }
       ]
     },
@@ -188963,7 +190639,11 @@
           "units": null,
           "seller_price": 272.8,
           "client_price": 259.16,
-          "source": "repricer_live_prices"
+          "margin_pct": -0.180691,
+          "margin_rub": -49.29,
+          "drr_pct": 0.0877,
+          "stock": 123,
+          "source": "canonical_daily_economics_snapshot"
         }
       ]
     },
@@ -189152,7 +190832,11 @@
           "units": null,
           "seller_price": 367.5,
           "client_price": 349.13,
-          "source": "repricer_live_prices"
+          "margin_pct": -0.010503,
+          "margin_rub": -3.86,
+          "drr_pct": 0.0877,
+          "stock": 0,
+          "source": "canonical_daily_economics_snapshot"
         }
       ]
     },
@@ -189733,7 +191417,11 @@
           "units": null,
           "seller_price": 600,
           "client_price": 570,
-          "source": "repricer_live_prices"
+          "margin_pct": 0.135833,
+          "margin_rub": 81.5,
+          "drr_pct": 0.0877,
+          "stock": 4267,
+          "source": "canonical_daily_economics_snapshot"
         }
       ]
     },
@@ -189965,6 +191653,17 @@
           "seller_price": null,
           "client_price": null,
           "source": "smart_price_workbench"
+        },
+        {
+          "date": "2026-07-28",
+          "units": null,
+          "seller_price": null,
+          "client_price": null,
+          "drr_pct": 0.0877,
+          "source": "canonical_daily_economics_snapshot",
+          "margin_pct": null,
+          "margin_rub": null,
+          "stock": null
         }
       ]
     },
@@ -190741,7 +192440,11 @@
           "units": null,
           "seller_price": 300,
           "client_price": 300,
-          "source": "repricer_live_prices"
+          "margin_pct": -0.0581,
+          "margin_rub": -17.43,
+          "drr_pct": 0.0877,
+          "stock": 2167,
+          "source": "canonical_daily_economics_snapshot"
         }
       ]
     },
@@ -191518,7 +193221,11 @@
           "units": null,
           "seller_price": 1129.17,
           "client_price": 1072.71,
-          "source": "repricer_live_prices"
+          "margin_pct": 0.411655,
+          "margin_rub": 464.83,
+          "drr_pct": 0.0877,
+          "stock": 2506,
+          "source": "canonical_daily_economics_snapshot"
         }
       ]
     },
@@ -192295,7 +194002,11 @@
           "units": null,
           "seller_price": 1289.75,
           "client_price": 1225.26,
-          "source": "repricer_live_prices"
+          "margin_pct": 0.443421,
+          "margin_rub": 571.9,
+          "drr_pct": 0.0877,
+          "stock": 2825,
+          "source": "canonical_daily_economics_snapshot"
         }
       ]
     },
@@ -193072,7 +194783,11 @@
           "units": null,
           "seller_price": 1155.68,
           "client_price": 1097.9,
-          "source": "repricer_live_prices"
+          "margin_pct": 0.419954,
+          "margin_rub": 485.33,
+          "drr_pct": 0.0877,
+          "stock": 4489,
+          "source": "canonical_daily_economics_snapshot"
         }
       ]
     },
@@ -193849,7 +195564,11 @@
           "units": null,
           "seller_price": 1751.04,
           "client_price": 1663.49,
-          "source": "repricer_live_prices"
+          "margin_pct": 0.474561,
+          "margin_rub": 830.98,
+          "drr_pct": 0.0877,
+          "stock": 6307,
+          "source": "canonical_daily_economics_snapshot"
         }
       ]
     },
@@ -194626,7 +196345,11 @@
           "units": null,
           "seller_price": 1687.2,
           "client_price": 1602.84,
-          "source": "repricer_live_prices"
+          "margin_pct": 0.466941,
+          "margin_rub": 787.82,
+          "drr_pct": 0.0877,
+          "stock": 3299,
+          "source": "canonical_daily_economics_snapshot"
         }
       ]
     },
@@ -195403,7 +197126,11 @@
           "units": null,
           "seller_price": 1750,
           "client_price": 1662.5,
-          "source": "repricer_live_prices"
+          "margin_pct": 0.470857,
+          "margin_rub": 824,
+          "drr_pct": 0.0877,
+          "stock": 11,
+          "source": "canonical_daily_economics_snapshot"
         }
       ]
     },
@@ -196180,7 +197907,11 @@
           "units": null,
           "seller_price": 2500,
           "client_price": 2375,
-          "source": "repricer_live_prices"
+          "margin_pct": 0.5032,
+          "margin_rub": 1258,
+          "drr_pct": 0.0877,
+          "stock": 7,
+          "source": "canonical_daily_economics_snapshot"
         }
       ]
     },
@@ -196957,7 +198688,11 @@
           "units": null,
           "seller_price": 2400,
           "client_price": 2280,
-          "source": "repricer_live_prices"
+          "margin_pct": 0.493633,
+          "margin_rub": 1184.72,
+          "drr_pct": 0.0877,
+          "stock": 4566,
+          "source": "canonical_daily_economics_snapshot"
         }
       ]
     },
@@ -197734,7 +199469,11 @@
           "units": null,
           "seller_price": 1586.3,
           "client_price": 1506.99,
-          "source": "repricer_live_prices"
+          "margin_pct": 0.442369,
+          "margin_rub": 701.73,
+          "drr_pct": 0.0877,
+          "stock": 10401,
+          "source": "canonical_daily_economics_snapshot"
         }
       ]
     },
@@ -197909,7 +199648,11 @@
           "units": null,
           "seller_price": 5400,
           "client_price": 5130,
-          "source": "repricer_live_prices"
+          "margin_pct": 0.51532,
+          "margin_rub": 2782.73,
+          "drr_pct": 0.0877,
+          "stock": 0,
+          "source": "canonical_daily_economics_snapshot"
         }
       ]
     },
@@ -198329,7 +200072,11 @@
           "units": null,
           "seller_price": 2500,
           "client_price": 2375,
-          "source": "repricer_live_prices"
+          "margin_pct": 0.475032,
+          "margin_rub": 1187.58,
+          "drr_pct": 0.0877,
+          "stock": 0,
+          "source": "canonical_daily_economics_snapshot"
         }
       ]
     },
@@ -198714,7 +200461,11 @@
           "units": null,
           "seller_price": 989,
           "client_price": 939.55,
-          "source": "repricer_live_prices"
+          "margin_pct": 0.291039,
+          "margin_rub": 287.84,
+          "drr_pct": 0.0877,
+          "stock": 0,
+          "source": "canonical_daily_economics_snapshot"
         }
       ]
     },
@@ -198840,7 +200591,11 @@
           "units": null,
           "seller_price": 324.8,
           "client_price": 308.56,
-          "source": "repricer_live_prices"
+          "margin_pct": -0.042698,
+          "margin_rub": -13.87,
+          "drr_pct": 0.0877,
+          "stock": 0,
+          "source": "canonical_daily_economics_snapshot"
         }
       ]
     },
@@ -199008,7 +200763,11 @@
           "units": null,
           "seller_price": 1425,
           "client_price": 1353.75,
-          "source": "repricer_live_prices"
+          "margin_pct": 0.365825,
+          "margin_rub": 521.3,
+          "drr_pct": 0.0877,
+          "stock": 0,
+          "source": "canonical_daily_economics_snapshot"
         }
       ]
     },
@@ -199036,7 +200795,11 @@
           "units": null,
           "seller_price": 1022.58,
           "client_price": 971.45,
-          "source": "repricer_live_prices"
+          "margin_pct": 0.345105,
+          "margin_rub": 352.9,
+          "drr_pct": 0.0877,
+          "stock": 0,
+          "source": "canonical_daily_economics_snapshot"
         }
       ]
     },
@@ -199064,7 +200827,11 @@
           "units": null,
           "seller_price": 2500,
           "client_price": 2500,
-          "source": "repricer_live_prices"
+          "margin_pct": 0.494448,
+          "margin_rub": 1236.12,
+          "drr_pct": 0.0877,
+          "stock": 0,
+          "source": "canonical_daily_economics_snapshot"
         }
       ]
     },
@@ -199841,7 +201608,11 @@
           "units": null,
           "seller_price": 749.7,
           "client_price": 712.21,
-          "source": "repricer_live_prices"
+          "margin_pct": 0.314662,
+          "margin_rub": 235.9,
+          "drr_pct": 0.0877,
+          "stock": 629,
+          "source": "canonical_daily_economics_snapshot"
         }
       ]
     },
@@ -200191,7 +201962,11 @@
           "units": null,
           "seller_price": 1200,
           "client_price": 1140,
-          "source": "repricer_live_prices"
+          "margin_pct": 0.373917,
+          "margin_rub": 448.7,
+          "drr_pct": 0.0877,
+          "stock": 1136,
+          "source": "canonical_daily_economics_snapshot"
         }
       ]
     },
@@ -200772,7 +202547,11 @@
           "units": null,
           "seller_price": 765.51,
           "client_price": 727.23,
-          "source": "repricer_live_prices"
+          "margin_pct": 0.3357,
+          "margin_rub": 256.98,
+          "drr_pct": 0.0877,
+          "stock": 4,
+          "source": "canonical_daily_economics_snapshot"
         }
       ]
     },
@@ -201549,7 +203328,11 @@
           "units": null,
           "seller_price": 1149.75,
           "client_price": 1092.26,
-          "source": "repricer_live_prices"
+          "margin_pct": 0.398915,
+          "margin_rub": 458.65,
+          "drr_pct": 0.0877,
+          "stock": 2738,
+          "source": "canonical_daily_economics_snapshot"
         }
       ]
     },
@@ -201759,7 +203542,11 @@
           "units": null,
           "seller_price": 692.3,
           "client_price": 657.69,
-          "source": "repricer_live_prices"
+          "margin_pct": 0.101143,
+          "margin_rub": 70.02,
+          "drr_pct": 0.0877,
+          "stock": 0,
+          "source": "canonical_daily_economics_snapshot"
         }
       ]
     },
@@ -202515,7 +204302,11 @@
           "units": null,
           "seller_price": 599.85,
           "client_price": 569.86,
-          "source": "repricer_live_prices"
+          "margin_pct": 0.237911,
+          "margin_rub": 142.71,
+          "drr_pct": 0.0877,
+          "stock": 1013,
+          "source": "canonical_daily_economics_snapshot"
         }
       ]
     },
@@ -203292,7 +205083,11 @@
           "units": null,
           "seller_price": 840.7,
           "client_price": 798.66,
-          "source": "repricer_live_prices"
+          "margin_pct": 0.361597,
+          "margin_rub": 303.99,
+          "drr_pct": 0.0877,
+          "stock": 196,
+          "source": "canonical_daily_economics_snapshot"
         }
       ]
     },
@@ -203852,7 +205647,11 @@
           "units": null,
           "seller_price": 2500,
           "client_price": 2375,
-          "source": "repricer_live_prices"
+          "margin_pct": 0.489348,
+          "margin_rub": 1223.37,
+          "drr_pct": 0.0877,
+          "stock": 6,
+          "source": "canonical_daily_economics_snapshot"
         }
       ]
     },
@@ -204489,7 +206288,11 @@
           "units": null,
           "seller_price": 1399.88,
           "client_price": 1329.89,
-          "source": "repricer_live_prices"
+          "margin_pct": 0.434844,
+          "margin_rub": 608.73,
+          "drr_pct": 0.0877,
+          "stock": 47,
+          "source": "canonical_daily_economics_snapshot"
         }
       ]
     },
@@ -204517,7 +206320,11 @@
           "units": null,
           "seller_price": 1500,
           "client_price": 1500,
-          "source": "repricer_live_prices"
+          "margin_pct": 0.434973,
+          "margin_rub": 652.46,
+          "drr_pct": 0.0877,
+          "stock": 607,
+          "source": "canonical_daily_economics_snapshot"
         }
       ]
     },
@@ -205294,7 +207101,11 @@
           "units": null,
           "seller_price": 1125,
           "client_price": 1068.75,
-          "source": "repricer_live_prices"
+          "margin_pct": 0.390756,
+          "margin_rub": 439.6,
+          "drr_pct": 0.0877,
+          "stock": 517,
+          "source": "canonical_daily_economics_snapshot"
         }
       ]
     },
@@ -205686,7 +207497,11 @@
           "units": null,
           "seller_price": 266.4,
           "client_price": 253.08,
-          "source": "repricer_live_prices"
+          "margin_pct": -0.18514,
+          "margin_rub": -49.32,
+          "drr_pct": 0.0877,
+          "stock": 0,
+          "source": "canonical_daily_economics_snapshot"
         }
       ]
     },
@@ -205854,7 +207669,11 @@
           "units": null,
           "seller_price": 3000,
           "client_price": 2850,
-          "source": "repricer_live_prices"
+          "margin_pct": 0.466627,
+          "margin_rub": 1399.88,
+          "drr_pct": 0.0877,
+          "stock": 1,
+          "source": "canonical_daily_economics_snapshot"
         }
       ]
     },
@@ -206078,7 +207897,11 @@
           "units": null,
           "seller_price": 352.1,
           "client_price": 334.49,
-          "source": "repricer_live_prices"
+          "margin_pct": -0.022371,
+          "margin_rub": -7.88,
+          "drr_pct": 0.0877,
+          "stock": 0,
+          "source": "canonical_daily_economics_snapshot"
         }
       ]
     },
@@ -206113,7 +207936,11 @@
           "units": null,
           "seller_price": 1041.6,
           "client_price": 989.52,
-          "source": "repricer_live_prices"
+          "margin_pct": 0.263045,
+          "margin_rub": 273.99,
+          "drr_pct": 0.0877,
+          "stock": 0,
+          "source": "canonical_daily_economics_snapshot"
         }
       ]
     },
@@ -206337,7 +208164,11 @@
           "units": null,
           "seller_price": 443.1,
           "client_price": 420.94,
-          "source": "repricer_live_prices"
+          "margin_pct": 0.005225,
+          "margin_rub": 2.32,
+          "drr_pct": 0.0877,
+          "stock": 9,
+          "source": "canonical_daily_economics_snapshot"
         }
       ]
     },
@@ -206561,7 +208392,11 @@
           "units": null,
           "seller_price": 560,
           "client_price": 532,
-          "source": "repricer_live_prices"
+          "margin_pct": 0.124589,
+          "margin_rub": 69.77,
+          "drr_pct": 0.0877,
+          "stock": 168,
+          "source": "canonical_daily_economics_snapshot"
         }
       ]
     },
@@ -207338,7 +209173,11 @@
           "units": null,
           "seller_price": 1552.2,
           "client_price": 1474.59,
-          "source": "repricer_live_prices"
+          "margin_pct": 0.43519,
+          "margin_rub": 675.5,
+          "drr_pct": 0.0877,
+          "stock": 4151,
+          "source": "canonical_daily_economics_snapshot"
         }
       ]
     },
@@ -207570,6 +209409,17 @@
           "seller_price": null,
           "client_price": null,
           "source": "smart_price_workbench"
+        },
+        {
+          "date": "2026-07-28",
+          "units": null,
+          "seller_price": null,
+          "client_price": null,
+          "drr_pct": 0.0877,
+          "source": "canonical_daily_economics_snapshot",
+          "margin_pct": null,
+          "margin_rub": null,
+          "stock": null
         }
       ]
     },
@@ -207597,7 +209447,11 @@
           "units": null,
           "seller_price": 1500,
           "client_price": 1425,
-          "source": "repricer_live_prices"
+          "margin_pct": 0.441333,
+          "margin_rub": 662,
+          "drr_pct": 0.0877,
+          "stock": 741,
+          "source": "canonical_daily_economics_snapshot"
         }
       ]
     },
@@ -208164,7 +210018,11 @@
           "units": null,
           "seller_price": 510.9,
           "client_price": 485.36,
-          "source": "repricer_live_prices"
+          "margin_pct": 0.272994,
+          "margin_rub": 139.47,
+          "drr_pct": 0.0877,
+          "stock": 0,
+          "source": "canonical_daily_economics_snapshot"
         }
       ]
     },
@@ -208941,7 +210799,11 @@
           "units": null,
           "seller_price": 750,
           "client_price": 712.5,
-          "source": "repricer_live_prices"
+          "margin_pct": 0.359587,
+          "margin_rub": 269.69,
+          "drr_pct": 0.0877,
+          "stock": 1127,
+          "source": "canonical_daily_economics_snapshot"
         }
       ]
     },
@@ -209522,7 +211384,11 @@
           "units": null,
           "seller_price": 675,
           "client_price": 641.25,
-          "source": "repricer_live_prices"
+          "margin_pct": 0.32637,
+          "margin_rub": 220.3,
+          "drr_pct": 0.0877,
+          "stock": 437,
+          "source": "canonical_daily_economics_snapshot"
         }
       ]
     },
@@ -210299,7 +212165,11 @@
           "units": null,
           "seller_price": 1584.7,
           "client_price": 1505.47,
-          "source": "repricer_live_prices"
+          "margin_pct": 0.459483,
+          "margin_rub": 728.14,
+          "drr_pct": 0.0877,
+          "stock": 1884,
+          "source": "canonical_daily_economics_snapshot"
         }
       ]
     },
@@ -210607,7 +212477,11 @@
           "units": null,
           "seller_price": 856.8,
           "client_price": 813.96,
-          "source": "repricer_live_prices"
+          "margin_pct": 0.346902,
+          "margin_rub": 297.23,
+          "drr_pct": 0.0877,
+          "stock": 602,
+          "source": "canonical_daily_economics_snapshot"
         }
       ]
     },
@@ -210635,7 +212509,11 @@
           "units": null,
           "seller_price": 322.92,
           "client_price": 306.77,
-          "source": "repricer_live_prices"
+          "margin_pct": -0.048561,
+          "margin_rub": -15.68,
+          "drr_pct": 0.0877,
+          "stock": 0,
+          "source": "canonical_daily_economics_snapshot"
         }
       ]
     },
@@ -211020,7 +212898,11 @@
           "units": null,
           "seller_price": 2300,
           "client_price": 2185,
-          "source": "repricer_live_prices"
+          "margin_pct": 0.293617,
+          "margin_rub": 675.32,
+          "drr_pct": 0.0877,
+          "stock": 0,
+          "source": "canonical_daily_economics_snapshot"
         }
       ]
     },
@@ -211048,7 +212930,11 @@
           "units": null,
           "seller_price": 1500,
           "client_price": 1425,
-          "source": "repricer_live_prices"
+          "margin_pct": 0.425333,
+          "margin_rub": 638,
+          "drr_pct": 0.0877,
+          "stock": 734,
+          "source": "canonical_daily_economics_snapshot"
         }
       ]
     },
@@ -211629,7 +213515,11 @@
           "units": null,
           "seller_price": 608,
           "client_price": 577.6,
-          "source": "repricer_live_prices"
+          "margin_pct": 0.25302,
+          "margin_rub": 153.84,
+          "drr_pct": 0.0877,
+          "stock": 2702,
+          "source": "canonical_daily_economics_snapshot"
         }
       ]
     },
@@ -211657,7 +213547,11 @@
           "units": null,
           "seller_price": 2500,
           "client_price": 2500,
-          "source": "repricer_live_prices"
+          "margin_pct": 0.50956,
+          "margin_rub": 1273.9,
+          "drr_pct": 0.0877,
+          "stock": 0,
+          "source": "canonical_daily_economics_snapshot"
         }
       ]
     },
@@ -212112,7 +214006,11 @@
           "units": null,
           "seller_price": 1250,
           "client_price": 1187.5,
-          "source": "repricer_live_prices"
+          "margin_pct": 0.43384,
+          "margin_rub": 542.3,
+          "drr_pct": 0.0877,
+          "stock": 0,
+          "source": "canonical_daily_economics_snapshot"
         }
       ]
     },
@@ -212140,7 +214038,11 @@
           "units": null,
           "seller_price": 658.94,
           "client_price": 625.99,
-          "source": "repricer_live_prices"
+          "margin_pct": 0.344633,
+          "margin_rub": 227.09,
+          "drr_pct": 0.0877,
+          "stock": 2,
+          "source": "canonical_daily_economics_snapshot"
         }
       ]
     },
@@ -212168,7 +214070,11 @@
           "units": null,
           "seller_price": 602,
           "client_price": 571.9,
-          "source": "repricer_live_prices"
+          "margin_pct": 0.271651,
+          "margin_rub": 163.53,
+          "drr_pct": 0.0877,
+          "stock": 2,
+          "source": "canonical_daily_economics_snapshot"
         }
       ]
     },
@@ -212196,7 +214102,11 @@
           "units": null,
           "seller_price": 690.48,
           "client_price": 655.96,
-          "source": "repricer_live_prices"
+          "margin_pct": 0.29638,
+          "margin_rub": 204.64,
+          "drr_pct": 0.0877,
+          "stock": 3,
+          "source": "canonical_daily_economics_snapshot"
         }
       ]
     },
@@ -212420,7 +214330,11 @@
           "units": null,
           "seller_price": 293.6,
           "client_price": 278.92,
-          "source": "repricer_live_prices"
+          "margin_pct": -0.08753,
+          "margin_rub": -25.7,
+          "drr_pct": 0.0877,
+          "stock": 3,
+          "source": "canonical_daily_economics_snapshot"
         }
       ]
     },
@@ -212448,7 +214362,11 @@
           "units": null,
           "seller_price": 366.12,
           "client_price": 347.81,
-          "source": "repricer_live_prices"
+          "margin_pct": -0.048009,
+          "margin_rub": -17.58,
+          "drr_pct": 0.0877,
+          "stock": 1,
+          "source": "canonical_daily_economics_snapshot"
         }
       ]
     },
@@ -212630,7 +214548,11 @@
           "units": null,
           "seller_price": 300.3,
           "client_price": 285.28,
-          "source": "repricer_live_prices"
+          "margin_pct": -0.017824,
+          "margin_rub": -5.35,
+          "drr_pct": 0.0877,
+          "stock": 209,
+          "source": "canonical_daily_economics_snapshot"
         }
       ]
     },
@@ -212847,7 +214769,11 @@
           "units": null,
           "seller_price": 286.35,
           "client_price": 272.03,
-          "source": "repricer_live_prices"
+          "margin_pct": -0.097471,
+          "margin_rub": -27.91,
+          "drr_pct": 0.0877,
+          "stock": 360,
+          "source": "canonical_daily_economics_snapshot"
         }
       ]
     },
@@ -212994,7 +214920,11 @@
           "units": null,
           "seller_price": 567.82,
           "client_price": 539.43,
-          "source": "repricer_live_prices"
+          "margin_pct": 0.055105,
+          "margin_rub": 31.29,
+          "drr_pct": 0.0877,
+          "stock": 2,
+          "source": "canonical_daily_economics_snapshot"
         }
       ]
     },
@@ -213218,7 +215148,11 @@
           "units": null,
           "seller_price": 326.7,
           "client_price": 310.37,
-          "source": "repricer_live_prices"
+          "margin_pct": -0.100072,
+          "margin_rub": -32.69,
+          "drr_pct": 0.0877,
+          "stock": 760,
+          "source": "canonical_daily_economics_snapshot"
         }
       ]
     },
@@ -213323,7 +215257,11 @@
           "units": null,
           "seller_price": 457.45,
           "client_price": 434.58,
-          "source": "repricer_live_prices"
+          "margin_pct": -0.199781,
+          "margin_rub": -91.39,
+          "drr_pct": 0.0877,
+          "stock": 398,
+          "source": "canonical_daily_economics_snapshot"
         }
       ]
     },
@@ -213400,7 +215338,11 @@
           "units": null,
           "seller_price": 345.8,
           "client_price": 328.51,
-          "source": "repricer_live_prices"
+          "margin_pct": -0.009764,
+          "margin_rub": -3.38,
+          "drr_pct": 0.0877,
+          "stock": 0,
+          "source": "canonical_daily_economics_snapshot"
         }
       ]
     },
@@ -213428,7 +215370,11 @@
           "units": null,
           "seller_price": 471.71,
           "client_price": 448.12,
-          "source": "repricer_live_prices"
+          "margin_pct": -0.027724,
+          "margin_rub": -13.08,
+          "drr_pct": 0.0877,
+          "stock": 0,
+          "source": "canonical_daily_economics_snapshot"
         }
       ]
     },
@@ -213617,7 +215563,11 @@
           "units": null,
           "seller_price": 687.4,
           "client_price": 653.03,
-          "source": "repricer_live_prices"
+          "margin_pct": 0.162556,
+          "margin_rub": 111.74,
+          "drr_pct": 0.0877,
+          "stock": 101,
+          "source": "canonical_daily_economics_snapshot"
         }
       ]
     },
@@ -214198,7 +216148,11 @@
           "units": null,
           "seller_price": 499.8,
           "client_price": 474.81,
-          "source": "repricer_live_prices"
+          "margin_pct": 0.24084,
+          "margin_rub": 120.37,
+          "drr_pct": 0.0877,
+          "stock": 717,
+          "source": "canonical_daily_economics_snapshot"
         }
       ]
     },
@@ -214226,7 +216180,11 @@
           "units": null,
           "seller_price": 603,
           "client_price": 572.85,
-          "source": "repricer_live_prices"
+          "margin_pct": 0.279894,
+          "margin_rub": 168.78,
+          "drr_pct": 0.0877,
+          "stock": 0,
+          "source": "canonical_daily_economics_snapshot"
         }
       ]
     },
@@ -214254,7 +216212,11 @@
           "units": null,
           "seller_price": 325.6,
           "client_price": 309.32,
-          "source": "repricer_live_prices"
+          "margin_pct": -0.073326,
+          "margin_rub": -23.87,
+          "drr_pct": 0.0877,
+          "stock": 0,
+          "source": "canonical_daily_economics_snapshot"
         }
       ]
     },
@@ -214289,7 +216251,11 @@
           "units": null,
           "seller_price": 650.88,
           "client_price": 618.34,
-          "source": "repricer_live_prices"
+          "margin_pct": 0.089941,
+          "margin_rub": 58.54,
+          "drr_pct": 0.0877,
+          "stock": 0,
+          "source": "canonical_daily_economics_snapshot"
         }
       ]
     },
@@ -214317,7 +216283,11 @@
           "units": null,
           "seller_price": 976.6,
           "client_price": 927.77,
-          "source": "repricer_live_prices"
+          "margin_pct": 0.136163,
+          "margin_rub": 132.98,
+          "drr_pct": 0.0877,
+          "stock": 1,
+          "source": "canonical_daily_economics_snapshot"
         }
       ]
     },
@@ -214345,7 +216315,11 @@
           "units": null,
           "seller_price": 647.9,
           "client_price": 615.51,
-          "source": "repricer_live_prices"
+          "margin_pct": -0.021521,
+          "margin_rub": -13.94,
+          "drr_pct": 0.0877,
+          "stock": 0,
+          "source": "canonical_daily_economics_snapshot"
         }
       ]
     },
@@ -214373,7 +216347,11 @@
           "units": null,
           "seller_price": 1666.92,
           "client_price": 1583.57,
-          "source": "repricer_live_prices"
+          "margin_pct": 0.250052,
+          "margin_rub": 416.82,
+          "drr_pct": 0.0877,
+          "stock": 0,
+          "source": "canonical_daily_economics_snapshot"
         }
       ]
     },
@@ -214520,7 +216498,11 @@
           "units": null,
           "seller_price": 270.4,
           "client_price": 256.88,
-          "source": "repricer_live_prices"
+          "margin_pct": -0.057038,
+          "margin_rub": -15.42,
+          "drr_pct": 0.0877,
+          "stock": 0,
+          "source": "canonical_daily_economics_snapshot"
         }
       ]
     },
@@ -214724,6 +216706,17 @@
           "seller_price": 372.6706666666667,
           "client_price": 262.64866666666666,
           "source": "smart_price_overlay"
+        },
+        {
+          "date": "2026-07-28",
+          "units": null,
+          "seller_price": 372.6706666666667,
+          "client_price": 262.64866666666666,
+          "margin_pct": 0.030593,
+          "margin_rub": 11.4,
+          "drr_pct": 0.0877,
+          "source": "canonical_daily_economics_snapshot",
+          "stock": null
         }
       ]
     },
@@ -214751,7 +216744,11 @@
           "units": null,
           "seller_price": 659.25,
           "client_price": 626.29,
-          "source": "repricer_live_prices"
+          "margin_pct": 0.279099,
+          "margin_rub": 184,
+          "drr_pct": 0.0877,
+          "stock": 2,
+          "source": "canonical_daily_economics_snapshot"
         }
       ]
     },
@@ -214779,7 +216776,11 @@
           "units": null,
           "seller_price": 1525,
           "client_price": 1448.75,
-          "source": "repricer_live_prices"
+          "margin_pct": 0.367003,
+          "margin_rub": 559.68,
+          "drr_pct": 0.0877,
+          "stock": 0,
+          "source": "canonical_daily_economics_snapshot"
         }
       ]
     },
@@ -214807,7 +216808,11 @@
           "units": null,
           "seller_price": 258.24,
           "client_price": 245.33,
-          "source": "repricer_live_prices"
+          "margin_pct": -0.430692,
+          "margin_rub": -111.22,
+          "drr_pct": 0.0877,
+          "stock": 0,
+          "source": "canonical_daily_economics_snapshot"
         }
       ]
     },
@@ -214835,7 +216840,11 @@
           "units": null,
           "seller_price": 221,
           "client_price": 209.95,
-          "source": "repricer_live_prices"
+          "margin_pct": -0.33248,
+          "margin_rub": -73.48,
+          "drr_pct": 0.0877,
+          "stock": 0,
+          "source": "canonical_daily_economics_snapshot"
         }
       ]
     },
@@ -214863,7 +216872,11 @@
           "units": null,
           "seller_price": 328.44,
           "client_price": 312.02,
-          "source": "repricer_live_prices"
+          "margin_pct": -0.083496,
+          "margin_rub": -27.42,
+          "drr_pct": 0.0877,
+          "stock": 0,
+          "source": "canonical_daily_economics_snapshot"
         }
       ]
     },
@@ -214891,7 +216904,11 @@
           "units": null,
           "seller_price": 586.5,
           "client_price": 557.17,
-          "source": "repricer_live_prices"
+          "margin_pct": 0.229783,
+          "margin_rub": 134.77,
+          "drr_pct": 0.0877,
+          "stock": 1,
+          "source": "canonical_daily_economics_snapshot"
         }
       ]
     },
@@ -214919,7 +216936,11 @@
           "units": null,
           "seller_price": 1107.5,
           "client_price": 1052.13,
-          "source": "repricer_live_prices"
+          "margin_pct": 0.277941,
+          "margin_rub": 307.82,
+          "drr_pct": 0.0877,
+          "stock": 0,
+          "source": "canonical_daily_economics_snapshot"
         }
       ]
     },
@@ -215143,7 +217164,11 @@
           "units": null,
           "seller_price": 272.25,
           "client_price": 258.64,
-          "source": "repricer_live_prices"
+          "margin_pct": -0.197385,
+          "margin_rub": -53.74,
+          "drr_pct": 0.0877,
+          "stock": 3,
+          "source": "canonical_daily_economics_snapshot"
         }
       ]
     },
@@ -215171,7 +217196,11 @@
           "units": null,
           "seller_price": 600,
           "client_price": 570,
-          "source": "repricer_live_prices"
+          "margin_pct": 0.274733,
+          "margin_rub": 164.84,
+          "drr_pct": 0.0877,
+          "stock": 0,
+          "source": "canonical_daily_economics_snapshot"
         }
       ]
     },
@@ -215248,7 +217277,11 @@
           "units": null,
           "seller_price": 389.9,
           "client_price": 370.41,
-          "source": "repricer_live_prices"
+          "margin_pct": 0.044321,
+          "margin_rub": 17.28,
+          "drr_pct": 0.0877,
+          "stock": 0,
+          "source": "canonical_daily_economics_snapshot"
         }
       ]
     },
@@ -215276,7 +217309,11 @@
           "units": null,
           "seller_price": 675.8,
           "client_price": 642.01,
-          "source": "repricer_live_prices"
+          "margin_pct": 0.28944,
+          "margin_rub": 195.6,
+          "drr_pct": 0.0877,
+          "stock": 0,
+          "source": "canonical_daily_economics_snapshot"
         }
       ]
     },
@@ -215304,7 +217341,11 @@
           "units": null,
           "seller_price": 387.03,
           "client_price": 367.68,
-          "source": "repricer_live_prices"
+          "margin_pct": 0.002072,
+          "margin_rub": 0.8,
+          "drr_pct": 0.0877,
+          "stock": 1,
+          "source": "canonical_daily_economics_snapshot"
         }
       ]
     },
@@ -215332,7 +217373,11 @@
           "units": null,
           "seller_price": 773.5,
           "client_price": 734.83,
-          "source": "repricer_live_prices"
+          "margin_pct": 0.117999,
+          "margin_rub": 91.27,
+          "drr_pct": 0.0877,
+          "stock": 1,
+          "source": "canonical_daily_economics_snapshot"
         }
       ]
     },
@@ -215745,7 +217790,11 @@
           "units": null,
           "seller_price": 784.75,
           "client_price": 745.51,
-          "source": "repricer_live_prices"
+          "margin_pct": 0.153516,
+          "margin_rub": 120.47,
+          "drr_pct": 0.0877,
+          "stock": 0,
+          "source": "canonical_daily_economics_snapshot"
         }
       ]
     },

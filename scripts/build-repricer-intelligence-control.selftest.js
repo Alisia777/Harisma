@@ -126,13 +126,21 @@ const outcomeHistory = {
     observations: Array.from({ length: 12 }, (_, index) => ({
       date: new Date(Date.UTC(2026, 6, 16 + index)).toISOString().slice(0, 10),
       units: index < 6 ? 5 : 7,
-      client_price: 950
+      client_price: 950,
+      seller_price: 1000,
+      drr_pct: index < 6 ? 0.1 : 0.08,
+      margin_pct: index < 6 ? 0.25 : 0.27,
+      margin_rub: index < 6 ? 250 : 270,
+      stock: 40 - index
     }))
   }]
 };
 const outcomes = buildOutcomeRows(receipt, outcomeHistory);
-assert.strictEqual(outcomes[0].status, 'evaluated');
-assert.strictEqual(outcomes[0].delta.drrPctPoints, null);
+assert.strictEqual(outcomes[0].status, 'evaluating');
+assert.deepStrictEqual(outcomes[0].checkpointDays, [3, 7, 14, 30]);
+assert.strictEqual(outcomes[0].checkpoints[0].status, 'evaluated');
+assert(Number.isFinite(outcomes[0].checkpoints[0].delta.drrPctPoints));
+assert.strictEqual(outcomes[0].checkpoints[3].status, 'waiting_day_30');
 
 const exitTasks = buildStatusTasks({
   rows: [
@@ -178,4 +186,65 @@ assert.strictEqual(center.rows[0].price.clientBefore, 950);
 assert.strictEqual(center.rows[0].price.clientAfter, 997.5);
 assert.strictEqual(center.rows[0].margin.marginPriorityApplied, true);
 assert.deepStrictEqual(center.rows[0].approval.actions, ['APPROVE', 'REJECT']);
-console.log('[repricer-intelligence-control-selftest] OK: freshness gates, ROP decision row, 60d backtest, outcome window and smart status tasks are deterministic');
+assert.strictEqual(center.rows[0].automation.tier, 'rop_approval');
+assert.strictEqual(center.rows[0].approval.confirmationsRequired, 1);
+assert.match(center.rows[0].explanation.humanReadable, /Подняли цену на 5%/);
+assert.strictEqual(center.dataFreshness.sources.commission.state, 'fresh');
+assert.strictEqual(center.dataFreshness.sources.client_price.asOf, '2026-07-28');
+assert.strictEqual(center.groups.safe, 1);
+
+const tierRows = [
+  canonicalRow({
+    article_key: 'auto-2pct',
+    recommendation: {
+      ...canonicalRow().recommendation,
+      price: 1020,
+      seller_price_to_upload: 1020,
+      expected_client_price_after: 969,
+      change_pct: 0.02,
+      status: 'ready'
+    },
+    approval_gate: { required: false, type: '' }
+  }),
+  canonicalRow({
+    article_key: 'rop-5pct',
+    recommendation: {
+      ...canonicalRow().recommendation,
+      status: 'ready'
+    },
+    approval_gate: { required: false, type: '' }
+  }),
+  canonicalRow({
+    article_key: 'margin-drop-2pct',
+    recommendation: {
+      ...canonicalRow().recommendation,
+      price: 1020,
+      seller_price_to_upload: 1020,
+      expected_client_price_after: 969,
+      current_margin_pct: 0.32,
+      margin_pct: 0.31,
+      change_pct: 0.02,
+      status: 'ready'
+    },
+    approval_gate: { required: false, type: '' }
+  })
+];
+const tierCenter = buildDecisionCenter({
+  canonical: { freshness_reference_date: '2026-07-28', rows: tierRows },
+  learningReport: { backtest: { rows: [] } },
+  economicsPolicy,
+  skuMatrix: {
+    generatedAt: '2026-07-28T00:00:00Z',
+    items: tierRows.map((row) => ({ articleKey: row.article_key, name: row.article_key }))
+  },
+  workbench: { costImportAppliedAt: '2026-05-18T12:00:00Z' }
+});
+const tierMap = new Map(tierCenter.rows.map((row) => [row.articleKey, row]));
+assert.strictEqual(tierMap.get('auto-2pct').automation.tier, 'automatic');
+assert.strictEqual(tierMap.get('auto-2pct').approval.required, false);
+assert.strictEqual(tierMap.get('rop-5pct').automation.tier, 'rop_approval');
+assert.strictEqual(tierMap.get('rop-5pct').approval.status, 'PENDING_ROP');
+assert.strictEqual(tierMap.get('rop-5pct').decisionKinds.priceRecommendation, true);
+assert.strictEqual(tierMap.get('margin-drop-2pct').automation.tier, 'double_confirmation');
+assert.strictEqual(tierMap.get('margin-drop-2pct').approval.confirmationsRequired, 2);
+console.log('[repricer-intelligence-control-selftest] OK: per-source freshness, automation tiers, human explanations, 60d backtest, 3/7/14/30 outcomes and status tasks are deterministic');

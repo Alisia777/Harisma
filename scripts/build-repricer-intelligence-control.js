@@ -302,10 +302,51 @@ function metricWindow(observations = [], fromDate = '', toDate = '') {
     (sum, row) => sum + Math.max(0, finite(row.units) || 0) * finite(row.client_price, row.seller_price),
     0
   );
+  const average = (values = []) => {
+    const available = values.filter((value) => finite(value) !== null).map((value) => finite(value));
+    return available.length ? available.reduce((sum, value) => sum + value, 0) / available.length : null;
+  };
+  const sumAvailable = (values = []) => {
+    const available = values.filter((value) => finite(value) !== null).map((value) => finite(value));
+    return available.length ? available.reduce((sum, value) => sum + value, 0) : null;
+  };
+  const drrValues = rows.map((row) => finite(
+    row.drr_pct,
+    row.drrPct,
+    row.internal_advertising_pct,
+    row.advertising_pct
+  ));
+  const marginPctValues = rows.map((row) => finite(
+    row.margin_pct,
+    row.marginPct,
+    row.contribution_pct,
+    row.contributionPct
+  ));
+  const marginRub = sumAvailable(rows.map((row) => finite(
+    row.margin_rub,
+    row.marginRub,
+    row.contribution_rub,
+    row.contributionRub
+  )));
+  const stockValues = rows.map((row) => finite(
+    row.stock,
+    row.stock_units,
+    row.stockUnits,
+    row.available
+  ));
+  const availableStock = stockValues.filter((value) => value !== null);
+  const clientPrice = average(rows.map((row) => finite(row.client_price, row.clientPrice)));
+  const sellerPrice = average(rows.map((row) => finite(row.seller_price, row.sellerPrice)));
   return {
     observedDays: priced.length,
     units: round(units, 2),
-    turnoverRub: round(turnoverRub, 2)
+    turnoverRub: round(turnoverRub, 2),
+    sellerPrice: round(sellerPrice, 2),
+    clientPrice: round(clientPrice, 2),
+    marginPct: round(average(marginPctValues), 6),
+    marginRub: round(marginRub, 2),
+    drrPct: round(average(drrValues), 6),
+    stockUnits: availableStock.length ? round(availableStock.at(-1), 2) : null
   };
 }
 
@@ -313,39 +354,108 @@ function addDays(date, days) {
   return new Date(Date.parse(`${date}T00:00:00Z`) + days * 86400000).toISOString().slice(0, 10);
 }
 
-function buildOutcomeRows(receipt = {}, history = {}) {
+function outcomeDelta(before = {}, after = {}) {
+  const delta = (left, right, digits = 2) => (
+    finite(left) === null || finite(right) === null ? null : round(finite(right) - finite(left), digits)
+  );
+  return {
+    units: delta(before.units, after.units),
+    turnoverRub: delta(before.turnoverRub, after.turnoverRub),
+    turnoverPct: finite(before.turnoverRub) > 0 && finite(after.turnoverRub) !== null
+      ? round((finite(after.turnoverRub) - finite(before.turnoverRub)) / finite(before.turnoverRub), 6)
+      : null,
+    marginPctPoints: delta(before.marginPct, after.marginPct, 6),
+    marginRub: delta(before.marginRub, after.marginRub),
+    drrPctPoints: delta(before.drrPct, after.drrPct, 6),
+    stockUnits: delta(before.stockUnits, after.stockUnits)
+  };
+}
+
+function outcomeForecast(action = {}, checkpointDays = 0) {
+  const forecast = action.forecast || action.backtest || {};
+  const target = forecast?.checkpoints?.[checkpointDays] || forecast?.checkpoints?.[String(checkpointDays)] || {};
+  return {
+    sellerPrice: finite(action.expectedSellerPrice, action.requestedSellerPrice),
+    clientPrice: finite(action.expectedClientPriceAfter),
+    units: finite(target.units, forecast.units),
+    turnoverRub: finite(target.turnoverRub, forecast.turnoverRub),
+    marginPct: finite(target.marginPct, action.expectedMarginPct, action.marginPct),
+    marginRub: finite(target.marginRub, forecast.marginRub),
+    drrPct: finite(target.drrPct, forecast.drrPct),
+    stockUnits: finite(target.stockUnits, forecast.stockUnits)
+  };
+}
+
+function forecastVsActual(forecast = {}, actual = {}) {
+  const difference = (expected, observed, digits = 2) => (
+    finite(expected) === null || finite(observed) === null
+      ? null
+      : round(finite(observed) - finite(expected), digits)
+  );
+  return {
+    units: difference(forecast.units, actual.units),
+    turnoverRub: difference(forecast.turnoverRub, actual.turnoverRub),
+    marginPctPoints: difference(forecast.marginPct, actual.marginPct, 6),
+    marginRub: difference(forecast.marginRub, actual.marginRub),
+    drrPctPoints: difference(forecast.drrPct, actual.drrPct, 6),
+    stockUnits: difference(forecast.stockUnits, actual.stockUnits)
+  };
+}
+
+function buildOutcomeRows(receipt = {}, history = {}, checkpointDays = [3, 7, 14, 30]) {
   if (!Array.isArray(receipt?.actions) || !receipt.actions.length) return [];
   const map = historyMap(history);
   const appliedDate = isoDate(receipt.generatedAt);
   return receipt.actions.map((action) => {
     const record = map.get(`${String(action.platform || '').toLowerCase()}|${normalizeKey(action.articleKey)}`) || {};
-    const before = metricWindow(record.observations || [], addDays(appliedDate, -3), addDays(appliedDate, -1));
-    const after = metricWindow(record.observations || [], addDays(appliedDate, 3), addDays(appliedDate, 7));
-    const ready = before.observedDays >= 2 && after.observedDays >= 3;
+    const observations = record.observations || [];
+    const checkpoints = checkpointDays.map((days) => {
+      const before = metricWindow(observations, addDays(appliedDate, -days), addDays(appliedDate, -1));
+      const after = metricWindow(observations, addDays(appliedDate, 1), addDays(appliedDate, days));
+      const minimumObservedDays = Math.max(2, Math.ceil(days * 0.6));
+      const ready = before.observedDays >= minimumObservedDays && after.observedDays >= minimumObservedDays;
+      const forecast = outcomeForecast(action, days);
+      return {
+        day: days,
+        evaluateFrom: addDays(appliedDate, 1),
+        evaluateTo: addDays(appliedDate, days),
+        status: ready ? 'evaluated' : `waiting_day_${days}`,
+        before,
+        after,
+        delta: ready ? outcomeDelta(before, after) : null,
+        forecast,
+        forecastVsActual: ready ? forecastVsActual(forecast, after) : null,
+        unavailableMetrics: [
+          before.drrPct === null || after.drrPct === null ? 'drr_daily_history' : '',
+          before.stockUnits === null || after.stockUnits === null ? 'stock_daily_history' : '',
+          before.marginPct === null || after.marginPct === null ? 'historical_unit_economics' : ''
+        ].filter(Boolean)
+      };
+    });
+    const evaluated = checkpoints.filter((checkpoint) => checkpoint.status === 'evaluated');
+    const latest = evaluated.at(-1) || checkpoints[0];
     return {
       id: `price-outcome:${String(action.platform || '').toLowerCase()}:${normalizeKey(action.articleKey)}:${appliedDate}`,
       platform: String(action.platform || '').toLowerCase(),
       articleKey: action.articleKey,
       appliedAt: receipt.generatedAt || '',
-      evaluateFrom: addDays(appliedDate, 3),
-      evaluateTo: addDays(appliedDate, 7),
-      status: ready ? 'evaluated' : 'waiting_3_to_7_days',
-      before,
-      after,
-      delta: ready ? {
-        units: round(after.units - before.units, 2),
-        turnoverRub: round(after.turnoverRub - before.turnoverRub, 2),
-        turnoverPct: before.turnoverRub ? round((after.turnoverRub - before.turnoverRub) / before.turnoverRub, 6) : null,
-        drrPctPoints: null,
-        marginRub: null,
-        stockUnits: null
-      } : null,
-      unavailableMetrics: ['drr_daily_history', 'stock_daily_history', 'historical_unit_economics']
-        .filter(() => true),
-      learningEligible: ready,
-      note: ready
-        ? 'Turnover and units evaluated; DRR, stock and historical contribution stay null until their daily histories exist.'
-        : 'Evaluation starts on day 3 and closes on day 7; missing metrics are never replaced by zero.'
+      price: {
+        sellerBefore: finite(action.currentSellerPrice),
+        sellerAfter: finite(action.expectedSellerPrice, action.requestedSellerPrice),
+        clientBefore: finite(action.currentClientPrice),
+        clientAfter: finite(action.expectedClientPriceAfter)
+      },
+      checkpointDays,
+      checkpoints,
+      status: evaluated.length
+        ? (evaluated.length === checkpoints.length ? 'evaluated_all_checkpoints' : 'evaluating')
+        : 'waiting_day_3',
+      before: latest.before,
+      after: latest.after,
+      delta: latest.status === 'evaluated' ? latest.delta : null,
+      unavailableMetrics: [...new Set(checkpoints.flatMap((checkpoint) => checkpoint.unavailableMetrics))],
+      learningEligible: evaluated.length > 0,
+      note: 'Checkpoints 3/7/14/30 compare equal before/after windows. Missing DRR, margin or stock history remains null and is never replaced by zero.'
     };
   });
 }
@@ -440,6 +550,16 @@ function buildLearningReport({
     scenarioContributionRub: 0
   });
   const outcomes = buildOutcomeRows(receipt, history);
+  const checkpointSummary = Object.fromEntries([3, 7, 14, 30].map((day) => {
+    const checkpoints = outcomes
+      .map((row) => (row.checkpoints || []).find((checkpoint) => checkpoint.day === day))
+      .filter(Boolean);
+    return [day, {
+      events: checkpoints.length,
+      evaluated: checkpoints.filter((checkpoint) => checkpoint.status === 'evaluated').length,
+      waiting: checkpoints.filter((checkpoint) => checkpoint.status !== 'evaluated').length
+    }];
+  }));
   return {
     schema: 'repricer-learning-report-v1',
     generatedAt: new Date().toISOString(),
@@ -471,11 +591,13 @@ function buildLearningReport({
       rows
     },
     outcomes: {
-      evaluationWindowDays: [3, 7],
+      evaluationWindowDays: [3, 7, 14, 30],
       summary: {
         events: outcomes.length,
-        evaluated: outcomes.filter((row) => row.status === 'evaluated').length,
-        waiting: outcomes.filter((row) => row.status !== 'evaluated').length
+        evaluated: outcomes.filter((row) => row.learningEligible).length,
+        fullyEvaluated: outcomes.filter((row) => row.status === 'evaluated_all_checkpoints').length,
+        waiting: outcomes.filter((row) => !row.learningEligible).length,
+        checkpoints: checkpointSummary
       },
       rows: outcomes
     }
@@ -485,10 +607,13 @@ function buildLearningReport({
 function riskForRow(row = {}, quality = {}) {
   const change = Math.abs(finite(row?.recommendation?.change_pct) || 0);
   const margin = finite(row?.recommendation?.margin_pct);
-  const minMargin = finite(row?.policy?.min_margin_pct, row?.policy?.target_margin_pct);
+  const lifecycle = String(row?.facts?.lifecycle_key || '').toLowerCase();
+  const minMargin = lifecycle === 'exit'
+    ? finite(row?.policy?.liquidation_min_margin_pct, 0)
+    : finite(row?.policy?.min_margin_pct, row?.policy?.target_margin_pct);
   const reasons = [];
   if (!quality.usable) reasons.push('data_quality_blocked');
-  if (change >= 0.1) reasons.push('sharp_price_change');
+  if (change > 0.1 + 1e-9) reasons.push('sharp_price_change');
   if (change >= 1) reasons.push('extreme_price_change');
   if (margin !== null && minMargin !== null && margin + 1e-9 < minMargin) reasons.push('margin_below_minimum');
   if (row?.facts?.partial_oos || row?.facts?.oos_risk_status === 'risk') reasons.push('oos_risk');
@@ -496,6 +621,166 @@ function riskForRow(row = {}, quality = {}) {
     ? 'high'
     : (reasons.length ? 'medium' : 'low');
   return { level, reasons };
+}
+
+function automationPolicyForRow(row = {}, quality = {}) {
+  const currentPrice = finite(row?.facts?.seller_price);
+  const proposedPrice = finite(row?.recommendation?.seller_price_to_upload, row?.recommendation?.price);
+  const signedChangePct = currentPrice > 0 && proposedPrice !== null
+    ? (proposedPrice - currentPrice) / currentPrice
+    : finite(row?.recommendation?.change_pct);
+  const absoluteChangePct = Math.abs(signedChangePct || 0);
+  const currentMargin = finite(row?.recommendation?.current_margin_pct);
+  const proposedMargin = finite(row?.recommendation?.margin_pct);
+  const marginDrop = currentMargin !== null
+    && proposedMargin !== null
+    && proposedMargin + 1e-9 < currentMargin;
+  const statusChange = String(row?.approval_gate?.type || '').toUpperCase() === 'PRODUCT_STATUS_CHANGE';
+  const policyApproval = String(row?.approval_gate?.type || '').toUpperCase() === 'MARGIN_POLICY_REVIEW';
+  let tier = 'automatic';
+  let confirmationsRequired = 0;
+  let taskRequired = false;
+  let reason = 'change_within_3pct_all_sources_fresh';
+  if (!quality.usable) {
+    tier = 'blocked';
+    reason = 'source_data_not_fully_fresh';
+  } else if (absoluteChangePct > 0.1 + 1e-9 || marginDrop || statusChange) {
+    tier = 'double_confirmation';
+    confirmationsRequired = 2;
+    taskRequired = true;
+    reason = statusChange
+      ? 'status_change_requires_task_and_double_confirmation'
+      : (marginDrop
+        ? 'margin_drop_requires_task_and_double_confirmation'
+        : 'price_change_above_10pct_requires_task_and_double_confirmation');
+  } else if (absoluteChangePct > 0.03 + 1e-9 || policyApproval || row?.approval_gate?.required === true) {
+    tier = 'rop_approval';
+    confirmationsRequired = 1;
+    taskRequired = true;
+    reason = policyApproval
+      ? 'margin_policy_requires_rop'
+      : 'price_change_between_3_and_10pct_requires_rop';
+  }
+  return {
+    tier,
+    signedChangePct: round(signedChangePct, 6),
+    absoluteChangePct: round(absoluteChangePct, 6),
+    fullyFresh: quality.usable === true,
+    marginDrop,
+    statusChange,
+    taskRequired,
+    confirmationsRequired,
+    confirmationStages: tier === 'double_confirmation'
+      ? ['ROP_TASK', 'API_APPLY_PREVIEW']
+      : (tier === 'rop_approval' ? ['ROP_TASK'] : []),
+    autoApplyEligible: tier === 'automatic',
+    reason
+  };
+}
+
+function priceExplanation(row = {}, quality = {}, automation = {}) {
+  const currentPrice = finite(row?.facts?.seller_price);
+  const proposedPrice = finite(row?.recommendation?.seller_price_to_upload, row?.recommendation?.price);
+  const changePct = currentPrice > 0 && proposedPrice !== null
+    ? (proposedPrice - currentPrice) / currentPrice
+    : finite(row?.recommendation?.change_pct);
+  const reasonCodes = row?.recommendation?.reason_codes || [];
+  const oos = row?.facts?.partial_oos
+    || row?.facts?.oos_risk_status === 'risk'
+    || finite(row?.facts?.stock) === 0;
+  const marginReason = reasonCodes.some((reason) => /margin|floor|below_min/i.test(String(reason)));
+  const insufficientCompetitors = row?.demand_intelligence?.market_intelligence?.competitors?.usable !== true
+    || row?.demand_intelligence?.market_intelligence?.competitor_history?.usable !== true;
+  const percent = Number.isFinite(changePct) ? Math.round(Math.abs(changePct) * 1000) / 10 : null;
+  let headline = 'Цена оставлена без изменения.';
+  if (oos && !(changePct < -1e-9)) {
+    headline = 'Не снизили цену из-за OOS или риска дефицита.';
+  } else if (changePct > 1e-9) {
+    headline = `Подняли цену на ${percent}%${marginReason ? ' из-за защиты маржи' : ' по расчёту спроса и коридора'}.`;
+  } else if (changePct < -1e-9) {
+    headline = `Снизили цену на ${percent}%${marginReason ? ', сохранив MIN-маржу' : ' по сигналу спроса'}.`;
+  }
+  const details = [];
+  const lifecycle = String(row?.facts?.lifecycle_key || '').toLowerCase();
+  const minimum = lifecycle === 'exit'
+    ? finite(row?.policy?.liquidation_min_margin_pct, 0)
+    : finite(row?.policy?.min_margin_pct, row?.policy?.target_margin_pct);
+  const after = finite(row?.recommendation?.margin_pct);
+  if (minimum !== null && after !== null) {
+    details.push(`Маржа после изменения ${(after * 100).toFixed(1)}%; минимальный порог ${(minimum * 100).toFixed(1)}%.`);
+  }
+  if (automation.tier === 'automatic') details.push('Изменение до 3% и все обязательные источники свежие.');
+  if (automation.tier === 'rop_approval') details.push('Нужно подтверждение РОП.');
+  if (automation.tier === 'double_confirmation') details.push('Нужны задача РОП и повторное подтверждение перед API-загрузкой.');
+  if (!quality.usable) details.push(`Расчёт заблокирован: ${(quality.blockers || []).join(', ')}.`);
+  const competitorNote = insufficientCompetitors
+    ? 'Конкуренты не учтены в цене — недостаточно надёжной текущей выборки или истории.'
+    : 'Конкурентный сигнал учтён в пределах защитного лимита.';
+  return {
+    headline,
+    details,
+    competitorNote,
+    reasonCodes,
+    humanReadable: [headline, ...details, competitorNote].join(' ')
+  };
+}
+
+function summarizeDataFreshness(rows = []) {
+  const sourceKeys = ['price', 'commission', 'advertising', 'cost', 'stock'];
+  const summaries = Object.fromEntries(sourceKeys.map((key) => {
+    const sources = rows
+      .map((row) => (row?.dataQuality?.sources || []).find((source) => source.key === key))
+      .filter(Boolean);
+    const dates = sources.map((source) => source.asOf).filter(Boolean).sort();
+    const usableRows = sources.filter((source) => source.usable).length;
+    const state = !sources.length
+      ? 'missing'
+      : (usableRows === sources.length ? 'fresh' : 'blocked');
+    return [key, {
+      key,
+      state,
+      usableRows,
+      totalRows: sources.length,
+      asOf: dates.at(-1) || '',
+      oldestAsOf: dates[0] || '',
+      refreshMode: key === 'commission' ? 'contract_or_finance_source_revalidated' : 'source_snapshot'
+    }];
+  }));
+  const competitorDates = rows
+    .map((row) => row?.market?.competitorIngestion?.observedAt || row?.market?.competitors?.observedAt || '')
+    .filter(Boolean)
+    .sort();
+  const competitorOffers = rows.reduce(
+    (sum, row) => sum + Math.max(0, finite(row?.market?.competitorIngestion?.offers) || 0),
+    0
+  );
+  const usableCompetitorRows = rows.filter((row) => row?.market?.competitors?.usable === true).length;
+  summaries.competitors = {
+    key: 'competitors',
+    state: usableCompetitorRows > 0 ? 'fresh' : (competitorDates.length ? 'advisory' : 'missing'),
+    usableRows: usableCompetitorRows,
+    totalRows: rows.length,
+    offers: competitorOffers,
+    asOf: competitorDates.at(-1) || '',
+    oldestAsOf: competitorDates[0] || '',
+    refreshMode: 'competitor_snapshot_and_history'
+  };
+  summaries.client_price = {
+    ...summaries.price,
+    key: 'client_price',
+    refreshMode: 'marketplace_client_price_with_current_discount'
+  };
+  summaries.oos = {
+    ...summaries.stock,
+    key: 'oos',
+    refreshMode: 'direct_stock_snapshot'
+  };
+  return {
+    rule: 'each_source_has_its_own_timestamp_and_missing_never_becomes_zero',
+    allRequiredFresh: ['price', 'commission', 'advertising', 'cost', 'stock']
+      .every((key) => summaries[key].state === 'fresh'),
+    sources: summaries
+  };
 }
 
 function buildStatusTasks(canonical = {}, skuMatrix = {}) {
@@ -552,9 +837,17 @@ function buildStatusTasks(canonical = {}, skuMatrix = {}) {
       approval: {
         required: true,
         role: 'ROP',
-        status: 'PENDING_ROP'
+        status: 'PENDING_ROP',
+        taskRequired: true,
+        confirmationsRequired: 2,
+        confirmationStages: ['ROP_TASK', 'STATUS_APPLY_PREVIEW']
       },
-      applyMode: 'task_then_confirmed_status_change'
+      automation: {
+        tier: 'double_confirmation',
+        autoApplyEligible: false,
+        reason: 'status_change_requires_task_and_double_confirmation'
+      },
+      applyMode: 'task_then_double_confirmed_status_change'
     });
   });
   return tasks;
@@ -598,6 +891,8 @@ function buildDecisionCenter({
         referenceDate: canonical.freshness_reference_date
       });
       const risk = riskForRow(row, quality);
+      const automation = automationPolicyForRow(row, quality);
+      const explanation = priceExplanation(row, quality, automation);
       const market = row?.demand_intelligence?.market_intelligence || {};
       const seasonality = market.seasonality || {};
       const elasticity = market.elasticity || {};
@@ -610,12 +905,24 @@ function buildDecisionCenter({
       const currentClientPrice = finite(row?.facts?.client_price, row?.facts?.seller_price);
       const proposedSellerPrice = finite(row?.recommendation?.seller_price_to_upload, row?.recommendation?.price);
       const proposedClientPrice = finite(row?.recommendation?.expected_client_price_after);
-      const approvalRequired = row?.approval_gate?.required === true
+      const approvalRequired = automation.taskRequired
+        || row?.approval_gate?.required === true
         || row?.recommendation?.status === 'waiting_rop'
         || proposal?.approvalStatus === 'PENDING_ROP';
-      const approvalStatus = row?.approval?.status
-        || proposal?.approvalStatus
-        || (approvalRequired ? 'PENDING_ROP' : 'NOT_REQUIRED');
+      const approvalStatus = row?.approval
+        ? 'APPROVED'
+        : (
+          proposal?.approvalStatus
+          || (approvalRequired ? 'PENDING_ROP' : 'NOT_REQUIRED')
+        );
+      const approved = ['APPROVED', 'ACTIVE', 'VERIFIED'].includes(String(approvalStatus || '').toUpperCase());
+      const decisionGroup = !quality.usable
+        ? 'no_data'
+        : (risk.reasons.includes('margin_below_minimum')
+          ? 'below_margin'
+          : (automation.absoluteChangePct > 0.1 + 1e-9
+            ? 'sharp_change'
+            : (String(row?.facts?.lifecycle_key || '').toLowerCase() === 'exit' ? 'exit' : 'safe')));
       return {
         id: `repricer-decision:${key}`,
         platform: row.platform,
@@ -634,22 +941,37 @@ function buildDecisionCenter({
         margin: {
           beforePct: finite(row?.recommendation?.current_margin_pct),
           afterPct: finite(row?.recommendation?.margin_pct),
-          minimumPct: finite(row?.policy?.min_margin_pct, row?.policy?.target_margin_pct),
+          minimumPct: String(row?.facts?.lifecycle_key || '').toLowerCase() === 'exit'
+            ? finite(row?.policy?.liquidation_min_margin_pct, 0)
+            : finite(row?.policy?.min_margin_pct, row?.policy?.target_margin_pct),
           maximumPct: finite(row?.policy?.max_margin_pct),
           marginPriorityApplied: row?.policy?.margin_priority_applied === true
         },
         reasonCodes: row?.recommendation?.reason_codes || [],
         reason: proposal?.action || row?.recommendation?.source || '',
+        explanation,
+        decisionGroup,
         risk,
+        automation,
         approval: {
           required: approvalRequired,
           role: 'ROP',
           status: approvalStatus,
           actions: ['APPROVE', 'REJECT'],
-          approvalId: row?.approval?.id || ''
+          approvalId: row?.approval?.id || '',
+          taskRequired: automation.taskRequired,
+          confirmationsRequired: automation.confirmationsRequired,
+          confirmationsRecorded: approved ? 1 : 0,
+          confirmationStages: automation.confirmationStages
         },
         decisionKinds: {
-          priceRecommendation: row?.recommendation?.status === 'waiting_rop',
+          priceRecommendation: proposedSellerPrice !== null
+            && currentSellerPrice !== null
+            && Math.abs(proposedSellerPrice - currentSellerPrice) >= 0.01
+            && (
+              automation.taskRequired
+              || row?.recommendation?.status === 'waiting_rop'
+            ),
           marginOrCorridorPolicy: proposal?.approvalStatus === 'PENDING_ROP'
         },
         dataQuality: quality,
@@ -718,7 +1040,8 @@ function buildDecisionCenter({
         },
         safeToPlan: quality.usable
           && proposedSellerPrice !== null
-          && !['blocked'].includes(String(row?.recommendation?.status || '').toLowerCase()),
+          && !['blocked'].includes(String(row?.recommendation?.status || '').toLowerCase())
+          && (automation.autoApplyEligible || !approvalRequired || approved),
         applyMode: 'preview_confirm_api_readback'
       };
     })
@@ -731,6 +1054,7 @@ function buildDecisionCenter({
     row.approval.status === 'PENDING_ROP' && row.decisionKinds.marginOrCorridorPolicy
   )).length;
   const totalPending = rows.filter((row) => row.approval.status === 'PENDING_ROP').length;
+  const dataFreshness = summarizeDataFreshness(rows);
   return {
     schema: 'repricer-decision-center-v1',
     generatedAt: new Date().toISOString(),
@@ -751,6 +1075,28 @@ function buildDecisionCenter({
       statusTasks: statusTasks.length,
       statusTasksPendingRop: statusTasks.filter((task) => task.approval.status === 'PENDING_ROP').length
     },
+    automation: {
+      thresholds: {
+        automaticMaxChangePct: 0.03,
+        ropMaxChangePct: 0.1
+      },
+      rules: {
+        automatic: 'absolute change <= 3%, all required sources fresh, no margin drop and no status change',
+        ropApproval: 'absolute change > 3% and <= 10%',
+        doubleConfirmation: 'absolute change > 10%, margin drop or status change'
+      },
+      summary: {
+        automatic: rows.filter((row) => row.automation.tier === 'automatic').length,
+        ropApproval: rows.filter((row) => row.automation.tier === 'rop_approval').length,
+        doubleConfirmation: rows.filter((row) => row.automation.tier === 'double_confirmation').length,
+        blocked: rows.filter((row) => row.automation.tier === 'blocked').length
+      }
+    },
+    groups: Object.fromEntries(['below_margin', 'sharp_change', 'exit', 'no_data', 'safe'].map((group) => [
+      group,
+      rows.filter((row) => row.decisionGroup === group).length
+    ])),
+    dataFreshness,
     rows,
     statusTasks
   };
@@ -818,6 +1164,7 @@ if (require.main === module) {
 }
 
 module.exports = {
+  automationPolicyForRow,
   backtestRow,
   buildCalendarSnapshot,
   buildDecisionCenter,
@@ -828,7 +1175,10 @@ module.exports = {
   dataQualityForRow,
   dateFromText,
   metricWindow,
+  outcomeDelta,
   parseArgs,
+  priceExplanation,
   riskForRow,
-  sourceState
+  sourceState,
+  summarizeDataFreshness
 };

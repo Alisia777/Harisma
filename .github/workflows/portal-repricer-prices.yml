@@ -168,6 +168,13 @@ jobs:
             --output-dir data \
             --competitor-prices data/repricer_competitor_prices.json \
             --as-of-date '${{ steps.run_date.outputs.value }}'
+          node scripts/build-repricer-market-observation-history.js \
+            --input-dir data \
+            --history data/repricer_market_observation_history.json \
+            --canonical data/canonical_repricer.json \
+            --output data/repricer_market_observation_history.json \
+            --as-of-date '${{ steps.run_date.outputs.value }}' \
+            --retention-days 400
           node scripts/build-repricer-team-policy.js \
             --input-dir data \
             --output data/repricer_team_policy_proposals.json

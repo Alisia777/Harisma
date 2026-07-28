@@ -1,0 +1,159 @@
+/* ---------- Today's queue ---------- */
+body.v87-imperial.altea-premium-shell #view-wb-rating .rating-smart-board {
+  position: relative;
+  display: grid;
+  grid-template-columns: minmax(235px, .78fr) minmax(0, 2.22fr);
+  gap: 11px;
+  margin: 0 0 9px;
+  padding: 11px 13px;
+  overflow: hidden;
+  border: 1px solid var(--rw-line-accent);
+  border-radius: var(--rw-radius);
+  background:
+    radial-gradient(circle at 88% -80%, rgba(216, 176, 102, .18), transparent 45%),
+    linear-gradient(145deg, rgba(27, 20, 26, .96), rgba(13, 10, 14, .97));
+  box-shadow: 0 12px 34px rgba(0, 0, 0, .2), inset 0 1px 0 rgba(255, 255, 255, .035);
+}
+
+body.v87-imperial.altea-premium-shell #view-wb-rating .rating-smart-board::before {
+  width: 2px;
+}
+
+body.v87-imperial.altea-premium-shell #view-wb-rating .rating-smart-board__copy {
+  min-width: 0;
+}
+
+body.v87-imperial.altea-premium-shell #view-wb-rating .rating-smart-board__eyebrow {
+  font-size: 8.5px;
+  letter-spacing: .14em;
+}
+
+body.v87-imperial.altea-premium-shell #view-wb-rating .rating-smart-board h3 {
+  margin: 4px 0 5px;
+  font-size: clamp(18px, 1.5vw, 23px);
+  line-height: 1.05;
+}
+
+body.v87-imperial.altea-premium-shell #view-wb-rating .rating-smart-board__summary {
+  display: -webkit-box;
+  max-width: 520px;
+  margin: 0;
+  overflow: hidden;
+  color: var(--muted);
+  font-size: 10px;
+  line-height: 1.38;
+  -webkit-box-orient: vertical;
+  -webkit-line-clamp: 2;
+}
+
+body.v87-imperial.altea-premium-shell #view-wb-rating .rating-smart-kpis {
+  display: grid;
+  grid-template-columns: repeat(5, minmax(0, 1fr));
+  gap: 7px;
+  min-width: 0;
+}
+
+body.v87-imperial.altea-premium-shell #view-wb-rating .rating-smart-kpi {
+  min-width: 0;
+  min-height: 70px;
+  gap: 5px;
+  padding: 8px 9px;
+  border-radius: 9px;
+}
+
+body.v87-imperial.altea-premium-shell #view-wb-rating .rating-smart-kpi__label {
+  font-size: 9.5px;
+}
+
+body.v87-imperial.altea-premium-shell #view-wb-rating .rating-smart-kpi__value {
+  font-size: 22px;
+}
+
+body.v87-imperial.altea-premium-shell #view-wb-rating .rating-smart-kpi__hint {
+  overflow: hidden;
+  font-size: 8.5px;
+  line-height: 1.2;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+/* ---------- Report controls ---------- */
+body.v87-imperial.altea-premium-shell #view-wb-rating .rating-structured-shell {
+  gap: 9px;
+  overflow: visible;
+}
+
+body.v87-imperial.altea-premium-shell #view-wb-rating .rating-planfact-toolbar,
+body.v87-imperial.altea-premium-shell #view-wb-rating .rating-work-tabs {
+  margin-block: 0;
+}
+
+body.v87-imperial.altea-premium-shell #view-wb-rating .rating-work-tabs button,
+body.v87-imperial.altea-premium-shell #view-wb-rating .rating-platform-selector button {
+  min-height: 36px;
+  padding: 7px 11px;
+  font-size: 11px;
+}
+
+body.v87-imperial.altea-premium-shell #view-wb-rating .rating-detail-panel {
+  min-width: 0;
+  padding: 0 !important;
+  overflow: visible !important;
+  border-radius: var(--rw-radius);
+}
+
+body.v87-imperial.altea-premium-shell #view-wb-rating .rating-work-card {
+  min-width: 0;
+  padding: 0 !important;
+  overflow: visible !important;
+  border-radius: var(--rw-radius);
+}
+
+body.v87-imperial.altea-premium-shell #view-wb-rating .rating-work-card .rating-detail-head {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) auto;
+  align-items: center;
+  gap: 10px 16px;
+  margin: 0;
+  padding: 10px 12px;
+  border-bottom: 1px solid var(--rw-line);
+}
+
+body.v87-imperial.altea-premium-shell #view-wb-rating .rating-detail-head h3 {
+  font-size: 17px;
+}
+
+body.v87-imperial.altea-premium-shell #view-wb-rating .rating-detail-head p {
+  margin-top: 4px;
+  font-size: 10.5px;
+  line-height: 1.35;
+}
+
+body.v87-imperial.altea-premium-shell #view-wb-rating .rating-queue-controls {
+  display: grid !important;
+  grid-template-columns: minmax(230px, 1fr) minmax(190px, 250px) minmax(190px, 250px) auto;
+  align-items: center;
+  gap: 8px;
+  padding: 9px 11px;
+  border-bottom: 1px solid var(--rw-line);
+  background: rgba(255, 255, 255, .016);
+}
+
+body.v87-imperial.altea-premium-shell #view-wb-rating .rating-queue-controls > * {
+  min-width: 0;
+}
+
+body.v87-imperial.altea-premium-shell #view-wb-rating .rating-sort-control {
+  min-width: 0;
+}
+
+body.v87-imperial.altea-premium-shell #view-wb-rating .rating-sort-control.rating-ux-collapsed > button {
+  display: none !important;
+}
+
+body.v87-imperial.altea-premium-shell #view-wb-rating .rating-inline-search {
+  min-width: 0;
+  width: 100%;
+  height: 38px;
+  border-radius: 9px;
+}

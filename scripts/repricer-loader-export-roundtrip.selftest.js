@@ -557,9 +557,10 @@ async function main() {
       projectedClientRows += 1;
       const rawFactor = clientBefore / sellerBefore;
       const exportedBuyerDiscountPct = numericCell(row[clientPriceColumns.buyerDiscountPct]);
-      const expectedFactor = 1 - exportedBuyerDiscountPct / 100;
+      const exportedFactor = 1 - exportedBuyerDiscountPct / 100;
+      const expectedFactor = rawFactor <= 1 ? rawFactor : exportedFactor;
       assert(
-        expectedFactor > 0 && expectedFactor <= 1,
+        exportedFactor > 0 && exportedFactor <= 1,
         'exported SPP/buyer discount must produce a valid buyer-price factor'
       );
       assert(

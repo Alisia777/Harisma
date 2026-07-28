@@ -1,0 +1,40 @@
+name: Reviews workbench UI
+
+on:
+  pull_request:
+    paths:
+      - 'portal-interface-optimization.css'
+      - 'portal-wb-rating-workbench-v3*.css'
+      - 'scripts/portal-wb-rating-workbench-v3.selftest.js'
+      - '.github/workflows/portal-rating-workbench-v3.yml'
+  push:
+    branches: [main]
+    paths:
+      - 'portal-interface-optimization.css'
+      - 'portal-wb-rating-workbench-v3*.css'
+      - 'scripts/portal-wb-rating-workbench-v3.selftest.js'
+      - '.github/workflows/portal-rating-workbench-v3.yml'
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+concurrency:
+  group: portal-rating-workbench-v3-${{ github.event_name }}-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  browser-smoke:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '20'
+          cache: npm
+      - name: Install dependencies
+        run: |
+          npm ci
+          npx playwright install chromium --with-deps
+      - name: Test reviews workspace layout and loading states
+        run: node scripts/portal-wb-rating-workbench-v3.selftest.js

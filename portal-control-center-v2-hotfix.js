@@ -728,6 +728,67 @@
     `;
   }
 
+  function skuDecisionEconomicsHtml(decision = {}) {
+    const metrics = decision.metrics && typeof decision.metrics === 'object' ? decision.metrics : {};
+    const number = (value) => {
+      const parsed = Number(value);
+      return Number.isFinite(parsed) ? parsed : null;
+    };
+    const moneyPair = (before, after) => (
+      `${before === null ? '—' : fmt.money(before)} → ${after === null ? '—' : fmt.money(after)}`
+    );
+    const pctPair = (before, after) => (
+      `${before === null ? '—' : fmt.pct(before)} → ${after === null ? '—' : fmt.pct(after)}`
+    );
+    const cells = [
+      {
+        label: decision.type === 'MARGIN_POLICY_CHANGE' ? 'Цена продавца / новый порог' : 'Цена продавца',
+        value: moneyPair(
+          number(metrics.currentSellerPrice ?? decision.payload?.currentPrice ?? decision.currentValue),
+          number(metrics.proposedSellerPrice ?? decision.payload?.requestedPrice ?? decision.proposedValue)
+        )
+      },
+      {
+        label: 'Клиентская цена с СПП',
+        value: moneyPair(number(metrics.currentClientPrice), number(metrics.proposedClientPrice))
+      },
+      {
+        label: 'Маржа',
+        value: pctPair(number(metrics.currentMarginPct), number(metrics.proposedMarginPct))
+      },
+      {
+        label: 'Прибыль на единицу',
+        value: moneyPair(number(metrics.currentProfitRub), number(metrics.proposedProfitRub))
+      },
+      {
+        label: 'Себестоимость / расходы площадки',
+        value: `${number(metrics.costRub) === null ? '—' : fmt.money(number(metrics.costRub))} / ${number(metrics.platformCostsRub) === null ? '—' : fmt.money(number(metrics.platformCostsRub))}`
+      },
+      {
+        label: 'Комиссия ИУ / внутр. реклама',
+        value: `${number(metrics.commissionPct) === null ? '—' : fmt.pct(number(metrics.commissionPct))} / ${number(metrics.internalAdvertisingPct) === null ? '—' : fmt.pct(number(metrics.internalAdvertisingPct))}`
+      },
+      {
+        label: 'Коридор MIN / MAX',
+        value: `${number(metrics.minPrice) === null ? '—' : fmt.money(number(metrics.minPrice))} / ${number(metrics.maxPrice) === null ? '—' : fmt.money(number(metrics.maxPrice))}`
+      },
+      {
+        label: 'Остаток / оборачиваемость',
+        value: `${number(metrics.stock) === null ? '—' : fmt.int(number(metrics.stock))} шт. / ${number(metrics.turnoverDays) === null ? '—' : `${fmt.num(number(metrics.turnoverDays), 1)} дн.`}`
+      }
+    ];
+    return `
+      <div style="display:grid;grid-template-columns:repeat(auto-fit,minmax(210px,1fr));gap:8px;margin-top:10px">
+        ${cells.map((cell) => `
+          <div class="owner-cell" style="padding:10px">
+            <div class="small muted">${escapeHtml(cell.label)}</div>
+            <strong>${escapeHtml(cell.value)}</strong>
+          </div>
+        `).join('')}
+      </div>
+    `;
+  }
+
   function renderTaskLifecyclePanel(task) {
     if (['done', 'cancelled'].includes(task?.status)) return '';
 
@@ -738,6 +799,7 @@
       if (skuDecision) {
         const isDemandPrice = skuDecision.type === 'DEMAND_PRICE_REVIEW';
         const isPrice = skuDecision.type === 'SHARP_PRICE_CHANGE' || isDemandPrice;
+        const isMarginPolicy = skuDecision.type === 'MARGIN_POLICY_CHANGE';
         const deltaPct = Number(skuDecision.payload?.deltaPct);
         const deltaLabel = Number.isFinite(deltaPct)
           ? ` · ${deltaPct > 0 ? '+' : ''}${Math.round(deltaPct * 1000) / 10}%`
@@ -755,7 +817,7 @@
           <div class="card" style="margin-top:14px">
             <div class="section-subhead">
               <div>
-                <h3>${isPrice ? (isDemandPrice ? 'Подтверждение умной цены' : 'Подтверждение резкой цены') : 'Подтверждение статуса товара'}</h3>
+                <h3>${isMarginPolicy ? 'Подтверждение маржи и MIN/MAX' : (isPrice ? (isDemandPrice ? 'Подтверждение умной цены' : 'Подтверждение резкой цены') : 'Подтверждение статуса товара')}</h3>
                 <p class="small muted">До решения РОПа рабочие данные не меняются. Подтверждение применит изменение автоматически и закроет задачу.</p>
               </div>
               ${badge('решение РОПа', 'warn')}
@@ -766,6 +828,7 @@
               <br>${escapeHtml(skuDecision.reason || 'Основание не указано')}
               ${demandDetails ? `<br>${escapeHtml(demandDetails)}` : ''}
             </div>
+            ${(isPrice || isMarginPolicy) ? skuDecisionEconomicsHtml(skuDecision) : ''}
             <form id="taskRopApproveForm" class="form-stack" style="margin-top:12px">
               <textarea name="comment" rows="3" placeholder="Комментарий РОПа к решению"></textarea>
               <div class="badge-stack">

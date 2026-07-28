@@ -13,7 +13,8 @@ const {
 const {
   approvedRecord,
   lifecycleApprovalFor,
-  lifecycleApprovalMap
+  lifecycleApprovalMap,
+  serverApprovedRegistryRecord
 } = require('./build-canonical-repricer');
 
 function approvedMetadata(overrides = {}) {
@@ -33,6 +34,7 @@ async function main() {
   const root = fs.mkdtempSync(path.join(os.tmpdir(), 'repricer-approved-decisions-'));
   const priceOutputPath = path.join(root, 'repricer_approved_overrides.json');
   const lifecycleOutputPath = path.join(root, 'product_lifecycle_approved.json');
+  const marginOutputPath = path.join(root, 'repricer_minmax_registry.json');
   const controlsPath = path.join(root, 'repricer_controls.json');
   const controls = {
     overrides: [
@@ -104,6 +106,39 @@ async function main() {
           proposedStatusKey: 'new',
           proposedStatusLabel: 'Новый'
         }
+      }),
+      approvedMetadata({
+        id: 'margin-approved',
+        taskId: 'task-margin-approved',
+        type: 'MARGIN_POLICY_CHANGE',
+        articleKey: 'sku-margin',
+        platform: 'wb',
+        status: 'applied',
+        requestedBy: 'Менеджер',
+        requestedRole: 'Категорийный менеджер',
+        payload: {
+          lifecycleKey: 'active',
+          minMarginPct: 0.25,
+          maxMarginPct: 0.4,
+          minPrice: 900,
+          maxPrice: 1300
+        }
+      }),
+      approvedMetadata({
+        id: 'margin-exit-approved',
+        taskId: 'task-margin-exit-approved',
+        type: 'MARGIN_POLICY_CHANGE',
+        articleKey: 'sku-exit',
+        platform: 'ozon',
+        status: 'applied',
+        requestedBy: 'Менеджер',
+        requestedRole: 'Категорийный менеджер',
+        payload: {
+          lifecycleKey: 'exit',
+          liquidationMinMarginPct: 0,
+          minPrice: 500,
+          maxPrice: 800
+        }
       })
     ]
   };
@@ -113,6 +148,7 @@ async function main() {
     now: Date.parse('2026-07-24T10:00:00.000Z'),
     priceOutputPath,
     lifecycleOutputPath,
+    marginOutputPath,
     preserveExisting: false
   });
   assert.deepStrictEqual(preview.prices.records.map((record) => record.articleKey), ['sku-price']);
@@ -121,11 +157,19 @@ async function main() {
   assert.deepStrictEqual(preview.lifecycle.records.map((record) => record.articleKey), ['sku-status']);
   assert.strictEqual(preview.lifecycle.records[0].lifecycleKey, 'exit');
   assert.strictEqual(preview.lifecycle.records[0].platform, 'all');
+  assert.deepStrictEqual(
+    preview.margins.rows.map((record) => `${record.platform}:${record.articleKey}`),
+    ['ozon:sku-exit', 'wb:sku-margin']
+  );
+  assert.strictEqual(preview.margins.rows.find((record) => record.articleKey === 'sku-margin').minMarginPct, 0.25);
+  assert.strictEqual(preview.margins.rows.find((record) => record.articleKey === 'sku-margin').maxMarginPct, 0.4);
+  assert.strictEqual(preview.margins.rows.find((record) => record.articleKey === 'sku-exit').liquidationMinMarginPct, 0);
 
   const written = await run({
     controlsPath,
     priceOutputPath,
     lifecycleOutputPath,
+    marginOutputPath,
     strict: true,
     remote: false,
     noWrite: false,
@@ -133,8 +177,10 @@ async function main() {
   });
   assert.strictEqual(written.approvedPriceOverrides, 1);
   assert.strictEqual(written.approvedLifecycleOverrides, 1);
+  assert.strictEqual(written.approvedMarginPolicies, 2);
   assert.strictEqual(JSON.parse(fs.readFileSync(priceOutputPath, 'utf8')).records.length, 1);
   assert.strictEqual(JSON.parse(fs.readFileSync(lifecycleOutputPath, 'utf8')).records.length, 1);
+  assert.strictEqual(JSON.parse(fs.readFileSync(marginOutputPath, 'utf8')).rows.length, 2);
   const writtenPrice = JSON.parse(fs.readFileSync(priceOutputPath, 'utf8')).records[0];
   assert.strictEqual(approvedRecord(writtenPrice), true, 'canonical builder must accept the materialized price approval');
   const lifecycleMap = lifecycleApprovalMap(root);
@@ -143,6 +189,13 @@ async function main() {
     'exit',
     'canonical builder must accept the materialized lifecycle approval'
   );
+  JSON.parse(fs.readFileSync(marginOutputPath, 'utf8')).rows.forEach((record) => {
+    assert.strictEqual(
+      serverApprovedRegistryRecord(record),
+      true,
+      'canonical builder must accept every materialized margin/MIN/MAX policy'
+    );
+  });
 
   const retrySleeps = [];
   let retryCalls = 0;
@@ -262,7 +315,7 @@ async function main() {
   );
   assert.strictEqual(explicitNoRetryCalls, 1, 'explicit non-retryable 5xx must not be retried');
 
-  console.log('[materialize-repricer-approved-decisions-selftest] OK: only fully approved price and lifecycle decisions reach canonical inputs');
+  console.log('[materialize-repricer-approved-decisions-selftest] OK: only fully approved price, lifecycle and margin/MIN/MAX decisions reach canonical inputs');
 }
 
 main().catch((error) => {

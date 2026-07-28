@@ -1,0 +1,174 @@
+/* The refresh card is also the single, explicit loading-state surface. */
+body.v87-imperial.altea-premium-shell #view-wb-rating .rating-data-refresh {
+  grid-area: refresh;
+  position: relative;
+  display: grid !important;
+  grid-template-columns: minmax(205px, 34%) minmax(0, 1fr);
+  grid-template-areas:
+    "button meta"
+    "button status";
+  align-items: center;
+  gap: 5px 12px;
+  width: 100%;
+  min-width: 0;
+  min-height: 82px;
+  padding: 9px 10px 19px;
+  overflow: hidden;
+  border: 1px solid var(--rw-line-accent);
+  border-radius: 10px;
+  background: rgba(0, 0, 0, .2);
+}
+
+body.v87-imperial.altea-premium-shell #view-wb-rating .rating-data-refresh::before,
+body.v87-imperial.altea-premium-shell #view-wb-rating .rating-data-refresh::after {
+  content: "";
+  position: absolute;
+  right: 10px;
+  bottom: 8px;
+  left: 10px;
+  height: 5px;
+  border-radius: 999px;
+  pointer-events: none;
+}
+
+body.v87-imperial.altea-premium-shell #view-wb-rating .rating-data-refresh::before {
+  background: rgba(255, 255, 255, .075);
+  box-shadow: inset 0 0 0 1px rgba(255, 255, 255, .035);
+}
+
+body.v87-imperial.altea-premium-shell #view-wb-rating .rating-data-refresh::after {
+  right: auto;
+  width: 0;
+  background: linear-gradient(90deg, #b9863b, var(--rw-accent-strong));
+  box-shadow: 0 0 12px rgba(216, 176, 102, .28);
+  transition: width .24s ease, background .24s ease;
+}
+
+body.v87-imperial.altea-premium-shell #view-wb-rating .rating-data-refresh:has(button[aria-busy="true"]) {
+  border-color: rgba(241, 201, 120, .58);
+  background: linear-gradient(135deg, rgba(216, 176, 102, .11), rgba(0, 0, 0, .2));
+  box-shadow: inset 0 0 0 1px rgba(216, 176, 102, .08);
+}
+
+body.v87-imperial.altea-premium-shell #view-wb-rating .rating-data-refresh:has(button[aria-busy="true"])::after {
+  width: 34%;
+  animation: ratingWorkbenchSyncSweep 1.25s cubic-bezier(.4, 0, .2, 1) infinite;
+}
+
+body.v87-imperial.altea-premium-shell #view-wb-rating .rating-data-refresh:not(:has(button[aria-busy="true"])):has(.rating-data-refresh__status[data-tone="ok"])::after {
+  width: calc(100% - 20px);
+  animation: none;
+  background: linear-gradient(90deg, #4eaf82, var(--rw-positive));
+  box-shadow: 0 0 12px rgba(97, 201, 155, .28);
+}
+
+body.v87-imperial.altea-premium-shell #view-wb-rating .rating-data-refresh:not(:has(button[aria-busy="true"])):has(.rating-data-refresh__status[data-tone="danger"])::after {
+  width: calc(100% - 20px);
+  animation: none;
+  background: linear-gradient(90deg, #b86161, var(--rw-danger));
+}
+
+body.v87-imperial.altea-premium-shell #view-wb-rating .rating-data-refresh button {
+  grid-area: button;
+  align-self: stretch;
+  min-width: 0;
+  min-height: 52px;
+  padding: 8px 13px;
+  border: 1px solid rgba(216, 176, 102, .6);
+  border-radius: 9px;
+  background: linear-gradient(135deg, rgba(216, 176, 102, .29), rgba(216, 176, 102, .11));
+  color: #fff1ca;
+  font: inherit;
+  font-size: 11px;
+  font-weight: 900;
+  line-height: 1.22;
+  white-space: normal;
+  box-shadow: inset 0 1px 0 rgba(255, 255, 255, .06);
+}
+
+body.v87-imperial.altea-premium-shell #view-wb-rating .rating-data-refresh button::before {
+  content: "↻";
+  display: inline-block;
+  margin-right: 7px;
+  font-size: 16px;
+  line-height: 0;
+  transform: translateY(1px);
+  transform-origin: 50% 52%;
+}
+
+body.v87-imperial.altea-premium-shell #view-wb-rating .rating-data-refresh button[aria-busy="true"] {
+  opacity: 1;
+  cursor: progress;
+  border-color: rgba(241, 201, 120, .86);
+  background: linear-gradient(135deg, rgba(216, 176, 102, .39), rgba(216, 176, 102, .16));
+}
+
+body.v87-imperial.altea-premium-shell #view-wb-rating .rating-data-refresh button[aria-busy="true"]::before {
+  animation: ratingWorkbenchSpin .8s linear infinite;
+}
+
+body.v87-imperial.altea-premium-shell #view-wb-rating .rating-data-refresh button:hover:not(:disabled) {
+  border-color: rgba(246, 213, 150, .94);
+  background: linear-gradient(135deg, rgba(216, 176, 102, .39), rgba(216, 176, 102, .16));
+  transform: none;
+}
+
+body.v87-imperial.altea-premium-shell #view-wb-rating .rating-data-refresh__meta {
+  grid-area: meta;
+  color: #ead8b5;
+  font-size: 10.5px;
+  font-weight: 850;
+  line-height: 1.3;
+}
+
+body.v87-imperial.altea-premium-shell #view-wb-rating .rating-data-refresh__status {
+  grid-area: status;
+  color: var(--muted);
+  font-size: 10px;
+  line-height: 1.3;
+}
+
+body.v87-imperial.altea-premium-shell #view-wb-rating .rating-data-refresh__meta,
+body.v87-imperial.altea-premium-shell #view-wb-rating .rating-data-refresh__status {
+  min-width: 0;
+  overflow: visible;
+  text-overflow: clip;
+  white-space: normal;
+  overflow-wrap: anywhere;
+}
+
+body.v87-imperial.altea-premium-shell #view-wb-rating .rating-data-refresh__meta[data-tone="ok"],
+body.v87-imperial.altea-premium-shell #view-wb-rating .rating-data-refresh__status[data-tone="ok"] {
+  color: var(--rw-positive);
+}
+
+body.v87-imperial.altea-premium-shell #view-wb-rating .rating-data-refresh__meta[data-tone="warn"],
+body.v87-imperial.altea-premium-shell #view-wb-rating .rating-data-refresh__status[data-tone="warn"] {
+  color: var(--rw-warning);
+}
+
+body.v87-imperial.altea-premium-shell #view-wb-rating .rating-data-refresh__status[data-tone="danger"] {
+  color: var(--rw-danger);
+}
+
+body.v87-imperial.altea-premium-shell #view-wb-rating .rating-action-guide {
+  display: flex !important;
+  align-items: baseline;
+  gap: 6px;
+  min-width: 0;
+  padding: 7px 9px;
+  border: 1px solid rgba(97, 201, 155, .16);
+  border-radius: 9px;
+  background: linear-gradient(145deg, rgba(97, 201, 155, .055), rgba(255, 255, 255, .015));
+  color: var(--muted);
+  font-size: 10px;
+  line-height: 1.35;
+  white-space: normal;
+}
+
+body.v87-imperial.altea-premium-shell #view-wb-rating .rating-action-guide strong {
+  flex: 0 0 auto;
+  color: #c8f4df;
+  font-size: 10px;
+}
+

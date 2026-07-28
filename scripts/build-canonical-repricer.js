@@ -13,6 +13,16 @@ const {
   safeReadJson
 } = require('./smart-price-contour');
 const { evaluateIndicator, readJson: readPolicyJson } = require('./portal-indicator-engine');
+const {
+  buildCompetitorPriceMap,
+  buildCrossPlatformPriceMap,
+  competitorPriceSignal,
+  crossPlatformPriceSignal,
+  estimateOwnPriceElasticity,
+  marketIntelligencePolicy,
+  marketStepAdjustment,
+  seasonalitySignal
+} = require('./repricer-market-intelligence');
 
 const PLATFORM_KEYS = ['wb', 'ozon', 'ym', 'goldapple', 'letu', 'megamarket', 'samokat', 'magnit'];
 const OUTPUT_FILE = 'canonical_repricer.json';
@@ -54,6 +64,8 @@ function resolveOptions(args = {}) {
     featurePolicyPath: path.resolve(args['feature-policy'] || path.join(root, 'data', 'portal_feature_policy.json')),
     economicsPolicyPath: path.resolve(args['economics-policy'] || path.join(inputDir, 'repricer_economics_policy.json')),
     priceObservationHistoryPath: path.resolve(args['price-history'] || path.join(inputDir, 'repricer_price_observation_history.json')),
+    marketObservationHistoryPath: path.resolve(args['market-history'] || path.join(inputDir, 'repricer_market_observation_history.json')),
+    competitorPricesPath: path.resolve(args['competitor-prices'] || path.join(inputDir, 'repricer_competitor_prices.json')),
     noFail: Boolean(args['no-fail']),
     noWrite: Boolean(args['no-write'])
   };
@@ -225,6 +237,30 @@ function buildPriceObservationMap(payload = {}) {
     const history = {
       present: observations.length > 0,
       observations
+    };
+    const exactArticleKey = String(row?.article_key || row?.articleKey || row?.article || '').trim().toLowerCase();
+    map.set(`${platform}|${articleKey}|${exactArticleKey}`, history);
+    const normalizedKey = `${platform}|${articleKey}`;
+    const bucket = normalizedBuckets.get(normalizedKey) || [];
+    bucket.push(history);
+    normalizedBuckets.set(normalizedKey, bucket);
+  });
+  normalizedBuckets.forEach((histories, key) => {
+    if (histories.length === 1) map.set(key, histories[0]);
+  });
+  return map;
+}
+
+function buildMarketObservationMap(payload = {}) {
+  const map = new Map();
+  const normalizedBuckets = new Map();
+  payloadRows(payload).forEach((row) => {
+    const platform = String(row?.platform || '').trim().toLowerCase();
+    const articleKey = normalizeKey(row?.article_key || row?.articleKey || row?.article || '');
+    if (!platform || !articleKey) return;
+    const history = {
+      present: Array.isArray(row?.observations) && row.observations.length > 0,
+      observations: Array.isArray(row?.observations) ? row.observations : []
     };
     const exactArticleKey = String(row?.article_key || row?.articleKey || row?.article || '').trim().toLowerCase();
     map.set(`${platform}|${articleKey}|${exactArticleKey}`, history);
@@ -870,9 +906,13 @@ function buildDemandIntelligence({
   snapshotAsOf = '',
   approval = null,
   priceHistory = null,
-  sourceRow = null
+  marketHistory = null,
+  sourceRow = null,
+  competitorRecord = null,
+  siblingPrices = []
 } = {}) {
   const config = demandPricingPolicy(economicsPolicy, platform, policy.target_turnover_days);
+  const marketPolicy = marketIntelligencePolicy(economicsPolicy, platform);
   const reasons = [];
   const demandAsOf = asIsoDate(procurement?.date || '');
   const demandAgeDays = dateAgeDays(demandAsOf, snapshotAsOf);
@@ -892,7 +932,41 @@ function buildDemandIntelligence({
     sales28,
     config
   });
-  const forecastDaily = firstNumber(forecast.forecast_daily_units);
+  const seasonality = seasonalitySignal(sourceRow || {}, snapshotAsOf, marketPolicy, marketHistory);
+  const baseForecastDaily = firstNumber(forecast.forecast_daily_units);
+  const forecastDaily = baseForecastDaily !== null && seasonality.usable
+    ? Number((baseForecastDaily * seasonality.index).toFixed(6))
+    : baseForecastDaily;
+  const fallbackElasticity = firstNumber(
+    sourceRow?.priceElasticity,
+    sourceRow?.elasticity,
+    sourceRow?.roleElasticity
+  );
+  const elasticity = estimateOwnPriceElasticity(
+    sourceRow || {},
+    marketPolicy,
+    marketHistory,
+    fallbackElasticity,
+    snapshotAsOf
+  );
+  const currentClientPrice = firstPositive(
+    sourceRow?.currentClientPrice,
+    sourceRow?.clientPrice,
+    currentPrice
+  );
+  const competitor = competitorPriceSignal(
+    competitorRecord,
+    currentClientPrice,
+    snapshotAsOf,
+    marketPolicy
+  );
+  const crossPlatform = crossPlatformPriceSignal(
+    platform,
+    currentClientPrice,
+    siblingPrices,
+    snapshotAsOf,
+    marketPolicy
+  );
   const priceSignal = priceChangeSignal(priceHistory, currentPrice, snapshotAsOf, config.cooldownDays);
   const availableStock = firstNumber(stock);
   const inboundUnits = firstNumber(inbound, 0) || 0;
@@ -958,6 +1032,15 @@ function buildDemandIntelligence({
   let action = 'keep';
   let stepPct = 0;
   let requestedPrice = currentPrice;
+  let marketOnlyDecision = false;
+  let marketAdjustment = marketStepAdjustment({
+    action,
+    baseStepPct: stepPct,
+    competitor,
+    crossPlatform,
+    elasticity,
+    policy: marketPolicy
+  });
   if (eligible) {
     reasons.push(observedDailyHistory.usable ? 'demand_daily_history_used' : 'demand_procurement_windows_used');
     reasons.push(
@@ -986,6 +1069,70 @@ function buildDemandIntelligence({
       reasons.push('demand_overstock_price_decrease');
     } else {
       reasons.push('demand_turnover_in_target_band');
+    }
+  }
+  if (eligible && marketPolicy.enabled) {
+    reasons.push(`demand_${seasonality.reason || 'seasonality_unavailable'}`);
+    reasons.push(`demand_${elasticity.reason || 'elasticity_unavailable'}`);
+    reasons.push(`demand_${competitor.reason || 'competitor_signal_unavailable'}`);
+    reasons.push(`demand_${crossPlatform.reason || 'cross_platform_signal_unavailable'}`);
+  }
+  if (
+    eligible
+    && action === 'decrease'
+    && seasonality.usable
+    && seasonality.index >= marketPolicy.seasonality.peakDecreaseBlockIndex
+  ) {
+    action = 'keep';
+    stepPct = 0;
+    requestedPrice = currentPrice;
+    reasons.push('demand_decrease_blocked_by_seasonal_peak');
+  }
+  if (
+    eligible
+    && action === 'keep'
+    && competitor.usable
+    && dataQualityScore >= config.decreaseMinDataQualityScore
+    && Math.abs(competitor.suggested_influence_pct || 0) >= 0.005
+  ) {
+    const direction = Math.sign(competitor.suggested_influence_pct);
+    const canDecrease = direction < 0
+      && !oosDecreaseGuard
+      && !(seasonality.usable && seasonality.index >= marketPolicy.seasonality.peakDecreaseBlockIndex);
+    const canIncrease = direction > 0
+      && turnoverRatio !== null
+      && turnoverRatio <= 1.2;
+    if (canDecrease || canIncrease) {
+      action = direction > 0 ? 'increase' : 'decrease';
+      stepPct = Math.min(
+        marketPolicy.competitors.maxInfluencePct,
+        Math.abs(competitor.suggested_influence_pct)
+      );
+      marketOnlyDecision = true;
+      reasons.push('demand_competitor_gap_price_review');
+    }
+  }
+  if (eligible && action !== 'keep') {
+    marketAdjustment = marketStepAdjustment({
+      action,
+      baseStepPct: marketOnlyDecision ? 0 : stepPct,
+      competitor,
+      crossPlatform,
+      elasticity,
+      policy: marketPolicy
+    });
+    stepPct = marketAdjustment.step_pct;
+    if (stepPct <= 0) {
+      action = 'keep';
+      requestedPrice = currentPrice;
+      reasons.push('demand_market_signal_cancelled_move');
+    } else {
+      requestedPrice = action === 'increase'
+        ? Math.ceil(currentPrice * (1 + stepPct))
+        : Math.floor(currentPrice * (1 - stepPct));
+      if (Math.abs(marketAdjustment.influence_applied_pct || 0) >= 0.0001) {
+        reasons.push('demand_market_intelligence_adjusted_step');
+      }
     }
   }
   if (action !== 'keep' && priceSignal.cooldown_active) {
@@ -1050,6 +1197,7 @@ function buildDemandIntelligence({
     coverage_units: coverageUnits,
     avg_daily_units: avgDaily,
     forecast_daily_units: forecastDaily,
+    forecast_daily_units_before_seasonality: baseForecastDaily,
     baseline_daily_units: forecast.baseline_daily_units,
     recent_7d_daily_units: forecast.recent_7d_daily_units,
     prior_7d_daily_units: forecast.prior_7d_daily_units,
@@ -1073,6 +1221,11 @@ function buildDemandIntelligence({
     procurement_sales_14d_units: procurementSales14,
     procurement_sales_28d_units: procurementSales28,
     step_pct: stepPct,
+    base_step_pct: marketAdjustment.base_step_pct,
+    market_only_decision: marketOnlyDecision,
+    market_influence_pct: marketAdjustment.market_influence_pct,
+    market_influence_applied_pct: marketAdjustment.influence_applied_pct,
+    elasticity_step_multiplier: marketAdjustment.elasticity_multiplier,
     current_price: currentPrice,
     requested_price: action === 'keep' ? currentPrice : requestedPrice,
     guarded_price: action === 'keep' ? currentPrice : guardedPrice,
@@ -1085,8 +1238,22 @@ function buildDemandIntelligence({
     price_cooldown_days: priceSignal.cooldown_days,
     price_cooldown_active: priceSignal.cooldown_active,
     next_review_at: nextReviewAt,
+    market_intelligence: {
+      enabled: marketPolicy.enabled,
+      seasonality,
+      elasticity,
+      competitors: competitor,
+      cross_platform: crossPlatform,
+      review_required: Boolean(
+        eligible
+        && action !== 'keep'
+        && marketPolicy.enabled
+        && marketPolicy.reviewRequired
+      ),
+      max_combined_influence_pct: marketPolicy.maxCombinedInfluencePct
+    },
     reasons: [...new Set(reasons)],
-    source: 'order_procurement_sales_velocity+repricer_live_signals_stock+repricer_price_observation_history',
+    source: 'order_procurement_sales_velocity+repricer_live_signals_stock+repricer_price_observation_history+repricer_market_intelligence',
     policy: {
       max_age_days: config.maxAgeDays,
       approval_ttl_hours: config.approvalTtlHours,
@@ -1106,7 +1273,8 @@ function buildDemandIntelligence({
       high_confidence_min_sales_28d_units: config.highConfidenceMinSales28Units,
       cooldown_days: config.cooldownDays,
       daily_history_max_age_days: config.dailyHistoryMaxAgeDays,
-      min_observed_daily_history_days: config.minObservedDailyHistoryDays
+      min_observed_daily_history_days: config.minObservedDailyHistoryDays,
+      market_intelligence: marketPolicy
     }
   };
 }
@@ -1668,7 +1836,10 @@ function buildCanonicalSide({
   lifecycleApproval,
   minMaxRecord,
   costRecord,
-  priceHistory
+  priceHistory,
+  marketHistory,
+  competitorRecord,
+  siblingPrices
 }) {
   const articleKey = String(sourceRow?.articleKey || sourceRow?.article || '').trim();
   const normalizedArticle = normalizeKey(articleKey);
@@ -1796,7 +1967,10 @@ function buildCanonicalSide({
     snapshotAsOf,
     approval,
     priceHistory,
-    sourceRow
+    marketHistory,
+    sourceRow,
+    competitorRecord,
+    siblingPrices
   });
   const proposed = canRecommend
     ? chooseProposedPrice(price, policy, approval, demandIntelligence)
@@ -1995,6 +2169,15 @@ function buildCanonicalSide({
           observations: demandIntelligence.price_history_observations,
           last_price_change_at: demandIntelligence.last_price_change_at
         },
+        market_intelligence: {
+          source_id: 'repricer_market_intelligence',
+          history_file: 'repricer_market_observation_history.json',
+          competitor_file: 'repricer_competitor_prices.json',
+          competitor_offers: demandIntelligence.market_intelligence?.competitors?.trusted_offers || 0,
+          seasonality_history_days: demandIntelligence.market_intelligence?.seasonality?.observed_days || 0,
+          elasticity_source: demandIntelligence.market_intelligence?.elasticity?.source || '',
+          cross_platforms: demandIntelligence.market_intelligence?.cross_platform?.comparable_platforms || []
+        },
         internal_advertising: {
           source_id: economics.sources?.internal_advertising || '',
           file: economics.sources?.internal_advertising === 'repricer_live_signals'
@@ -2073,7 +2256,8 @@ function buildCanonicalSide({
         'marketplace_current_price',
         'repricer_policy_json',
         preferLiveStock ? 'repricer_live_stock' : 'order_procurement_stock',
-        'repricer_internal_advertising'
+        'repricer_internal_advertising',
+        'repricer_market_intelligence'
       ]
     },
     audit: {
@@ -2094,6 +2278,12 @@ function buildCanonicalSide({
 }
 
 function buildCanonicalRepricer(options = resolveOptions({})) {
+  const priceObservationHistoryPath = options.priceObservationHistoryPath
+    || file(options.inputDir, 'repricer_price_observation_history.json');
+  const marketObservationHistoryPath = options.marketObservationHistoryPath
+    || file(options.inputDir, 'repricer_market_observation_history.json');
+  const competitorPricesPath = options.competitorPricesPath
+    || file(options.inputDir, 'repricer_competitor_prices.json');
   const sourceFiles = [
     'smart_price_workbench.json',
     'smart_price_overlay.json',
@@ -2104,6 +2294,8 @@ function buildCanonicalRepricer(options = resolveOptions({})) {
     'repricer_live_signals.json',
     'repricer_live_prices.json',
     'repricer_price_observation_history.json',
+    'repricer_market_observation_history.json',
+    'repricer_competitor_prices.json',
     'skus.json',
     'portal_metric_registry.json',
     'portal_indicator_policy.json',
@@ -2144,7 +2336,15 @@ function buildCanonicalRepricer(options = resolveOptions({})) {
     ym: buildLiveSignalBucket(liveSignalsPayload, 'ym')
   };
   const priceObservationHistory = buildPriceObservationMap(safeReadJson(
-    options.priceObservationHistoryPath || file(options.inputDir, 'repricer_price_observation_history.json'),
+    priceObservationHistoryPath,
+    { generatedAt: '', rows: [] }
+  ));
+  const marketObservationHistory = buildMarketObservationMap(safeReadJson(
+    marketObservationHistoryPath,
+    { generatedAt: '', rows: [] }
+  ));
+  const competitorPrices = buildCompetitorPriceMap(safeReadJson(
+    competitorPricesPath,
     { generatedAt: '', rows: [] }
   ));
   const policyPayload = readPolicyJson(options.policyPath, {});
@@ -2162,11 +2362,24 @@ function buildCanonicalRepricer(options = resolveOptions({})) {
   const merged = mergeSmartPriceContour(workbench || {}, overlay || {}, live || {}, {
     includeLiveOnlyRows: false
   });
+  const crossPlatformPrices = buildCrossPlatformPriceMap(merged, enabledPlatforms);
   const sharedProductCosts = buildSharedProductCostMap(merged, enabledPlatforms);
   const supportMaps = Object.fromEntries(enabledPlatforms.map((platform) => [platform, buildMap(platformRows(support, platform))]));
   const skuMap = buildMap(registryRows(skus));
   const sources = {
     ...sourceMeta(options.inputDir, sourceFiles),
+    [path.basename(priceObservationHistoryPath)]: sourcePathMeta(
+      priceObservationHistoryPath,
+      path.basename(priceObservationHistoryPath)
+    ),
+    [path.basename(marketObservationHistoryPath)]: sourcePathMeta(
+      marketObservationHistoryPath,
+      path.basename(marketObservationHistoryPath)
+    ),
+    [path.basename(competitorPricesPath)]: sourcePathMeta(
+      competitorPricesPath,
+      path.basename(competitorPricesPath)
+    ),
     [path.basename(liveWorkbenchPath)]: sourcePathMeta(
       liveWorkbenchPath,
       path.basename(liveWorkbenchPath)
@@ -2237,7 +2450,14 @@ function buildCanonicalRepricer(options = resolveOptions({})) {
         costRecord,
         priceHistory: priceObservationHistory.get(`${skuKey}|${articleKey.toLowerCase()}`)
           || priceObservationHistory.get(skuKey)
-          || null
+          || null,
+        marketHistory: marketObservationHistory.get(`${skuKey}|${articleKey.toLowerCase()}`)
+          || marketObservationHistory.get(skuKey)
+          || null,
+        competitorRecord: competitorPrices.get(`${skuKey}|${articleKey.toLowerCase()}`)
+          || competitorPrices.get(skuKey)
+          || null,
+        siblingPrices: crossPlatformPrices.get(normalizedArticle) || []
       }));
     });
   });
@@ -2254,6 +2474,28 @@ function buildCanonicalRepricer(options = resolveOptions({})) {
   const publishableRows = rows.filter((row) => row.recommendation.status === 'ready');
   const blockedRows = rows.length - publishableRows.length;
   const readiness = featureReadiness(rows, featurePolicy);
+  const marketIntelligenceSummary = rows.reduce((summary, row) => {
+    const demand = row?.demand_intelligence || {};
+    const market = demand?.market_intelligence || {};
+    if (market.enabled) summary.enabled_rows += 1;
+    if (market.seasonality?.usable) summary.seasonality_usable_rows += 1;
+    if (market.elasticity?.usable) summary.elasticity_learned_rows += 1;
+    if (market.competitors?.usable) summary.competitor_usable_rows += 1;
+    if (market.cross_platform?.usable) summary.cross_platform_usable_rows += 1;
+    if (Math.abs(firstNumber(demand.market_influence_applied_pct, 0) || 0) > 0) {
+      summary.market_adjusted_rows += 1;
+    }
+    if (demand.market_only_decision) summary.market_only_rows += 1;
+    return summary;
+  }, {
+    enabled_rows: 0,
+    seasonality_usable_rows: 0,
+    elasticity_learned_rows: 0,
+    competitor_usable_rows: 0,
+    cross_platform_usable_rows: 0,
+    market_adjusted_rows: 0,
+    market_only_rows: 0
+  });
   const summary = {
     rows: rows.length,
     eligible_rows: readiness.eligible_rows,
@@ -2266,7 +2508,8 @@ function buildCanonicalRepricer(options = resolveOptions({})) {
     blocked_recommendations: blockedRows,
     duplicate_platform_keys: duplicatePlatformKeys.length,
     normalized_article_collisions: normalizedCollisions.length,
-    deduped_exact_duplicates: dedupedExactDuplicates.length
+    deduped_exact_duplicates: dedupedExactDuplicates.length,
+    market_intelligence: marketIntelligenceSummary
   };
   const payload = {
     schema: 'canonical-repricer-v1',
@@ -2387,10 +2630,19 @@ module.exports = {
   featureReadiness,
   buildSharedProductCostMap,
   buildPriceObservationMap,
+  buildMarketObservationMap,
+  buildCompetitorPriceMap,
+  buildCrossPlatformPriceMap,
   buildDemandIntelligence,
+  competitorPriceSignal,
+  crossPlatformPriceSignal,
   dailyDemandWindow,
   demandForecast,
   demandPricingPolicy,
+  estimateOwnPriceElasticity,
+  marketIntelligencePolicy,
+  marketStepAdjustment,
   priceChangeSignal,
+  seasonalitySignal,
   chooseProposedPrice
 };

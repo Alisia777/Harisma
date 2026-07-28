@@ -3019,6 +3019,7 @@ function canonicalRepricerRuntimeSide(canonical = {}) {
     avgDailyUnits: canonical.demand_intelligence?.avg_daily_units ?? null,
     sales28Units: canonical.demand_intelligence?.sales_28d_units ?? null,
     demandIntelligence: canonical.demand_intelligence || null,
+    marketIntelligence: canonical.demand_intelligence?.market_intelligence || null,
     demandPriceReviewRequired: demandReviewRequired,
     demandPriceApprovalPending: demandApprovalPending,
     demandPriceApprovalStatus: demandApprovalPending
@@ -3859,7 +3860,30 @@ function repricerDemandReasonLabel(reason = '') {
     demand_decrease_blocked_by_oos_risk: 'снижение запрещено из-за риска OOS',
     demand_price_cooldown_active: 'цена недавно менялась: действует cooldown',
     demand_turnover_in_target_band: 'оборачиваемость в целевом диапазоне',
-    demand_move_absorbed_by_safety_corridor: 'шаг поглощён безопасным коридором'
+    demand_move_absorbed_by_safety_corridor: 'шаг поглощён безопасным коридором',
+    demand_seasonality_peak_ahead: 'впереди сезонный пик',
+    demand_seasonality_soft_period_ahead: 'впереди сезонно слабый период',
+    demand_seasonality_neutral: 'сезонный фон нейтрален',
+    demand_seasonality_history_missing: 'нет истории для сезонности',
+    demand_seasonality_history_stale: 'история сезонности устарела',
+    demand_seasonality_history_insufficient: 'мало истории для сезонности',
+    demand_seasonality_calendar_coverage_low: 'в истории сезонности слишком много пропущенных дней',
+    demand_elasticity_learned: 'эластичность обучена на своей истории',
+    demand_elasticity_history_insufficient: 'мало смен цены для обучения эластичности',
+    demand_elasticity_history_stale: 'история для эластичности устарела',
+    demand_elasticity_calendar_coverage_low: 'в истории эластичности слишком много пропущенных дней',
+    demand_elasticity_non_economic_rejected: 'нелогичная эластичность отклонена',
+    demand_elasticity_model_low_confidence: 'модель эластичности ненадёжна',
+    demand_competitor_gap_inside_tolerance: 'цена в диапазоне конкурентов',
+    demand_competitor_gap_actionable: 'есть значимый разрыв с конкурентами',
+    demand_competitor_coverage_insufficient: 'мало сопоставимых цен конкурентов',
+    demand_cross_platform_gap_inside_tolerance: 'цены площадок согласованы',
+    demand_cross_platform_gap_actionable: 'цены площадок заметно расходятся',
+    demand_cross_platform_signal_insufficient: 'недостаточно цен других площадок',
+    demand_decrease_blocked_by_seasonal_peak: 'снижение остановлено сезонным пиком',
+    demand_competitor_gap_price_review: 'цена по конкурентам требует проверки',
+    demand_market_intelligence_adjusted_step: 'рыночные сигналы скорректировали шаг',
+    demand_market_signal_cancelled_move: 'рынок отменил небезопасный шаг'
   };
   return labels[String(reason || '').trim()] || String(reason || '').trim();
 }
@@ -3879,6 +3903,9 @@ function renderRepricerSide(title, side) {
   const action = repricerExplainSideAction(side);
   const demand = side.demandIntelligence && typeof side.demandIntelligence === 'object'
     ? side.demandIntelligence
+    : null;
+  const market = demand?.market_intelligence && typeof demand.market_intelligence === 'object'
+    ? demand.market_intelligence
     : null;
   const demandActionLabel = demand?.action === 'increase'
     ? 'поднять'
@@ -3969,6 +3996,23 @@ function renderRepricerSide(title, side) {
           решение — ${escapeHtml(demandActionLabel)}.
           ${demand.price_cooldown_active ? ` Повторная смена запрещена до ${escapeHtml(demand.next_review_at || 'окончания cooldown')}.` : ''}
           ${Array.isArray(demand.reasons) && demand.reasons.length ? ` ${escapeHtml(demand.reasons.map(repricerDemandReasonLabel).join(' · '))}` : ''}
+        </div>
+      ` : ''}
+      ${market?.enabled ? `
+        <div class="muted small" style="margin-top:8px">
+          <strong>Рынок:</strong>
+          сезон ${market.seasonality?.usable
+            ? `${fmt.num(market.seasonality.index, 2)}× (${escapeHtml(market.seasonality.confidence || '—')}, ${fmt.int(market.seasonality.observed_days)} дн.)`
+            : `не обучен (${fmt.int(market.seasonality?.observed_days || 0)} дн.)`};
+          эластичность ${market.elasticity?.value == null
+            ? '—'
+            : `${fmt.num(market.elasticity.value, 2)} (${market.elasticity?.usable ? `своя, R² ${fmt.num(market.elasticity.r2, 2)}` : 'пороговая'})`};
+          конкуренты ${market.competitors?.usable
+            ? `${fmt.money(market.competitors.benchmark_client_price)} · ${fmt.int(market.competitors.trusted_offers)} цен · разрыв ${fmt.pct(market.competitors.own_price_gap_pct)}`
+            : `нет надёжной выборки (${fmt.int(market.competitors?.trusted_offers || 0)})`};
+          другие площадки ${market.cross_platform?.usable
+            ? `${fmt.money(market.cross_platform.sibling_client_price)} · разрыв ${fmt.pct(market.cross_platform.own_price_gap_pct)}`
+            : 'нет свежего сравнения'}.
         </div>
       ` : ''}
       <div class="badge-stack" style="margin-top:8px">
@@ -7422,6 +7466,35 @@ function repricerExportRows(platform = 'all', sourceRows = null) {
       demand_reason_codes: Array.isArray(side.demandIntelligence?.reasons)
         ? side.demandIntelligence.reasons.join(' · ')
         : '',
+      seasonality_index: repricerExportNumber(side.demandIntelligence?.market_intelligence?.seasonality?.index, 3),
+      seasonality_confidence: side.demandIntelligence?.market_intelligence?.seasonality?.confidence || '',
+      seasonality_history_days: repricerExportNumber(side.demandIntelligence?.market_intelligence?.seasonality?.observed_days, 0),
+      seasonality_calendar_coverage_pct: side.demandIntelligence?.market_intelligence?.seasonality?.calendar_coverage == null
+        ? ''
+        : repricerExportNumber(side.demandIntelligence.market_intelligence.seasonality.calendar_coverage * 100, 1),
+      seasonality_history_as_of: side.demandIntelligence?.market_intelligence?.seasonality?.history_as_of || '',
+      elasticity_value: repricerExportNumber(side.demandIntelligence?.market_intelligence?.elasticity?.value, 3),
+      elasticity_source: side.demandIntelligence?.market_intelligence?.elasticity?.source || '',
+      elasticity_confidence: side.demandIntelligence?.market_intelligence?.elasticity?.confidence || '',
+      elasticity_r2: repricerExportNumber(side.demandIntelligence?.market_intelligence?.elasticity?.r2, 3),
+      elasticity_observations: repricerExportNumber(side.demandIntelligence?.market_intelligence?.elasticity?.observations, 0),
+      elasticity_calendar_coverage_pct: side.demandIntelligence?.market_intelligence?.elasticity?.calendar_coverage == null
+        ? ''
+        : repricerExportNumber(side.demandIntelligence.market_intelligence.elasticity.calendar_coverage * 100, 1),
+      competitor_benchmark_client_price_rub: repricerExportNumber(side.demandIntelligence?.market_intelligence?.competitors?.benchmark_client_price, 2),
+      competitor_own_price_gap_pct: side.demandIntelligence?.market_intelligence?.competitors?.own_price_gap_pct == null
+        ? ''
+        : repricerExportNumber(side.demandIntelligence.market_intelligence.competitors.own_price_gap_pct * 100, 2),
+      competitor_trusted_offers: repricerExportNumber(side.demandIntelligence?.market_intelligence?.competitors?.trusted_offers, 0),
+      competitor_confidence: side.demandIntelligence?.market_intelligence?.competitors?.confidence || '',
+      competitor_observed_at: side.demandIntelligence?.market_intelligence?.competitors?.observed_at || '',
+      cross_platform_client_price_rub: repricerExportNumber(side.demandIntelligence?.market_intelligence?.cross_platform?.sibling_client_price, 2),
+      cross_platform_price_gap_pct: side.demandIntelligence?.market_intelligence?.cross_platform?.own_price_gap_pct == null
+        ? ''
+        : repricerExportNumber(side.demandIntelligence.market_intelligence.cross_platform.own_price_gap_pct * 100, 2),
+      market_influence_applied_pct: side.demandIntelligence?.market_influence_applied_pct == null
+        ? ''
+        : repricerExportNumber(side.demandIntelligence.market_influence_applied_pct * 100, 2),
       autoprice_allowed: side.autopriceAllowed ? 'yes' : 'no',
       launch_allowed: side.launchAllowed ? 'yes' : 'no',
       volume_push_allowed: side.volumePushAllowed ? 'yes' : 'no',
@@ -7607,6 +7680,25 @@ function downloadRepricerExcel(platform = 'all', sourceRows = null) {
     ['demand_price_cooldown_active', 'Умный слой: cooldown активен'],
     ['demand_next_review_at', 'Умный слой: проверить снова'],
     ['demand_reason_codes', 'Умный слой: причины'],
+    ['seasonality_index', 'Рынок: сезонный индекс, ×'],
+    ['seasonality_confidence', 'Рынок: надёжность сезонности'],
+    ['seasonality_history_days', 'Рынок: история сезонности, дней'],
+    ['seasonality_calendar_coverage_pct', 'Рынок: заполненность календарной истории, %'],
+    ['seasonality_history_as_of', 'Рынок: история сезонности на дату'],
+    ['elasticity_value', 'Рынок: эластичность цены'],
+    ['elasticity_source', 'Рынок: источник эластичности'],
+    ['elasticity_confidence', 'Рынок: надёжность эластичности'],
+    ['elasticity_r2', 'Рынок: R² эластичности'],
+    ['elasticity_observations', 'Рынок: наблюдений эластичности'],
+    ['elasticity_calendar_coverage_pct', 'Рынок: заполненность истории эластичности, %'],
+    ['competitor_benchmark_client_price_rub', 'Конкуренты: медианная клиентская цена, ₽'],
+    ['competitor_own_price_gap_pct', 'Конкуренты: наша цена к медиане, %'],
+    ['competitor_trusted_offers', 'Конкуренты: сопоставимых цен'],
+    ['competitor_confidence', 'Конкуренты: надёжность'],
+    ['competitor_observed_at', 'Конкуренты: данные на дату'],
+    ['cross_platform_client_price_rub', 'Площадки: клиентская цена другого канала, ₽'],
+    ['cross_platform_price_gap_pct', 'Площадки: разрыв клиентских цен, %'],
+    ['market_influence_applied_pct', 'Рынок: влияние на шаг цены, %'],
     ['autoprice_allowed', 'Autoprice'],
     ['launch_allowed', 'Launch rule'],
     ['volume_push_allowed', 'Volume push'],

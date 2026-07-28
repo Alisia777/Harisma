@@ -362,6 +362,7 @@ jobs:
           node scripts/build-order-procurement-layer.js
           node scripts/build-oos-control-layer.js --input-dir data --base-data-dir data --output-dir data
           node scripts/portal-repricer-live-signals-sync.js sync --input-dir data --output data/repricer_live_signals.json --as-of-date '${{ steps.cutoff.outputs.run_date }}' --strict
+          node scripts/build-repricer-market-observation-history.js --input-dir data --output data/repricer_market_observation_history.json --as-of-date '${{ steps.cutoff.outputs.run_date }}' --retention-days 400
           node scripts/build-wb-owner-audit-from-skus.js --input-dir data --base-data-dir data --output-dir data --run-date '${{ steps.cutoff.outputs.run_date }}'
           node scripts/build-portal-data-quality-report.js --input-dir data --base-data-dir data --output-dir data --run-date '${{ steps.cutoff.outputs.run_date }}'
           node scripts/portal-sync-health.js --input-dir data --base-data-dir data --output-dir data --quarantine-only
@@ -442,6 +443,7 @@ jobs:
             .portal-truth-output/**
             data/active_snapshot.json
             data/repricer_live_prices.json
+            data/repricer_market_observation_history.json
             data/price_update_audit.json
             data/smart_price_overlay.json
             data/prices.json

@@ -34,6 +34,7 @@ const DEFAULT_INVENTORY_PATHS = [
   'data/canonical_repricer.json',
   'data/repricer_live_signals.json',
   'data/repricer_live_prices.json',
+  'data/repricer_market_observation_history.json',
   'data/repricer_team_policy_proposals.json',
   'data/portal_dashboard_metrics.json',
   'data/metric_contracts_non_iu.json',

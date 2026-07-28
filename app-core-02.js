@@ -1196,8 +1196,49 @@ function priorityBadges(sku) {
 }
 
 function commentTypeChip(type) {
+  if (type === 'rating_workflow') return badge('Отзывы', 'info');
   const map = { signal: 'info', risk: 'danger', focus: 'warn', idea: 'ok' };
   return badge(type || 'comment', map[type] || '');
+}
+
+function ratingWorkflowCommentMeta(comment = {}) {
+  const text = String(comment.text || '');
+  if (comment.type !== 'rating_workflow' && !text.includes('[[rating-workflow:v1]]')) return null;
+  const decode = (value) => {
+    try {
+      return decodeURIComponent(String(value || ''));
+    } catch (error) {
+      return String(value || '');
+    }
+  };
+  const status = text.match(/\[\[status:([^\]]+)\]\]/i)?.[1] || 'new';
+  const entryKind = text.match(/\[\[entry:([^\]]+)\]\]/i)?.[1] || 'comment';
+  const statusLabels = { new: 'Новый', progress: 'В работе', waiting: 'Ждём ответ', done: 'Готово' };
+  const entryLabels = { feedback: 'Отзыв по артикулу', comment: 'Комментарий для команды' };
+  return {
+    platform: (text.match(/\[\[platform:([^\]]+)\]\]/i)?.[1] || 'wb').toUpperCase(),
+    status: statusLabels[status] || statusLabels.new,
+    entry: entryLabels[entryKind] || entryLabels.comment,
+    owner: decode(text.match(/\[\[owner:([^\]]*)\]\]/i)?.[1] || ''),
+    due: text.match(/\[\[due:([^\]]*)\]\]/i)?.[1] || '',
+    text: text
+      .replace('[[rating-workflow:v1]]', '')
+      .replace(/\[\[(platform|status|entry|owner|due):[^\]]*\]\]/gi, '')
+      .trim()
+  };
+}
+
+function commentDisplayText(comment = {}) {
+  const workflow = ratingWorkflowCommentMeta(comment);
+  if (!workflow) return String(comment.text || '');
+  const meta = [
+    workflow.platform,
+    workflow.entry,
+    workflow.status,
+    workflow.owner ? `ответственный ${workflow.owner}` : '',
+    workflow.due ? `срок ${workflow.due}` : ''
+  ].filter(Boolean).join(' · ');
+  return workflow.text ? `${meta} — ${workflow.text}` : meta;
 }
 
 function mapTaskStatus(status) {

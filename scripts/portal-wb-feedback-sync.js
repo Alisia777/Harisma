@@ -7,6 +7,8 @@ const WB_FEEDBACKS_API_BASE_URL = 'https://feedbacks-api.wildberries.ru';
 const WB_FEEDBACKS_DOCS_URL = 'https://dev.wildberries.ru/en/docs/openapi/user-communication';
 const DEFAULT_OUTPUT_FILE = 'wb_feedbacks_summary.json';
 const MOSCOW_OFFSET = '+03:00';
+const PORTAL_RATING_HISTORY_DAYS = 30;
+const PORTAL_DAILY_SNAPSHOT_DAYS = 14;
 
 function parseArgs(argv) {
   const args = { command: 'sync' };
@@ -163,18 +165,19 @@ function resolveOptions(args) {
   const defaultDays = Number.isFinite(Number(args.days)) ? Number(args.days) : 30;
   const from = isoDate(args.from || args['date-from'] || addDays(to, -Math.max(1, defaultDays) + 1));
   const take = Math.min(Math.max(1, Number(args.take) || 5000), 5000);
+  const token = args.token
+    || process.env.ALTEA_WB_FEEDBACKS_TOKEN
+    || process.env.ALTEA_WB_PROMOTION_TOKEN
+    || process.env.ALTEA_WB_API_TOKEN
+    || '';
   return {
     command: args.command || 'sync',
     dryRun: Boolean(args.dryRun),
-    token: args.token
-      || process.env.ALTEA_WB_FEEDBACKS_TOKEN
-      || process.env.ALTEA_WB_PROMOTION_TOKEN
-      || process.env.ALTEA_WB_API_TOKEN
-      || '',
+    token,
     ratingToken: args['rating-token']
       || process.env.ALTEA_WB_FEEDBACKS_SERVICE_TOKEN
-      || process.env.ALTEA_WB_FEEDBACKS_TOKEN
-      || '',
+      || process.env.ALTEA_WB_API_TOKEN
+      || token,
     apiBaseUrl: String(args['api-base-url'] || process.env.ALTEA_WB_FEEDBACKS_API_BASE_URL || WB_FEEDBACKS_API_BASE_URL).replace(/\/+$/, ''),
     baseDataDir,
     inputDir,
@@ -331,7 +334,7 @@ async function fetchCounts(options, diagnostics) {
     '/api/common/v1/rating',
     { token: options.ratingToken },
     diagnostics,
-    'seller rating (service token required)'
+    'seller rating (token with common rating permission required)'
   );
   if (rating && typeof rating === 'object' && !rating.error) {
     counts.sellerRating = {
@@ -662,7 +665,8 @@ function buildDaily(feedbacks, questions, options) {
 
 function buildCardRatingDynamics(feedbacks, cards, options) {
   const dates = [];
-  let cursor = options.from;
+  const ratingHistoryFrom = addDays(options.to, -PORTAL_RATING_HISTORY_DAYS + 1);
+  let cursor = String(options.from).localeCompare(ratingHistoryFrom) > 0 ? options.from : ratingHistoryFrom;
   while (cursor <= options.to) {
     dates.push(cursor);
     cursor = addDays(cursor, 1);
@@ -883,6 +887,73 @@ function summarizeQuestions(rows, predicate = () => true) {
   };
 }
 
+function dedupeCurrentRows(rows, kind, diagnostics) {
+  const byId = new Map();
+  let duplicates = 0;
+  for (const row of rows) {
+    const id = normalizeText(row?.id);
+    if (!id) continue;
+    const existing = byId.get(id);
+    if (!existing) {
+      byId.set(id, row);
+      continue;
+    }
+    duplicates += 1;
+    byId.set(id, {
+      ...existing,
+      ...row,
+      answered: Boolean(existing.answered || row.answered)
+    });
+  }
+  diagnostics[`${kind}DuplicateRows`] = duplicates;
+  if (duplicates > 0) {
+    diagnostics.warnings.push(`${kind}: removed ${duplicates} duplicate rows returned across answered/unanswered queries`);
+  }
+  return [...byId.values()];
+}
+
+function reconcileCurrentUnanswered(feedbacks, questions, counts, diagnostics) {
+  const before = {
+    feedbacks: feedbacks.filter((row) => !row.answered).length,
+    questions: questions.filter((row) => !row.answered).length
+  };
+  const feedbacksAuthoritative = numberOrNull(counts?.feedbacksUnansweredNow);
+  const questionsAuthoritative = numberOrNull(
+    counts?.questionsUnansweredNow ?? counts?.questionsUnansweredWindow
+  );
+  const feedbacksReconciled = feedbacksAuthoritative === 0
+    ? feedbacks.map((row) => row.answered ? row : { ...row, answered: true })
+    : feedbacks;
+  const questionsReconciled = questionsAuthoritative === 0
+    ? questions.map((row) => row.answered ? row : { ...row, answered: true })
+    : questions;
+  const after = {
+    feedbacks: feedbacksReconciled.filter((row) => !row.answered).length,
+    questions: questionsReconciled.filter((row) => !row.answered).length
+  };
+  if (before.feedbacks > 0 && after.feedbacks === 0) {
+    diagnostics.warnings.push('feedbacks: card tails reset because WB current unanswered counter is zero');
+  }
+  if (before.questions > 0 && after.questions === 0) {
+    diagnostics.warnings.push('questions: card tails reset because WB unanswered window counter is zero');
+  }
+  return {
+    feedbacks: feedbacksReconciled,
+    questions: questionsReconciled,
+    details: {
+      source: 'wb-current-counters',
+      before,
+      after,
+      authoritative: {
+        feedbacks: feedbacksAuthoritative,
+        questions: questionsAuthoritative
+      },
+      feedbacksResetToZero: feedbacksAuthoritative === 0 && before.feedbacks > 0,
+      questionsResetToZero: questionsAuthoritative === 0 && before.questions > 0
+    }
+  };
+}
+
 function latestPreviousSnapshot(previousPayload, to) {
   const history = Array.isArray(previousPayload?.history) ? previousPayload.history : [];
   return history
@@ -1015,7 +1086,7 @@ function buildHistory(previousPayload, payload, options) {
   return [
     ...history.filter((item) => item?.date !== options.to),
     entry
-  ].sort((left, right) => String(left.date).localeCompare(String(right.date))).slice(-120);
+  ].sort((left, right) => String(left.date).localeCompare(String(right.date))).slice(-PORTAL_DAILY_SNAPSHOT_DAYS);
 }
 
 async function buildPayload(options) {
@@ -1034,8 +1105,19 @@ async function buildPayload(options) {
   const answeredQuestionRows = await fetchPagedList(options, diagnostics, 'questions', true);
   const feedbackRows = reconcileCommunicationRows(openFeedbackRows, answeredFeedbackRows);
   const questionRows = reconcileCommunicationRows(openQuestionRows, answeredQuestionRows);
-  const feedbacks = feedbackRows.map((row) => normalizeFeedback(row, lookups)).filter((row) => row.id);
-  const questions = questionRows.map((row) => normalizeQuestion(row, lookups)).filter((row) => row.id);
+  let feedbacks = dedupeCurrentRows(
+    feedbackRows.map((row) => normalizeFeedback(row, lookups)).filter((row) => row.id),
+    'feedbacks',
+    diagnostics
+  );
+  let questions = dedupeCurrentRows(
+    questionRows.map((row) => normalizeQuestion(row, lookups)).filter((row) => row.id),
+    'questions',
+    diagnostics
+  );
+  const reconciliation = reconcileCurrentUnanswered(feedbacks, questions, counts, diagnostics);
+  feedbacks = reconciliation.feedbacks;
+  questions = reconciliation.questions;
   let cards = buildCards(feedbacks, questions, skus, options, previousSnapshot);
   const ratingDynamics = buildCardRatingDynamics(feedbacks, cards, options);
   const ratingRowsByKey = new Map((ratingDynamics.matrix || []).map((row) => [cardIdentityKey(row), row]));
@@ -1109,6 +1191,7 @@ async function buildPayload(options) {
       feedbacks: summarizeRows(feedbacks, windowPredicate),
       questions: summarizeQuestions(questions, windowPredicate),
       counters: counts,
+      reconciliation: reconciliation.details,
       cardsWithFeedbacks: cards.filter((card) => card.feedbackCount > 0).length,
       cardsWithQuestions: cards.filter((card) => card.questionCount > 0).length,
       cardsWithLowRating: cards.filter((card) => card.lowRatingCount > 0).length,
@@ -1206,11 +1289,15 @@ if (require.main === module) {
 module.exports = {
   buildCards,
   buildPayload,
+  buildCardRatingDynamics,
+  buildHistory,
+  dedupeCurrentRows,
   fetchCounts,
   fetchPagedList,
   normalizeFeedback,
   normalizeQuestion,
   reconcileCommunicationRows,
+  reconcileCurrentUnanswered,
   resolveOptions,
   summarizeQuestions,
   summarizeRows

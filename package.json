@@ -100,6 +100,7 @@
     "portal:prices-search-fallback-test": "node scripts/portal-price-search-range-fallback.selftest.js",
     "portal:prices-correctness-test": "node scripts/portal-prices-correctness.selftest.js",
     "portal:prices-source-freshness-test": "node scripts/portal-price-source-freshness.selftest.js",
+    "portal:rating-feedback-ux-test": "node scripts/portal-wb-rating-feedback-ux.selftest.js && node scripts/portal-rating-workflow-persistence.selftest.js && node scripts/portal-wb-feedback-refresh.selftest.js && node scripts/portal-wb-feedback-snapshot-load.selftest.js",
     "portal:prices-update-transaction-test": "node scripts/price-update-transaction.selftest.js",
     "portal:prices-import-report-test": "node scripts/import-price-history-report.selftest.js",
     "portal:prices-import-report": "node scripts/import-price-history-report.js",

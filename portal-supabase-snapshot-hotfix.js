@@ -650,13 +650,18 @@
     return result;
   }
 
-  function snapshotPartKeys(snapshotKey, count) {
+  async function requestRowsForChunkPrefix(activeCfg, snapshotKey, count) {
     const total = Math.max(0, Math.trunc(Number(count) || 0));
-    const keys = [];
-    for (let index = 1; index <= total; index += 1) {
-      keys.push(`${snapshotKey}__part__${String(index).padStart(4, '0')}`);
-    }
-    return keys;
+    if (!snapshotKey || !total) return [];
+    const url = buildSnapshotUrl(activeCfg);
+    url.searchParams.set('snapshot_key', `like.${snapshotKey}__part__*`);
+    url.searchParams.set('order', 'snapshot_key.asc');
+    url.searchParams.set('limit', String(total));
+    const prefix = `${snapshotKey}__part__`;
+    const rows = await requestSnapshotRows(activeCfg, url);
+    return (Array.isArray(rows) ? rows : [])
+      .filter((row) => String(row?.snapshot_key || '').startsWith(prefix))
+      .slice(0, total);
   }
 
   async function fetchRowsForKeys(activeCfg, keys) {
@@ -673,7 +678,7 @@
     const partGroups = [];
     for (const item of chunkedKeys) {
       try {
-        partGroups.push(await requestRowsForExactKeys(activeCfg, snapshotPartKeys(item.key, item.count)));
+        partGroups.push(await requestRowsForChunkPrefix(activeCfg, item.key, item.count));
       } catch (error) {
         console.warn('[portal-supabase-snapshot-hotfix] chunk load failed', item.key, error);
       }

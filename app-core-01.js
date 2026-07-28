@@ -382,6 +382,7 @@ const DEFAULT_APP_CONFIG = {
   brand: 'Алтея',
   teamMode: 'local',
   teamMember: { name: '', role: 'Команда' },
+  wbFeedbackSyncEndpoint: '',
   repricerPriceSyncEndpoint: '',
   supabase: { url: '', anonKey: '', auth: 'email_password' }
 };
@@ -1608,13 +1609,21 @@ async function fetchPortalSnapshotRowsByKeys(snapshotKeys) {
   return rows;
 }
 
-function snapshotPartKeys(snapshotKey, count) {
+async function fetchPortalSnapshotChunkRows(snapshotKey, count) {
+  const requestConfig = portalSnapshotRequestBaseUrl();
   const total = Math.max(0, Math.trunc(Number(count) || 0));
-  const result = [];
-  for (let index = 1; index <= total; index += 1) {
-    result.push(`${snapshotKey}__part__${String(index).padStart(4, '0')}`);
-  }
-  return result;
+  if (!requestConfig || !snapshotKey || !total) return [];
+  const url = new URL(requestConfig.url);
+  url.searchParams.set('select', 'snapshot_key,payload,generated_at,updated_at,payload_hash');
+  url.searchParams.set('brand', `eq.${requestConfig.brand}`);
+  url.searchParams.set('snapshot_key', `like.${snapshotKey}__part__*`);
+  url.searchParams.set('order', 'snapshot_key.asc');
+  url.searchParams.set('limit', String(total));
+  const prefix = `${snapshotKey}__part__`;
+  const rows = await requestPortalSnapshotJson(url.toString(), requestConfig.headers);
+  return (Array.isArray(rows) ? rows : [])
+    .filter((row) => String(row?.snapshot_key || '').startsWith(prefix))
+    .slice(0, total);
 }
 
 async function loadPortalSnapshotPayloadByKey(snapshotKey) {
@@ -1631,8 +1640,10 @@ async function loadPortalSnapshotPayloadByKey(snapshotKey) {
       const basePayload = baseRow?.payload;
       let rows = baseRows;
       if (basePayload?.chunked === true) {
-        const partKeys = snapshotPartKeys(snapshotKey, basePayload.chunk_count || basePayload.chunkCount);
-        rows = rows.concat(await fetchPortalSnapshotRowsByKeys(partKeys));
+        rows = rows.concat(await fetchPortalSnapshotChunkRows(
+          snapshotKey,
+          basePayload.chunk_count || basePayload.chunkCount
+        ));
       }
       const decoded = decodeChunkedPortalSnapshots(rows);
       const payload = decoded[snapshotKey];

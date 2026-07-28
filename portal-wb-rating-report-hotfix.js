@@ -2,7 +2,7 @@
   if (window.__ALTEA_WB_RATING_REPORT_HOTFIX__) return;
   window.__ALTEA_WB_RATING_REPORT_HOTFIX__ = true;
 
-  const VERSION = '20260627ratingdetails1';
+  const VERSION = '20260728ratingfresh4';
   const STYLE_ID = 'altea-wb-rating-report-hotfix-style';
   const auxCache = {
     trends: null,
@@ -15,7 +15,8 @@
     mode: 'summary',
     search: '',
     sort: 'revenue',
-    status: 'all'
+    status: 'all',
+    rowLimit: 40
   };
   const structuredState = {
     platform: 'wb',
@@ -26,6 +27,8 @@
   const OPEN_STATE_MAX_AGE_MS = 3 * 60 * 60 * 1000;
   let auxRevision = 0;
   let modelCache = { signature: '', value: null };
+  const RATING_RENDER_LIMIT = 40;
+  const RATING_SEARCH_DEBOUNCE_MS = 180;
   let ratingSearchTimer = 0;
 
   function appState() {
@@ -812,9 +815,14 @@
     });
 
     totals.avgCardRating = totals.ratingCount ? totals.ratingSum / totals.ratingCount : null;
-    totals.avgRating = hasNumber(payload?.summary?.counters?.sellerRating?.valuation)
-      ? Number(payload.summary.counters.sellerRating.valuation)
-      : null;
+    totals.cardAvgRating = totals.avgCardRating;
+    const sellerRating = payload?.summary?.counters?.sellerRating?.valuation
+      ?? active?.summary?.counters?.sellerRating?.valuation;
+    totals.sellerRating = hasNumber(sellerRating) ? Number(sellerRating) : null;
+    totals.avgRating = totals.sellerRating ?? totals.cardAvgRating;
+    totals.ratingSource = totals.sellerRating !== null
+      ? 'WB API · кабинет продавца'
+      : 'нет доступа к точному рейтингу кабинета';
     totals.newFeedbackRating = hasNumber(payload?.summary?.feedbacks?.avgRating)
       ? Number(payload.summary.feedbacks.avgRating)
       : null;
@@ -1214,7 +1222,7 @@
             <div><span>Срез</span><strong>${esc(fullDate(model.active.date))}</strong></div>
             <div><span>Карточки</span><strong>${fmtInt(model.rows.length)}</strong></div>
             <div><span>Отзывы 7 дней</span><strong>${fmtInt(model.totals.reviews7)}</strong></div>
-            <div><span>Сводная оценка</span><strong>${fmtNum(model.totals.avgRating, 2)}</strong></div>
+            <div><span>Рейтинг продавца WB</span><strong>${fmtNum(model.totals.avgRating, 2)}</strong></div>
             <div><span>% негатива 7 дней</span><strong>${fmtPct(model.totals.neg7)}</strong></div>
             <div><span>Выручка WB 7 дней</span><strong>${fmtMoney(model.wbWindow7.revenue || model.totals.revenue7)}</strong></div>
           </div>
@@ -1303,10 +1311,10 @@
           <small>срез ${esc(fullDate(model.active.date))}</small>
         </div>
         <div class="wb-rating-game-card">
-          <span>Средняя оценка</span>
+          <span>Рейтинг продавца WB</span>
           <strong>${fmtNum(model.totals.avgRating, 2)}</strong>
           ${model.totals.avgRating >= 4.75 ? simpleBadge('зеленая зона', 'up') : simpleBadge('наблюдать', 'down')}
-          <small>${fmtInt(model.totals.leaders)} карточек 4,8+</small>
+          <small>${esc(model.totals.ratingSource)} · ${fmtInt(model.totals.leaders)} карточек 4,8+</small>
         </div>
       </div>
     `;
@@ -1564,7 +1572,7 @@
     const level = options.empty ? 'danger' : planFactLevel(ratio);
     const side = options.side || (platform === 'ozon' ? 'Ozon' : 'WB');
     return `
-      <button class="sku-plan-platform-card rating-planfact-card level-${level} ${options.empty ? 'is-empty' : ''}" type="button" data-rating-platform="${esc(platform)}" style="${planFactStyle(platform, ratio)}">
+      <button class="sku-plan-platform-card rating-planfact-card level-${level} ${options.empty ? 'is-empty' : ''} ${esc(options.className || '')}" type="button" data-rating-platform="${esc(platform)}" style="${planFactStyle(platform, ratio)}">
         <span class="sku-plan-platform-card__top">
           <strong>${esc(label)}</strong>
           <em>${esc(side)}</em>
@@ -1595,13 +1603,13 @@
         ? (total ? simpleBadge('нужно закрыть', 'down') : simpleBadge('проверено: закрыто', 'up'))
         : simpleBadge('нужен свежий API-срез', 'flat'),
       note: trusted
-        ? `${fmtInt(feedbacks)} отзывов / ${fmtInt(questions)} вопросов`
-        : 'старый срез не считается текущим хвостом'
+        ? `хвост API свежий · ${fmtInt(feedbacks)} отзывов / ${fmtInt(questions)} вопросов`
+        : 'хвост API устарел · старый срез не считается текущим хвостом'
     };
   }
 
   function renderWbAccountRatingMetric(model, label = 'WB рейтинг ЛК') {
-    const exact = model?.totals?.avgRating;
+    const exact = model?.totals?.sellerRating;
     const windowRating = model?.totals?.newFeedbackRating;
     const exactAvailable = hasNumber(exact);
     return renderMetricCard(
@@ -1611,7 +1619,12 @@
       exactAvailable
         ? 'точный рейтинг продавца из WB API'
         : `не подменяем средним карточек · новые отзывы 30д ${fmtNum(windowRating, 2)}`,
-      { platform: 'wb', ratio: exactAvailable ? Number(exact) / 5 : 0.18, empty: !exactAvailable }
+      {
+        platform: 'wb',
+        ratio: exactAvailable ? Number(exact) / 5 : 0.18,
+        empty: !exactAvailable,
+        className: exactAvailable ? '' : 'is-rating-unavailable'
+      }
     );
   }
 
@@ -1941,7 +1954,7 @@
       const ratio = hasNumber(row.contentRating) ? Number(row.contentRating) / 100 : 0.1;
       const improve = row.improve.length ? row.improve.slice(0, 2).join(', ') : (row.comment || row.statusDescription || 'ок');
       return `
-        <tr class="sku-plan-fact-row rating-work-row" style="${planFactStyle('ozon', ratio)}">
+        <tr class="sku-plan-fact-row rating-work-row" style="${planFactStyle('ozon', ratio)}" data-rating-detail="${esc(row.key || row.label)}" data-rating-platform="ozon" tabindex="0">
           <td class="article-cell">
             <strong>${esc(row.label)}</strong>
             <span class="cell-muted">Ozon SKU ${esc(row.sku || '—')} · product ${esc(row.productId || '—')}</span>
@@ -2066,7 +2079,7 @@
     const unansweredTotal = model.totals.unanswered + model.totals.unansweredQuestions;
     const ozon7 = model.ozonWindow7 || { revenue: 0, units: 0, latestDate: '' };
     const cards = [
-      renderMetricCard('WB рейтинг', fmtNum(latestRating, 2), ratingTrendBadge(latestRating, prevRating), `${fmtInt(model.totals.leaders)} карточек 4,8+`, { platform: 'wb', ratio: hasNumber(latestRating) ? Number(latestRating) / 5 : 0.5 }),
+      renderMetricCard('WB рейтинг продавца', fmtNum(latestRating, 2), model.totals.sellerRating !== null ? simpleBadge('WB API', 'up') : ratingTrendBadge(latestRating, prevRating), model.totals.ratingSource, { platform: 'wb', ratio: hasNumber(latestRating) ? Number(latestRating) / 5 : 0.5 }),
       renderMetricCard('WB отзывы 7д', fmtInt(model.totals.reviews7), trendBadge(model.totals.reviews1, reviewDailyBase), `вчера ${fmtInt(model.totals.reviews1)}`, { platform: 'wb' }),
       renderMetricCard('WB негатив 7д', fmtPct(model.totals.neg7), trendBadge(model.totals.neg1, model.totals.neg3, { lowerIsBetter: true, percent: true, threshold: 0.01 }), `${fmtInt(model.totals.low7)} негативных`, { platform: 'wb', ratio: model.totals.neg7 === null ? 0.5 : Math.max(0.08, 1 - Number(model.totals.neg7)) }),
       renderMetricCard('WB вопросы', fmtInt(model.totals.questions), trendBadge(model.totals.questions1, questionDailyBase), `+${fmtInt(model.totals.questions7)} за 7 дней`, { platform: 'wb' }),
@@ -2265,7 +2278,10 @@
 
   function filterOzonRows(rows) {
     const status = workbenchState.status || 'all';
-    return [...rows].filter((row) => historyRowMatches(row, status));
+    const query = ratingSearchQuery();
+    return [...rows].filter((row) => historyRowMatches(row, status)
+      && ratingWorkflowMatches(row, 'ozon')
+      && (!query || ratingRowSearchText(row, 'ozon').includes(query)));
   }
 
   function sortOzonRows(rows) {
@@ -2289,12 +2305,12 @@
     const ozon = buildOzonModel(model);
     const filteredRows = filterOzonRows(ozon.rows);
     const sortedRows = sortOzonRows(filteredRows);
-    const rows = sortedRows.slice(0, 160).map((row) => {
+    const rows = sortedRows.slice(0, currentRowLimit()).map((row) => {
       const link = typeof linkToSku === 'function' ? linkToSku(row.key || row.label, row.label) : `<strong>${esc(row.label)}</strong>`;
       const unanswered = num(row.unanswered) + num(row.unansweredQuestions);
       const ratio = row.unansweredQuestions ? 0.22 : row.q1.questions ? 0.55 : row.revenue.revenue7 ? 0.92 : 0.46;
       return `
-        <tr class="sku-plan-fact-row rating-work-row" style="${planFactStyle('ozon', ratio)}">
+        <tr class="sku-plan-fact-row rating-work-row" style="${planFactStyle('ozon', ratio)}" data-rating-detail="${esc(row.key || row.label)}" data-rating-platform="ozon" tabindex="0">
           <td class="article-cell">
             ${link}
             <span class="cell-muted">Ozon SKU ${esc(row.sku || '—')} · product ${esc(row.productId || '—')}</span>
@@ -2360,6 +2376,7 @@
             <tbody>${rows || '<tr><td colspan="18" class="center">Нет карточек Ozon по текущему фильтру.</td></tr>'}</tbody>
           </table>
         </div>
+        ${renderMoreRows(filteredRows.length)}
       </div>
     `;
   }
@@ -2413,8 +2430,8 @@
     const items = ozonQuestionItems(ozon);
     const visible = sortStructuredQueueItems(filterStructuredQueueItems(items, 'questions'), 'questions');
     const activeSort = queueSortKey('questions');
-    const rows = visible.slice(0, 160).map((item) => `
-      <tr class="sku-plan-fact-row rating-work-row" style="${planFactStyle('ozon', item.unanswered ? 0.3 : 0.85)}">
+    const rows = visible.slice(0, currentRowLimit()).map((item) => `
+      <tr class="sku-plan-fact-row rating-work-row" style="${planFactStyle('ozon', item.unanswered ? 0.3 : 0.85)}" data-rating-detail="${esc(item.key || item.label)}" data-rating-platform="ozon" tabindex="0">
         <td class="article-cell">
           ${typeof linkToSku === 'function' ? linkToSku(item.key || item.label, item.label) : esc(item.label)}
           <span class="cell-muted">Ozon SKU ${esc(item.sku || '—')}</span>
@@ -2454,6 +2471,7 @@
             <tbody>${rows || '<tr><td colspan="6" class="center">Нет вопросов Ozon по текущему фильтру.</td></tr>'}</tbody>
           </table>
         </div>
+        ${renderMoreRows(visible.length)}
       </div>
     `;
   }
@@ -2495,7 +2513,12 @@
       renderMetricCard('WB отзывы 7д', fmtInt(model.totals.reviews7), trendBadge(model.totals.reviews1, reviewDailyBase), `вчера ${fmtInt(model.totals.reviews1)}`, { platform: 'wb' }),
       renderMetricCard('WB негатив 7д', fmtPct(model.totals.neg7), trendBadge(model.totals.neg1, model.totals.neg3, { lowerIsBetter: true, percent: true, threshold: 0.01 }), `${fmtInt(model.totals.low7)} негативных`, { platform: 'wb', ratio: model.totals.neg7 === null ? 0.5 : Math.max(0.08, 1 - Number(model.totals.neg7)) }),
       renderMetricCard('WB вопросы', fmtInt(model.totals.questions), trendBadge(model.totals.questions1, questionDailyBase), `+${fmtInt(model.totals.questions7)} за 7 дней`, { platform: 'wb' }),
-      renderMetricCard('WB без ответа', openState.value, openState.badge, openState.note, { platform: 'wb', ratio: openState.trusted ? (openState.total ? 0.35 : 1) : 0.18, empty: !openState.trusted }),
+      renderMetricCard('WB без ответа', openState.value, openState.badge, openState.note, {
+        platform: 'wb',
+        ratio: openState.trusted ? (openState.total ? 0.35 : 1) : 0.18,
+        empty: !openState.trusted,
+        className: 'is-current-tail-state'
+      }),
       renderMetricCard('Ozon выручка 7д', fmtMoney(ozon.totals.revenue7), simpleBadge(`${fmtInt(ozon.totals.units7)} шт.`, 'up'), `вчера ${fmtMoney(ozon.totals.revenue1)}`, { platform: 'ozon', ratio: ozon.totals.revenue7 ? 1 : 0.1 }),
       renderMetricCard('Ozon вопросы 7д', fmtInt(ozon.totals.questions7), trendBadge(ozon.totals.questions1, ozonQuestionDailyBase), `${fmtInt(ozon.totals.questions)} всего`, { platform: 'ozon' }),
       renderMetricCard('Ozon без ответа', fmtInt(ozon.totals.unansweredQuestions), ozon.totals.unansweredQuestions ? simpleBadge('закрыть', 'down') : simpleBadge('ок', 'up'), 'вопросы', { platform: 'ozon', ratio: ozon.totals.unansweredQuestions ? 0.35 : 1 }),
@@ -2584,7 +2607,29 @@
     return normalizeKey(workbenchState.search || '');
   }
 
-  function ratingRowSearchText(row) {
+  function ratingArticleKey(item) {
+    return item?.key
+      || item?.label
+      || item?.card?.articleKey
+      || item?.card?.supplierArticle
+      || item?.card?.article
+      || item?.card?.nmId
+      || item?.article
+      || item?.supplierArticle
+      || item?.nmId
+      || '';
+  }
+
+  function ratingWorkflowMatches(item, platform = 'wb') {
+    if (typeof window.__alteaRatingWorkflowMatches !== 'function') return true;
+    return window.__alteaRatingWorkflowMatches(ratingArticleKey(item), platform);
+  }
+
+  function ratingRowSearchText(row, platform = 'wb') {
+    const articleKey = ratingArticleKey(row);
+    const workflowText = typeof window.__alteaRatingWorkflowSearchText === 'function'
+      ? window.__alteaRatingWorkflowSearchText(articleKey, platform)
+      : '';
     return normalizeKey([
       row?.key,
       row?.label,
@@ -2593,11 +2638,16 @@
       row?.card?.article,
       row?.card?.nmId,
       gameLabel(row),
-      row?.comment
+      row?.comment,
+      workflowText
     ].filter(Boolean).join(' '));
   }
 
   function ratingItemSearchText(item) {
+    const articleKey = ratingArticleKey(item);
+    const workflowText = typeof window.__alteaRatingWorkflowSearchText === 'function'
+      ? window.__alteaRatingWorkflowSearchText(articleKey, structuredState.platform)
+      : '';
     return normalizeKey([
       item?.key,
       item?.label,
@@ -2606,14 +2656,17 @@
       item?.nmId,
       item?.date,
       item?.status,
-      item?.text
+      item?.text,
+      workflowText
     ].filter(Boolean).join(' '));
   }
 
   function filterRatingRows(rows) {
     const status = workbenchState.status || 'all';
     const query = ratingSearchQuery();
-    return [...rows].filter((row) => historyRowMatches(row, status) && (!query || ratingRowSearchText(row).includes(query)));
+    return [...rows].filter((row) => historyRowMatches(row, status)
+      && ratingWorkflowMatches(row, 'wb')
+      && (!query || ratingRowSearchText(row).includes(query)));
   }
 
   function renderHistoryControls(items, visible) {
@@ -2704,6 +2757,7 @@
       const newest = next.reduce((latest, item) => Math.max(latest, dateValue(item.date)), 0);
       next = next.filter((item) => dateValue(item.date) === newest);
     }
+    next = next.filter((item) => ratingWorkflowMatches(item, structuredState.platform));
     if (query) next = next.filter((item) => ratingItemSearchText(item).includes(query));
     return next;
   }
@@ -2723,10 +2777,26 @@
     return next;
   }
 
+  function currentRowLimit() {
+    return Math.max(RATING_RENDER_LIMIT, num(workbenchState.rowLimit) || RATING_RENDER_LIMIT);
+  }
+
+  function renderMoreRows(total) {
+    const limit = currentRowLimit();
+    if (!Number.isFinite(total) || total <= limit) return '';
+    const nextCount = Math.min(RATING_RENDER_LIMIT, total - limit);
+    return `
+      <div class="rating-more-row">
+        <span>Показано ${fmtInt(limit)} из ${fmtInt(total)}</span>
+        <button type="button" data-rating-more>Показать ещё ${fmtInt(nextCount)}</button>
+      </div>
+    `;
+  }
+
   function renderHistoryCards(model) {
     const filteredRows = filterRatingRows(model.rows);
     const sortedRows = sortRatingRows(filteredRows);
-    const rows = sortedRows.slice(0, 120).map((row) => {
+    const rows = sortedRows.slice(0, currentRowLimit()).map((row) => {
       const link = typeof linkToSku === 'function' ? linkToSku(row.key || row.label, row.label) : `<strong>${esc(row.label)}</strong>`;
       const unanswered = row.unanswered + row.unansweredQuestions;
       const ratingRatio = hasNumber(row.rating) ? Number(row.rating) / 5 : 0.5;
@@ -2738,7 +2808,7 @@
             ? simpleBadge('падает', 'down')
             : simpleBadge('норма', 'up');
       return `
-        <tr class="sku-plan-fact-row rating-work-row" style="${planFactStyle('wb', ratingRatio)}" data-rating-detail="${esc(row.key || row.label)}" data-rating-kind="history" tabindex="0">
+        <tr class="sku-plan-fact-row rating-work-row" style="${planFactStyle('wb', ratingRatio)}" data-rating-detail="${esc(row.key || row.label)}" data-rating-kind="history" data-rating-platform="wb" tabindex="0">
           <td class="article-cell">
             ${link}
             <span class="cell-muted">WB nm ${esc(row.card?.nmId || '—')} · история отзывов ${signed(row.historyDelta)}</span>
@@ -2806,6 +2876,7 @@
             <tbody>${rows || '<tr><td colspan="18" class="center">Нет карточек в истории WB.</td></tr>'}</tbody>
           </table>
         </div>
+        ${renderMoreRows(filteredRows.length)}
       </div>
     `;
   }
@@ -2815,10 +2886,10 @@
     const visible = sortStructuredQueueItems(filterStructuredQueueItems(items, kind), kind);
     const title = kind === 'reviews' ? 'WB · отзывы' : 'WB · вопросы';
     const activeSort = queueSortKey(kind);
-    const rows = visible.slice(0, 120).map((item) => {
+    const rows = visible.slice(0, currentRowLimit()).map((item) => {
       const ratio = kind === 'reviews' && hasNumber(item.valuation || item.rating) ? Number(item.valuation || item.rating) / 5 : (item.unanswered ? 0.35 : 0.85);
       return `
-        <tr class="sku-plan-fact-row rating-work-row" style="${planFactStyle('wb', ratio)}" data-rating-detail="${esc(item.key || item.label)}" data-rating-kind="${esc(kind)}" tabindex="0">
+        <tr class="sku-plan-fact-row rating-work-row" style="${planFactStyle('wb', ratio)}" data-rating-detail="${esc(item.key || item.label)}" data-rating-kind="${esc(kind)}" data-rating-platform="wb" tabindex="0">
           <td class="article-cell">
             ${typeof linkToSku === 'function' ? linkToSku(item.key || item.label, item.label) : esc(item.label)}
             <span class="cell-muted">WB nm ${esc(item.nmId || '—')}</span>
@@ -2859,7 +2930,7 @@
             <tbody>${rows || '<tr><td colspan="6" class="center">Нет строк по текущему срезу.</td></tr>'}</tbody>
           </table>
         </div>
-        ${visible.length > 120 ? `<div class="wb-rating-source-note" style="padding:0 16px 14px">Показаны первые 120 строк из ${fmtInt(visible.length)}. Сузьте фильтр, если нужен короткий список.</div>` : ''}
+        ${renderMoreRows(visible.length)}
       </div>
     `;
   }
@@ -3141,6 +3212,7 @@
         workbenchState.status = 'all';
         workbenchState.sort = 'revenue';
         workbenchState.search = '';
+        workbenchState.rowLimit = RATING_RENDER_LIMIT;
         renderWbCardRatingStructured(rootId);
       });
     });
@@ -3149,45 +3221,58 @@
         structuredState.view = button.dataset.ratingView || 'history';
         workbenchState.status = 'all';
         workbenchState.search = '';
+        workbenchState.rowLimit = RATING_RENDER_LIMIT;
         renderWbCardRatingStructured(rootId);
       });
     });
     root.querySelectorAll('[data-rating-status]').forEach((control) => {
       control.addEventListener('click', () => {
         workbenchState.status = control.dataset.ratingStatus || 'all';
+        workbenchState.rowLimit = RATING_RENDER_LIMIT;
         renderWbCardRatingStructured(rootId);
       });
     });
     root.querySelectorAll('[data-rating-sort]').forEach((control) => {
       const applySort = () => {
         workbenchState.sort = control.dataset.ratingSort || control.value || 'revenue';
+        workbenchState.rowLimit = RATING_RENDER_LIMIT;
         renderWbCardRatingStructured(rootId);
       };
       if (control.tagName === 'SELECT') control.addEventListener('change', applySort);
       else control.addEventListener('click', applySort);
     });
     root.querySelectorAll('[data-rating-search]').forEach((input) => {
+      const applySearch = () => {
+        ratingSearchTimer = 0;
+        workbenchState.search = input.value || '';
+        workbenchState.rowLimit = RATING_RENDER_LIMIT;
+        const pageScroller = document.querySelector('.altea-premium-shell-content');
+        const pageTop = pageScroller?.scrollTop || 0;
+        const horizontal = [...root.querySelectorAll('.rating-work-table')].map((table) => table.scrollLeft || 0);
+        renderWbCardRatingStructured(rootId);
+        window.requestAnimationFrame(() => {
+          if (pageScroller) pageScroller.scrollTop = pageTop;
+          document.getElementById(rootId)?.querySelectorAll('.rating-work-table').forEach((table, index) => {
+            table.scrollLeft = horizontal[index] || 0;
+          });
+          const nextInput = document.getElementById(rootId)?.querySelector('[data-rating-search]');
+          if (!nextInput) return;
+          nextInput.focus({ preventScroll: true });
+          const length = nextInput.value.length;
+          if (typeof nextInput.setSelectionRange === 'function') nextInput.setSelectionRange(length, length);
+        });
+      };
       input.addEventListener('input', () => {
         workbenchState.search = input.value || '';
-        if (ratingSearchTimer) window.clearTimeout(ratingSearchTimer);
-        ratingSearchTimer = window.setTimeout(() => {
-          ratingSearchTimer = 0;
-          const pageScroller = document.querySelector('.altea-premium-shell-content');
-          const pageTop = pageScroller?.scrollTop || 0;
-          const horizontal = [...root.querySelectorAll('.rating-work-table')].map((table) => table.scrollLeft || 0);
-          renderWbCardRatingStructured(rootId);
-          window.requestAnimationFrame(() => {
-            if (pageScroller) pageScroller.scrollTop = pageTop;
-            document.getElementById(rootId)?.querySelectorAll('.rating-work-table').forEach((table, index) => {
-              table.scrollLeft = horizontal[index] || 0;
-            });
-            const nextInput = document.getElementById(rootId)?.querySelector('[data-rating-search]');
-            if (!nextInput) return;
-            nextInput.focus({ preventScroll: true });
-            const length = nextInput.value.length;
-            if (typeof nextInput.setSelectionRange === 'function') nextInput.setSelectionRange(length, length);
-          });
-        }, 180);
+        workbenchState.rowLimit = RATING_RENDER_LIMIT;
+        window.clearTimeout(ratingSearchTimer);
+        ratingSearchTimer = window.setTimeout(applySearch, RATING_SEARCH_DEBOUNCE_MS);
+      });
+      input.addEventListener('keydown', (event) => {
+        if (event.key !== 'Enter') return;
+        event.preventDefault();
+        window.clearTimeout(ratingSearchTimer);
+        applySearch();
       });
     });
     root.querySelector('[data-rating-refresh]')?.addEventListener('click', async (event) => {
@@ -3227,6 +3312,12 @@
     root.querySelectorAll('[data-rating-stats-metric]').forEach((control) => {
       control.addEventListener('click', () => {
         structuredState.statsMetric = control.dataset.ratingStatsMetric || 'all';
+        renderWbCardRatingStructured(rootId);
+      });
+    });
+    root.querySelectorAll('[data-rating-more]').forEach((button) => {
+      button.addEventListener('click', () => {
+        workbenchState.rowLimit = currentRowLimit() + RATING_RENDER_LIMIT;
         renderWbCardRatingStructured(rootId);
       });
     });

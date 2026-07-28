@@ -547,13 +547,18 @@
     return result;
   }
 
-  function snapshotPartKeys(snapshotKey, count) {
+  async function requestRowsForChunkPrefix(cfg, baseUrl, brand, snapshotKey, count) {
     var total = Math.max(0, Math.trunc(Number(count) || 0));
-    var keys = [];
-    for (var index = 1; index <= total; index += 1) {
-      keys.push(snapshotKey + "__part__" + String(index).padStart(4, "0"));
-    }
-    return keys;
+    if (!snapshotKey || !total) return [];
+    var url = buildSnapshotUrl(baseUrl, brand);
+    url.searchParams.set("snapshot_key", "like." + snapshotKey + "__part__*");
+    url.searchParams.set("order", "snapshot_key.asc");
+    url.searchParams.set("limit", String(total));
+    var prefix = snapshotKey + "__part__";
+    var rows = await requestSnapshotRows(url, cfg);
+    return (Array.isArray(rows) ? rows : []).filter(function (row) {
+      return String(row && row.snapshot_key || "").indexOf(prefix) === 0;
+    }).slice(0, total);
   }
 
   async function fetchRowsForKey(cfg, baseUrl, brand, snapshotKey) {
@@ -562,7 +567,7 @@
     var metaRow = rows.find(rowIsChunkMeta);
     if (!metaRow) return rows;
     var count = Number(metaRow.payload && (metaRow.payload.chunk_count || metaRow.payload.chunkCount) || 0);
-    var parts = await requestRowsForExactKeys(cfg, baseUrl, brand, snapshotPartKeys(snapshotKey, count));
+    var parts = await requestRowsForChunkPrefix(cfg, baseUrl, brand, snapshotKey, count);
     return rows.concat(parts);
   }
 
@@ -579,7 +584,7 @@
       .filter(function (item) { return isAllowedSnapshotKey(item.key) && item.count > 0; });
     if (!chunkedKeys.length) return rows;
     var partGroups = await Promise.all(chunkedKeys.map(function (item) {
-      return requestRowsForExactKeys(cfg, baseUrl, brand, snapshotPartKeys(item.key, item.count));
+      return requestRowsForChunkPrefix(cfg, baseUrl, brand, item.key, item.count);
     }));
     return rows.concat.apply(rows, partGroups);
   }

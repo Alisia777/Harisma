@@ -5,6 +5,7 @@ window.APP_CONFIG = {
     name: '',
     role: 'Команда'
   },
+  wbFeedbackSyncEndpoint: 'https://iyckwryrucqrxwlowxow.supabase.co/functions/v1/wb-feedback-sync',
   repricerPriceSyncEndpoint: 'https://iyckwryrucqrxwlowxow.supabase.co/functions/v1/repricer-price-sync',
   repricerPriceApplyEndpoint: 'https://iyckwryrucqrxwlowxow.supabase.co/functions/v1/repricer-price-apply',
   supabase: {

@@ -1,8 +1,8 @@
-name: Portal WB current feedbacks
+name: WB feedbacks live
 
 on:
   schedule:
-    - cron: '17,47 * * * *'
+    - cron: '12,42 * * * *'
   workflow_dispatch:
     inputs:
       requested_by:
@@ -11,7 +11,7 @@ on:
         type: string
 
 concurrency:
-  group: portal-wb-current-feedbacks
+  group: portal-wb-feedbacks-live
   cancel-in-progress: true
 
 permissions:
@@ -21,7 +21,7 @@ env:
   TZ: Europe/Moscow
 
 jobs:
-  refresh:
+  refresh-feedbacks:
     runs-on: ubuntu-latest
     timeout-minutes: 15
     steps:
@@ -34,9 +34,16 @@ jobs:
       - name: Install dependencies
         run: npm ci
 
+      - name: Resolve API window
+        id: api_window
+        shell: bash
+        run: |
+          echo "to=$(date -u +%F)" >> "$GITHUB_OUTPUT"
+          echo "from=$(date -u -d '89 days ago' +%F)" >> "$GITHUB_OUTPUT"
+
       - name: Check protected credentials
         env:
-          ALTEA_WB_FEEDBACKS_TOKEN: ${{ secrets.ALTEA_WB_FEEDBACKS_TOKEN }}
+          ALTEA_WB_FEEDBACKS_TOKEN: ${{ secrets.ALTEA_WB_FEEDBACKS_TOKEN || secrets.ALTEA_WB_PROMOTION_TOKEN || secrets.ALTEA_WB_API_TOKEN }}
           SUPABASE_SERVICE_ROLE_KEY: ${{ secrets.SUPABASE_SERVICE_ROLE_KEY || secrets.ALTEA_SUPABASE_SERVICE_ROLE_KEY }}
         shell: bash
         run: |
@@ -56,40 +63,38 @@ jobs:
           --output-dir data
           --snapshot skus,wb_feedbacks_summary
 
-      - name: Read current unanswered queues and recent history
+      - name: Collect current WB reviews and questions
         env:
-          ALTEA_WB_FEEDBACKS_TOKEN: ${{ secrets.ALTEA_WB_FEEDBACKS_TOKEN }}
+          ALTEA_WB_FEEDBACKS_TOKEN: ${{ secrets.ALTEA_WB_FEEDBACKS_TOKEN || secrets.ALTEA_WB_PROMOTION_TOKEN || secrets.ALTEA_WB_API_TOKEN }}
           ALTEA_WB_FEEDBACKS_SERVICE_TOKEN: ${{ secrets.ALTEA_WB_FEEDBACKS_SERVICE_TOKEN }}
-        shell: bash
-        run: |
-          TODAY="$(date +%F)"
-          FROM="$(date -d "$TODAY - 29 days" +%F)"
-          node scripts/portal-wb-feedback-sync.js sync \
-            --input-dir data \
-            --base-data-dir data \
-            --output-dir data \
-            --from "$FROM" \
-            --to "$TODAY"
+        run: >-
+          node scripts/portal-wb-feedback-sync.js sync
+          --input-dir data
+          --base-data-dir data
+          --output-dir data
+          --from '${{ steps.api_window.outputs.from }}'
+          --to '${{ steps.api_window.outputs.to }}'
 
       - name: Verify current-state contract
         run: |
           node scripts/portal-wb-feedback-sync.selftest.js
           node -e "const p=require('./data/wb_feedbacks_summary.json');if(p?.currentState?.basis!=='current_unanswered_list')throw new Error('current unanswered list is missing');if(!p?.currentState?.observedAt)throw new Error('current state timestamp is missing');"
 
-      - name: Publish the current WB communication snapshot
+      - name: Publish refreshed feedback snapshot
         env:
           ALTEA_SUPABASE_URL: ${{ secrets.SUPABASE_URL || vars.SUPABASE_URL || 'https://iyckwryrucqrxwlowxow.supabase.co' }}
           ALTEA_SUPABASE_KEY: ${{ secrets.SUPABASE_SERVICE_ROLE_KEY || secrets.ALTEA_SUPABASE_SERVICE_ROLE_KEY }}
+          ALTEA_SNAPSHOT_SOURCE: wb-feedbacks-live
         run: >-
           node scripts/portal-google-sheet-upload.js
           --input-dir data
           --snapshot wb_feedbacks_summary
-          --source wb-current-feedbacks
+          --source wb-feedbacks-live
 
       - uses: actions/upload-artifact@v4
         if: always()
         with:
-          name: wb-current-feedbacks-${{ github.run_id }}
+          name: wb-feedbacks-live-${{ github.run_id }}
           path: data/wb_feedbacks_summary.json
           if-no-files-found: error
           retention-days: 14

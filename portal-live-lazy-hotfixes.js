@@ -24,7 +24,7 @@
       'portal-control-marketplace-scope-hotfix.js?v=20260619task-noise3'
     ],
     taskKanbanV1: [
-      'portal-task-kanban-v1.js?v=20260727platformscope1'
+      'portal-task-kanban-v1.js?v=20260728globalplatform1'
     ],
     executive: [
       'portal-executive-lite-guard.js?v=20260623executivefallback1',

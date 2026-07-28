@@ -11,7 +11,14 @@ const ROOT = path.resolve(__dirname, '..');
 const MODULE = 'portal-task-kanban-v1.js';
 const MOTION_MODULE = 'altea-motion-runtime.js';
 const MOTION_CSS = 'altea-motion-runtime.css';
+const LAZY_MODULE = fs.readFileSync(path.join(ROOT, 'portal-live-lazy-hotfixes.js'), 'utf8');
 const DARIA_OWNER = '\u041c\u043e\u043b\u043e\u0434\u044f\u043a\u043e\u0432\u0430 \u0414\u0430\u0440\u0438\u044f';
+
+assert.match(LAZY_MODULE, /portal-task-kanban-v1\.js\?v=20260728globalplatform1/);
+for (const entry of ['index.html', 'live-index.html', 'docs/index.html']) {
+  const html = fs.readFileSync(path.join(ROOT, entry), 'utf8');
+  assert.match(html, /portal-live-lazy-hotfixes\.js\?v=20260727planfacttable1demandprice1forecast2taskplatform1/);
+}
 
 const MIME = {
   '.css': 'text/css; charset=utf-8',
@@ -157,7 +164,7 @@ async function run() {
       motionVisible: Boolean(document.querySelector('.altea-motion-stage.is-visible'))
     }));
 
-    assert.strictEqual(recovered.version, '20260727-task-platform-scope-v1');
+    assert.strictEqual(recovered.version, '20260728-task-global-platform-v1');
     assert.deepStrictEqual(
       {
         search: recovered.search,
@@ -227,9 +234,12 @@ async function run() {
           platformKey: 'ozon'
         }
       );
+      window.state.controlFilters.platform = 'cross';
+      window.state.controlFilters.__platformManual = true;
+      window.state.controlFilters.__platformSyncedFromPortal = '';
       document.body.setAttribute('data-marketplace', 'wb');
       localStorage.setItem('altea.portal.marketplace', 'wb');
-      window.dispatchEvent(new CustomEvent('altea:marketplacechange', { detail: { internalPlatform: 'wb' } }));
+      window.__ALTEA_TASK_KANBAN_RENDER__?.();
     });
     await page.waitForFunction(() => window.state.controlFilters.platform === 'wb', null, { timeout: 30000 });
     await page.waitForFunction(() => !document.querySelector('[data-kanban-task="task-cross-misha"]'), null, { timeout: 30000 });

@@ -6,7 +6,7 @@
   window.__ALTEA_TASK_KANBAN_PRIMARY__ = true;
 
   const AUTO_TOMBSTONE_VERSION = '20260701-task-auto-tombstone-v1';
-  const VERSION = '20260727-task-platform-scope-v1';
+  const VERSION = '20260728-task-global-platform-v1';
   const ROOT_ID = 'view-control';
   const UI_KEY = 'altea.tasks.design.v1';
   const MARKETPLACE_STORAGE_KEY = 'altea.portal.marketplace';
@@ -388,11 +388,15 @@
 
   function globalPlatform() {
     const filters = ensureFilters();
+    const portalPlatform = normalizePlatform(readPortalPlatform() || 'all') || 'all';
+    if (portalPlatform !== 'all') {
+      return syncPlatformFromPortal(portalPlatform, { force: true });
+    }
     if (filters.__platformManual === true) {
       filters.platform = normalizePlatform(filters.platform || 'all') || 'all';
       return filters.platform;
     }
-    return syncPlatformFromPortal();
+    return syncPlatformFromPortal(portalPlatform);
   }
 
   function platformLabel(value) {

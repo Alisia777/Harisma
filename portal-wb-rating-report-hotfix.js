@@ -3334,6 +3334,15 @@
   function renderWbCardRatingStructured(rootId = 'view-wb-rating') {
     const root = document.getElementById(rootId);
     if (!root) return;
+    const activeSearch = root.querySelector('[data-rating-search]:focus');
+    const searchFocus = activeSearch
+      ? {
+          start: Number.isFinite(activeSearch.selectionStart) ? activeSearch.selectionStart : activeSearch.value.length,
+          end: Number.isFinite(activeSearch.selectionEnd) ? activeSearch.selectionEnd : activeSearch.value.length,
+          direction: activeSearch.selectionDirection || 'none'
+        }
+      : null;
+    if (activeSearch) workbenchState.search = activeSearch.value || '';
     ensureStyles();
     ensureStructuredStyles();
     ensureAuxData();
@@ -3374,6 +3383,20 @@
       </div>
     `;
     attachStructuredEvents(rootId);
+    if (searchFocus) {
+      window.requestAnimationFrame(() => {
+        const nextInput = document.getElementById(rootId)?.querySelector('[data-rating-search]');
+        if (!nextInput) return;
+        nextInput.focus({ preventScroll: true });
+        if (typeof nextInput.setSelectionRange !== 'function') return;
+        const length = nextInput.value.length;
+        nextInput.setSelectionRange(
+          Math.min(searchFocus.start, length),
+          Math.min(searchFocus.end, length),
+          searchFocus.direction
+        );
+      });
+    }
   }
 
   function renderEmpty(root, payload) {

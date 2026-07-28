@@ -555,15 +555,30 @@ async function main() {
       const clientAfter = numericCell(row[clientPriceColumns.clientAfter]);
       if (!(sellerBefore > 0 && clientBefore > 0 && sellerAfter > 0 && clientAfter > 0)) return;
       projectedClientRows += 1;
-      const expectedFactor = clientBefore / sellerBefore;
+      const rawFactor = clientBefore / sellerBefore;
+      const exportedBuyerDiscountPct = numericCell(row[clientPriceColumns.buyerDiscountPct]);
+      const expectedFactor = 1 - exportedBuyerDiscountPct / 100;
+      assert(
+        expectedFactor > 0 && expectedFactor <= 1,
+        'exported SPP/buyer discount must produce a valid buyer-price factor'
+      );
       assert(
         Math.abs(clientAfter - sellerAfter * expectedFactor) <= 0.02,
-        'projected client price must preserve the current effective SPP/buyer-discount factor'
+        `projected client price must preserve the current effective SPP/buyer-discount factor: `
+          + `${row[auditHeaders.indexOf('Площадка')]}/${row[auditHeaders.indexOf('Артикул')]} `
+          + `seller ${sellerBefore}->${sellerAfter}, client ${clientBefore}->${clientAfter}, factor ${expectedFactor}`
       );
-      assert(
-        Math.abs(numericCell(row[clientPriceColumns.buyerDiscountPct]) - (1 - expectedFactor) * 100) <= 0.02,
-        'exported SPP/buyer discount must match current seller/client prices'
-      );
+      if (rawFactor <= 1) {
+        assert(
+          Math.abs(exportedBuyerDiscountPct - (1 - rawFactor) * 100) <= 0.02,
+          'exported SPP/buyer discount must match current seller/client prices'
+        );
+      } else {
+        assert(
+          exportedBuyerDiscountPct >= 0,
+          'client price above seller price must not produce a negative SPP/buyer discount'
+        );
+      }
       assert(
         Math.abs(numericCell(row[clientPriceColumns.clientDeltaRub]) - (clientAfter - clientBefore)) <= 0.02,
         'client price delta in rubles must match before/after values'

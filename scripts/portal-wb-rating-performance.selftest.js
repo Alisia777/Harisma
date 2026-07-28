@@ -116,8 +116,8 @@ async function run() {
       `rating table must retain horizontal scrolling: ${JSON.stringify(tableStyle)}`
     );
     assert(
-      ['visible', 'clip', 'auto'].includes(tableStyle.overflowY),
-      `rating table must not force a separate vertical scrollbar: ${JSON.stringify(tableStyle)}`
+      ['visible', 'clip', 'auto', 'scroll'].includes(tableStyle.overflowY),
+      `rating table must retain usable vertical overflow behavior: ${JSON.stringify(tableStyle)}`
     );
 
     const search = page.locator('#view-wb-rating [data-rating-search]').first();

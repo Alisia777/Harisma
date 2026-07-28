@@ -294,6 +294,7 @@ async function run() {
     assert.ok(substitutionWarmup.asOfDate, 'Фоновый WB substitution должен сохранить дату среза');
     assert.ok(substitutionWarmup.articleCount > 0, 'Фоновый WB substitution должен обогатить строки после первой отрисовки');
 
+    await page.waitForSelector('#view-sku-plan-fact [data-pf-v4-filter-reset]', { timeout: 30000 });
     const reset = page.locator('#view-sku-plan-fact [data-pf-v4-filter-reset]');
     assert.strictEqual(await reset.count(), 1, 'Панель Plan-Fact должна содержать единый сброс фильтров');
     await reset.click();

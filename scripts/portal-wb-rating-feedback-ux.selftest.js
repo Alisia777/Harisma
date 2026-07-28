@@ -208,6 +208,10 @@ async function main() {
     assert.equal(await page.locator('[data-rating-feedback-toolbar]').count(), 1, 'toolbar must be added once');
     assert.equal(await page.locator('[data-rating-ux-select]').count(), 2, 'large filter groups must collapse to selects');
     assert.equal(await page.locator('[data-rating-row-actions]').count(), 3, 'each WB and Ozon row must receive actions');
+    assert.equal(await page.locator('[data-rating-comment-head]').count(), 1, 'the table must expose one explicit team comment column');
+    assert.equal(await page.locator('[data-rating-comment-cell]').count(), 3, 'each article must expose its own team comment cell');
+    assert.match(await page.locator('[data-rating-comment-head]').innerText(), /Комментарий команде/);
+    assert.match(await page.locator('[data-rating-comment-head]').innerText(), /Google-таблице/);
     assert.equal(await page.locator('[data-rating-smart-board]').count(), 1, 'premium smart board must be added once');
     assert.equal(await page.locator('[data-rating-smart-filter]').count(), 5, 'smart board must expose five quick filters');
     assert.match(await page.locator('[data-rating-smart-board]').innerText(), /Приоритет команды на сегодня/);
@@ -215,7 +219,8 @@ async function main() {
     assert.equal(await page.locator('[data-rating-data-refresh]').count(), 1, 'WB refresh action must be visible once');
     assert.match(await page.locator('[data-rating-data-refresh-status]').innerText(), /каждые 30 минут/);
     assert.equal(await page.locator('[data-rating-copy]').first().innerText(), 'Копировать артикул');
-    assert.equal(await page.locator('[data-rating-note]').first().innerText(), 'Отзыв / комментарий');
+    assert.equal(await page.locator('[data-rating-note]').first().innerText(), 'Добавить комментарий');
+    assert.match(await page.locator('[data-rating-comment-cell]').first().innerText(), /напишите коллегам/);
     assert.equal(await page.locator('#view-wb-rating').getAttribute('data-rating-density'), 'compact');
 
     await page.evaluate(() => {
@@ -259,11 +264,16 @@ async function main() {
     const compactVisibleHeaders = await page.locator('.rating-ux-wide-table thead th').evaluateAll(
       (nodes) => nodes.filter((node) => getComputedStyle(node).display !== 'none').length
     );
-    assert.equal(compactVisibleHeaders, 10, 'compact table must hide duplicate period columns');
+    assert.equal(compactVisibleHeaders, 11, 'compact table must retain the explicit comment column and hide duplicate period columns');
     assert.equal(
       await page.locator('.rating-ux-wide-table tbody td').first().evaluate((node) => getComputedStyle(node).position),
       'sticky',
       'article column must be sticky'
+    );
+    assert.equal(
+      await page.locator('[data-rating-comment-cell]').first().evaluate((node) => getComputedStyle(node).position),
+      'sticky',
+      'team comment column must remain visible beside the article'
     );
 
     await page.locator('[data-rating-copy]').first().click();
@@ -296,6 +306,9 @@ async function main() {
     assert.match(comments[0].text, /\[\[due:2000-01-01\]\]/);
     assert.match(comments[0].text, /Ответить на негативный отзыв/);
     await page.waitForFunction(() => document.querySelector('[data-rating-row-actions]')?.textContent.includes('В работе'));
+    await page.waitForFunction(() => document.querySelector('[data-rating-comment-cell]')?.textContent.includes('Ответить на негативный отзыв'));
+    assert.match(await page.locator('[data-rating-comment-cell]').first().innerText(), /Сохранено · В работе/);
+    assert.match(await page.locator('[data-rating-note]').first().innerText(), /Открыть \/ добавить · 1/);
 
     const workflowSearch = await page.evaluate(
       () => window.__alteaRatingWorkflowSearchText('WB-ARTICLE-1', 'wb')

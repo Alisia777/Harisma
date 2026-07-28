@@ -749,6 +749,75 @@
         color:#c8f4df;
       }
       #${ROOT_ID} .rating-row-actions { margin-top:7px; }
+      #${ROOT_ID} .rating-work-table table.rating-has-comment-column {
+        min-width:2340px;
+      }
+      #${ROOT_ID} .rating-team-comment-head,
+      #${ROOT_ID} .rating-team-comment-cell {
+        width:280px;
+        min-width:280px;
+        max-width:280px;
+      }
+      #${ROOT_ID} .rating-team-comment-head span,
+      #${ROOT_ID} .rating-team-comment-head small {
+        display:block;
+      }
+      #${ROOT_ID} .rating-team-comment-head small {
+        margin-top:3px;
+        color:#9cdeb9;
+        font-size:9px;
+        font-weight:800;
+        letter-spacing:0;
+        text-transform:none;
+      }
+      #${ROOT_ID} .rating-team-comment-box {
+        display:grid;
+        gap:7px;
+        min-height:74px;
+        padding:9px;
+        border:1px solid rgba(216,176,102,.18);
+        border-radius:9px;
+        background:rgba(216,176,102,.055);
+      }
+      #${ROOT_ID} .rating-team-comment-box[data-has-comment="1"] {
+        border-color:rgba(97,201,155,.28);
+        background:rgba(97,201,155,.06);
+      }
+      #${ROOT_ID} .rating-team-comment-box .rating-note-button {
+        width:100%;
+        min-height:34px;
+        border-radius:8px;
+        border-color:rgba(216,176,102,.58);
+        background:linear-gradient(135deg,rgba(216,176,102,.24),rgba(216,176,102,.1));
+        color:#fff0c8;
+        white-space:normal;
+      }
+      #${ROOT_ID} .rating-team-comment-box[data-has-comment="0"] .rating-note-button::before {
+        content:"+ ";
+      }
+      #${ROOT_ID} .rating-team-comment-preview {
+        display:-webkit-box;
+        overflow:hidden;
+        color:#efe5d6;
+        font-size:11px;
+        line-height:1.35;
+        -webkit-box-orient:vertical;
+        -webkit-line-clamp:2;
+      }
+      #${ROOT_ID} .rating-team-comment-placeholder {
+        color:var(--muted);
+        font-size:10px;
+        line-height:1.35;
+      }
+      #${ROOT_ID} .rating-team-comment-meta {
+        display:flex;
+        align-items:center;
+        gap:6px;
+        flex-wrap:wrap;
+        color:#9cdeb9;
+        font-size:9px;
+        font-weight:800;
+      }
       #${ROOT_ID} .rating-note-button[data-note-status="progress"] {
         border-color:rgba(216,176,102,.48);
         color:#f8dfa8;
@@ -887,22 +956,22 @@
         display:none;
       }
       #${ROOT_ID}[data-rating-density="compact"] .rating-detail-panel { padding:12px; }
-      #${ROOT_ID}[data-rating-density="compact"] .rating-work-table table.rating-ux-wide-table th:nth-child(5),
-      #${ROOT_ID}[data-rating-density="compact"] .rating-work-table table.rating-ux-wide-table td:nth-child(5),
-      #${ROOT_ID}[data-rating-density="compact"] .rating-work-table table.rating-ux-wide-table th:nth-child(7),
-      #${ROOT_ID}[data-rating-density="compact"] .rating-work-table table.rating-ux-wide-table td:nth-child(7),
+      #${ROOT_ID}[data-rating-density="compact"] .rating-work-table table.rating-ux-wide-table th:nth-child(6),
+      #${ROOT_ID}[data-rating-density="compact"] .rating-work-table table.rating-ux-wide-table td:nth-child(6),
       #${ROOT_ID}[data-rating-density="compact"] .rating-work-table table.rating-ux-wide-table th:nth-child(8),
       #${ROOT_ID}[data-rating-density="compact"] .rating-work-table table.rating-ux-wide-table td:nth-child(8),
-      #${ROOT_ID}[data-rating-density="compact"] .rating-work-table table.rating-ux-wide-table th:nth-child(11),
-      #${ROOT_ID}[data-rating-density="compact"] .rating-work-table table.rating-ux-wide-table td:nth-child(11),
+      #${ROOT_ID}[data-rating-density="compact"] .rating-work-table table.rating-ux-wide-table th:nth-child(9),
+      #${ROOT_ID}[data-rating-density="compact"] .rating-work-table table.rating-ux-wide-table td:nth-child(9),
       #${ROOT_ID}[data-rating-density="compact"] .rating-work-table table.rating-ux-wide-table th:nth-child(12),
       #${ROOT_ID}[data-rating-density="compact"] .rating-work-table table.rating-ux-wide-table td:nth-child(12),
-      #${ROOT_ID}[data-rating-density="compact"] .rating-work-table table.rating-ux-wide-table th:nth-child(14),
-      #${ROOT_ID}[data-rating-density="compact"] .rating-work-table table.rating-ux-wide-table td:nth-child(14),
+      #${ROOT_ID}[data-rating-density="compact"] .rating-work-table table.rating-ux-wide-table th:nth-child(13),
+      #${ROOT_ID}[data-rating-density="compact"] .rating-work-table table.rating-ux-wide-table td:nth-child(13),
       #${ROOT_ID}[data-rating-density="compact"] .rating-work-table table.rating-ux-wide-table th:nth-child(15),
       #${ROOT_ID}[data-rating-density="compact"] .rating-work-table table.rating-ux-wide-table td:nth-child(15),
       #${ROOT_ID}[data-rating-density="compact"] .rating-work-table table.rating-ux-wide-table th:nth-child(16),
-      #${ROOT_ID}[data-rating-density="compact"] .rating-work-table table.rating-ux-wide-table td:nth-child(16) {
+      #${ROOT_ID}[data-rating-density="compact"] .rating-work-table table.rating-ux-wide-table td:nth-child(16),
+      #${ROOT_ID}[data-rating-density="compact"] .rating-work-table table.rating-ux-wide-table th:nth-child(17),
+      #${ROOT_ID}[data-rating-density="compact"] .rating-work-table table.rating-ux-wide-table td:nth-child(17) {
         display:none;
       }
       .rating-note-backdrop {
@@ -1081,7 +1150,7 @@
         </div>
         <div class="rating-action-guide">
           <strong>Действия по артикулу:</strong>
-          в первом столбце нажмите «Копировать артикул» или «Отзыв / комментарий».
+          артикул копируется в первом столбце, а заметка для коллег — в отдельной колонке «Комментарий команде», как в Google-таблице.
         </div>
       `;
       const title = root.querySelector(':scope > .section-title');
@@ -1343,6 +1412,7 @@
 
   function refreshWorkflowRows() {
     document.querySelectorAll('[data-rating-row-actions]').forEach((actions) => actions.remove());
+    document.querySelectorAll('[data-rating-comment-cell]').forEach((cell) => cell.remove());
     enhanceRoot(document.getElementById(ROOT_ID));
   }
 
@@ -1370,7 +1440,7 @@
       <form class="rating-note-dialog" data-rating-note-form>
         <div class="rating-note-dialog__head">
           <div>
-            <h3>Отзыв / комментарий</h3>
+            <h3>Комментарий по артикулу</h3>
             <span>${platformKey === 'ozon' ? 'Ozon' : 'WB'} · артикул ${escapeHtml(label || key)} · видно всей команде</span>
           </div>
           <button type="button" data-rating-note-cancel aria-label="Закрыть">Закрыть</button>
@@ -1533,6 +1603,16 @@
       const entries = workflowEntries(platform, label);
       const workflow = entries[0] || null;
       const priority = rowSmartPriority(row, workflow);
+      const table = row?.closest('table');
+      const headerRow = table?.querySelector('thead tr');
+      if (table && headerRow && !headerRow.querySelector('[data-rating-comment-head]')) {
+        const commentHead = document.createElement('th');
+        commentHead.className = 'rating-team-comment-head';
+        commentHead.setAttribute('data-rating-comment-head', '');
+        commentHead.innerHTML = '<span>Комментарий команде</span><small>общая колонка, как в Google-таблице</small>';
+        headerRow.firstElementChild?.insertAdjacentElement('afterend', commentHead);
+        table.classList.add('rating-has-comment-column');
+      }
       if (row) {
         row.dataset.ratingWorkflowStatus = workflow?.status || 'none';
         row.dataset.ratingWorkflowArticle = label;
@@ -1544,20 +1624,37 @@
       actions.setAttribute('data-rating-row-actions', '');
       actions.innerHTML = `
         <button class="rating-copy-button" type="button" data-rating-copy>Копировать артикул</button>
-        <button class="rating-note-button" type="button" data-rating-note data-note-status="${workflow?.status || 'new'}">
-          Отзыв / комментарий${entries.length ? ` · ${entries.length}` : ''}
-        </button>
         ${priority === 'overdue' ? '<span class="rating-priority-flag">Просрочено</span>' : ''}
         ${priority === 'critical' ? '<span class="rating-priority-flag">Нужно внимание</span>' : ''}
         ${workflow ? `<span class="rating-workflow-status" data-status="${workflow.status}">${escapeHtml(STATUS_LABELS[workflow.status] || STATUS_LABELS.new)}</span>` : ''}
         ${workflow?.owner ? `<span class="rating-row-owner" title="Ответственный">${escapeHtml(workflow.owner)}</span>` : ''}
       `;
+      let commentCell = row?.querySelector(':scope > [data-rating-comment-cell]');
+      if (row && !commentCell) {
+        commentCell = document.createElement('td');
+        commentCell.className = 'rating-team-comment-cell';
+        commentCell.setAttribute('data-rating-comment-cell', '');
+        cell.insertAdjacentElement('afterend', commentCell);
+      }
+      if (commentCell) {
+        commentCell.innerHTML = `
+          <div class="rating-team-comment-box" data-has-comment="${workflow ? '1' : '0'}">
+            <button class="rating-note-button" type="button" data-rating-note data-note-status="${workflow?.status || 'new'}">
+              ${workflow ? `Открыть / добавить · ${entries.length}` : 'Добавить комментарий'}
+            </button>
+            ${workflow
+              ? `<span class="rating-team-comment-preview">${escapeHtml(workflow.text || 'Статус обновлён без текста.')}</span>
+                 <span class="rating-team-comment-meta">Сохранено · ${escapeHtml(STATUS_LABELS[workflow.status] || STATUS_LABELS.new)}${workflow.owner ? ` · ${escapeHtml(workflow.owner)}` : ''}</span>`
+              : '<span class="rating-team-comment-placeholder">Нажмите и напишите коллегам заметку по этому артикулу.</span>'}
+          </div>
+        `;
+      }
       actions.querySelector('[data-rating-copy]').addEventListener('click', (event) => {
         event.preventDefault();
         event.stopPropagation();
         copyText(label, event.currentTarget);
       });
-      actions.querySelector('[data-rating-note]').addEventListener('click', (event) => {
+      commentCell?.querySelector('[data-rating-note]')?.addEventListener('click', (event) => {
         event.preventDefault();
         event.stopPropagation();
         openNoteDialog(label, label, platform);

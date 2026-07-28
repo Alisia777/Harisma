@@ -1,0 +1,85 @@
+name: WB feedbacks live
+
+on:
+  schedule:
+    - cron: '12,42 * * * *'
+  workflow_dispatch:
+    inputs:
+      requested_by:
+        description: Portal user who requested the refresh
+        required: false
+        type: string
+
+concurrency:
+  group: portal-wb-feedbacks-live
+  cancel-in-progress: true
+
+permissions:
+  contents: read
+
+env:
+  TZ: Europe/Moscow
+
+jobs:
+  refresh-feedbacks:
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '20'
+
+      - name: Install dependencies
+        run: npm ci
+
+      - name: Resolve API window
+        id: api_window
+        shell: bash
+        run: |
+          echo "to=$(date -u +%F)" >> "$GITHUB_OUTPUT"
+          echo "from=$(date -u -d '89 days ago' +%F)" >> "$GITHUB_OUTPUT"
+
+      - name: Check protected credentials
+        env:
+          ALTEA_WB_FEEDBACKS_TOKEN: ${{ secrets.ALTEA_WB_FEEDBACKS_TOKEN || secrets.ALTEA_WB_PROMOTION_TOKEN || secrets.ALTEA_WB_API_TOKEN }}
+          SUPABASE_SERVICE_ROLE_KEY: ${{ secrets.SUPABASE_SERVICE_ROLE_KEY || secrets.ALTEA_SUPABASE_SERVICE_ROLE_KEY }}
+        shell: bash
+        run: |
+          for name in ALTEA_WB_FEEDBACKS_TOKEN SUPABASE_SERVICE_ROLE_KEY; do
+            if [ -z "${!name:-}" ]; then
+              echo "::error::$name is missing"
+              exit 1
+            fi
+          done
+
+      - name: Collect current WB reviews and questions
+        env:
+          ALTEA_WB_FEEDBACKS_TOKEN: ${{ secrets.ALTEA_WB_FEEDBACKS_TOKEN || secrets.ALTEA_WB_PROMOTION_TOKEN || secrets.ALTEA_WB_API_TOKEN }}
+        run: >-
+          node scripts/portal-wb-feedback-sync.js sync
+          --input-dir data
+          --base-data-dir data
+          --output-dir data
+          --from '${{ steps.api_window.outputs.from }}'
+          --to '${{ steps.api_window.outputs.to }}'
+
+      - name: Publish refreshed feedback snapshot
+        env:
+          ALTEA_SUPABASE_URL: ${{ secrets.SUPABASE_URL || vars.SUPABASE_URL || 'https://iyckwryrucqrxwlowxow.supabase.co' }}
+          ALTEA_SUPABASE_KEY: ${{ secrets.SUPABASE_SERVICE_ROLE_KEY || secrets.ALTEA_SUPABASE_SERVICE_ROLE_KEY }}
+          ALTEA_SNAPSHOT_SOURCE: wb-feedbacks-live
+        run: >-
+          node scripts/portal-google-sheet-upload.js
+          --input-dir data
+          --snapshot wb_feedbacks_summary
+          --source wb-feedbacks-live
+
+      - uses: actions/upload-artifact@v4
+        if: always()
+        with:
+          name: wb-feedbacks-live-${{ github.run_id }}
+          path: data/wb_feedbacks_summary.json
+          if-no-files-found: warn
+          retention-days: 14

@@ -380,6 +380,7 @@ const DEFAULT_APP_CONFIG = {
   brand: 'Алтея',
   teamMode: 'local',
   teamMember: { name: '', role: 'Команда' },
+  wbFeedbackSyncEndpoint: '',
   repricerPriceSyncEndpoint: '',
   supabase: { url: '', anonKey: '', auth: 'email_password' }
 };

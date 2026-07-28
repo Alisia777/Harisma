@@ -293,7 +293,7 @@ function renderSkuModal(articleKey) {
           <div class="comment-item">
             <div class="head"><strong>${escapeHtml(comment.author || 'Команда')}</strong><div class="badge-stack">${commentTypeChip(comment.type)}${badge(comment.team || 'Команда')}</div></div>
             <div class="muted small">${fmt.date(comment.createdAt)}</div>
-            <p>${escapeHtml(comment.text)}</p>
+            <p>${escapeHtml(typeof commentDisplayText === 'function' ? commentDisplayText(comment) : comment.text)}</p>
           </div>
         `).join('') : '<div class="empty">Комментариев пока нет</div>'}</div>
       </div>

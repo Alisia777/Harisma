@@ -751,7 +751,7 @@
       }
       #${ROOT_ID} .rating-row-actions { margin-top:7px; }
       #${ROOT_ID} .rating-work-table table.rating-has-comment-column {
-        min-width:2340px;
+        min-width:2244px;
       }
       #${ROOT_ID} .rating-team-comment-head,
       #${ROOT_ID} .rating-team-comment-cell {
@@ -1616,12 +1616,21 @@
       const priority = rowSmartPriority(row, workflow);
       const table = row?.closest('table');
       const headerRow = table?.querySelector('thead tr');
-      if (table && headerRow && !headerRow.querySelector('[data-rating-comment-head]')) {
-        const commentHead = document.createElement('th');
-        commentHead.className = 'rating-team-comment-head';
-        commentHead.setAttribute('data-rating-comment-head', '');
-        commentHead.innerHTML = '<span>Комментарий команде</span><small>общая колонка, как в Google-таблице</small>';
-        headerRow.firstElementChild?.insertAdjacentElement('afterend', commentHead);
+      if (table && headerRow) {
+        if (!headerRow.querySelector('[data-rating-comment-head]')) {
+          const commentHead = document.createElement('th');
+          commentHead.className = 'rating-team-comment-head';
+          commentHead.setAttribute('data-rating-comment-head', '');
+          commentHead.innerHTML = '<span>Комментарий команде</span><small>общая колонка, как в Google-таблице</small>';
+          headerRow.firstElementChild?.insertAdjacentElement('afterend', commentHead);
+        }
+        const colgroup = table.querySelector('colgroup');
+        if (colgroup && !colgroup.querySelector('[data-rating-comment-col]')) {
+          const commentCol = document.createElement('col');
+          commentCol.setAttribute('data-rating-comment-col', '');
+          commentCol.style.width = '280px';
+          colgroup.firstElementChild?.insertAdjacentElement('afterend', commentCol);
+        }
         table.classList.add('rating-has-comment-column');
       }
       if (row) {

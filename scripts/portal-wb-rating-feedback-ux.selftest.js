@@ -7,10 +7,13 @@ const { chromium } = require('playwright');
 const ROOT = path.resolve(__dirname, '..');
 const MODULE = path.join(ROOT, 'portal-wb-rating-feedback-ux.js');
 const moduleSource = fs.readFileSync(MODULE, 'utf8');
+const interfaceSource = fs.readFileSync(path.join(ROOT, 'portal-interface-optimization.css'), 'utf8');
+const workbenchSource = fs.readFileSync(path.join(ROOT, 'portal-wb-rating-workbench-v2.css'), 'utf8');
 const reportSource = fs.readFileSync(path.join(ROOT, 'portal-wb-rating-report-hotfix.js'), 'utf8');
 const authSource = fs.readFileSync(path.join(ROOT, 'portal-auth-access.js'), 'utf8');
 const coreSource = fs.readFileSync(path.join(ROOT, 'app-core-01.js'), 'utf8');
 const coreUiSource = fs.readFileSync(path.join(ROOT, 'app-core-02.js'), 'utf8');
+const indexSource = fs.readFileSync(path.join(ROOT, 'index.html'), 'utf8');
 
 function metricCard(platform, index) {
   return `<button class="rating-planfact-card" data-rating-platform="${platform}"><span>${platform}-${index}</span></button>`;
@@ -64,6 +67,16 @@ async function main() {
   assert.match(reportSource, /model\.snapshots\.length/, 'historical snapshots must stay available');
   assert.match(authSource, /var EMPLOYEE_VIEWS\s*=\s*\[[\s\S]*?'wb-rating'/, 'employees must retain access to reviews');
   assert.match(coreSource, /comments:\s*'portal_comments'/, 'workflow must reuse the shared comments table');
+  assert.match(
+    indexSource,
+    /portal-wb-rating-feedback-ux\.js\?v=20260728ratinglayout2/,
+    'reviews UX must cache-bust the corrected header and theme contract'
+  );
+  assert.match(
+    interfaceSource,
+    /portal-wb-rating-workbench-v2\.css\?v=20260728ratinglayout2/,
+    'interface entrypoint must cache-bust the reviews workbench theme contract'
+  );
 
   const commentHelpers = coreUiSource.slice(
     coreUiSource.indexOf('function commentTypeChip'),
@@ -93,22 +106,33 @@ async function main() {
   try {
     await page.setContent(`
       <!doctype html>
-      <html lang="ru">
+      <html lang="ru" data-theme="porcelain-day">
       <head>
         <meta charset="utf-8">
         <style>
-          :root { --text:#fff7e6; --muted:#9f959f; }
-          body { background:#0c090d; color:var(--text); font-family:Arial,sans-serif; }
+          :root {
+            --bg:#f3efe7; --surface:#fffdf9; --panel:#f8f3eb;
+            --text:#241f1a; --muted:#756b61; --line:#d6cab9;
+            --accent:#9b7953; --ok:#18794e; --warn:#a06416; --danger:#b42318;
+            --portal-theme-accent:#9b7953;
+            --portal-theme-control:#f8f3eb;
+            --portal-theme-surface:#fffdf9;
+            --portal-theme-surface-strong:#fffaf2;
+            --portal-theme-active:#eadfc9;
+            --portal-theme-primary:#ead5ad;
+            --portal-theme-primary-text:#241f1a;
+          }
+          * { box-sizing:border-box; }
+          body { background:var(--bg); color:var(--text); font-family:Arial,sans-serif; }
           .section-title { display:flex; justify-content:space-between; }
           .rating-planfact-board { display:grid; grid-template-columns:repeat(5,1fr); }
           .rating-work-table { width:900px; overflow:auto; }
-          .rating-work-table table { min-width:2060px; }
-          .rating-work-table th,.rating-work-table td { width:110px; padding:8px; }
-          .rating-work-table th:first-child,.rating-work-table td:first-child { width:230px; }
+          .rating-work-table table { min-width:2060px; border-collapse:separate; border-spacing:0; table-layout:fixed; }
+          .rating-work-table th,.rating-work-table td { padding:8px; }
           .rating-sort-control { display:flex; gap:4px; }
         </style>
       </head>
-      <body>
+      <body class="v87-imperial altea-premium-shell" data-theme="porcelain-day">
         <section id="view-wb-rating">
           <div class="section-title"><div><h2>Отзывы</h2></div></div>
           <div class="rating-planfact-toolbar">
@@ -136,6 +160,9 @@ async function main() {
           </div>
           <div class="rating-work-table">
             <table>
+              <colgroup>
+                <col style="width:230px"><col style="width:120px"><col style="width:118px"><col style="width:86px"><col style="width:86px"><col style="width:92px"><col style="width:96px"><col style="width:96px"><col style="width:120px"><col style="width:98px"><col style="width:98px"><col style="width:104px"><col style="width:94px"><col style="width:92px"><col style="width:92px"><col style="width:92px"><col style="width:112px"><col style="width:138px">
+              </colgroup>
               <thead><tr>${Array.from({ length: 18 }, (_, index) => `<th>H${index + 1}</th>`).join('')}</tr></thead>
               <tbody>
                 <tr class="rating-work-row" data-rating-detail="WB-ARTICLE-1" data-rating-platform="wb">${cells('WB-ARTICLE-1')}</tr>
@@ -202,6 +229,7 @@ async function main() {
       });
     });
 
+    await page.addStyleTag({ content: workbenchSource });
     await page.addScriptTag({ content: moduleSource });
     await page.waitForTimeout(80);
 
@@ -209,6 +237,7 @@ async function main() {
     assert.equal(await page.locator('[data-rating-ux-select]').count(), 2, 'large filter groups must collapse to selects');
     assert.equal(await page.locator('[data-rating-row-actions]').count(), 3, 'each WB and Ozon row must receive actions');
     assert.equal(await page.locator('[data-rating-comment-head]').count(), 1, 'the table must expose one explicit team comment column');
+    assert.equal(await page.locator('[data-rating-comment-col]').count(), 1, 'the table must expose one matching comment col');
     assert.equal(await page.locator('[data-rating-comment-cell]').count(), 3, 'each article must expose its own team comment cell');
     assert.match(await page.locator('[data-rating-comment-head]').innerText(), /Комментарий команде/);
     assert.match(await page.locator('[data-rating-comment-head]').innerText(), /Google-таблице/);
@@ -218,6 +247,59 @@ async function main() {
     assert.match(await page.locator('[data-rating-feedback-toolbar]').innerText(), /Действия по артикулу/);
     assert.equal(await page.locator('[data-rating-data-refresh]').count(), 1, 'WB refresh action must be visible once');
     assert.match(await page.locator('[data-rating-data-refresh-status]').innerText(), /каждые 30 минут/);
+    const lightThemeMetrics = await page.evaluate(() => ({
+      boardBackground: getComputedStyle(document.querySelector('[data-rating-smart-board]')).backgroundColor,
+      boardHeading: getComputedStyle(document.querySelector('[data-rating-smart-board] h3')).color,
+      refreshText: getComputedStyle(document.querySelector('.rating-data-refresh button')).color,
+      cellText: getComputedStyle(document.querySelector('.rating-work-table td')).color
+    }));
+    assert.equal(lightThemeMetrics.boardBackground, 'rgb(255, 250, 242)', 'light theme must remove the dark smart-board residue');
+    assert.equal(lightThemeMetrics.boardHeading, 'rgb(36, 31, 26)', 'light smart-board heading must stay readable');
+    assert.equal(lightThemeMetrics.refreshText, 'rgb(36, 31, 26)', 'light refresh action must not keep pale dark-theme text');
+    assert.equal(lightThemeMetrics.cellText, 'rgb(36, 31, 26)', 'light table cells must use the active theme text');
+
+    const tableGeometry = await page.evaluate(() => {
+      const table = document.querySelector('.rating-work-table table');
+      const first = table.querySelector('thead th:nth-child(1)').getBoundingClientRect();
+      const second = table.querySelector('thead th:nth-child(2)').getBoundingClientRect();
+      const note = table.querySelector('[data-rating-comment-cell] .rating-note-button').getBoundingClientRect();
+      const noteBox = table.querySelector('[data-rating-comment-cell] .rating-team-comment-box').getBoundingClientRect();
+      return {
+        tableWidth: table.getBoundingClientRect().width,
+        firstWidth: first.width,
+        secondWidth: second.width,
+        adjacentGap: second.left - first.right,
+        noteInside: note.left >= noteBox.left && note.right <= noteBox.right
+      };
+    });
+    assert.equal(tableGeometry.tableWidth, 2244, 'table width must equal the complete 19-column contract');
+    assert.equal(tableGeometry.firstWidth, 230, 'article column must keep its declared width');
+    assert.equal(tableGeometry.secondWidth, 280, 'team comment column must keep its declared width');
+    assert.equal(tableGeometry.adjacentGap, 0, 'sticky columns must meet without overlap or a gap');
+    assert.equal(tableGeometry.noteInside, true, 'comment action must remain inside its cell');
+
+    await page.evaluate(() => {
+      const header = document.querySelector('.rating-work-table thead th:nth-child(3)');
+      const button = document.createElement('button');
+      button.className = 'altea-th-filter-btn';
+      button.textContent = '⌄';
+      header.appendChild(button);
+    });
+    const headerFilterGeometry = await page.evaluate(() => {
+      const header = document.querySelector('.rating-work-table thead th:nth-child(3)');
+      const button = header.querySelector('.altea-th-filter-btn');
+      const headerRect = header.getBoundingClientRect();
+      const buttonRect = button.getBoundingClientRect();
+      return {
+        position: getComputedStyle(button).position,
+        inside: buttonRect.left >= headerRect.left
+          && buttonRect.right <= headerRect.right
+          && buttonRect.top >= headerRect.top
+          && buttonRect.bottom <= headerRect.bottom
+      };
+    });
+    assert.equal(headerFilterGeometry.position, 'absolute', 'filter arrow must not enlarge or split the header');
+    assert.equal(headerFilterGeometry.inside, true, 'filter arrow must remain inside its header cell');
     assert.equal(await page.locator('[data-rating-copy]').first().innerText(), 'Копировать артикул');
     assert.equal(await page.locator('[data-rating-note]').first().innerText(), 'Добавить комментарий');
     assert.match(await page.locator('[data-rating-comment-cell]').first().innerText(), /напишите коллегам/);
@@ -244,6 +326,11 @@ async function main() {
 
     await page.setViewportSize({ width: 390, height: 844 });
     await page.waitForTimeout(20);
+    assert.equal(
+      await page.evaluate(() => document.documentElement.scrollWidth - document.documentElement.clientWidth),
+      0,
+      'mobile reviews route must not overflow the page horizontally'
+    );
     assert.equal(
       await page.locator('[data-rating-smart-board]').evaluate((node) => getComputedStyle(node).gridTemplateColumns.split(' ').length),
       1,

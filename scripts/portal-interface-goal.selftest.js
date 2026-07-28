@@ -3,11 +3,14 @@ const fs = require('fs');
 const path = require('path');
 
 const root = path.resolve(__dirname, '..');
-const css = fs.readFileSync(path.join(root, 'portal-interface-optimization.css'), 'utf8');
+const interfaceEntry = fs.readFileSync(path.join(root, 'portal-interface-optimization.css'), 'utf8');
+const css = fs.readFileSync(path.join(root, 'portal-interface-optimization-core.css'), 'utf8');
 const baseCss = fs.readFileSync(path.join(root, 'styles.css'), 'utf8');
 const shell = fs.readFileSync(path.join(root, 'portal-shell-customizer-v2.js'), 'utf8');
 const presentation = fs.readFileSync(path.join(root, 'portal-premium-presentation.js'), 'utf8');
 
+assert.match(interfaceEntry, /portal-interface-optimization-core\.css\?v=20260728ratinglayout2/);
+assert.match(interfaceEntry, /portal-wb-rating-workbench-v2\.css\?v=20260728ratinglayout2/);
 assert.match(css, /html\[data-sidebar="hidden"\][\s\S]*?\.altea-premium-shell-main\s*\{[\s\S]*?grid-template-rows:\s*0 minmax\(0, 1fr\)/);
 assert.match(css, /html\[data-sidebar="hidden"\][\s\S]*?\.altea-premium-shell-topbar\s*\{[\s\S]*?opacity:\s*0;[\s\S]*?pointer-events:\s*none/);
 assert.match(css, /@media \(max-width: 860px\)[\s\S]*?\.shell-premium-sidebar-toggle\s*\{[\s\S]*?display:\s*grid !important/);
@@ -42,8 +45,8 @@ assert.doesNotMatch(presentation, /void\s+stage\.offsetWidth/);
 
 for (const file of ['index.html', 'live-index.html', 'docs/index.html']) {
   const html = fs.readFileSync(path.join(root, file), 'utf8');
-  assert.match(html, /portal-interface-optimization\.css\?v=20260727planfacttable1/);
-  assert.match(html, /portal-premium-presentation\.js\?v=20260725repricerchrome1/);
+  assert.match(html, /portal-interface-optimization\.css\?v=20260728ratinglayout2/);
+  assert.match(html, /portal-premium-presentation\.js\?v=20260727repricerads2/);
   assert.match(html, /portal-shell-customizer-v2\.js\?v=20260725chrome1/);
 }
 

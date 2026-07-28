@@ -163,14 +163,16 @@ function resolveOptions(args) {
   const defaultDays = Number.isFinite(Number(args.days)) ? Number(args.days) : 30;
   const from = isoDate(args.from || args['date-from'] || addDays(to, -Math.max(1, defaultDays) + 1));
   const take = Math.min(Math.max(1, Number(args.take) || 5000), 5000);
+  const token = args.token
+    || process.env.ALTEA_WB_FEEDBACKS_TOKEN
+    || process.env.ALTEA_WB_PROMOTION_TOKEN
+    || process.env.ALTEA_WB_API_TOKEN
+    || '';
   return {
     command: args.command || 'sync',
     dryRun: Boolean(args.dryRun),
-    token: args.token
-      || process.env.ALTEA_WB_FEEDBACKS_TOKEN
-      || process.env.ALTEA_WB_PROMOTION_TOKEN
-      || process.env.ALTEA_WB_API_TOKEN
-      || '',
+    token,
+    ratingToken: args['rating-token'] || process.env.ALTEA_WB_API_TOKEN || token,
     apiBaseUrl: String(args['api-base-url'] || process.env.ALTEA_WB_FEEDBACKS_API_BASE_URL || WB_FEEDBACKS_API_BASE_URL).replace(/\/+$/, ''),
     baseDataDir,
     inputDir,
@@ -204,7 +206,7 @@ async function wbRequest(options, apiPath, requestOptions = {}, attempt = 0) {
   const response = await fetch(url, {
     method,
     headers: {
-      Authorization: options.token,
+      Authorization: requestOptions.token || options.token,
       Accept: 'application/json',
       'Content-Type': 'application/json; charset=utf-8'
     },
@@ -306,7 +308,13 @@ async function fetchCounts(options, diagnostics) {
     }, diagnostics, `${target} count`);
     counts[target] = numberOrNull(payload?.data);
   }
-  const rating = await safeWbRequest(options, '/api/common/v1/rating', {}, diagnostics, 'seller rating');
+  const rating = await safeWbRequest(
+    options,
+    '/api/common/v1/rating',
+    { token: options.ratingToken },
+    diagnostics,
+    'seller rating'
+  );
   if (rating && typeof rating === 'object' && !rating.error) {
     counts.sellerRating = {
       valuation: numberOrNull(rating.valuation),

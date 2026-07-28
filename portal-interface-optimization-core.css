@@ -1,0 +1,2466 @@
+/*
+ * Final interface compatibility layer.
+ * Keeps the premium shell responsive and bridges legacy route styles to the
+ * active shell theme without changing route-specific business logic.
+ */
+
+body.v87-imperial.altea-premium-shell .altea-premium-app,
+body.v87-imperial.altea-premium-shell .altea-premium-app *,
+body.v87-imperial.altea-premium-shell .app-shell,
+body.v87-imperial.altea-premium-shell .app-shell * {
+  box-sizing: border-box;
+}
+
+body.v87-imperial.altea-premium-shell :is(
+  .altea-premium-shell-main,
+  .altea-premium-shell-content,
+  .altea-premium-route-stage,
+  .altea-premium-route,
+  .view,
+  .panel,
+  .card,
+  .table-wrap
+) {
+  min-width: 0;
+}
+
+body.v87-imperial.altea-premium-shell :is(img, video, canvas) {
+  max-width: 100%;
+}
+
+body.v87-imperial.altea-premium-shell :is(
+  .table-wrap,
+  .premium-table-wrap,
+  .document-storage-table-wrap,
+  .pf-v4-history-wrap,
+  .pf-v4-daily-table
+) {
+  overflow-x: auto;
+  overscroll-behavior-inline: contain;
+}
+
+/* The shell theme layer clips generic surfaces with !important. Table
+ * viewports must remain horizontally scrollable instead of hiding columns. */
+body.v87-imperial.altea-premium-shell[data-theme] .view.active :is(
+  .table-wrap,
+  .premium-table-wrap,
+  .document-storage-table-wrap,
+  .pf-v4-history-wrap,
+  .pf-v4-daily-table
+) {
+  min-width: 0;
+  max-width: 100%;
+  overflow-x: auto !important;
+  overflow-y: auto !important;
+}
+
+/* The premium shell already owns the route's vertical scroll. The legacy
+ * theme layer gives every active view a viewport height plus overflow:auto,
+ * which creates a second, mostly blank scroller inside the shell on every
+ * route. Let the active view grow with its data and keep a single vertical
+ * scroll owner at .altea-premium-shell-content. */
+html[data-theme] body.v87-imperial.altea-premium-shell
+  .altea-premium-route-stage--legacy > .view.active {
+  width: 100%;
+  max-width: 100%;
+  height: auto !important;
+  min-height: 0 !important;
+  overflow: visible !important;
+  scrollbar-gutter: auto !important;
+}
+
+body.v87-imperial.altea-premium-shell :is(button, input, select, textarea) {
+  min-width: 0;
+  max-width: 100%;
+}
+
+body.v87-imperial.altea-premium-shell .altea-global-marketplace--premium .altea-marketplace-chip {
+  flex: 0 0 auto;
+}
+
+/* A compact two-line command bar for MacBook and laptop widths. */
+@media (min-width: 861px) and (max-width: 1680px) {
+  body.v87-imperial.altea-premium-shell .altea-premium-app {
+    --premium-topbar: 108px !important;
+  }
+
+  body.v87-imperial.altea-premium-shell .altea-premium-shell-main {
+    grid-template-rows: var(--premium-topbar) minmax(0, 1fr) !important;
+  }
+
+  body.v87-imperial.altea-premium-shell .altea-premium-shell-topbar {
+    min-height: var(--premium-topbar);
+    height: auto;
+    align-content: center;
+    align-items: center;
+    flex-wrap: wrap;
+    gap: 8px 10px;
+    padding: 11px 22px;
+    overflow: hidden;
+  }
+
+  body.v87-imperial.altea-premium-shell .altea-premium-shell-topbar > * {
+    min-width: 0;
+  }
+
+  body.v87-imperial.altea-premium-shell .altea-premium-top-spacer {
+    display: none;
+  }
+
+  body.v87-imperial.altea-premium-shell .altea-premium-crumb {
+    order: 1;
+    flex: 1 1 260px;
+    overflow: hidden;
+  }
+
+  body.v87-imperial.altea-premium-shell .altea-premium-crumb [data-premium-crumb-title] {
+    min-width: 0;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+  }
+
+  body.v87-imperial.altea-premium-shell .shell-appearance-button {
+    order: 1;
+    flex: 0 0 auto;
+    max-width: 180px;
+  }
+
+  body.v87-imperial.altea-premium-shell .altea-premium-shell-action[data-premium-user] {
+    order: 1;
+    max-width: min(20vw, 210px);
+    overflow: hidden;
+    text-overflow: ellipsis;
+  }
+
+  body.v87-imperial.altea-premium-shell .altea-premium-shell-action[data-premium-proxy="portalAuthSignOutBtn"],
+  body.v87-imperial.altea-premium-shell .academy-global-help {
+    order: 1;
+    flex: 0 0 auto;
+  }
+
+  body.v87-imperial.altea-premium-shell :is(
+    .shell-appearance-button,
+    .altea-premium-shell-action[data-premium-user],
+    .altea-premium-shell-action[data-premium-proxy="portalAuthSignOutBtn"],
+    .academy-global-help
+  ) {
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+  }
+
+  body.v87-imperial.altea-premium-shell .altea-global-marketplace--premium {
+    order: 3;
+    flex: 1 1 320px;
+    width: auto;
+    min-width: 260px;
+    max-width: none;
+  }
+
+  body.v87-imperial.altea-premium-shell .altea-premium-sync {
+    order: 2;
+    flex: 0 1 220px;
+    max-width: 220px;
+  }
+
+  body.v87-imperial.altea-premium-shell .altea-premium-shell-action[data-premium-proxy="pullRemoteBtn"],
+  body.v87-imperial.altea-premium-shell .altea-premium-shell-action[data-premium-primary-action],
+  body.v87-imperial.altea-premium-shell .altea-premium-shell-action[data-premium-proxy="pushRemoteBtn"] {
+    order: 2;
+    flex: 0 0 auto;
+    max-width: 190px;
+    overflow: hidden;
+    text-overflow: ellipsis;
+  }
+}
+
+@media (min-width: 861px) and (max-width: 1180px) {
+  body.v87-imperial.altea-premium-shell .altea-premium-app {
+    --premium-topbar: 100px !important;
+  }
+
+  body.v87-imperial.altea-premium-shell .altea-premium-shell-topbar {
+    padding-inline: 16px;
+  }
+
+  body.v87-imperial.altea-premium-shell :is(
+    .altea-premium-sync,
+    .altea-premium-shell-action[data-premium-user],
+    .altea-premium-shell-action[data-premium-proxy="pullRemoteBtn"],
+    .altea-premium-shell-action[data-premium-proxy="pushRemoteBtn"]
+  ) {
+    display: none !important;
+  }
+}
+
+/* Light theme: remove dark residues from the shell itself. */
+html[data-theme="porcelain-day"] body.v87-imperial.altea-premium-shell .altea-premium-app {
+  background:
+    radial-gradient(920px 540px at 82% 0%, color-mix(in srgb, var(--accent) 12%, transparent), transparent 68%),
+    linear-gradient(135deg, var(--bg), var(--bg2) 58%, var(--bg)) !important;
+  color: var(--text) !important;
+}
+
+html[data-theme="porcelain-day"] body.v87-imperial.altea-premium-shell .altea-premium-ambient {
+  background:
+    radial-gradient(760px 520px at 28% 18%, color-mix(in srgb, var(--accent) 10%, transparent), transparent 66%),
+    radial-gradient(980px 620px at 86% 20%, color-mix(in srgb, var(--accent3) 8%, transparent), transparent 70%) !important;
+}
+
+html[data-theme="porcelain-day"] body.v87-imperial.altea-premium-shell .altea-premium-ambient-video {
+  opacity: .045 !important;
+  filter: grayscale(.25) brightness(1.35) contrast(.8) !important;
+  mix-blend-mode: multiply !important;
+}
+
+html[data-theme="porcelain-day"] body.v87-imperial.altea-premium-shell .altea-premium-app::after {
+  box-shadow: inset 0 0 120px color-mix(in srgb, var(--accent) 7%, transparent) !important;
+}
+
+html[data-theme="porcelain-day"] body.v87-imperial.altea-premium-shell :is(
+  .altea-premium-shell-sidebar,
+  .altea-premium-shell-topbar
+) {
+  background: color-mix(in srgb, var(--surface) 88%, transparent) !important;
+  border-color: var(--line) !important;
+  color: var(--text) !important;
+}
+
+html[data-theme="porcelain-day"] body.v87-imperial.altea-premium-shell :is(
+  .altea-premium-route h1,
+  .altea-premium-route h2,
+  .altea-premium-route h3,
+  .altea-premium-route h4,
+  .altea-premium-route strong,
+  .view h1,
+  .view h2,
+  .view h3,
+  .view h4
+) {
+  color: var(--text) !important;
+  text-shadow: none !important;
+}
+
+html[data-theme="porcelain-day"] body.v87-imperial.altea-premium-shell :is(
+  [class*="-kicker"],
+  .eyebrow,
+  .premium-mini-label
+) {
+  color: var(--accent) !important;
+  text-shadow: none !important;
+}
+
+html[data-theme="porcelain-day"] body.v87-imperial.altea-premium-shell option {
+  background: var(--surface) !important;
+  color: var(--text) !important;
+}
+
+html[data-theme] body.v87-imperial.altea-premium-shell .academy-help-btn {
+  border-color: var(--line) !important;
+  background: var(--portal-theme-control) !important;
+  color: var(--text) !important;
+  box-shadow: none !important;
+}
+
+html[data-theme] body.v87-imperial.altea-premium-shell .academy-help-btn span {
+  background: color-mix(in srgb, var(--accent) 14%, transparent) !important;
+  color: var(--accent) !important;
+}
+
+html[data-theme] body.v87-imperial.altea-premium-shell :is(
+  .academy-coach-card,
+  .academy-entry-offer,
+  .academy-drawer
+) {
+  border-color: var(--line) !important;
+  background: var(--portal-theme-surface-strong) !important;
+  color: var(--text) !important;
+  box-shadow: 0 24px 72px color-mix(in srgb, var(--accent) 13%, transparent) !important;
+}
+
+html[data-theme] body.v87-imperial.altea-premium-shell :is(
+  .academy-coach-card h2,
+  .academy-entry-offer h2,
+  .academy-drawer h2,
+  .academy-drawer h3,
+  .academy-quiz-question strong
+) {
+  color: var(--text) !important;
+}
+
+html[data-theme] body.v87-imperial.altea-premium-shell :is(
+  .academy-coach-card p,
+  .academy-entry-offer p,
+  .academy-drawer p,
+  .academy-coach-card ul,
+  .academy-drawer ul,
+  .academy-quiz-option
+) {
+  color: var(--muted) !important;
+}
+
+html[data-theme] body.v87-imperial.altea-premium-shell :is(
+  .academy-note,
+  .academy-quiz-question
+) {
+  border-color: var(--line) !important;
+  background: color-mix(in srgb, var(--accent) 8%, var(--surface)) !important;
+  color: var(--text) !important;
+}
+
+html[data-theme] body.v87-imperial.altea-premium-shell :is(
+  .academy-btn,
+  .academy-drawer-close
+) {
+  border-color: var(--line) !important;
+  background: var(--portal-theme-control) !important;
+  color: var(--text) !important;
+}
+
+html[data-theme] body.v87-imperial.altea-premium-shell .academy-btn-primary {
+  border-color: color-mix(in srgb, var(--accent) 56%, var(--line)) !important;
+  background: var(--portal-theme-primary) !important;
+  color: var(--portal-theme-primary-text) !important;
+}
+
+/* Table filter and cell-detail popovers are mounted directly under <body>.
+ * Their legacy stylesheet hard-codes a navy background while inheriting text
+ * from the active theme, which makes light-theme copy black on black. Bridge
+ * the complete component to the shell palette so every route stays readable. */
+html[data-theme] body.v87-imperial.altea-premium-shell :is(
+  .altea-filter-popover,
+  .altea-cell-detail-popover
+) {
+  --text: var(--shell-text) !important;
+  --muted: var(--shell-muted) !important;
+  --faint: var(--shell-faint) !important;
+  --line: var(--shell-line) !important;
+  --line-strong: var(--shell-line2) !important;
+  border-color: var(--shell-line2) !important;
+  background: var(--portal-theme-surface-strong) !important;
+  color: var(--shell-text) !important;
+  box-shadow: 0 24px 72px color-mix(in srgb, var(--shell-text) 22%, transparent) !important;
+}
+
+html[data-theme] body.v87-imperial.altea-premium-shell :is(
+  .altea-cell-detail-popover__head h3,
+  .altea-cell-detail-popover__grid dd,
+  .altea-filter-popover__title,
+  .altea-filter-option span
+) {
+  color: var(--shell-text) !important;
+  text-shadow: none !important;
+}
+
+html[data-theme] body.v87-imperial.altea-premium-shell :is(
+  .altea-cell-detail-popover__head p,
+  .altea-cell-detail-popover__grid dt,
+  .altea-filter-popover__meta,
+  .altea-filter-field label,
+  .altea-filter-options-head,
+  .altea-filter-option em
+) {
+  color: var(--shell-muted) !important;
+  text-shadow: none !important;
+}
+
+html[data-theme] body.v87-imperial.altea-premium-shell :is(
+  .altea-cell-detail-popover__grid div,
+  .altea-filter-options
+) {
+  border-color: var(--shell-line) !important;
+  background: color-mix(in srgb, var(--shell-surface2) 88%, var(--shell-surface)) !important;
+  color: var(--shell-text) !important;
+}
+
+html[data-theme] body.v87-imperial.altea-premium-shell :is(
+  .altea-cell-detail-popover__head button,
+  .altea-filter-popover button,
+  .altea-filter-field select,
+  .altea-filter-field input
+) {
+  border-color: var(--shell-line) !important;
+  background: var(--portal-theme-control) !important;
+  color: var(--shell-text) !important;
+  box-shadow: none !important;
+}
+
+html[data-theme] body.v87-imperial.altea-premium-shell
+  .altea-filter-option:hover {
+  background: color-mix(in srgb, var(--shell-accent) 10%, transparent) !important;
+}
+
+html[data-theme] body.v87-imperial.altea-premium-shell
+  .altea-filter-popover__actions {
+  background: linear-gradient(
+    180deg,
+    transparent,
+    var(--shell-surface) 34%
+  ) !important;
+}
+
+html[data-theme] body.v87-imperial.altea-premium-shell
+  .altea-filter-popover__actions .primary {
+  border-color: color-mix(in srgb, var(--shell-accent) 56%, var(--shell-line)) !important;
+  background: var(--portal-theme-primary) !important;
+  color: var(--portal-theme-primary-text) !important;
+}
+
+html[data-theme] body.v87-imperial.altea-premium-shell
+  .altea-cell-detail-popover__grid dd.altea-cell-detail-popover__value {
+  color: var(--ok, var(--shell-accent)) !important;
+}
+
+/* Dashboard motion layer used to own a dark-only token set. */
+html[data-theme] body.v87-imperial.altea-premium-shell
+  #view-dashboard :is(.ceo-motion-v1, .ceo-drawer-back),
+html[data-theme] body.v87-imperial.altea-premium-shell
+  .ceo-motion-v1.ceo-drawer-back {
+  --bg: var(--shell-bg) !important;
+  --surface: var(--shell-surface) !important;
+  --surface2: var(--shell-surface2) !important;
+  --line: var(--shell-line) !important;
+  --line2: var(--shell-line2) !important;
+  --text: var(--shell-text) !important;
+  --muted: var(--shell-muted) !important;
+  --faint: var(--shell-faint) !important;
+  --champ: var(--shell-accent) !important;
+  --champ2: var(--shell-accent2) !important;
+  color: var(--text) !important;
+}
+
+html[data-theme] body.v87-imperial.altea-premium-shell
+  #view-dashboard :is(
+    .ceo-title,
+    .ceo-kpi strong,
+    .ceo-panel-head h2,
+    .ceo-platform strong,
+    .ceo-sku-row .ceo-sku-cell strong
+  ) {
+  color: var(--text) !important;
+}
+
+html[data-theme] body.v87-imperial.altea-premium-shell
+  #view-dashboard :is(
+    .ceo-chip,
+    .ceo-periodbar,
+    .ceo-date-field input,
+    .ceo-date-field select,
+    .ceo-periods,
+    .ceo-platform,
+    .ceo-risk,
+    .ceo-contrib-col,
+    .ceo-drawer,
+    .ceo-drawer-metric,
+    .ceo-drawer-search input
+  ) {
+  border-color: var(--line) !important;
+  background: color-mix(in srgb, var(--surface) 92%, transparent) !important;
+  color: var(--text) !important;
+  box-shadow: none !important;
+}
+
+/* The live dashboard drill-down is moved from #view-dashboard to <body>.
+ * Keep its surfaces and every text tier on the active shell palette too. */
+html[data-theme] body.v87-imperial.altea-premium-shell
+  .ceo-motion-v1.ceo-drawer-back .ceo-drawer {
+  border-color: var(--shell-line2) !important;
+  background: var(--portal-theme-surface-strong) !important;
+  color: var(--shell-text) !important;
+  box-shadow: 0 26px 90px color-mix(in srgb, var(--shell-text) 24%, transparent) !important;
+}
+
+html[data-theme] body.v87-imperial.altea-premium-shell
+  .ceo-motion-v1.ceo-drawer-back :is(
+    .ceo-drawer h2,
+    .ceo-drawer-metric strong,
+    .ceo-drawer-row b
+  ) {
+  color: var(--shell-text) !important;
+  text-shadow: none !important;
+}
+
+html[data-theme] body.v87-imperial.altea-premium-shell
+  .ceo-motion-v1.ceo-drawer-back :is(
+    .ceo-drawer p,
+    .ceo-drawer-row span
+  ) {
+  color: var(--shell-muted) !important;
+  text-shadow: none !important;
+}
+
+html[data-theme] body.v87-imperial.altea-premium-shell
+  .ceo-motion-v1.ceo-drawer-back :is(
+    .ceo-drawer-metric small,
+    .ceo-drawer-search span,
+    .ceo-drawer-row small
+  ) {
+  color: var(--shell-faint) !important;
+  text-shadow: none !important;
+}
+
+html[data-theme] body.v87-imperial.altea-premium-shell
+  .ceo-motion-v1.ceo-drawer-back .ceo-drawer-metric {
+  border-color: var(--shell-line) !important;
+  background: color-mix(in srgb, var(--shell-surface2) 88%, var(--shell-surface)) !important;
+  color: var(--shell-text) !important;
+}
+
+html[data-theme] body.v87-imperial.altea-premium-shell
+  .ceo-motion-v1.ceo-drawer-back .ceo-drawer-search input {
+  border-color: var(--shell-line) !important;
+  background: var(--portal-theme-control) !important;
+  color: var(--shell-text) !important;
+  box-shadow: none !important;
+}
+
+html[data-theme] body.v87-imperial.altea-premium-shell
+  .ceo-motion-v1.ceo-drawer-back .ceo-drawer-search input::placeholder {
+  color: var(--shell-faint) !important;
+  opacity: 1;
+}
+
+html[data-theme] body.v87-imperial.altea-premium-shell
+  .ceo-motion-v1.ceo-drawer-back :is(
+    .ceo-drawer-list,
+    .ceo-drawer-row
+  ) {
+  border-color: var(--shell-line) !important;
+}
+
+html[data-theme] body.v87-imperial.altea-premium-shell
+  .ceo-motion-v1.ceo-drawer-back .ceo-drawer-row {
+  background: transparent !important;
+  color: var(--shell-text) !important;
+}
+
+html[data-theme] body.v87-imperial.altea-premium-shell
+  .ceo-motion-v1.ceo-drawer-back .ceo-drawer-row:hover {
+  background: color-mix(in srgb, var(--shell-accent) 10%, transparent) !important;
+  color: var(--shell-text) !important;
+}
+
+html[data-theme] body.v87-imperial.altea-premium-shell
+  .ceo-motion-v1.ceo-drawer-back .ceo-drawer-row em {
+  color: var(--shell-accent) !important;
+}
+
+html[data-theme] body.v87-imperial.altea-premium-shell
+  .ceo-motion-v1.ceo-drawer-back .ceo-period.active {
+  border-color: var(--shell-accent) !important;
+  background: var(--portal-theme-primary) !important;
+  color: var(--portal-theme-primary-text) !important;
+}
+
+html[data-theme] body.v87-imperial.altea-premium-shell
+  #view-dashboard :is(.ceo-kpi, .ceo-panel, .ceo-verdict-card) {
+  border-color: var(--line) !important;
+  background: linear-gradient(
+    180deg,
+    color-mix(in srgb, var(--surface) 94%, transparent),
+    color-mix(in srgb, var(--surface2) 82%, transparent)
+  ) !important;
+  color: var(--text) !important;
+}
+
+html[data-theme] body.v87-imperial.altea-premium-shell
+  #view-dashboard .ceo-period.active {
+  border-color: var(--accent) !important;
+  background: var(--portal-theme-primary) !important;
+  color: var(--portal-theme-primary-text) !important;
+}
+
+html[data-theme] body.v87-imperial.altea-premium-shell
+  #view-dashboard :is(.ceo-grid-line, .ceo-waterfall-grid) {
+  stroke: color-mix(in srgb, var(--line2) 64%, transparent) !important;
+}
+
+html[data-theme] body.v87-imperial.altea-premium-shell
+  #view-dashboard :is(.ceo-axis-label, .ceo-waterfall-x) {
+  fill: var(--muted) !important;
+  stroke: color-mix(in srgb, var(--surface) 78%, transparent) !important;
+}
+
+/* Task board compatibility. */
+html[data-theme] body.v87-imperial.altea-premium-shell #view-control .task-design-v1 {
+  --task-bg: var(--shell-bg) !important;
+  --task-panel: var(--shell-surface) !important;
+  --task-panel2: var(--shell-surface2) !important;
+  --task-line: var(--shell-line) !important;
+  --task-line2: var(--shell-line2) !important;
+  --task-text: var(--shell-text) !important;
+  --task-muted: var(--shell-muted) !important;
+  --task-gold: var(--shell-accent) !important;
+  --task-danger: var(--bad) !important;
+  --task-good: var(--ok) !important;
+  color: var(--task-text) !important;
+}
+
+html[data-theme] body.v87-imperial.altea-premium-shell #view-control :is(
+  .task-design-toolbar,
+  .task-design-create,
+  .task-design-lane,
+  .task-design-list,
+  .task-design-card,
+  .task-design-platform-badge,
+  .task-design-pill,
+  .task-design-platform,
+  .task-detail-dialog,
+  .task-detail-status-card,
+  .task-detail-sku-card,
+  .task-detail-files,
+  .task-detail-history
+) {
+  border-color: var(--task-line) !important;
+  background: var(--portal-theme-surface) !important;
+  color: var(--task-text) !important;
+  box-shadow: var(--shadow) !important;
+}
+
+html[data-theme] body.v87-imperial.altea-premium-shell #view-control
+  .task-design-card.is-overdue {
+  background: linear-gradient(
+    180deg,
+    color-mix(in srgb, var(--bad) 9%, var(--surface)),
+    var(--surface)
+  ) !important;
+}
+
+html[data-theme] body.v87-imperial.altea-premium-shell #view-control :is(
+  .task-design-mode button,
+  .task-design-reset,
+  .task-design-snapshot button,
+  .task-design-filter input,
+  .task-design-filter select,
+  .task-design-create input,
+  .task-design-create select,
+  .task-design-create textarea,
+  .task-detail-form input,
+  .task-detail-form select,
+  .task-detail-form textarea,
+  .task-detail-actions button,
+  .task-detail-close
+) {
+  border-color: var(--task-line) !important;
+  background: var(--portal-theme-control) !important;
+  color: var(--task-text) !important;
+  box-shadow: none !important;
+}
+
+html[data-theme] body.v87-imperial.altea-premium-shell #view-control :is(
+  .task-design-toolbar p,
+  .task-design-card p,
+  .task-design-card small,
+  .task-design-card-meta,
+  .task-design-card-footer,
+  .task-design-result-line,
+  .task-detail-head p
+) {
+  color: var(--task-muted) !important;
+}
+
+/* Plan/fact route compatibility. */
+body.v87-imperial.altea-premium-shell #view-sku-plan-fact .sku-plan-fact-v1 {
+  grid-template-columns: minmax(0, 1fr);
+}
+
+body.v87-imperial.altea-premium-shell #view-sku-plan-fact :is(
+  .sku-plan-fact-card,
+  .pf-v1-table-card,
+  .pf-v1-table-wrap
+) {
+  width: 100%;
+  min-width: 0;
+  max-width: 100%;
+}
+
+html[data-theme] body.v87-imperial.altea-premium-shell #view-sku-plan-fact .pf-v4 {
+  --pf-v4-line: var(--line) !important;
+  --pf-v4-card: var(--surface) !important;
+  --pf-v4-muted: var(--muted) !important;
+  --pf-v4-faint: var(--faint) !important;
+  color: var(--text) !important;
+}
+
+html[data-theme] body.v87-imperial.altea-premium-shell #view-sku-plan-fact :is(
+  .pf-v4-filter-panel,
+  .pf-v4-tabs,
+  .pf-v4-panel,
+  .pf-v4-kpi,
+  .pf-v4-history-wrap,
+  .pf-v4-waterfall-item,
+  .pf-v4-drawer,
+  .pf-v4-drawer-metric
+) {
+  border-color: var(--line) !important;
+  background: var(--portal-theme-surface) !important;
+  color: var(--text) !important;
+  box-shadow: none !important;
+}
+
+html[data-theme] body.v87-imperial.altea-premium-shell #view-sku-plan-fact :is(
+  .pf-v4-filter-panel input,
+  .pf-v4-filter-panel select,
+  .pf-v4-panel-head button,
+  [data-pf-v4-scroll-table],
+  [data-pf-v4-filter-reset],
+  .pf-v4-drawer-close,
+  .pf-v4-daily-table th
+) {
+  border-color: var(--line) !important;
+  background: var(--portal-theme-control) !important;
+  color: var(--text) !important;
+}
+
+html[data-theme] body.v87-imperial.altea-premium-shell #view-sku-plan-fact :is(
+  .pf-v4-head span,
+  .pf-v4-panel-head span,
+  .pf-v4-filter-panel label span,
+  .pf-v4-driver i
+) {
+  color: var(--accent) !important;
+}
+
+html[data-theme] body.v87-imperial.altea-premium-shell
+  #view-sku-plan-fact .unknown {
+  border-color: var(--line) !important;
+  background: color-mix(in srgb, var(--muted) 8%, var(--surface)) !important;
+  color: var(--text) !important;
+}
+
+/* IU / DRR and Plan-Fact are late-mounted, table-heavy routes. Their original
+ * component styles assume a wide dark canvas and are injected after this
+ * stylesheet. These route-scoped rules deliberately carry enough specificity
+ * to keep theme colors and layout stable on a MacBook, at browser zoom, and on
+ * touch widths. */
+html[data-theme] body.v87-imperial.altea-premium-shell #view-iu-drr :is(
+  .iu-drr-v3-shell,
+  .iu-drr-v3-head,
+  .iu-drr-v3-toolbar,
+  .iu-drr-v3-datebar,
+  .iu-drr-v3-tabs,
+  .iu-drr-v3-kpis,
+  .iu-drr-v3-panel,
+  .iu-drr-v3-section,
+  .iu-drr-v3-collapsible,
+  .iu-drr-v3-table-host,
+  .iu-drr-v3-table-filter,
+  .iu-drr-v3-matrix-wrap
+) {
+  width: 100%;
+  min-width: 0;
+  max-width: 100%;
+}
+
+html[data-theme] body.v87-imperial.altea-premium-shell
+  #view-iu-drr .iu-drr-v3-shell {
+  --line: var(--shell-line) !important;
+  --line2: var(--shell-line2) !important;
+  --surface: var(--shell-surface) !important;
+  --surface2: var(--shell-surface2) !important;
+  --champ: var(--shell-accent) !important;
+  --muted: var(--shell-muted) !important;
+  --faint: var(--shell-faint) !important;
+  color: var(--text) !important;
+}
+
+html[data-theme] body.v87-imperial.altea-premium-shell
+  #view-iu-drr .iu-drr-v3-head {
+  align-items: flex-start !important;
+  flex-wrap: wrap;
+}
+
+html[data-theme] body.v87-imperial.altea-premium-shell
+  #view-iu-drr .iu-drr-v3-head > :first-child {
+  flex: 1 1 540px;
+  min-width: min(100%, 360px);
+}
+
+html[data-theme] body.v87-imperial.altea-premium-shell
+  #view-iu-drr .iu-drr-v3-badges {
+  flex: 1 1 320px;
+  min-width: 0;
+}
+
+html[data-theme] body.v87-imperial.altea-premium-shell
+  #view-iu-drr .iu-drr-v3-toolbar {
+  position: static !important;
+  inset: auto !important;
+  z-index: 1 !important;
+  grid-template-columns: minmax(0, 1fr) minmax(250px, .7fr) !important;
+  align-items: end !important;
+  overflow: hidden;
+  background: var(--portal-theme-surface) !important;
+  border-color: var(--line) !important;
+  color: var(--text) !important;
+  box-shadow: none !important;
+  backdrop-filter: none !important;
+}
+
+html[data-theme] body.v87-imperial.altea-premium-shell
+  #view-iu-drr .iu-drr-v3-datebar {
+  grid-column: 1 / -1;
+  grid-template-columns:
+    minmax(130px, .72fr)
+    minmax(145px, .72fr)
+    minmax(260px, 1.56fr) !important;
+}
+
+html[data-theme] body.v87-imperial.altea-premium-shell
+  #view-iu-drr .iu-drr-v3-tabs {
+  grid-column: 1 / -1 !important;
+  display: grid !important;
+  grid-template-columns: repeat(auto-fit, minmax(140px, 1fr));
+  overflow: hidden !important;
+}
+
+html[data-theme] body.v87-imperial.altea-premium-shell
+  #view-iu-drr .iu-drr-v3-tab {
+  width: 100%;
+  height: auto !important;
+  min-width: 0 !important;
+  min-height: 32px;
+  padding-block: 6px !important;
+  line-height: 1.2;
+  white-space: normal !important;
+  overflow-wrap: anywhere;
+}
+
+html[data-theme] body.v87-imperial.altea-premium-shell
+  #view-iu-drr .iu-drr-v3-search {
+  grid-column: 1;
+}
+
+html[data-theme] body.v87-imperial.altea-premium-shell
+  #view-iu-drr .iu-drr-v3-lock {
+  grid-column: 2;
+  min-width: 0;
+  text-align: left !important;
+  overflow-wrap: anywhere;
+}
+
+html[data-theme] body.v87-imperial.altea-premium-shell
+  #view-iu-drr .iu-drr-v3-kpis {
+  grid-template-columns: repeat(auto-fit, minmax(185px, 1fr)) !important;
+}
+
+html[data-theme] body.v87-imperial.altea-premium-shell
+  #view-iu-drr .iu-drr-v3-table-filter {
+  grid-template-columns: repeat(auto-fit, minmax(150px, 1fr)) !important;
+  background: color-mix(in srgb, var(--surface2) 88%, transparent) !important;
+  border-color: var(--line) !important;
+}
+
+html[data-theme] body.v87-imperial.altea-premium-shell
+  #view-iu-drr .iu-drr-v3-matrix-wrap {
+  max-height: none !important;
+  overflow-x: auto !important;
+  overflow-y: hidden !important;
+  overscroll-behavior-inline: contain;
+}
+
+html[data-theme] body.v87-imperial.altea-premium-shell
+  #view-iu-drr .iu-drr-v3-table :is(th, td) {
+  border-color: var(--line) !important;
+  background: var(--surface) !important;
+  color: var(--text) !important;
+  text-shadow: none !important;
+}
+
+html[data-theme] body.v87-imperial.altea-premium-shell
+  #view-iu-drr .iu-drr-v3-table thead th {
+  background: var(--portal-theme-control) !important;
+  color: var(--muted) !important;
+  box-shadow: 0 1px 0 var(--line) !important;
+}
+
+html[data-theme] body.v87-imperial.altea-premium-shell
+  #view-iu-drr .iu-drr-v3-table :is(th:first-child, td:first-child) {
+  width: 310px;
+  min-width: 310px;
+  max-width: 310px;
+  background: color-mix(in srgb, var(--surface2) 90%, var(--surface)) !important;
+  color: var(--text) !important;
+  white-space: normal !important;
+  overflow-wrap: anywhere;
+  box-shadow: 1px 0 0 var(--line) !important;
+}
+
+html[data-theme] body.v87-imperial.altea-premium-shell
+  #view-iu-drr .iu-drr-v3-table .iu-drr-v3-empty-row td {
+  background: var(--surface2) !important;
+  color: var(--muted) !important;
+}
+
+html[data-theme] body.v87-imperial.altea-premium-shell
+  #view-iu-drr :is(
+    .iu-drr-v3-progress,
+    .iu-drr-v3-filter-count
+  ) {
+  border-color: var(--line) !important;
+  background: color-mix(in srgb, var(--accent) 10%, var(--surface)) !important;
+}
+
+html[data-theme] body.v87-imperial.altea-premium-shell
+  #view-sku-plan-fact :is(
+    .sku-plan-fact-v1,
+    .pf-v4,
+    .pf-v4-head,
+    .pf-v4-filter-panel,
+    .pf-v4-integrity,
+    .pf-v4-kpis,
+    .pf-v4-platform-grid,
+    .pf-v4-owner-grid,
+    .pf-v4-lfl-tiles,
+    .pf-v4-split,
+    .pf-v4-chart-grid,
+    .pf-v1-table-card,
+    .pf-v1-table-wrap
+  ) {
+  min-width: 0;
+  max-width: 100%;
+}
+
+html[data-theme] body.v87-imperial.altea-premium-shell
+  #view-sku-plan-fact .pf-v4-head {
+  align-items: flex-start !important;
+  flex-wrap: wrap;
+}
+
+html[data-theme] body.v87-imperial.altea-premium-shell
+  #view-sku-plan-fact .pf-v4-head > :first-child {
+  flex: 1 1 420px;
+  min-width: min(100%, 320px);
+}
+
+html[data-theme] body.v87-imperial.altea-premium-shell
+  #view-sku-plan-fact .pf-v4-tabs {
+  flex: 0 1 auto;
+  min-width: 0;
+  max-width: 100%;
+  flex-wrap: wrap;
+  justify-content: flex-start;
+  border-radius: 14px !important;
+}
+
+html[data-theme] body.v87-imperial.altea-premium-shell
+  #view-sku-plan-fact .pf-v4-tabs button {
+  min-width: 0;
+  border-color: var(--line) !important;
+  background: var(--portal-theme-control) !important;
+  color: var(--text) !important;
+}
+
+html[data-theme] body.v87-imperial.altea-premium-shell
+  #view-sku-plan-fact .pf-v4-tabs button[aria-selected="true"] {
+  border-color: color-mix(in srgb, var(--accent) 58%, var(--line)) !important;
+  background: var(--portal-theme-primary) !important;
+  color: var(--portal-theme-primary-text) !important;
+}
+
+html[data-theme] body.v87-imperial.altea-premium-shell
+  #view-sku-plan-fact .pf-v4-filter-panel {
+  grid-template-columns: repeat(auto-fit, minmax(150px, 1fr)) !important;
+  align-items: end !important;
+}
+
+html[data-theme] body.v87-imperial.altea-premium-shell
+  #view-sku-plan-fact .pf-v4-filter-search {
+  grid-column: span 2;
+}
+
+html[data-theme] body.v87-imperial.altea-premium-shell
+  #view-sku-plan-fact .pf-v4-filter-actions {
+  grid-column: span 2;
+  min-width: 0 !important;
+  max-width: 100%;
+  flex-wrap: wrap;
+  justify-content: flex-start !important;
+}
+
+html[data-theme] body.v87-imperial.altea-premium-shell
+  #view-sku-plan-fact :is(
+    .pf-v4-filter-actions button,
+    .pf-v4-chart-tabs button,
+    .pf-v4-team-table button,
+    .pf-v4-driver,
+    .pf-v4-waterfall-item,
+    .pf-v4-margin-side,
+    .pf-v4-svg-shell,
+    .pf-v4-margin-chart
+  ) {
+  border-color: var(--line) !important;
+  background: var(--portal-theme-control) !important;
+  color: var(--text) !important;
+  text-shadow: none !important;
+  box-shadow: none !important;
+}
+
+html[data-theme] body.v87-imperial.altea-premium-shell
+  #view-sku-plan-fact :is(
+    .pf-v1-table-wrap,
+    .pf-v4-history-wrap,
+    .pf-v4-daily-table
+  ) {
+  max-height: none !important;
+  overflow-x: auto !important;
+  overflow-y: hidden !important;
+  overscroll-behavior-inline: contain;
+}
+
+html[data-theme] body.v87-imperial.altea-premium-shell
+  #view-sku-plan-fact .pf-v1-table :is(th, td) {
+  border-color: var(--line) !important;
+  background: var(--surface) !important;
+  color: var(--text) !important;
+  text-shadow: none !important;
+}
+
+html[data-theme] body.v87-imperial.altea-premium-shell
+  #view-sku-plan-fact .pf-v1-table thead th {
+  background: var(--portal-theme-control) !important;
+  color: var(--muted) !important;
+  box-shadow: 0 1px 0 var(--line) !important;
+  white-space: normal !important;
+  overflow: hidden;
+  overflow-wrap: anywhere;
+}
+
+html[data-theme] body.v87-imperial.altea-premium-shell
+  #view-sku-plan-fact .pf-v1-table thead .table-sort-btn {
+  min-width: 0;
+  max-width: 100%;
+  white-space: normal;
+  overflow: hidden;
+  overflow-wrap: anywhere;
+}
+
+html[data-theme] body.v87-imperial.altea-premium-shell
+  #view-sku-plan-fact .pf-v1-table tbody tr:hover td {
+  background: color-mix(in srgb, var(--accent) 8%, var(--surface)) !important;
+}
+
+html[data-theme] body.v87-imperial.altea-premium-shell
+  #view-sku-plan-fact .pf-v1-table .pf-v1-row td:first-child .link-btn {
+  color: var(--text) !important;
+  text-decoration-color: color-mix(in srgb, var(--text) 55%, transparent) !important;
+  text-shadow: none !important;
+}
+
+html[data-theme] body.v87-imperial.altea-premium-shell
+  #view-sku-plan-fact .pf-v1-table :is(
+    thead tr:nth-child(2) th:nth-child(1),
+    thead tr:nth-child(2) th:nth-child(2),
+    thead tr:nth-child(2) th:nth-child(3),
+    tbody td:nth-child(1),
+    tbody td:nth-child(2),
+    tbody td:nth-child(3)
+  ) {
+  background: color-mix(in srgb, var(--surface2) 90%, var(--surface)) !important;
+  color: var(--text) !important;
+}
+
+html[data-theme] body.v87-imperial.altea-premium-shell
+  #view-sku-plan-fact :is(
+    .pf-v4-history-table thead th,
+    .pf-v4-history-table .pf-v4-history-article,
+    .pf-v4-history-cell,
+    .pf-v4-daily-table th,
+    .pf-v4-daily-table td
+  ) {
+  border-color: var(--line) !important;
+  background: var(--surface) !important;
+  color: var(--text) !important;
+}
+
+html[data-theme] body.v87-imperial.altea-premium-shell
+  #view-sku-plan-fact :is(
+    .pf-v4-history-article button,
+    .pf-v4-history-cell strong,
+    .pf-v4-history-cell em,
+    .pf-v4-margin-side strong
+  ) {
+  color: var(--text) !important;
+}
+
+html[data-theme] body.v87-imperial.altea-premium-shell
+  #view-sku-plan-fact :is(
+    .pf-v4-history-article span,
+    .pf-v4-history-article em,
+    .pf-v4-history-cell small,
+    .pf-v4-history-cell span,
+    .pf-v4-margin-side em
+  ) {
+  color: var(--muted) !important;
+}
+
+/* Prices V1 is injected after the base theme and otherwise keeps its
+ * hard-coded night palette. */
+html[data-theme] body.v87-imperial.altea-premium-shell
+  #view-prices .prices-v1-shell {
+  color: var(--text) !important;
+}
+
+html[data-theme] body.v87-imperial.altea-premium-shell
+  #view-prices :is(
+    .prices-v1-freshness,
+    .prices-v1-filter-dock,
+    .prices-v1-kpis article,
+    .prices-v1-chart-card,
+    .prices-v1-sku-card,
+    .prices-v1-table-card,
+    .prices-v1-mini-grid > div,
+    .prices-v1-effect,
+    .prices-v1-status-block,
+    .prices-v1-empty,
+    .prices-v1-drawer,
+    .prices-v1-filter-checks label
+  ) {
+  border-color: var(--line) !important;
+  background: var(--portal-theme-surface) !important;
+  color: var(--text) !important;
+  box-shadow: none !important;
+}
+
+html[data-theme] body.v87-imperial.altea-premium-shell
+  #view-prices :is(
+    .prices-v1-actions button,
+    .prices-v1-table-actions button,
+    .prices-v1-filter-actions button,
+    .prices-v1-segmented button,
+    .prices-v1-chips button,
+    .prices-v1-quick button,
+    .prices-v1-kpi-button,
+    .prices-v1-drawer button,
+    .prices-v1-sku-top button,
+    .prices-v1-control input,
+    .prices-v1-control select,
+    .prices-v1-status-block select,
+    .prices-v1-status-block button
+  ) {
+  border-color: var(--line) !important;
+  background: var(--portal-theme-control) !important;
+  color: var(--text) !important;
+  text-shadow: none !important;
+  box-shadow: none !important;
+}
+
+html[data-theme] body.v87-imperial.altea-premium-shell
+  #view-prices :is(
+    .prices-v1-hero p,
+    .prices-v1-freshness,
+    .prices-v1-freshness span,
+    .prices-v1-control > span,
+    .prices-v1-kpis article span,
+    .prices-v1-kpis article em,
+    .prices-v1-section-head p,
+    .prices-v1-legend span,
+    .prices-v1-sku-card p,
+    .prices-v1-mini-grid span,
+    .prices-v1-mini-grid em,
+    .prices-v1-effect span,
+    .prices-v1-effect em,
+    .prices-v1-status-block span,
+    .prices-v1-table-actions em,
+    .prices-v1-table td:first-child small,
+    .prices-v1-drawer-head p,
+    .prices-v1-filter-checks em
+  ) {
+  color: var(--muted) !important;
+  text-shadow: none !important;
+}
+
+html[data-theme] body.v87-imperial.altea-premium-shell
+  #view-prices :is(
+    .prices-v1-freshness strong,
+    .prices-v1-kpi-button,
+    .prices-v1-kpi-button strong,
+    .prices-v1-sku-link
+  ) {
+  color: var(--text) !important;
+  text-shadow: none !important;
+}
+
+html[data-theme] body.v87-imperial.altea-premium-shell
+  #view-prices .prices-v1-table-wrap {
+  border-color: var(--line) !important;
+  background: var(--surface) !important;
+}
+
+html[data-theme] body.v87-imperial.altea-premium-shell
+  #view-prices .prices-v1-table :is(th, td) {
+  border-color: var(--line) !important;
+  background: var(--surface) !important;
+  color: var(--text) !important;
+  text-shadow: none !important;
+}
+
+html[data-theme] body.v87-imperial.altea-premium-shell
+  #view-prices .prices-v1-axis text {
+  fill: var(--muted) !important;
+  stroke: none !important;
+}
+
+html[data-theme] body.v87-imperial.altea-premium-shell
+  #view-prices .prices-v1-grid line {
+  stroke: var(--line) !important;
+}
+
+/* Launch and SKU workspaces share a late-mounted night-only component. */
+html[data-theme] body.v87-imperial.altea-premium-shell
+  :is(#view-launches, #view-sku-contour) .sku-launch-v1-shell {
+  --sl-bg: var(--bg) !important;
+  --sl-panel: var(--surface) !important;
+  --sl-panel-2: var(--surface2) !important;
+  --sl-line: var(--line) !important;
+  --sl-line-strong: var(--line2) !important;
+  --sl-text: var(--text) !important;
+  --sl-muted: var(--muted) !important;
+  --sl-gold: var(--accent) !important;
+  color: var(--text) !important;
+}
+
+html[data-theme] body.v87-imperial.altea-premium-shell
+  :is(#view-launches, #view-sku-contour) :is(
+    .sl-v1-segment,
+    .sl-v1-filter-dock,
+    .sl-v1-panel,
+    .sl-v1-column-panel,
+    .sl-v1-kpi,
+    .sl-v1-bucket,
+    .sl-v1-queue-row,
+    .sl-v1-quality-row,
+    .sl-v1-decision-card,
+    .launch-v1-calendar-card,
+    .launch-v1-detail,
+    .launch-v1-full-kanban,
+    .launch-v1-day,
+    .launch-v1-calendar-item,
+    .launch-v1-stage,
+    .launch-v1-board-group,
+    .launch-v1-board-row,
+    .launch-v1-kanban-col,
+    .launch-v1-kanban-col article,
+    .launch-v1-facts,
+    .launch-v1-facts span,
+    .launch-v1-gate span,
+    .sl-v1-empty
+  ) {
+  border-color: var(--line) !important;
+  background: var(--portal-theme-surface) !important;
+  color: var(--text) !important;
+  text-shadow: none !important;
+  box-shadow: none !important;
+}
+
+html[data-theme] body.v87-imperial.altea-premium-shell
+  :is(#view-launches, #view-sku-contour) :is(
+    .sl-v1-control input,
+    .sl-v1-control select,
+    .sl-v1-segment button,
+    .sl-v1-filter-actions button,
+    .sl-v1-inline-actions button,
+    .sl-v1-chip-row button,
+    .sl-v1-chip-row span,
+    .sl-v1-column-panel button,
+    .launch-v1-view-mode button,
+    .launch-v1-calendar-head button,
+    .launch-v1-detail-controls select,
+    .launch-v1-detail-controls button,
+    .launch-v1-stage-actions button,
+    .launch-v1-detail-actions button,
+    .launch-v1-full-head button
+  ) {
+  border-color: var(--line) !important;
+  background: var(--portal-theme-control) !important;
+  color: var(--text) !important;
+  text-shadow: none !important;
+  box-shadow: none !important;
+}
+
+html[data-theme] body.v87-imperial.altea-premium-shell
+  :is(#view-launches, #view-sku-contour) :is(
+    .sl-v1-hero p,
+    .sl-v1-control > span,
+    .sl-v1-kpi span,
+    .sl-v1-kpi em,
+    .sl-v1-panel p,
+    .sl-v1-bucket em,
+    .sl-v1-queue-row em,
+    .sl-v1-queue-row small,
+    .sl-v1-quality-row em,
+    .launch-v1-weekdays,
+    .launch-v1-card span,
+    .launch-v1-card em,
+    .launch-v1-detail-head p,
+    .launch-v1-detail-controls span,
+    .launch-v1-facts em,
+    .launch-v1-gate em,
+    .launch-v1-stage em,
+    .launch-v1-stage small,
+    .launch-v1-board-row em,
+    .launch-v1-board-row small,
+    .launch-v1-board-group p,
+    .launch-v1-kanban-col em,
+    .launch-v1-kanban-col p
+  ) {
+  color: var(--muted) !important;
+  text-shadow: none !important;
+}
+
+html[data-theme] body.v87-imperial.altea-premium-shell
+  :is(#view-launches, #view-sku-contour) :is(
+    .sl-v1-filter-head strong,
+    .sl-v1-panel-head h3,
+    .sl-v1-link,
+    .launch-v1-calendar-item strong,
+    .launch-v1-board-group header
+  ) {
+  color: var(--text) !important;
+  text-shadow: none !important;
+}
+
+html[data-theme] body.v87-imperial.altea-premium-shell
+  :is(#view-launches, #view-sku-contour) :is(
+    .sl-v1-segment button.active,
+    .sl-v1-filter-actions button:first-child,
+    .sl-v1-inline-actions button.active,
+    .launch-v1-view-mode button.active,
+    .launch-v1-stage-actions button.active
+  ) {
+  border-color: color-mix(in srgb, var(--accent) 58%, var(--line)) !important;
+  background: var(--portal-theme-primary) !important;
+  color: var(--portal-theme-primary-text) !important;
+}
+
+html[data-theme] body.v87-imperial.altea-premium-shell
+  :is(#view-launches, #view-sku-contour) .sl-v1-table-wrap {
+  border-color: var(--line) !important;
+  background: var(--surface) !important;
+}
+
+html[data-theme] body.v87-imperial.altea-premium-shell
+  :is(#view-launches, #view-sku-contour) .sl-v1-table :is(th, td) {
+  border-color: var(--line) !important;
+  background: var(--surface) !important;
+  color: var(--text) !important;
+  text-shadow: none !important;
+}
+
+/* Shared late-mounted route components.
+ * Several route bundles inject their component CSS after the shell. Keep the
+ * theme bridge generic so every view inherits the same readable palette. */
+html[data-theme] body.v87-imperial.altea-premium-shell
+  .view.active > [class] {
+  --line: var(--shell-line) !important;
+  --line2: var(--shell-line2) !important;
+  --surface: var(--shell-surface) !important;
+  --surface2: var(--shell-surface2) !important;
+  --champ: var(--shell-accent) !important;
+  --muted: var(--shell-muted) !important;
+  --faint: var(--shell-faint) !important;
+  color: var(--text) !important;
+}
+
+html[data-theme] body.v87-imperial.altea-premium-shell
+  .view.active :is(
+    [class$="-badge"],
+    [class$="-toolbar"],
+    [class$="-periods"],
+    [class$="-tabs"],
+    [class$="-card"],
+    [class$="-section"],
+    [class$="-panel-card"],
+    [class$="-stage"],
+    [class$="-metric"],
+    [class$="-mini"],
+    [class$="-position-list"],
+    [class$="-position-detail"],
+    [class$="-no-source"],
+    [class$="-empty"]
+  ) {
+  border-color: var(--line) !important;
+  background: var(--portal-theme-surface) !important;
+  color: var(--text) !important;
+  text-shadow: none !important;
+  box-shadow: none !important;
+}
+
+html[data-theme] body.v87-imperial.altea-premium-shell
+  .view.active :is(
+    [class$="-control"],
+    [class$="-search"],
+    [class$="-date-field"] input,
+    [class$="-period"],
+    [class$="-tab"],
+    [class$="-collapse"],
+    [class$="-plain-btn"],
+    [class$="-filter-field"] input,
+    [class$="-filter-field"] select,
+    [class$="-filter-reset"],
+    [class$="-sku-btn"]
+  ) {
+  border-color: var(--line) !important;
+  background: var(--portal-theme-control) !important;
+  color: var(--text) !important;
+  text-shadow: none !important;
+  box-shadow: none !important;
+}
+
+html[data-theme] body.v87-imperial.altea-premium-shell
+  .view.active :is(
+    [class$="-lead"],
+    [class$="-badge"],
+    [class$="-date-field"],
+    [class$="-period"],
+    [class$="-tab"],
+    [class$="-lock"],
+    [class$="-card"] small,
+    [class$="-card"] span,
+    [class$="-section"] p,
+    [class$="-note"],
+    [class$="-source"],
+    [class$="-filter-field"],
+    [class$="-stage"] small,
+    [class$="-stage"] span,
+    [class$="-metric"] small,
+    [class$="-metric"] span,
+    [class$="-sku-btn"] span
+  ) {
+  color: var(--muted) !important;
+  text-shadow: none !important;
+}
+
+html[data-theme] body.v87-imperial.altea-premium-shell
+  .view.active :is(
+    [class$="-period"][aria-selected="true"],
+    [class$="-tab"][aria-selected="true"]
+  ) {
+  background: var(--portal-theme-primary) !important;
+  color: var(--portal-theme-primary-text) !important;
+}
+
+html[data-theme] body.v87-imperial.altea-premium-shell
+  .view.active [class$="-table"] :is(th, td) {
+  border-color: var(--line) !important;
+  background: var(--surface) !important;
+  color: var(--text) !important;
+  text-shadow: none !important;
+  box-shadow: none !important;
+}
+
+html[data-theme] body.v87-imperial.altea-premium-shell
+  .view.active svg :is(.grid-line) {
+  stroke: var(--line) !important;
+}
+
+html[data-theme] body.v87-imperial.altea-premium-shell
+  .view.active svg :is(.axis-label) {
+  fill: var(--muted) !important;
+  stroke: var(--surface) !important;
+}
+
+/* Product leaderboard motion layer. */
+html[data-theme] body.v87-imperial.altea-premium-shell
+  #view-product-leaderboard .plb-motion-v2 {
+  --line: var(--shell-line) !important;
+  --line2: var(--shell-line2) !important;
+  --surface: var(--shell-surface) !important;
+  --text: var(--shell-text) !important;
+  --muted: var(--shell-muted) !important;
+  --faint: var(--shell-faint) !important;
+  --champ: var(--shell-accent) !important;
+  color: var(--text) !important;
+}
+
+html[data-theme] body.v87-imperial.altea-premium-shell
+  #view-product-leaderboard :is(
+    .plb-v2-badge,
+    .plb-v2-week-compare,
+    .plb-v2-week-tools,
+    .plb-v2-mode-card,
+    .plb-v2-toolbar,
+    .plb-v2-panel,
+    .plb-v2-mini,
+    .plb-v2-funnel-stage,
+    .plb-v2-map-node,
+    .plb-v2-lfl-tile,
+    .plb-v2-drawer,
+    .plb-v2-empty
+  ) {
+  border-color: var(--line) !important;
+  background: var(--portal-theme-surface) !important;
+  color: var(--text) !important;
+  text-shadow: none !important;
+  box-shadow: none !important;
+}
+
+html[data-theme] body.v87-imperial.altea-premium-shell
+  #view-product-leaderboard :is(
+    .plb-v2-control,
+    .plb-v2-btn
+  ) {
+  border-color: var(--line) !important;
+  background: var(--portal-theme-control) !important;
+  color: var(--text) !important;
+  text-shadow: none !important;
+  box-shadow: none !important;
+}
+
+html[data-theme] body.v87-imperial.altea-premium-shell
+  #view-product-leaderboard :is(
+    .plb-v2-lead,
+    .plb-v2-badge,
+    .plb-v2-field label,
+    .plb-v2-mode-card small,
+    .plb-v2-mode-card p,
+    .plb-v2-panel-head p,
+    .plb-v2-mini small,
+    .plb-v2-mini span,
+    .plb-v2-funnel-stage small,
+    .plb-v2-funnel-stage span,
+    .plb-v2-cause span,
+    .plb-v2-row-sub,
+    .plb-v2-lfl-tile small,
+    .plb-v2-lfl-tile p,
+    .plb-v2-drawer p
+  ) {
+  color: var(--muted) !important;
+  text-shadow: none !important;
+}
+
+html[data-theme] body.v87-imperial.altea-premium-shell
+  #view-product-leaderboard .plb-v2-btn.accent {
+  background: var(--portal-theme-primary) !important;
+  color: var(--portal-theme-primary-text) !important;
+}
+
+html[data-theme] body.v87-imperial.altea-premium-shell
+  #view-product-leaderboard .plb-v2-table :is(th, td) {
+  border-color: var(--line) !important;
+  background: var(--surface) !important;
+  color: var(--text) !important;
+  text-shadow: none !important;
+}
+
+html[data-theme] body.v87-imperial.altea-premium-shell
+  #view-product-leaderboard :is(.plb-v2-chart-line) {
+  stroke: var(--line) !important;
+}
+
+html[data-theme] body.v87-imperial.altea-premium-shell
+  #view-product-leaderboard :is(.plb-v2-chart-label) {
+  fill: var(--muted) !important;
+}
+
+/* Procurement route compatibility. */
+html[data-theme] body.v87-imperial.altea-premium-shell #view-order :is(
+  .altea-order-procurement__field input,
+  .altea-order-procurement__field select,
+  .altea-order-procurement__preset,
+  .altea-order-procurement__place-filter,
+  .altea-order-procurement__place-chip,
+  .altea-order-procurement__cluster-card
+) {
+  border-color: var(--line) !important;
+  background: color-mix(in srgb, var(--surface) 94%, transparent) !important;
+  color: var(--text) !important;
+  box-shadow: none !important;
+}
+
+html[data-theme] body.v87-imperial.altea-premium-shell #view-order :is(
+  .altea-order-procurement__preset.is-active,
+  .altea-order-procurement__place-chip.is-active
+) {
+  border-color: color-mix(in srgb, var(--accent) 52%, var(--line)) !important;
+  background: color-mix(in srgb, var(--accent) 16%, var(--surface)) !important;
+  color: var(--text) !important;
+}
+
+html[data-theme] body.v87-imperial.altea-premium-shell #view-order
+  .altea-order-procurement__platform-btn:not(.is-active) {
+  background:
+    radial-gradient(circle at 28% 0, rgba(var(--order-platform-rgb), .12), transparent 34%),
+    var(--surface) !important;
+  color: var(--text) !important;
+}
+
+html[data-theme] body.v87-imperial.altea-premium-shell #view-order
+  .altea-order-procurement__cluster-card :is(span, small) {
+  color: var(--muted) !important;
+}
+
+html[data-theme] body.v87-imperial.altea-premium-shell #view-order :is(
+  .altea-order-procurement__field > span,
+  .altea-order-procurement__cluster-card span,
+  .altea-order-procurement__cluster-card small
+) {
+  color: var(--muted) !important;
+  text-shadow: none !important;
+}
+
+html[data-theme] body.v87-imperial.altea-premium-shell #view-order :is(
+  .altea-order-procurement__collapse > summary,
+  .altea-order-procurement__table-card,
+  .altea-order-procurement__table-wrap
+) {
+  border-color: var(--line) !important;
+  background: var(--portal-theme-surface) !important;
+  color: var(--text) !important;
+  text-shadow: none !important;
+  box-shadow: none !important;
+}
+
+html[data-theme] body.v87-imperial.altea-premium-shell #view-order
+  .altea-order-procurement__table :is(th, td) {
+  border-color: var(--line) !important;
+  background: var(--surface) !important;
+  color: var(--text) !important;
+  text-shadow: none !important;
+}
+
+html[data-theme] body.v87-imperial.altea-premium-shell #view-order
+  .altea-order-procurement .chip.platform-badge {
+  border-color: color-mix(in srgb, rgb(var(--order-platform-rgb)) 42%, var(--line)) !important;
+  background: color-mix(in srgb, rgb(var(--order-platform-rgb)) 12%, var(--surface)) !important;
+  color: var(--text) !important;
+  text-shadow: none !important;
+  box-shadow: none !important;
+}
+
+/* Common late-injected controls and labels. */
+html[data-theme] body.v87-imperial.altea-premium-shell :is(
+  #view-documents,
+  #view-designers,
+  #view-data-health,
+  #view-prices,
+  #view-repricer,
+  #view-oos-control,
+  #view-wb-rating
+) :is(input, select, textarea) {
+  border-color: var(--line) !important;
+  background: var(--panel) !important;
+  color: var(--text) !important;
+}
+
+html[data-theme] body.v87-imperial.altea-premium-shell :is(
+  #view-documents,
+  #view-designers,
+  #view-data-health,
+  #view-prices,
+  #view-repricer,
+  #view-oos-control,
+  #view-wb-rating
+) :is(.chip, .quick-chip, .link-btn, .portal-action-filter, .portal-action-secondary) {
+  border-color: var(--line) !important;
+  background: var(--portal-theme-control) !important;
+  color: var(--text) !important;
+  box-shadow: none !important;
+}
+
+/* Mobile shell: one full-width content column plus a horizontal bottom nav. */
+@media (max-width: 860px) {
+  html[data-sidebar] {
+    --shell-premium-sidebar: 0px !important;
+    --shell-sidebar: 0px !important;
+  }
+
+  html[data-sidebar] body.v87-imperial.altea-premium-shell[data-theme] .altea-premium-app {
+    --premium-topbar: 104px !important;
+    grid-template-columns: minmax(0, 1fr) !important;
+    grid-template-rows: minmax(0, 1fr) 72px !important;
+  }
+
+  html[data-sidebar] body.v87-imperial.altea-premium-shell[data-theme] .altea-premium-shell-main {
+    grid-column: 1 !important;
+    grid-row: 1 !important;
+    width: 100% !important;
+    min-width: 0 !important;
+    grid-template-rows: var(--premium-topbar) minmax(0, 1fr) !important;
+  }
+
+  html[data-sidebar] body.v87-imperial.altea-premium-shell[data-theme] .altea-premium-shell-sidebar,
+  html[data-sidebar="expanded"] body.v87-imperial.altea-premium-shell[data-theme] .altea-premium-shell-sidebar,
+  html[data-sidebar="compact"] body.v87-imperial.altea-premium-shell[data-theme] .altea-premium-shell-sidebar,
+  html[data-sidebar="hidden"] body.v87-imperial.altea-premium-shell[data-theme] .altea-premium-shell-sidebar {
+    position: fixed !important;
+    z-index: 6 !important;
+    inset: auto 0 0 !important;
+    width: 100% !important;
+    height: 72px !important;
+    min-height: 72px !important;
+    padding: 8px 8px max(8px, env(safe-area-inset-bottom)) !important;
+    flex-direction: row !important;
+    border: 0 !important;
+    border-top: 1px solid var(--line) !important;
+    transform: none !important;
+    opacity: 1 !important;
+    overflow: hidden !important;
+    pointer-events: auto !important;
+    box-shadow: 0 -12px 30px color-mix(in srgb, var(--bg) 38%, transparent) !important;
+  }
+
+  body.v87-imperial.altea-premium-shell :is(
+    .altea-premium-shell-brand,
+    .altea-premium-nav-label,
+    .altea-premium-nav-title,
+    .altea-premium-nav-caption,
+    .altea-premium-nav-dot
+  ) {
+    display: none !important;
+  }
+
+  body.v87-imperial.altea-premium-shell .altea-premium-shell-nav {
+    display: flex !important;
+    width: 100% !important;
+    min-width: 0 !important;
+    padding: 0 2px 3px !important;
+    gap: 6px !important;
+    overflow-x: auto !important;
+    overflow-y: hidden !important;
+    scroll-snap-type: x proximity;
+    scrollbar-width: none;
+    -webkit-overflow-scrolling: touch;
+  }
+
+  body.v87-imperial.altea-premium-shell .altea-premium-shell-nav::-webkit-scrollbar {
+    display: none;
+  }
+
+  body.v87-imperial.altea-premium-shell .altea-premium-nav-group {
+    display: flex !important;
+    flex: 0 0 auto !important;
+    gap: 6px !important;
+    margin: 0 !important;
+  }
+
+  body.v87-imperial.altea-premium-shell .altea-premium-nav-btn,
+  html[data-sidebar="compact"] body.v87-imperial.altea-premium-shell .altea-premium-nav-btn {
+    display: grid !important;
+    width: 52px !important;
+    min-width: 52px !important;
+    height: 52px !important;
+    min-height: 52px !important;
+    grid-template-columns: 1fr !important;
+    place-items: center !important;
+    padding: 6px !important;
+    scroll-snap-align: center;
+  }
+
+  body.v87-imperial.altea-premium-shell .altea-premium-nav-icon {
+    margin: 0 !important;
+  }
+
+  body.v87-imperial.altea-premium-shell .shell-premium-sidebar-toggle {
+    display: none !important;
+  }
+
+  body.v87-imperial.altea-premium-shell .altea-premium-shell-topbar {
+    display: grid !important;
+    height: var(--premium-topbar) !important;
+    min-height: var(--premium-topbar) !important;
+    grid-template-columns: minmax(0, 1fr) 36px 36px;
+    grid-template-areas:
+      "crumb theme help"
+      "market market market";
+    align-content: center;
+    align-items: center;
+    gap: 8px;
+    padding: 8px 10px;
+    overflow: hidden;
+  }
+
+  body.v87-imperial.altea-premium-shell .altea-premium-crumb {
+    grid-area: crumb;
+    min-width: 0;
+  }
+
+  body.v87-imperial.altea-premium-shell .altea-premium-crumb strong {
+    min-width: 0;
+    overflow: hidden;
+    text-overflow: ellipsis;
+  }
+
+  body.v87-imperial.altea-premium-shell .altea-premium-top-spacer {
+    display: none !important;
+  }
+
+  body.v87-imperial.altea-premium-shell .shell-appearance-button {
+    grid-area: theme;
+    width: 36px !important;
+    height: 36px !important;
+    padding: 0 !important;
+    gap: 0 !important;
+    font-size: 0 !important;
+  }
+
+  body.v87-imperial.altea-premium-shell .shell-appearance-button [data-current-shell-theme] {
+    display: none !important;
+  }
+
+  body.v87-imperial.altea-premium-shell .academy-global-help {
+    grid-area: help;
+    width: 36px !important;
+    min-width: 36px !important;
+    min-height: 36px !important;
+    margin: 0 !important;
+    padding: 0 !important;
+    justify-content: center !important;
+    font-size: 0 !important;
+  }
+
+  body.v87-imperial.altea-premium-shell .academy-global-help b {
+    display: none !important;
+  }
+
+  body.v87-imperial.altea-premium-shell .academy-global-help span {
+    width: 20px !important;
+    height: 20px !important;
+    font-size: 13px !important;
+  }
+
+  body.v87-imperial.altea-premium-shell .altea-global-marketplace--premium {
+    grid-area: market;
+    width: 100% !important;
+    min-width: 0 !important;
+    max-width: none !important;
+    justify-content: flex-start;
+    overflow-x: auto !important;
+  }
+
+  body.v87-imperial.altea-premium-shell .altea-premium-shell-action {
+    display: none !important;
+  }
+
+  body.v87-imperial.altea-premium-shell .altea-premium-shell-content {
+    min-width: 0 !important;
+    overflow-x: hidden !important;
+  }
+
+  body.v87-imperial.altea-premium-shell .altea-premium-route-stage {
+    width: 100% !important;
+    min-width: 0 !important;
+    padding: 16px 12px 100px !important;
+    overflow-x: hidden !important;
+  }
+
+  body.v87-imperial.altea-premium-shell .altea-premium-route {
+    width: 100% !important;
+    min-width: 0 !important;
+    padding: 12px 0 88px !important;
+  }
+
+  body.v87-imperial.altea-premium-shell :is(
+    .route-head,
+    .section-title,
+    .top-actions,
+    .toolbar,
+    .filter-row,
+    .document-storage-header-actions
+  ) {
+    min-width: 0;
+    max-width: 100%;
+    flex-wrap: wrap;
+  }
+
+  body.v87-imperial.altea-premium-shell :is(
+    .ceo-title,
+    .route-head h1,
+    .hero-copy h1,
+    .section-title h2
+  ) {
+    max-width: 100%;
+    overflow-wrap: anywhere;
+    font-size: clamp(30px, 10vw, 46px) !important;
+  }
+
+  body.v87-imperial.altea-premium-shell :is(
+    .quick-chip,
+    .chip,
+    .btn,
+    .portal-action-filter,
+    .portal-action-secondary
+  ) {
+    max-width: 100%;
+    white-space: normal;
+    overflow-wrap: anywhere;
+  }
+
+  body.v87-imperial.altea-premium-shell .shell-appearance-drawer {
+    width: 100vw !important;
+    padding: 18px 14px calc(92px + env(safe-area-inset-bottom)) !important;
+  }
+
+  body.v87-imperial.altea-premium-shell .shell-theme-section-grid {
+    grid-template-columns: 1fr !important;
+  }
+
+  body.v87-imperial.altea-premium-shell #view-control .task-design-board {
+    grid-template-columns: repeat(6, minmax(82vw, 320px)) !important;
+    scroll-snap-type: x proximity;
+  }
+
+  body.v87-imperial.altea-premium-shell #view-control .task-design-lane {
+    scroll-snap-align: start;
+  }
+}
+
+@media (max-width: 480px) {
+  body.v87-imperial.altea-premium-shell .altea-marketplace-chip {
+    height: 28px;
+    padding-inline: 9px !important;
+  }
+
+  body.v87-imperial.altea-premium-shell .altea-marketplace-chip span {
+    max-width: 92px;
+    overflow: hidden;
+    text-overflow: ellipsis;
+  }
+
+  body.v87-imperial.altea-premium-shell #view-dashboard :is(
+    .ceo-kpis,
+    .ceo-platform-grid,
+    .ceo-risk-grid,
+    .ceo-contrib
+  ) {
+    grid-template-columns: minmax(0, 1fr) !important;
+  }
+
+  body.v87-imperial.altea-premium-shell #view-dashboard .ceo-periods {
+    grid-template-columns: repeat(2, minmax(0, 1fr)) !important;
+  }
+
+  body.v87-imperial.altea-premium-shell #view-sku-plan-fact .pf-v4-filter-actions {
+    grid-template-columns: minmax(0, 1fr) !important;
+  }
+}
+
+@media (max-width: 860px) {
+  html[data-theme] body.v87-imperial.altea-premium-shell
+    #view-sku-plan-fact .sku-plan-fact-v1 .sku-plan-fact-table table.pf-v1-table {
+    width: 2606px !important;
+    min-width: 2606px !important;
+  }
+
+  html[data-theme] body.v87-imperial.altea-premium-shell
+    #view-sku-plan-fact .pf-v1-cols col:nth-child(1) {
+    width: 240px !important;
+  }
+
+  html[data-theme] body.v87-imperial.altea-premium-shell
+    #view-iu-drr .iu-drr-v3-toolbar {
+    grid-template-columns: minmax(0, 1fr) !important;
+  }
+
+  html[data-theme] body.v87-imperial.altea-premium-shell
+    #view-iu-drr .iu-drr-v3-head > :first-child,
+  html[data-theme] body.v87-imperial.altea-premium-shell
+    #view-iu-drr .iu-drr-v3-badges {
+    flex: 0 1 auto;
+    width: 100%;
+  }
+
+  html[data-theme] body.v87-imperial.altea-premium-shell
+    #view-iu-drr :is(
+      .iu-drr-v3-datebar,
+      .iu-drr-v3-tabs,
+      .iu-drr-v3-search,
+      .iu-drr-v3-lock
+    ) {
+    grid-column: 1 / -1 !important;
+  }
+
+  html[data-theme] body.v87-imperial.altea-premium-shell
+    #view-iu-drr .iu-drr-v3-datebar {
+    grid-template-columns: repeat(2, minmax(0, 1fr)) !important;
+  }
+
+  html[data-theme] body.v87-imperial.altea-premium-shell
+    #view-iu-drr .iu-drr-v3-periods {
+    grid-column: 1 / -1;
+  }
+
+  html[data-theme] body.v87-imperial.altea-premium-shell
+    #view-iu-drr .iu-drr-v3-kpis {
+    grid-template-columns: repeat(2, minmax(0, 1fr)) !important;
+  }
+
+  html[data-theme] body.v87-imperial.altea-premium-shell
+    #view-iu-drr .iu-drr-v3-table :is(th:first-child, td:first-child) {
+    width: 225px;
+    min-width: 225px;
+    max-width: 225px;
+  }
+
+  html[data-theme] body.v87-imperial.altea-premium-shell
+    #view-sku-plan-fact .pf-v4-filter-search,
+  html[data-theme] body.v87-imperial.altea-premium-shell
+    #view-sku-plan-fact .pf-v4-filter-actions {
+    grid-column: 1 / -1;
+  }
+
+  html[data-theme] body.v87-imperial.altea-premium-shell
+    #view-sku-plan-fact .pf-v1-table :is(
+      thead tr:nth-child(2) th:nth-child(2),
+      thead tr:nth-child(2) th:nth-child(3),
+      tbody td:nth-child(2),
+      tbody td:nth-child(3)
+    ) {
+    position: static !important;
+    left: auto !important;
+  }
+
+  html[data-theme] body.v87-imperial.altea-premium-shell
+    #view-sku-plan-fact .pf-v1-table :is(
+      thead tr:nth-child(2) th:nth-child(1),
+      tbody td:nth-child(1)
+    ) {
+    width: 240px;
+    min-width: 240px;
+    max-width: 240px;
+    white-space: normal;
+    overflow-wrap: anywhere;
+  }
+}
+
+@media (max-width: 560px) {
+  html[data-theme] body.v87-imperial.altea-premium-shell
+    #view-sku-plan-fact .sku-plan-fact-v1 .sku-plan-fact-table table.pf-v1-table {
+    width: 2576px !important;
+    min-width: 2576px !important;
+  }
+
+  html[data-theme] body.v87-imperial.altea-premium-shell
+    #view-sku-plan-fact .pf-v1-cols col:nth-child(1) {
+    width: 210px !important;
+  }
+
+  html[data-theme] body.v87-imperial.altea-premium-shell
+    #view-sku-plan-fact .pf-v1-table :is(
+      thead tr:nth-child(2) th:nth-child(1),
+      tbody td:nth-child(1)
+    ) {
+    width: 210px !important;
+    min-width: 210px !important;
+    max-width: 210px !important;
+  }
+
+  html[data-theme] body.v87-imperial.altea-premium-shell
+    #view-sku-plan-fact .pf-v1-table-card .section-subhead {
+    display: grid !important;
+    grid-template-columns: minmax(0, 1fr) !important;
+    gap: 8px !important;
+  }
+
+  html[data-theme] body.v87-imperial.altea-premium-shell
+    #view-sku-plan-fact .pf-v1-table-card .badge-stack {
+    width: 100%;
+    justify-content: flex-start !important;
+  }
+
+  html[data-theme] body.v87-imperial.altea-premium-shell
+    #view-sku-plan-fact .pf-v1-table-card .badge-stack .chip {
+    width: auto !important;
+    max-width: 100%;
+    white-space: nowrap !important;
+  }
+
+  html[data-theme] body.v87-imperial.altea-premium-shell
+    #view-iu-drr .iu-drr-v3-datebar,
+  html[data-theme] body.v87-imperial.altea-premium-shell
+    #view-iu-drr .iu-drr-v3-kpis,
+  html[data-theme] body.v87-imperial.altea-premium-shell
+    #view-iu-drr .iu-drr-v3-table-filter,
+  html[data-theme] body.v87-imperial.altea-premium-shell
+    #view-sku-plan-fact .pf-v4-filter-panel {
+    grid-template-columns: minmax(0, 1fr) !important;
+  }
+
+  html[data-theme] body.v87-imperial.altea-premium-shell
+    #view-iu-drr .iu-drr-v3-tabs {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+
+  html[data-theme] body.v87-imperial.altea-premium-shell
+    #view-sku-plan-fact :is(
+      .pf-v4-filter-search,
+      .pf-v4-filter-actions
+    ) {
+    grid-column: 1 !important;
+  }
+}
+
+/* Theme identity must reach route copy as well as route surfaces. */
+html[data-theme] body.v87-imperial.altea-premium-shell :is(
+  .altea-premium-route h1,
+  .altea-premium-route h2,
+  .altea-premium-route h3,
+  .altea-premium-route h4,
+  .view.active h1,
+  .view.active h2,
+  .view.active h3,
+  .view.active h4
+) {
+  color: var(--text) !important;
+  text-shadow: none !important;
+}
+
+html[data-theme] body.v87-imperial.altea-premium-shell :is(
+  [class*="-kicker"],
+  .eyebrow,
+  .premium-mini-label
+) {
+  color: var(--accent) !important;
+  text-shadow: none !important;
+}
+
+html[data-theme] body.v87-imperial.altea-premium-shell option {
+  background: var(--surface) !important;
+  color: var(--text) !important;
+}
+
+/* Unified chrome collapse and motion quality.
+ * The menu toggle controls the complete navigation chrome: the side rail and
+ * the command bar leave together while the workspace grows into their place. */
+body.v87-imperial.altea-premium-shell .altea-premium-app {
+  --portal-chrome-duration: 360ms;
+  --portal-chrome-ease: cubic-bezier(.22, 1, .36, 1);
+  width: 100%;
+  max-width: 100%;
+  min-width: 0;
+  min-height: 100vh;
+  min-height: 100svh;
+  height: 100dvh;
+  transition:
+    grid-template-columns var(--portal-chrome-duration) var(--portal-chrome-ease),
+    grid-template-rows var(--portal-chrome-duration) var(--portal-chrome-ease),
+    background 420ms cubic-bezier(.22, .82, .22, 1),
+    color 240ms cubic-bezier(.22, .82, .22, 1) !important;
+}
+
+body.v87-imperial.altea-premium-shell .altea-premium-shell-sidebar,
+html[data-sidebar="hidden"] body.v87-imperial.altea-premium-shell .altea-premium-shell-sidebar {
+  width: 100% !important;
+  min-width: 0 !important;
+  transition:
+    transform var(--portal-chrome-duration) var(--portal-chrome-ease),
+    opacity 220ms cubic-bezier(.22, .82, .22, 1),
+    padding var(--portal-chrome-duration) var(--portal-chrome-ease),
+    border-color 260ms cubic-bezier(.22, .82, .22, 1),
+    background 360ms cubic-bezier(.22, .82, .22, 1) !important;
+}
+
+body.v87-imperial.altea-premium-shell .altea-premium-shell-main {
+  grid-template-rows: var(--premium-topbar) minmax(0, 1fr);
+  transition:
+    grid-template-rows var(--portal-chrome-duration) var(--portal-chrome-ease),
+    filter 220ms cubic-bezier(.22, .82, .22, 1) !important;
+}
+
+body.v87-imperial.altea-premium-shell .altea-premium-shell-topbar {
+  height: var(--premium-topbar) !important;
+  min-height: var(--premium-topbar) !important;
+  transform: translate3d(0, 0, 0);
+  transform-origin: top center;
+  opacity: 1;
+  transition:
+    height var(--portal-chrome-duration) var(--portal-chrome-ease),
+    min-height var(--portal-chrome-duration) var(--portal-chrome-ease),
+    padding var(--portal-chrome-duration) var(--portal-chrome-ease),
+    transform var(--portal-chrome-duration) var(--portal-chrome-ease),
+    opacity 200ms cubic-bezier(.22, .82, .22, 1),
+    border-color 220ms cubic-bezier(.22, .82, .22, 1),
+    background 360ms cubic-bezier(.22, .82, .22, 1) !important;
+}
+
+body.v87-imperial.altea-premium-shell .altea-premium-shell-content {
+  min-width: 0;
+  max-width: 100%;
+  overscroll-behavior: contain;
+  scrollbar-gutter: stable;
+}
+
+body.v87-imperial.altea-premium-shell .shell-premium-sidebar-toggle {
+  transition:
+    left var(--portal-chrome-duration) var(--portal-chrome-ease),
+    top var(--portal-chrome-duration) var(--portal-chrome-ease),
+    transform 160ms cubic-bezier(.22, .82, .22, 1),
+    border-color 240ms cubic-bezier(.22, .82, .22, 1),
+    background 320ms cubic-bezier(.22, .82, .22, 1),
+    color 220ms cubic-bezier(.22, .82, .22, 1) !important;
+}
+
+html[data-sidebar="hidden"] body.v87-imperial.altea-premium-shell[data-theme] .altea-premium-shell-main {
+  grid-template-rows: 0 minmax(0, 1fr) !important;
+}
+
+html[data-sidebar="hidden"] body.v87-imperial.altea-premium-shell[data-theme] .altea-premium-shell-topbar {
+  height: 0 !important;
+  min-height: 0 !important;
+  padding-top: 0 !important;
+  padding-bottom: 0 !important;
+  border-bottom-color: transparent !important;
+  transform: translate3d(0, -104%, 0);
+  opacity: 0;
+  overflow: hidden;
+  pointer-events: none;
+}
+
+html[data-sidebar="hidden"] body.v87-imperial.altea-premium-shell[data-theme] .shell-premium-sidebar-toggle {
+  top: max(12px, env(safe-area-inset-top)) !important;
+}
+
+html[data-sidebar="hidden"] body.v87-imperial.altea-premium-shell[data-theme]
+  .altea-premium-route-stage--legacy > .view {
+  min-height: calc(100dvh - 48px);
+}
+
+body.v87-imperial.altea-premium-shell.shell-chrome-transitioning :is(
+  .altea-premium-app,
+  .altea-premium-shell-sidebar,
+  .altea-premium-shell-main,
+  .altea-premium-shell-topbar,
+  .shell-premium-sidebar-toggle
+) {
+  will-change: grid-template-columns, grid-template-rows, transform, opacity;
+}
+
+/* One lightweight route entrance replaces the previous nested blur +
+ * translation animations. This keeps large tables on the compositor. */
+@media (prefers-reduced-motion: no-preference) {
+  body.v87-imperial.altea-premium-shell .altea-premium-route-stage.is-route-entering {
+    animation: alteaInterfaceRouteIn 280ms cubic-bezier(.22, 1, .36, 1) both !important;
+  }
+
+  body.v87-imperial.altea-premium-shell
+    .altea-premium-route-stage--legacy.is-route-entering > .view {
+    animation: none !important;
+  }
+
+  body.v87-imperial.altea-premium-shell .altea-premium-route .premium-route-body {
+    animation: alteaInterfaceRouteBodyIn 320ms cubic-bezier(.22, 1, .36, 1) both !important;
+  }
+
+  body.v87-imperial.altea-premium-shell[data-theme] .view.active :is(
+    .card,
+    .panel,
+    [class$="-card"],
+    [class$="-panel"],
+    [class$="-toolbar"],
+    [class$="-tabs"],
+    input,
+    select,
+    textarea
+  ) {
+    transition-property: color, border-color, background-color, box-shadow, transform, opacity;
+    transition-duration: 220ms;
+    transition-timing-function: cubic-bezier(.22, .82, .22, 1);
+  }
+}
+
+@keyframes alteaInterfaceRouteIn {
+  from {
+    opacity: .62;
+    transform: translate3d(0, 4px, 0);
+  }
+  to {
+    opacity: 1;
+    transform: translate3d(0, 0, 0);
+  }
+}
+
+@keyframes alteaInterfaceRouteBodyIn {
+  from {
+    opacity: .72;
+    transform: translate3d(0, 3px, 0);
+  }
+  to {
+    opacity: 1;
+    transform: translate3d(0, 0, 0);
+  }
+}
+
+/* The launch bundle is shared by Launches and SKU workspace. Its original
+ * viewport breakpoints ignore the 254px desktop rail, so the inner grid can
+ * keep a 1400px min-content width inside a much narrower workspace. */
+html[data-theme] body.v87-imperial.altea-premium-shell
+  :is(#view-launches, #view-sku-contour) .sku-launch-v1-shell {
+  width: 100% !important;
+  max-width: 100% !important;
+  min-width: 0 !important;
+  grid-template-columns: minmax(0, 1fr) !important;
+}
+
+html[data-theme] body.v87-imperial.altea-premium-shell
+  :is(#view-launches, #view-sku-contour) :is(
+    .sl-v1-hero,
+    .sl-v1-segment,
+    .sl-v1-filter-dock,
+    .sl-v1-filter-grid,
+    .sl-v1-body,
+    .sl-v1-panel,
+    .sl-v1-focus-grid,
+    .launch-v1-workspace,
+    .launch-v1-filter-grid,
+    .launch-v1-detail,
+    .launch-v1-full-kanban
+  ) {
+  min-width: 0 !important;
+  max-width: 100% !important;
+}
+
+html[data-theme] body.v87-imperial.altea-premium-shell
+  :is(#view-launches, #view-sku-contour) :is(.sl-v1-filter-dock, .sl-v1-filter-grid) {
+  width: 100% !important;
+  grid-template-columns: minmax(0, 1fr) !important;
+}
+
+html[data-theme] body.v87-imperial.altea-premium-shell
+  :is(#view-launches, #view-sku-contour) :is(
+    .sl-v1-control,
+    .sl-v1-control input,
+    .sl-v1-control select,
+    .launch-v1-control,
+    .launch-v1-control input,
+    .launch-v1-control select
+  ) {
+  min-width: 0 !important;
+  max-width: 100% !important;
+}
+
+@media (max-width: 1680px) {
+  html[data-theme] body.v87-imperial.altea-premium-shell
+    :is(#view-launches, #view-sku-contour) :is(.sl-v1-filter-grid, .launch-v1-filter-grid) {
+    grid-template-columns: repeat(4, minmax(0, 1fr)) !important;
+  }
+
+  html[data-theme] body.v87-imperial.altea-premium-shell
+    :is(#view-launches, #view-sku-contour) .sl-v1-focus-grid {
+    grid-template-columns: minmax(0, .9fr) minmax(0, 1.35fr) minmax(0, 1fr) !important;
+  }
+}
+
+@media (max-width: 1200px) {
+  html[data-theme] body.v87-imperial.altea-premium-shell
+    :is(#view-launches, #view-sku-contour) :is(
+      .sl-v1-hero,
+      .sl-v1-focus-grid,
+      .launch-v1-workspace
+    ) {
+    grid-template-columns: minmax(0, 1fr) !important;
+  }
+
+  html[data-theme] body.v87-imperial.altea-premium-shell
+    :is(#view-launches, #view-sku-contour) :is(.sl-v1-filter-grid, .launch-v1-filter-grid) {
+    grid-template-columns: repeat(2, minmax(0, 1fr)) !important;
+  }
+}
+
+@media (max-width: 860px) {
+  body.v87-imperial.altea-premium-shell .altea-premium-app {
+    grid-template-rows: minmax(0, 1fr) 72px !important;
+  }
+
+  html[data-sidebar="hidden"] body.v87-imperial.altea-premium-shell[data-theme] .altea-premium-app {
+    grid-template-rows: minmax(0, 1fr) 0 !important;
+  }
+
+  body.v87-imperial.altea-premium-shell .shell-premium-sidebar-toggle {
+    display: grid !important;
+    left: max(10px, env(safe-area-inset-left)) !important;
+    top: max(10px, env(safe-area-inset-top)) !important;
+    width: 40px !important;
+    height: 40px !important;
+    border-radius: 13px !important;
+  }
+
+  body.v87-imperial.altea-premium-shell .shell-premium-sidebar-toggle::after {
+    display: none !important;
+  }
+
+  body.v87-imperial.altea-premium-shell .altea-premium-shell-topbar {
+    padding-left: max(58px, calc(env(safe-area-inset-left) + 48px)) !important;
+    padding-right: max(10px, env(safe-area-inset-right)) !important;
+  }
+
+  html[data-sidebar="hidden"] body.v87-imperial.altea-premium-shell[data-theme]
+    .altea-premium-shell-sidebar {
+    width: 100% !important;
+    height: 72px !important;
+    padding: 8px 8px max(8px, env(safe-area-inset-bottom)) !important;
+    border-top-color: transparent !important;
+    transform: translate3d(0, 108%, 0) !important;
+    opacity: 0 !important;
+    pointer-events: none !important;
+  }
+
+  html[data-sidebar="hidden"] body.v87-imperial.altea-premium-shell[data-theme]
+    .altea-premium-shell-main {
+    grid-row: 1 / -1 !important;
+    height: 100% !important;
+  }
+
+  html[data-sidebar="hidden"] body.v87-imperial.altea-premium-shell[data-theme]
+    .altea-premium-route-stage {
+    padding-bottom: max(28px, env(safe-area-inset-bottom)) !important;
+  }
+
+  html[data-theme] body.v87-imperial.altea-premium-shell
+    :is(#view-launches, #view-sku-contour) :is(
+      .sl-v1-hero,
+      .sl-v1-segment,
+      .sl-v1-filter-grid,
+      .launch-v1-filter-grid,
+      .sl-v1-kpis,
+      .launch-v1-kpis,
+      .launch-v1-gate,
+      .sl-v1-decision-metrics
+    ) {
+    grid-template-columns: minmax(0, 1fr) !important;
+  }
+
+  html[data-theme] body.v87-imperial.altea-premium-shell
+    :is(#view-launches, #view-sku-contour) :is(.sl-v1-hero h2, .sl-v1-segment button) {
+    min-width: 0 !important;
+    max-width: 100% !important;
+    white-space: normal !important;
+    overflow-wrap: anywhere;
+  }
+
+  html[data-theme] body.v87-imperial.altea-premium-shell
+    :is(#view-launches, #view-sku-contour) :is(.sl-v1-filter-head, .sl-v1-panel-head) {
+    flex-direction: column !important;
+    align-items: stretch !important;
+  }
+
+  html[data-theme] body.v87-imperial.altea-premium-shell
+    :is(#view-launches, #view-sku-contour) :is(.sl-v1-filter-head, .sl-v1-panel-head) > * {
+    min-width: 0 !important;
+    max-width: 100% !important;
+    overflow-wrap: anywhere;
+  }
+
+  html[data-theme] body.v87-imperial.altea-premium-shell
+    :is(#view-launches, #view-sku-contour) .sl-v1-hero h2 {
+    font-size: clamp(28px, 10vw, 34px) !important;
+    line-height: 1.02 !important;
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  html {
+    scroll-behavior: auto !important;
+  }
+
+  body.v87-imperial.altea-premium-shell .altea-premium-app,
+  body.v87-imperial.altea-premium-shell .altea-premium-shell-sidebar,
+  body.v87-imperial.altea-premium-shell .altea-premium-shell-main,
+  body.v87-imperial.altea-premium-shell .altea-premium-shell-topbar,
+  body.v87-imperial.altea-premium-shell .shell-premium-sidebar-toggle,
+  body.v87-imperial.altea-premium-shell .altea-premium-shell-content {
+    animation: none !important;
+    transition: none !important;
+    scroll-behavior: auto !important;
+  }
+}

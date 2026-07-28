@@ -1,0 +1,756 @@
+/*
+ * Reviews workbench UI v2.
+ * Presentation-only layer: the WB/Ozon data, filters, synchronization,
+ * comments, statuses and table behaviour remain owned by the existing JS.
+ */
+
+body.v87-imperial.altea-premium-shell #view-wb-rating {
+  --rw-accent: #d8b066;
+  --rw-accent-soft: rgba(216, 176, 102, .13);
+  --rw-panel: rgba(18, 15, 19, .94);
+  --rw-panel-strong: rgba(12, 10, 13, .98);
+  --rw-control: rgba(255, 255, 255, .045);
+  --rw-line: rgba(255, 255, 255, .09);
+  --rw-line-accent: rgba(216, 176, 102, .28);
+  --rw-positive: #9cdeb9;
+  --rw-warning: #f1c978;
+  --rw-danger: #ffabab;
+  --rw-radius: 14px;
+  --rw-control-height: 38px;
+  width: 100%;
+  max-width: 100%;
+  scroll-margin-top: 12px;
+}
+
+/* ---------- Heading: less ceremony, more working space ---------- */
+body.v87-imperial.altea-premium-shell #view-wb-rating > .section-title {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) auto;
+  align-items: end;
+  gap: 12px 24px;
+  margin: 0 0 10px;
+  padding: 2px 2px 0;
+}
+
+body.v87-imperial.altea-premium-shell #view-wb-rating > .section-title > div:first-child {
+  min-width: 0;
+}
+
+body.v87-imperial.altea-premium-shell #view-wb-rating > .section-title h2 {
+  margin: 0;
+  font-size: clamp(32px, 3.2vw, 52px);
+  line-height: .98;
+  letter-spacing: -.035em;
+}
+
+body.v87-imperial.altea-premium-shell #view-wb-rating > .section-title p {
+  max-width: 900px;
+  margin: 9px 0 0;
+  color: var(--muted);
+  font-size: 13px;
+  line-height: 1.45;
+}
+
+body.v87-imperial.altea-premium-shell #view-wb-rating > .section-title .badge-stack {
+  justify-content: flex-end;
+  align-self: center;
+  max-width: min(46vw, 620px);
+}
+
+/* ---------- Compact command deck ---------- */
+body.v87-imperial.altea-premium-shell #view-wb-rating .rating-feedback-toolbar {
+  position: sticky;
+  top: 8px;
+  z-index: 45;
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) minmax(270px, 350px);
+  align-items: stretch;
+  gap: 10px;
+  margin: 0 0 10px;
+  padding: 10px;
+  border: 1px solid var(--rw-line-accent);
+  border-radius: var(--rw-radius);
+  background:
+    radial-gradient(circle at 8% -60%, rgba(216, 176, 102, .14), transparent 52%),
+    linear-gradient(145deg, var(--rw-panel), var(--rw-panel-strong));
+  box-shadow: 0 12px 36px rgba(0, 0, 0, .22), inset 0 1px 0 rgba(255, 255, 255, .035);
+}
+
+body.v87-imperial.altea-premium-shell #view-wb-rating .rating-feedback-toolbar__main {
+  display: grid;
+  grid-template-columns: auto minmax(180px, 220px) minmax(290px, 1fr);
+  grid-template-areas:
+    "density workflow refresh"
+    "sync api refresh";
+  align-items: center;
+  gap: 7px 10px;
+  min-width: 0;
+}
+
+body.v87-imperial.altea-premium-shell #view-wb-rating .rating-density-switch {
+  grid-area: density;
+  display: inline-flex;
+  align-items: center;
+  gap: 2px;
+  width: max-content;
+  padding: 3px;
+  border: 1px solid var(--rw-line);
+  border-radius: 10px;
+  background: rgba(0, 0, 0, .2);
+}
+
+body.v87-imperial.altea-premium-shell #view-wb-rating .rating-density-switch button {
+  min-height: 31px;
+  padding: 0 11px;
+  border: 0;
+  border-radius: 7px;
+  background: transparent;
+  color: var(--muted);
+  font-size: 11px;
+  font-weight: 850;
+  line-height: 1;
+  box-shadow: none;
+}
+
+body.v87-imperial.altea-premium-shell #view-wb-rating .rating-density-switch button.active {
+  background: linear-gradient(135deg, rgba(216, 176, 102, .25), rgba(216, 176, 102, .1));
+  color: #fff1ca;
+  box-shadow: inset 0 0 0 1px rgba(216, 176, 102, .28);
+}
+
+body.v87-imperial.altea-premium-shell #view-wb-rating .rating-workflow-filter {
+  grid-area: workflow;
+  display: grid;
+  grid-template-columns: auto minmax(0, 1fr);
+  align-items: center;
+  gap: 8px;
+  min-width: 0;
+}
+
+body.v87-imperial.altea-premium-shell #view-wb-rating .rating-workflow-filter > span {
+  color: var(--muted);
+  font-size: 10px;
+  font-weight: 850;
+  white-space: nowrap;
+}
+
+body.v87-imperial.altea-premium-shell #view-wb-rating .rating-ux-select {
+  width: 100%;
+  min-width: 0;
+  height: var(--rw-control-height);
+  border: 1px solid var(--rw-line-accent);
+  border-radius: 10px;
+  background-color: rgba(8, 7, 10, .8);
+  color: var(--text);
+  padding-inline: 11px 34px;
+  font-size: 12px;
+  font-weight: 800;
+  box-shadow: inset 0 1px 0 rgba(255, 255, 255, .025);
+}
+
+body.v87-imperial.altea-premium-shell #view-wb-rating .rating-team-sync {
+  grid-area: sync;
+  min-width: 0;
+  overflow: hidden;
+  color: var(--rw-positive);
+  font-size: 10px;
+  line-height: 1.25;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+body.v87-imperial.altea-premium-shell #view-wb-rating .rating-team-sync::before {
+  flex: 0 0 auto;
+  width: 6px;
+  height: 6px;
+  box-shadow: 0 0 0 3px rgba(97, 201, 155, .08);
+}
+
+body.v87-imperial.altea-premium-shell #view-wb-rating .rating-api-truth {
+  grid-area: api;
+  min-width: 0;
+  overflow: hidden;
+  padding-left: 1px;
+  color: var(--muted);
+  font-size: 10px;
+  line-height: 1.3;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+body.v87-imperial.altea-premium-shell #view-wb-rating .rating-api-truth strong {
+  color: var(--rw-warning);
+}
+
+body.v87-imperial.altea-premium-shell #view-wb-rating .rating-data-refresh {
+  grid-area: refresh;
+  display: grid;
+  grid-template-columns: auto minmax(160px, 1fr);
+  grid-template-rows: auto auto;
+  align-items: center;
+  gap: 4px 10px;
+  width: 100%;
+  min-width: 0;
+  min-height: 66px;
+  padding: 8px;
+  border: 1px solid var(--rw-line-accent);
+  border-radius: 11px;
+  background: rgba(0, 0, 0, .18);
+}
+
+body.v87-imperial.altea-premium-shell #view-wb-rating[data-rating-data-stale="0"] .rating-data-refresh {
+  border-color: rgba(97, 201, 155, .28);
+  background: linear-gradient(135deg, rgba(97, 201, 155, .06), rgba(0, 0, 0, .16));
+}
+
+body.v87-imperial.altea-premium-shell #view-wb-rating .rating-data-refresh button {
+  grid-row: 1 / span 2;
+  min-width: 176px;
+  min-height: 48px;
+  padding: 8px 13px;
+  border: 1px solid rgba(216, 176, 102, .58);
+  border-radius: 9px;
+  background: linear-gradient(135deg, rgba(216, 176, 102, .28), rgba(216, 176, 102, .11));
+  color: #fff1ca;
+  font-size: 11px;
+  font-weight: 900;
+  line-height: 1.2;
+  box-shadow: inset 0 1px 0 rgba(255, 255, 255, .06);
+}
+
+body.v87-imperial.altea-premium-shell #view-wb-rating .rating-data-refresh button::before {
+  content: "↻";
+  display: inline-block;
+  margin-right: 7px;
+  font-size: 15px;
+  line-height: 0;
+  transform: translateY(1px);
+}
+
+body.v87-imperial.altea-premium-shell #view-wb-rating .rating-data-refresh button:hover:not(:disabled) {
+  border-color: rgba(246, 213, 150, .92);
+  background: linear-gradient(135deg, rgba(216, 176, 102, .38), rgba(216, 176, 102, .16));
+  transform: none;
+}
+
+body.v87-imperial.altea-premium-shell #view-wb-rating .rating-data-refresh__meta,
+body.v87-imperial.altea-premium-shell #view-wb-rating .rating-data-refresh__status {
+  min-width: 0;
+  overflow: hidden;
+  font-size: 10px;
+  line-height: 1.25;
+  text-overflow: ellipsis;
+}
+
+body.v87-imperial.altea-premium-shell #view-wb-rating .rating-action-guide {
+  display: grid;
+  align-content: center;
+  gap: 4px;
+  min-width: 0;
+  padding: 10px 12px;
+  border: 1px solid rgba(97, 201, 155, .16);
+  border-radius: 11px;
+  background: linear-gradient(145deg, rgba(97, 201, 155, .065), rgba(255, 255, 255, .018));
+  color: var(--muted);
+  font-size: 10px;
+  line-height: 1.35;
+}
+
+body.v87-imperial.altea-premium-shell #view-wb-rating .rating-action-guide strong {
+  display: block;
+  color: #c8f4df;
+  font-size: 11px;
+}
+
+/* ---------- Today's queue: one compact decision strip ---------- */
+body.v87-imperial.altea-premium-shell #view-wb-rating .rating-smart-board {
+  display: grid;
+  grid-template-columns: minmax(230px, .78fr) minmax(0, 2.22fr);
+  gap: 12px;
+  margin: 0 0 10px;
+  padding: 12px 14px;
+  border: 1px solid var(--rw-line-accent);
+  border-radius: var(--rw-radius);
+  background:
+    radial-gradient(circle at 88% -70%, rgba(216, 176, 102, .19), transparent 46%),
+    linear-gradient(145deg, rgba(27, 20, 26, .96), rgba(13, 10, 14, .96));
+  box-shadow: 0 12px 34px rgba(0, 0, 0, .2), inset 0 1px 0 rgba(255, 255, 255, .035);
+}
+
+body.v87-imperial.altea-premium-shell #view-wb-rating .rating-smart-board::before {
+  width: 2px;
+}
+
+body.v87-imperial.altea-premium-shell #view-wb-rating .rating-smart-board__eyebrow {
+  font-size: 9px;
+  letter-spacing: .14em;
+}
+
+body.v87-imperial.altea-premium-shell #view-wb-rating .rating-smart-board h3 {
+  margin: 4px 0 5px;
+  font-size: clamp(18px, 1.55vw, 23px);
+  line-height: 1.05;
+}
+
+body.v87-imperial.altea-premium-shell #view-wb-rating .rating-smart-board__summary {
+  display: -webkit-box;
+  max-width: 520px;
+  overflow: hidden;
+  color: var(--muted);
+  font-size: 10.5px;
+  line-height: 1.38;
+  -webkit-box-orient: vertical;
+  -webkit-line-clamp: 2;
+}
+
+body.v87-imperial.altea-premium-shell #view-wb-rating .rating-smart-kpis {
+  display: grid;
+  grid-template-columns: repeat(5, minmax(0, 1fr));
+  gap: 7px;
+}
+
+body.v87-imperial.altea-premium-shell #view-wb-rating .rating-smart-kpi {
+  min-height: 72px;
+  gap: 4px;
+  padding: 9px 10px;
+  border-radius: 10px;
+  background: linear-gradient(160deg, rgba(255, 255, 255, .045), rgba(255, 255, 255, .014));
+  box-shadow: inset 0 1px 0 rgba(255, 255, 255, .025);
+  transition: border-color .14s ease, background .14s ease, box-shadow .14s ease;
+}
+
+body.v87-imperial.altea-premium-shell #view-wb-rating .rating-smart-kpi:hover,
+body.v87-imperial.altea-premium-shell #view-wb-rating .rating-smart-kpi.is-active {
+  transform: none;
+  border-color: rgba(216, 176, 102, .58);
+  background: linear-gradient(160deg, rgba(216, 176, 102, .16), rgba(255, 255, 255, .02));
+  box-shadow: inset 0 0 0 1px rgba(216, 176, 102, .08), 0 7px 18px rgba(0, 0, 0, .13);
+}
+
+body.v87-imperial.altea-premium-shell #view-wb-rating .rating-smart-kpi__label {
+  font-size: 9.5px;
+  line-height: 1.2;
+}
+
+body.v87-imperial.altea-premium-shell #view-wb-rating .rating-smart-kpi__value {
+  font-size: 23px;
+  font-variant-numeric: tabular-nums;
+}
+
+body.v87-imperial.altea-premium-shell #view-wb-rating .rating-smart-kpi__hint {
+  overflow: hidden;
+  font-size: 8.5px;
+  line-height: 1.2;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+/* ---------- Platform and table workbench ---------- */
+body.v87-imperial.altea-premium-shell #view-wb-rating .rating-structured-shell {
+  gap: 10px;
+}
+
+body.v87-imperial.altea-premium-shell #view-wb-rating .rating-planfact-toolbar,
+body.v87-imperial.altea-premium-shell #view-wb-rating .rating-work-tabs {
+  gap: 7px;
+}
+
+body.v87-imperial.altea-premium-shell #view-wb-rating .rating-platform-selector button,
+body.v87-imperial.altea-premium-shell #view-wb-rating .rating-work-tabs button {
+  min-height: 36px;
+  padding: 8px 12px;
+  border-radius: 10px;
+  font-size: 11px;
+  font-weight: 850;
+}
+
+body.v87-imperial.altea-premium-shell #view-wb-rating .rating-planfact-board.sku-plan-platform-board {
+  gap: 8px;
+}
+
+body.v87-imperial.altea-premium-shell #view-wb-rating[data-rating-density="compact"] .rating-planfact-card {
+  min-height: 86px;
+  padding: 9px 10px;
+  border-radius: 11px;
+}
+
+body.v87-imperial.altea-premium-shell #view-wb-rating .rating-detail-panel {
+  min-width: 0;
+  padding: 0;
+  overflow: hidden;
+  border-radius: var(--rw-radius);
+}
+
+body.v87-imperial.altea-premium-shell #view-wb-rating .rating-work-card {
+  overflow: hidden;
+  border-radius: var(--rw-radius);
+  box-shadow: 0 10px 30px rgba(0, 0, 0, .14);
+}
+
+body.v87-imperial.altea-premium-shell #view-wb-rating .rating-work-card .rating-detail-head {
+  align-items: center;
+  margin: 0;
+  padding: 11px 13px;
+}
+
+body.v87-imperial.altea-premium-shell #view-wb-rating .rating-detail-head h3 {
+  font-size: 17px;
+  line-height: 1.15;
+}
+
+body.v87-imperial.altea-premium-shell #view-wb-rating .rating-detail-head p {
+  max-width: 920px;
+  margin-top: 4px;
+  font-size: 10.5px;
+  line-height: 1.35;
+}
+
+body.v87-imperial.altea-premium-shell #view-wb-rating .rating-queue-controls {
+  display: grid;
+  grid-template-columns: minmax(260px, 1fr) auto auto;
+  align-items: center;
+  gap: 8px;
+  padding: 9px 12px;
+  background: rgba(255, 255, 255, .016);
+}
+
+body.v87-imperial.altea-premium-shell #view-wb-rating .rating-queue-controls .rating-sort-control {
+  justify-content: flex-start;
+}
+
+body.v87-imperial.altea-premium-shell #view-wb-rating .rating-inline-search {
+  min-width: 260px;
+  height: 40px;
+  border-radius: 10px;
+  padding-inline: 12px;
+  font-size: 12px;
+}
+
+body.v87-imperial.altea-premium-shell #view-wb-rating .rating-sort-control {
+  gap: 5px;
+}
+
+body.v87-imperial.altea-premium-shell #view-wb-rating .rating-sort-control > span {
+  font-size: 10px;
+}
+
+body.v87-imperial.altea-premium-shell #view-wb-rating .rating-sort-control button {
+  min-height: 32px;
+  padding: 7px 9px;
+  border-radius: 9px;
+  font-size: 10.5px;
+}
+
+body.v87-imperial.altea-premium-shell #view-wb-rating .rating-work-table {
+  max-width: 100%;
+  max-height: min(70vh, 760px);
+  overflow: auto;
+  border-radius: 0 0 var(--rw-radius) var(--rw-radius);
+  scrollbar-gutter: stable;
+}
+
+body.v87-imperial.altea-premium-shell #view-wb-rating .rating-work-table::-webkit-scrollbar {
+  width: 10px;
+  height: 10px;
+}
+
+body.v87-imperial.altea-premium-shell #view-wb-rating .rating-work-table::-webkit-scrollbar-thumb {
+  border: 2px solid transparent;
+  background: rgba(216, 176, 102, .5);
+  background-clip: padding-box;
+}
+
+body.v87-imperial.altea-premium-shell #view-wb-rating .rating-work-table thead th {
+  padding: 9px 10px;
+  color: #f8e9c7;
+  font-size: 10px;
+  letter-spacing: .01em;
+  line-height: 1.2;
+  text-transform: none;
+}
+
+body.v87-imperial.altea-premium-shell #view-wb-rating .rating-work-table td {
+  padding: 8px 10px;
+  font-size: 11px;
+  line-height: 1.3;
+}
+
+body.v87-imperial.altea-premium-shell #view-wb-rating .rating-work-table .cell-main {
+  font-size: 13px;
+  line-height: 1.1;
+}
+
+body.v87-imperial.altea-premium-shell #view-wb-rating .rating-work-table .cell-muted {
+  margin-top: 3px;
+  font-size: 9.5px;
+}
+
+body.v87-imperial.altea-premium-shell #view-wb-rating .rating-work-table .article-cell .link-btn {
+  padding: 4px 7px;
+  border-radius: 8px;
+}
+
+body.v87-imperial.altea-premium-shell #view-wb-rating .rating-row-actions {
+  gap: 5px;
+  margin-top: 6px;
+}
+
+body.v87-imperial.altea-premium-shell #view-wb-rating .rating-copy-button,
+body.v87-imperial.altea-premium-shell #view-wb-rating .rating-note-button {
+  min-height: 29px;
+  padding: 6px 8px;
+  border-radius: 8px;
+  font-size: 9.5px;
+}
+
+body.v87-imperial.altea-premium-shell #view-wb-rating .rating-team-comment-head,
+body.v87-imperial.altea-premium-shell #view-wb-rating .rating-team-comment-cell {
+  width: 250px;
+  min-width: 250px;
+  max-width: 250px;
+}
+
+body.v87-imperial.altea-premium-shell #view-wb-rating .rating-team-comment-box {
+  min-height: 64px;
+  gap: 5px;
+  padding: 7px;
+  border-radius: 8px;
+}
+
+body.v87-imperial.altea-premium-shell #view-wb-rating .rating-team-comment-preview {
+  font-size: 10px;
+  line-height: 1.3;
+}
+
+body.v87-imperial.altea-premium-shell #view-wb-rating .rating-more-row {
+  padding: 10px 14px 12px;
+}
+
+/* Empty data is a clear next step, not a dead end. */
+body.v87-imperial.altea-premium-shell #view-wb-rating > .empty {
+  position: relative;
+  display: grid;
+  place-items: center;
+  min-height: 174px;
+  margin-top: 2px;
+  padding: 70px 24px 30px;
+  overflow: hidden;
+  border: 1px dashed rgba(216, 176, 102, .28);
+  border-radius: var(--rw-radius);
+  background:
+    radial-gradient(circle at 50% 0%, rgba(216, 176, 102, .08), transparent 48%),
+    linear-gradient(145deg, rgba(255, 255, 255, .025), rgba(255, 255, 255, .012));
+  color: var(--text);
+  font-size: 14px;
+  font-weight: 750;
+  text-align: center;
+}
+
+body.v87-imperial.altea-premium-shell #view-wb-rating > .empty::before {
+  content: "↻";
+  position: absolute;
+  top: 24px;
+  left: 50%;
+  display: grid;
+  place-items: center;
+  width: 36px;
+  height: 36px;
+  border: 1px solid rgba(216, 176, 102, .34);
+  border-radius: 11px;
+  background: rgba(216, 176, 102, .09);
+  color: #f6d596;
+  font-size: 20px;
+  transform: translateX(-50%);
+}
+
+body.v87-imperial.altea-premium-shell #view-wb-rating > .empty::after {
+  content: "Нажмите «Обновить отзывы и вопросы» — новый снимок появится здесь автоматически.";
+  display: block;
+  max-width: 620px;
+  margin-top: 7px;
+  color: var(--muted);
+  font-size: 10.5px;
+  font-weight: 500;
+  line-height: 1.4;
+}
+
+/* Keyboard clarity without changing any click targets. */
+body.v87-imperial.altea-premium-shell #view-wb-rating :is(button, input, select, textarea):focus-visible {
+  outline: 2px solid rgba(246, 213, 150, .92);
+  outline-offset: 2px;
+}
+
+/* ---------- Responsive workbench ---------- */
+@media (max-width: 1280px) {
+  body.v87-imperial.altea-premium-shell #view-wb-rating .rating-feedback-toolbar {
+    grid-template-columns: 1fr;
+  }
+
+  body.v87-imperial.altea-premium-shell #view-wb-rating .rating-action-guide {
+    grid-template-columns: auto 1fr;
+    align-items: center;
+  }
+
+  body.v87-imperial.altea-premium-shell #view-wb-rating .rating-action-guide strong {
+    white-space: nowrap;
+  }
+}
+
+@media (max-width: 980px) {
+  body.v87-imperial.altea-premium-shell #view-wb-rating > .section-title {
+    grid-template-columns: 1fr;
+    align-items: start;
+  }
+
+  body.v87-imperial.altea-premium-shell #view-wb-rating > .section-title .badge-stack {
+    justify-content: flex-start;
+    max-width: 100%;
+  }
+
+  body.v87-imperial.altea-premium-shell #view-wb-rating .rating-feedback-toolbar__main {
+    grid-template-columns: auto minmax(180px, 1fr);
+    grid-template-areas:
+      "density workflow"
+      "sync api"
+      "refresh refresh";
+  }
+
+  body.v87-imperial.altea-premium-shell #view-wb-rating .rating-smart-board {
+    grid-template-columns: 1fr;
+  }
+
+  body.v87-imperial.altea-premium-shell #view-wb-rating .rating-queue-controls {
+    grid-template-columns: minmax(240px, 1fr) auto;
+  }
+}
+
+@media (max-width: 720px) {
+  body.v87-imperial.altea-premium-shell #view-wb-rating > .section-title h2 {
+    font-size: clamp(30px, 10vw, 42px);
+  }
+
+  body.v87-imperial.altea-premium-shell #view-wb-rating .rating-feedback-toolbar {
+    position: relative;
+    top: auto;
+    padding: 9px;
+  }
+
+  body.v87-imperial.altea-premium-shell #view-wb-rating .rating-feedback-toolbar__main {
+    grid-template-columns: 1fr;
+    grid-template-areas:
+      "density"
+      "workflow"
+      "sync"
+      "api"
+      "refresh";
+  }
+
+  body.v87-imperial.altea-premium-shell #view-wb-rating .rating-density-switch,
+  body.v87-imperial.altea-premium-shell #view-wb-rating .rating-density-switch button {
+    width: 100%;
+  }
+
+  body.v87-imperial.altea-premium-shell #view-wb-rating .rating-density-switch button {
+    flex: 1 1 0;
+  }
+
+  body.v87-imperial.altea-premium-shell #view-wb-rating .rating-workflow-filter {
+    grid-template-columns: 1fr;
+  }
+
+  body.v87-imperial.altea-premium-shell #view-wb-rating .rating-api-truth {
+    overflow: visible;
+    white-space: normal;
+  }
+
+  body.v87-imperial.altea-premium-shell #view-wb-rating .rating-data-refresh {
+    grid-template-columns: 1fr;
+  }
+
+  body.v87-imperial.altea-premium-shell #view-wb-rating .rating-data-refresh button {
+    grid-row: auto;
+    width: 100%;
+    min-width: 0;
+  }
+
+  body.v87-imperial.altea-premium-shell #view-wb-rating .rating-action-guide {
+    grid-template-columns: 1fr;
+  }
+
+  body.v87-imperial.altea-premium-shell #view-wb-rating .rating-smart-board {
+    padding: 12px;
+  }
+
+  body.v87-imperial.altea-premium-shell #view-wb-rating .rating-smart-kpis {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+
+  body.v87-imperial.altea-premium-shell #view-wb-rating .rating-queue-controls {
+    grid-template-columns: 1fr;
+  }
+
+  body.v87-imperial.altea-premium-shell #view-wb-rating .rating-inline-search {
+    width: 100%;
+    min-width: 0;
+  }
+
+  body.v87-imperial.altea-premium-shell #view-wb-rating .rating-work-table {
+    max-height: 62vh;
+  }
+}
+
+@media (hover: none) and (pointer: coarse) {
+  body.v87-imperial.altea-premium-shell #view-wb-rating :is(
+    .rating-platform-selector button,
+    .rating-work-tabs button,
+    .rating-smart-kpi,
+    .rating-note-button,
+    .rating-copy-button
+  ) {
+    min-height: 42px;
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  body.v87-imperial.altea-premium-shell #view-wb-rating *,
+  body.v87-imperial.altea-premium-shell #view-wb-rating *::before,
+  body.v87-imperial.altea-premium-shell #view-wb-rating *::after {
+    scroll-behavior: auto !important;
+    transition-duration: .01ms !important;
+    animation-duration: .01ms !important;
+    animation-iteration-count: 1 !important;
+  }
+}
+
+/* ---------- Light shell parity ---------- */
+html[data-theme="porcelain-day"] body.v87-imperial.altea-premium-shell #view-wb-rating,
+body.v87-imperial.altea-premium-shell[data-portal-theme="light"] #view-wb-rating {
+  --rw-panel: rgba(255, 255, 255, .96);
+  --rw-panel-strong: rgba(246, 241, 233, .98);
+  --rw-control: rgba(56, 39, 28, .045);
+  --rw-line: rgba(56, 39, 28, .12);
+  --rw-line-accent: rgba(157, 112, 51, .26);
+}
+
+html[data-theme="porcelain-day"] body.v87-imperial.altea-premium-shell #view-wb-rating :is(
+  .rating-feedback-toolbar,
+  .rating-smart-board,
+  .rating-work-card,
+  .rating-detail-panel
+),
+body.v87-imperial.altea-premium-shell[data-portal-theme="light"] #view-wb-rating :is(
+  .rating-feedback-toolbar,
+  .rating-smart-board,
+  .rating-work-card,
+  .rating-detail-panel
+) {
+  color: var(--text);
+  background: linear-gradient(145deg, var(--rw-panel), var(--rw-panel-strong));
+  box-shadow: 0 12px 34px rgba(75, 52, 31, .09), inset 0 1px 0 rgba(255, 255, 255, .7);
+}
+
+html[data-theme="porcelain-day"] body.v87-imperial.altea-premium-shell #view-wb-rating .rating-ux-select,
+body.v87-imperial.altea-premium-shell[data-portal-theme="light"] #view-wb-rating .rating-ux-select {
+  background-color: rgba(255, 255, 255, .94);
+  color: var(--text);
+}

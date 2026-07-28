@@ -369,6 +369,7 @@ jobs:
           node scripts/build-canonical-repricer.js --input-dir data --output-dir data
           node scripts/build-repricer-team-policy.js --input-dir data --output data/repricer_team_policy_proposals.json
           node scripts/build-repricer-shadow-report.js --input-dir data --output-dir data
+          node scripts/apply-wb-daily-control.js --plan data/iu_plan.json --control data/wb_iu_daily_control.json
           node scripts/build-wb-fixed-rate-report.js --output data/wb_fixed_rate_reports.json --optional
           node scripts/build-wb-iu-logic-rules.js --report data/wb_fixed_rate_reports.json --output data/wb_iu_logic_rules.json
           node scripts/build-iu-drr-summary.js --input-dir data --base-data-dir data --output-dir data --from '${{ steps.cutoff.outputs.revision_from }}' --to '${{ steps.cutoff.outputs.value }}'

@@ -1,10 +1,12 @@
-Portal sync health: ok
-Generated: 2026-07-27T07:55:34.826Z
+Portal sync health: warning
+Generated: 2026-07-28T08:50:37.466Z
 Publish allowed: yes
-Max data date: 2026-07-26
+Max data date: 2026-07-27
 
 Blocking reasons:
 - none
 
 Warnings:
-- none
+- Unified daily intake: product_leaderboard: snapshot age 11 exceeds 10 days.
+- Unified daily intake: product_leaderboard_history: snapshot age 11 exceeds 10 days.
+- Unified daily intake: View product-leaderboard has warnings in: product_leaderboard, product_leaderboard_history.

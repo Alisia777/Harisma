@@ -1,9 +1,9 @@
 {
   "schema": "portal-price-update-audit-v1",
-  "generatedAt": "2026-07-27T07:53:40.215Z",
+  "generatedAt": "2026-07-28T08:43:42.860Z",
   "status": "ok",
   "publishAllowed": true,
-  "expectedDate": "2026-07-26",
+  "expectedDate": "2026-07-27",
   "thresholds": {
     "maxSourceLagDays": 3,
     "maxPlatformGapDays": 3,
@@ -67,14 +67,14 @@
     }
   },
   "sourceCandidate": {
-    "latestFactDate": "2026-07-27",
+    "latestFactDate": "2026-07-28",
     "byPlatform": {
       "ozon": {
         "rowCount": 178,
         "pricedRowCount": 178,
         "clientPricedRowCount": 178,
-        "latestFactDate": "2026-07-27",
-        "latestClientFactDate": "2026-07-27",
+        "latestFactDate": "2026-07-28",
+        "latestClientFactDate": "2026-07-28",
         "latestFactSkuCount": 161,
         "baselineMedianSkuCount": 116,
         "latestCoverageRatio": 1.3879
@@ -83,8 +83,8 @@
         "rowCount": 198,
         "pricedRowCount": 198,
         "clientPricedRowCount": 198,
-        "latestFactDate": "2026-07-27",
-        "latestClientFactDate": "2026-07-27",
+        "latestFactDate": "2026-07-28",
+        "latestClientFactDate": "2026-07-28",
         "latestFactSkuCount": 197,
         "baselineMedianSkuCount": 100,
         "latestCoverageRatio": 1.97
@@ -93,8 +93,8 @@
         "rowCount": 142,
         "pricedRowCount": 142,
         "clientPricedRowCount": 142,
-        "latestFactDate": "2026-07-27",
-        "latestClientFactDate": "2026-07-27",
+        "latestFactDate": "2026-07-28",
+        "latestClientFactDate": "2026-07-28",
         "latestFactSkuCount": 142,
         "baselineMedianSkuCount": 142,
         "latestCoverageRatio": 1
@@ -102,24 +102,24 @@
     }
   },
   "activatedCandidate": {
-    "latestFactDate": "2026-07-27",
+    "latestFactDate": "2026-07-28",
     "byPlatform": {
       "ozon": {
         "rowCount": 179,
         "pricedRowCount": 179,
         "clientPricedRowCount": 179,
-        "latestFactDate": "2026-07-27",
-        "latestClientFactDate": "2026-07-27",
+        "latestFactDate": "2026-07-28",
+        "latestClientFactDate": "2026-07-28",
         "latestFactSkuCount": 161,
-        "baselineMedianSkuCount": 41,
-        "latestCoverageRatio": 3.9268
+        "baselineMedianSkuCount": 42,
+        "latestCoverageRatio": 3.8333
       },
       "wb": {
         "rowCount": 199,
         "pricedRowCount": 199,
         "clientPricedRowCount": 199,
-        "latestFactDate": "2026-07-27",
-        "latestClientFactDate": "2026-07-27",
+        "latestFactDate": "2026-07-28",
+        "latestClientFactDate": "2026-07-28",
         "latestFactSkuCount": 197,
         "baselineMedianSkuCount": 42,
         "latestCoverageRatio": 4.6905
@@ -128,8 +128,8 @@
         "rowCount": 143,
         "pricedRowCount": 143,
         "clientPricedRowCount": 143,
-        "latestFactDate": "2026-07-27",
-        "latestClientFactDate": "2026-07-27",
+        "latestFactDate": "2026-07-28",
+        "latestClientFactDate": "2026-07-28",
         "latestFactSkuCount": 142,
         "baselineMedianSkuCount": 24,
         "latestCoverageRatio": 5.9167
@@ -157,14 +157,14 @@
     }
   },
   "derivedPrices": {
-    "latestFactDate": "2026-07-27",
+    "latestFactDate": "2026-07-28",
     "byPlatform": {
       "wb": {
         "rowCount": 203,
         "pricedRowCount": 200,
         "clientPricedRowCount": 200,
-        "latestFactDate": "2026-07-27",
-        "latestClientFactDate": "2026-07-27",
+        "latestFactDate": "2026-07-28",
+        "latestClientFactDate": "2026-07-28",
         "latestFactSkuCount": 197,
         "baselineMedianSkuCount": 42,
         "latestCoverageRatio": 4.6905
@@ -173,18 +173,18 @@
         "rowCount": 211,
         "pricedRowCount": 202,
         "clientPricedRowCount": 210,
-        "latestFactDate": "2026-07-27",
-        "latestClientFactDate": "2026-07-27",
+        "latestFactDate": "2026-07-28",
+        "latestClientFactDate": "2026-07-28",
         "latestFactSkuCount": 161,
-        "baselineMedianSkuCount": 41,
-        "latestCoverageRatio": 3.9268
+        "baselineMedianSkuCount": 42,
+        "latestCoverageRatio": 3.8333
       },
       "ym": {
         "rowCount": 148,
         "pricedRowCount": 143,
         "clientPricedRowCount": 143,
-        "latestFactDate": "2026-07-27",
-        "latestClientFactDate": "2026-07-27",
+        "latestFactDate": "2026-07-28",
+        "latestClientFactDate": "2026-07-28",
         "latestFactSkuCount": 142,
         "baselineMedianSkuCount": 24,
         "latestCoverageRatio": 5.9167
@@ -195,10 +195,10 @@
     "previousRowCount": 218,
     "candidateRowCount": 218
   },
-  "generationId": "prices-0cdf82f029e47cfd25e7",
+  "generationId": "prices-c9e59e8f5b0671478916",
   "source": {
     "kind": "local",
-    "mtime": "2026-07-27T07:53:34.848Z",
+    "mtime": "2026-06-22T06:00:03.429Z",
     "file": "smart-price-workbook.xlsx"
   }
 }

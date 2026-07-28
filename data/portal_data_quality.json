@@ -1,21 +1,21 @@
 {
-  "generatedAt": "2026-07-27T07:55:32.826Z",
+  "generatedAt": "2026-07-28T08:50:35.112Z",
   "status": "critical",
   "summary": {
-    "issueCount": 85,
+    "issueCount": 87,
     "criticalCount": 82,
     "warningCount": 0,
     "monthKey": "2026-07",
-    "maxDate": "2026-07-26",
+    "maxDate": "2026-07-27",
     "apiUnmappedPlatformRows": 1,
     "apiUnmappedUniqueSku": 1,
     "apiUnmappedRevenue": 597,
     "apiUnmappedActionRows": 0,
     "apiUnmappedActionUniqueSku": 0,
     "apiUnmappedActionRevenue": 0,
-    "apiKnownOutsideRegistryRows": 2,
+    "apiKnownOutsideRegistryRows": 4,
     "apiKnownOutsideRegistryUniqueSku": 2,
-    "apiKnownOutsideRegistryRevenue": 4425,
+    "apiKnownOutsideRegistryRevenue": 58461,
     "apiIgnoredPlatformRows": 0,
     "apiOutOfScopePlatformRows": 0,
     "apiOutOfScopeRevenue": 0,
@@ -36,57 +36,57 @@
   "freshness": [
     {
       "dataset": "dashboard",
-      "asOfDate": "2026-07-26",
-      "generatedAt": "2026-07-27T07:28:39.730Z",
+      "asOfDate": "2026-07-27",
+      "generatedAt": "2026-07-28T08:49:48.001Z",
       "rows": 21,
-      "referenceDate": "2026-07-27",
+      "referenceDate": "2026-07-28",
       "lagDays": 1,
       "status": "ok"
     },
     {
       "dataset": "platform_trends",
-      "asOfDate": "2026-07-26",
-      "generatedAt": "2026-07-27T07:28:39.730Z",
+      "asOfDate": "2026-07-27",
+      "generatedAt": "2026-07-28T08:49:48.001Z",
       "rows": 9,
-      "referenceDate": "2026-07-27",
+      "referenceDate": "2026-07-28",
       "lagDays": 1,
       "status": "ok"
     },
     {
       "dataset": "order_procurement",
-      "asOfDate": "2026-07-27",
-      "generatedAt": "2026-07-27T00:00:00+03:00",
-      "rows": 3114,
-      "referenceDate": "2026-07-27",
+      "asOfDate": "2026-07-28",
+      "generatedAt": "2026-07-28T00:00:00+03:00",
+      "rows": 3115,
+      "referenceDate": "2026-07-28",
       "lagDays": 0,
       "status": "ok"
     },
     {
       "dataset": "warehouse_stock_overlay",
-      "asOfDate": "2026-07-27",
-      "generatedAt": "2026-07-27T07:35:12.776Z",
+      "asOfDate": "2026-07-28",
+      "generatedAt": "2026-07-28T08:43:19.404Z",
       "rows": 186,
       "matchedRows": 186,
       "unmatchedRows": 25,
-      "referenceDate": "2026-07-27",
+      "referenceDate": "2026-07-28",
       "lagDays": 0,
       "status": "ok"
     },
     {
       "dataset": "ads_summary",
-      "asOfDate": "2026-07-26",
-      "generatedAt": "2026-07-27T07:34:45.266Z",
+      "asOfDate": "2026-07-27",
+      "generatedAt": "2026-07-28T08:42:53.458Z",
       "rows": 8,
-      "referenceDate": "2026-07-27",
+      "referenceDate": "2026-07-28",
       "lagDays": 1,
       "status": "ok"
     },
     {
       "dataset": "iu_drr_summary",
-      "asOfDate": "2026-07-26",
-      "generatedAt": "2026-07-27T07:44:36.903Z",
+      "asOfDate": "2026-07-27",
+      "generatedAt": "2026-07-28T08:50:06.292Z",
       "rows": 30,
-      "referenceDate": "2026-07-27",
+      "referenceDate": "2026-07-28",
       "lagDays": 1,
       "status": "ok"
     }
@@ -114,31 +114,31 @@
     },
     "wb": {
       "label": "WB",
-      "rows": 135,
-      "directRevenue": 0,
-      "directUnits": 0,
-      "aggregateRevenue": 348448882,
-      "aggregateDate": "2026-07-26",
+      "rows": 147,
+      "directRevenue": 358830527,
+      "directUnits": 214296,
+      "aggregateRevenue": 358829486,
+      "aggregateDate": "2026-07-27",
       "unmappedCount": 0,
       "unmappedRevenue": 0,
       "unmappedUnits": 0,
       "ignoredCount": 0,
       "ignoredRevenue": 0,
       "ignoredUnits": 0,
-      "knownOutsideRegistryCount": 0,
-      "knownOutsideRegistryRevenue": 0,
-      "knownOutsideRegistryUnits": 0,
+      "knownOutsideRegistryCount": 2,
+      "knownOutsideRegistryRevenue": 54036,
+      "knownOutsideRegistryUnits": 26,
       "outOfScopeCount": 0,
       "outOfScopeRevenue": 0,
       "outOfScopeUnits": 0
     },
     "ozon": {
       "label": "Ozon",
-      "rows": 271,
-      "directRevenue": 61783477,
-      "directUnits": 80527,
-      "aggregateRevenue": 61783477,
-      "aggregateDate": "2026-07-26",
+      "rows": 272,
+      "directRevenue": 63597493,
+      "directUnits": 82876,
+      "aggregateRevenue": 63597493,
+      "aggregateDate": "2026-07-27",
       "unmappedCount": 1,
       "unmappedRevenue": 597,
       "unmappedUnits": 1,
@@ -155,10 +155,10 @@
     "ya": {
       "label": "Я.Маркет",
       "rows": 147,
-      "directRevenue": 3352610,
-      "directUnits": 4889,
-      "aggregateRevenue": 3352610,
-      "aggregateDate": "2026-07-26",
+      "directRevenue": 3490014,
+      "directUnits": 5087,
+      "aggregateRevenue": 3490014,
+      "aggregateDate": "2026-07-27",
       "unmappedCount": 0,
       "unmappedRevenue": 0,
       "unmappedUnits": 0,
@@ -175,10 +175,10 @@
     "goldapple": {
       "label": "ЗЯ",
       "rows": 52,
-      "directRevenue": 1453182,
-      "directUnits": 2069,
-      "aggregateRevenue": 1453182,
-      "aggregateDate": "2026-07-23",
+      "directRevenue": 1520000,
+      "directUnits": 2193,
+      "aggregateRevenue": 1520000,
+      "aggregateDate": "2026-07-26",
       "unmappedCount": 0,
       "unmappedRevenue": 0,
       "unmappedUnits": 0,
@@ -195,10 +195,10 @@
     "letu": {
       "label": "Лэтуаль",
       "rows": 74,
-      "directRevenue": 976192,
-      "directUnits": 1766,
-      "aggregateRevenue": 976192,
-      "aggregateDate": "2026-07-23",
+      "directRevenue": 1038755,
+      "directUnits": 1897,
+      "aggregateRevenue": 1038755,
+      "aggregateDate": "2026-07-27",
       "unmappedCount": 0,
       "unmappedRevenue": 0,
       "unmappedUnits": 0,
@@ -215,10 +215,10 @@
     "megamarket": {
       "label": "Мегамаркет",
       "rows": 45,
-      "directRevenue": 85327,
-      "directUnits": 145,
-      "aggregateRevenue": 85327,
-      "aggregateDate": "2026-07-23",
+      "directRevenue": 91313,
+      "directUnits": 157,
+      "aggregateRevenue": 91313,
+      "aggregateDate": "2026-07-27",
       "unmappedCount": 0,
       "unmappedRevenue": 0,
       "unmappedUnits": 0,
@@ -254,13 +254,13 @@
     }
   },
   "orderSummary": {
-    "rows": 3114,
+    "rows": 3115,
     "noStockNeedRows": 82,
     "lifecycleSuppressedRows": 1381,
-    "lowTurnoverRows": 44,
-    "totalNeed7": 189,
-    "totalNeed14": 16780,
-    "totalNeed28": 83323
+    "lowTurnoverRows": 46,
+    "totalNeed7": 362,
+    "totalNeed14": 17167,
+    "totalNeed28": 84383
   },
   "ownerSummary": {
     "totalSku": 209,
@@ -281,7 +281,7 @@
     "warningUnmatchedRows": 0
   },
   "wbOwnerDistributionSummary": {
-    "sourceGeneratedAt": "2026-07-27T00:00:00+03:00",
+    "sourceGeneratedAt": "2026-07-28T00:00:00+03:00",
     "matchedSkuCount": 59,
     "updatedOwnerCount": 0,
     "missingInPortalCount": 0,
@@ -493,7 +493,7 @@
       "name": "Кудрявый метод Крем для кудрявых и вьющихся волос Алтея 300 мл",
       "need7": 6,
       "need14": 12,
-      "need28": 23,
+      "need28": 24,
       "message": "По складу нет остатка, но есть продажи/потребность"
     },
     {
@@ -506,7 +506,7 @@
       "name": "Крем от прыщей точечный/против прыщей, от акне комедонов угрей черных точек, средство для подростков, для проблемной кожи, гель от прыщей на лице cалициловая, азелаиновая кислота. Алтея 20 мл",
       "need7": 9,
       "need14": 18,
-      "need28": 35,
+      "need28": 36,
       "message": "По складу нет остатка, но есть продажи/потребность"
     },
     {
@@ -519,7 +519,7 @@
       "name": "Гель для бровей с коллагеном и эластином, фиксация на 24 часа, Алтея, 5 мл",
       "need7": 1,
       "need14": 2,
-      "need28": 4,
+      "need28": 3,
       "message": "По складу нет остатка, но есть продажи/потребность"
     },
     {
@@ -623,7 +623,7 @@
       "name": "Маска для лица очищающая и увлажняющая , для сужения пор Алтея 100 мл",
       "need7": 1,
       "need14": 2,
-      "need28": 3,
+      "need28": 4,
       "message": "По складу нет остатка, но есть продажи/потребность"
     },
     {
@@ -712,9 +712,9 @@
       "place": "Express: Смарт Экспресс",
       "articleKey": "retiderm_50ml",
       "name": "Крем для лица с ретинолом 0.5, антивозрастной, против морщин, сыворотка от морщин и пигментных пятен, Алтея, Ретидерм, 50 мл",
-      "need7": 3,
-      "need14": 6,
-      "need28": 12,
+      "need7": 4,
+      "need14": 7,
+      "need28": 13,
       "message": "По складу нет остатка, но есть продажи/потребность"
     },
     {
@@ -765,8 +765,8 @@
       "articleKey": "shampun_dlya_rosta_250ml",
       "name": "Шампунь лечебный для роста волос, против выпадения, с красным перцем профессиональный, Алтея, 250 мл",
       "need7": 1,
-      "need14": 1,
-      "need28": 2,
+      "need14": 2,
+      "need28": 3,
       "message": "По складу нет остатка, но есть продажи/потребность"
     },
     {
@@ -778,8 +778,8 @@
       "articleKey": "silk_hair_300ml",
       "name": "Кудрявый метод Kрем для волос разглаживающий, праймер кондиционер реконструктор, флюид для непослушных или кудрявых волос для кончиков Султан 300мл Алтея",
       "need7": 1,
-      "need14": 1,
-      "need28": 2,
+      "need14": 2,
+      "need28": 3,
       "message": "По складу нет остатка, но есть продажи/потребность"
     },
     {
@@ -857,7 +857,7 @@
       "name": "Кудрявый метод Крем для кудрявых и вьющихся волос Алтея 300 мл",
       "need7": 6,
       "need14": 12,
-      "need28": 23,
+      "need28": 24,
       "message": "По складу нет остатка, но есть продажи/потребность"
     },
     {
@@ -883,7 +883,7 @@
       "name": "Крем от прыщей точечный/против прыщей, от акне комедонов угрей черных точек, средство для подростков, для проблемной кожи, гель от прыщей на лице cалициловая, азелаиновая кислота. Алтея 20 мл",
       "need7": 9,
       "need14": 18,
-      "need28": 35,
+      "need28": 36,
       "message": "По складу нет остатка, но есть продажи/потребность"
     },
     {
@@ -896,7 +896,7 @@
       "name": "Гель для бровей с коллагеном и эластином, фиксация на 24 часа, Алтея, 5 мл",
       "need7": 1,
       "need14": 2,
-      "need28": 4,
+      "need28": 3,
       "message": "По складу нет остатка, но есть продажи/потребность"
     },
     {
@@ -1000,7 +1000,7 @@
       "name": "Маска для лица очищающая и увлажняющая , для сужения пор Алтея 100 мл",
       "need7": 1,
       "need14": 2,
-      "need28": 3,
+      "need28": 4,
       "message": "По складу нет остатка, но есть продажи/потребность"
     },
     {
@@ -1102,9 +1102,9 @@
       "place": "FBS: smart.sale",
       "articleKey": "retiderm_50ml",
       "name": "Крем для лица с ретинолом 0.5, антивозрастной, против морщин, сыворотка от морщин и пигментных пятен, Алтея, Ретидерм, 50 мл",
-      "need7": 3,
-      "need14": 6,
-      "need28": 12,
+      "need7": 4,
+      "need14": 7,
+      "need28": 13,
       "message": "По складу нет остатка, но есть продажи/потребность"
     },
     {
@@ -1195,7 +1195,7 @@
       "name": "Крем c ретинолом для век антивозрастной для кожи и кожи вокруг глаз, Алтея, 30мл",
       "need7": 5,
       "need14": 9,
-      "need28": 18,
+      "need28": 17,
       "message": "По складу нет остатка, но есть продажи/потребность"
     },
     {
@@ -1207,8 +1207,8 @@
       "articleKey": "shampun_dlya_rosta_250ml",
       "name": "Шампунь лечебный для роста волос, против выпадения, с красным перцем профессиональный, Алтея, 250 мл",
       "need7": 1,
-      "need14": 1,
-      "need28": 2,
+      "need14": 2,
+      "need28": 3,
       "message": "По складу нет остатка, но есть продажи/потребность"
     },
     {
@@ -1233,8 +1233,8 @@
       "articleKey": "silk_hair_300ml",
       "name": "Кудрявый метод Kрем для волос разглаживающий, праймер кондиционер реконструктор, флюид для непослушных или кудрявых волос для кончиков Султан 300мл Алтея",
       "need7": 1,
-      "need14": 1,
-      "need28": 2,
+      "need14": 2,
+      "need28": 3,
       "message": "По складу нет остатка, но есть продажи/потребность"
     },
     {
@@ -1358,6 +1358,34 @@
       "severity": "info",
       "type": "api_sku_known_outside_registry",
       "dataset": "platform_trends.extraMarketplace",
+      "platform": "wb",
+      "platformLabel": "WB",
+      "articleKey": "maslo-shimmer_spf15_100ml",
+      "name": "maslo-shimmer_spf15_100ml",
+      "revenue": 27554,
+      "units": 13,
+      "firstDate": "2026-07-23",
+      "lastDate": "2026-07-27",
+      "message": "API SKU is covered by the team price/repricer contour; master SKU card is optional"
+    },
+    {
+      "severity": "info",
+      "type": "api_sku_known_outside_registry",
+      "dataset": "platform_trends.extraMarketplace",
+      "platform": "wb",
+      "platformLabel": "WB",
+      "articleKey": "maska_dlya_lica_intens_uvl_50ml",
+      "name": "maska_dlya_lica_intens_uvl_50ml",
+      "revenue": 26482,
+      "units": 13,
+      "firstDate": "2026-07-24",
+      "lastDate": "2026-07-27",
+      "message": "API SKU is covered by the team price/repricer contour; master SKU card is optional"
+    },
+    {
+      "severity": "info",
+      "type": "api_sku_known_outside_registry",
+      "dataset": "platform_trends.extraMarketplace",
       "platform": "ozon",
       "platformLabel": "Ozon",
       "articleKey": "maska_dlya_lica_intens_uvl_50ml",
@@ -1365,7 +1393,7 @@
       "revenue": 3475,
       "units": 40,
       "firstDate": "2026-07-19",
-      "lastDate": "2026-07-26",
+      "lastDate": "2026-07-27",
       "message": "API SKU is covered by the team price/repricer contour; master SKU card is optional"
     },
     {
@@ -1379,7 +1407,7 @@
       "revenue": 950,
       "units": 38,
       "firstDate": "2026-07-19",
-      "lastDate": "2026-07-26",
+      "lastDate": "2026-07-27",
       "message": "API SKU is covered by the team price/repricer contour; master SKU card is optional"
     },
     {
@@ -1393,7 +1421,7 @@
       "revenue": 597,
       "units": 1,
       "firstDate": "2026-07-06",
-      "lastDate": "2026-07-11",
+      "lastDate": "2026-07-27",
       "message": "API SKU не найден в skus.json/алиасах"
     }
   ]

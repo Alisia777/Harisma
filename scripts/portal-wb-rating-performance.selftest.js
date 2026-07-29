@@ -104,7 +104,12 @@ async function run() {
       return {
         maxHeight: style.maxHeight,
         overflowX: style.overflowX,
-        overflowY: style.overflowY
+        overflowY: style.overflowY,
+        clientHeight: element.clientHeight,
+        scrollHeight: element.scrollHeight,
+        clientWidth: element.clientWidth,
+        scrollWidth: element.scrollWidth,
+        documentOverflowX: document.documentElement.scrollWidth - document.documentElement.clientWidth
       };
     });
     assert(
@@ -116,8 +121,22 @@ async function run() {
       `rating table must retain horizontal scrolling: ${JSON.stringify(tableStyle)}`
     );
     assert(
-      ['visible', 'clip', 'auto', 'scroll'].includes(tableStyle.overflowY),
-      `rating table must retain usable vertical overflow behavior: ${JSON.stringify(tableStyle)}`
+      tableStyle.overflowY === 'hidden',
+      `rating table must not create a nested vertical viewport: ${JSON.stringify(tableStyle)}`
+    );
+    assert.strictEqual(
+      tableStyle.clientHeight,
+      tableStyle.scrollHeight,
+      `rating table must grow to its data instead of clipping rows: ${JSON.stringify(tableStyle)}`
+    );
+    assert(
+      tableStyle.scrollWidth > tableStyle.clientWidth,
+      `wide rating columns must remain horizontally reachable: ${JSON.stringify(tableStyle)}`
+    );
+    assert.strictEqual(
+      tableStyle.documentOverflowX,
+      0,
+      `rating table must not widen the document: ${JSON.stringify(tableStyle)}`
     );
 
     const search = page.locator('#view-wb-rating [data-rating-search]').first();

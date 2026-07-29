@@ -13,6 +13,11 @@ on:
         description: Optional advertising cutoff date (YYYY-MM-DD)
         required: false
         type: string
+      ads_only:
+        description: Refresh and export advertising facts only
+        required: false
+        type: boolean
+        default: false
 
 concurrency:
   group: portal-repricer-live-prices
@@ -66,6 +71,7 @@ jobs:
           done
 
       - name: Hydrate previous price and market observations
+        if: ${{ !inputs.ads_only }}
         env:
           ALTEA_SUPABASE_URL: ${{ secrets.SUPABASE_URL || vars.SUPABASE_URL || 'https://iyckwryrucqrxwlowxow.supabase.co' }}
           ALTEA_SUPABASE_KEY: ${{ secrets.SUPABASE_SERVICE_ROLE_KEY || secrets.ALTEA_SUPABASE_SERVICE_ROLE_KEY }}
@@ -93,6 +99,7 @@ jobs:
             --to '${{ steps.run_date.outputs.value }}'
 
       - name: Collect current WB, Ozon and Yandex Market prices
+        if: ${{ !inputs.ads_only }}
         env:
           ALTEA_WB_API_TOKEN: ${{ secrets.ALTEA_WB_API_TOKEN }}
           ALTEA_WB_PROMOTION_TOKEN: ${{ secrets.ALTEA_WB_PROMOTION_TOKEN }}
@@ -139,6 +146,7 @@ jobs:
             --retention-days 400
 
       - name: Collect trusted competitor prices
+        if: ${{ !inputs.ads_only }}
         env:
           ALTEA_REPRICER_COMPETITOR_FEED_URL: ${{ secrets.ALTEA_REPRICER_COMPETITOR_FEED_URL || vars.ALTEA_REPRICER_COMPETITOR_FEED_URL }}
         run: >-
@@ -151,6 +159,7 @@ jobs:
           --delay-ms 1200
 
       - name: Append trusted competitor snapshot history
+        if: ${{ !inputs.ads_only }}
         run: >-
           node scripts/build-repricer-competitor-history.js
           --input-dir data
@@ -161,6 +170,7 @@ jobs:
           --retention-days 180
 
       - name: Materialize approved portal decisions
+        if: ${{ !inputs.ads_only }}
         env:
           ALTEA_SUPABASE_URL: ${{ secrets.SUPABASE_URL || vars.SUPABASE_URL || 'https://iyckwryrucqrxwlowxow.supabase.co' }}
           ALTEA_SUPABASE_KEY: ${{ secrets.SUPABASE_SERVICE_ROLE_KEY || secrets.ALTEA_SUPABASE_SERVICE_ROLE_KEY }}
@@ -171,6 +181,7 @@ jobs:
           --output-dir data
 
       - name: Rebuild protected repricer layers
+        if: ${{ !inputs.ads_only }}
         run: |
           node scripts/build-canonical-repricer.js \
             --input-dir data \
@@ -201,6 +212,7 @@ jobs:
             --output-dir data
 
       - name: Publish refreshed repricer snapshots
+        if: ${{ !inputs.ads_only }}
         env:
           ALTEA_SUPABASE_URL: ${{ secrets.SUPABASE_URL || vars.SUPABASE_URL || 'https://iyckwryrucqrxwlowxow.supabase.co' }}
           ALTEA_SUPABASE_KEY: ${{ secrets.SUPABASE_SERVICE_ROLE_KEY || secrets.ALTEA_SUPABASE_SERVICE_ROLE_KEY }}

@@ -7,7 +7,7 @@ on:
 
 permissions:
   contents: write
-  issues: read
+  issues: write
 
 concurrency:
   group: codex-fact-ww-export-main
@@ -15,13 +15,18 @@ concurrency:
 
 jobs:
   export:
-    if: github.event_name == 'workflow_dispatch' || github.event.issue.title == '[codex] FACT WW export 2026-07-29'
+    if: github.event_name == 'workflow_dispatch' || startsWith(github.event.issue.title, '[codex] FACT WW export 2026-07-29')
     runs-on: ubuntu-latest
     timeout-minutes: 20
     env:
       WB_FINANCE_TOKEN: ${{ secrets.ALTEA_WB_FINANCE_TOKEN || secrets.ALTEA_WB_API_TOKEN }}
       OUTPUT_JSON: /tmp/fact_ww_export.json
+      GH_TOKEN: ${{ github.token }}
     steps:
+      - name: Mark workflow start
+        if: github.event_name == 'issues'
+        run: gh issue comment "${{ github.event.issue.number }}" --repo "${{ github.repository }}" --body 'export-started'
+
       - uses: actions/checkout@v4
         with:
           ref: codex/fact-ww-export-20260729
@@ -32,7 +37,32 @@ jobs:
           node-version: '20'
 
       - name: Fetch fresh non-zero article substitutions
-        run: node scripts/codex-fact-ww-export.js
+        id: fetch
+        shell: bash
+        run: |
+          set +e
+          node scripts/codex-fact-ww-export.js > /tmp/fetch.log 2>&1
+          STATUS=$?
+          cat /tmp/fetch.log
+          echo "status=$STATUS" >> "$GITHUB_OUTPUT"
+          exit 0
+
+      - name: Comment export failure
+        if: steps.fetch.outputs.status != '0' && github.event_name == 'issues'
+        shell: bash
+        run: |
+          {
+            echo 'export-failed'
+            echo '```text'
+            tail -c 5000 /tmp/fetch.log
+            echo
+            echo '```'
+          } > /tmp/failure-comment.txt
+          gh issue comment "${{ github.event.issue.number }}" --repo "${{ github.repository }}" --body-file /tmp/failure-comment.txt
+
+      - name: Stop after export failure
+        if: steps.fetch.outputs.status != '0'
+        run: exit 1
 
       - name: Encrypt export for retrieval
         shell: bash
@@ -57,3 +87,7 @@ jobs:
           git add tmp/codex-fact-ww-export/export.enc.b64 tmp/codex-fact-ww-export/key.enc.b64 tmp/codex-fact-ww-export/completed.txt
           git commit -m 'Store encrypted one-off FACT WW export'
           git push origin HEAD:codex/fact-ww-export-20260729
+
+      - name: Mark workflow success
+        if: github.event_name == 'issues'
+        run: gh issue comment "${{ github.event.issue.number }}" --repo "${{ github.repository }}" --body 'export-completed'

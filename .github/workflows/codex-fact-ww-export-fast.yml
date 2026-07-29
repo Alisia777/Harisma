@@ -10,9 +10,15 @@ permissions:
 
 concurrency:
   group: codex-fact-ww-export-fast
-  cancel-in-progress: false
+  cancel-in-progress: true
 
 jobs:
+  cancel:
+    if: github.event.issue.title == '[codex] CANCEL FAST FACT WW export 2026-07-29'
+    runs-on: ubuntu-latest
+    steps:
+      - run: echo 'fast export cancelled'
+
   export:
     if: startsWith(github.event.issue.title, '[codex] FACT WW export FAST 2026-07-29')
     runs-on: ubuntu-latest

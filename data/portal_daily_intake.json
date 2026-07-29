@@ -1,17 +1,13 @@
 {
   "schema": "portal-unified-daily-intake-v1",
-  "generatedAt": "2026-07-29T11:16:11.956Z",
+  "generatedAt": "2026-07-29T12:41:50.429Z",
   "expectedDate": "2026-07-28",
   "runDate": "2026-07-29",
-  "status": "warning",
+  "status": "ok",
   "publish": {
     "allowed": true,
     "blockingReasons": [],
-    "warnings": [
-      "product_leaderboard: snapshot age 12 exceeds 10 days.",
-      "product_leaderboard_history: snapshot age 12 exceeds 10 days.",
-      "View product-leaderboard has warnings in: product_leaderboard, product_leaderboard_history."
-    ]
+    "warnings": []
   },
   "summary": {
     "registeredViews": 19,
@@ -19,9 +15,9 @@
     "registeredSources": 37,
     "checkedSources": 37,
     "blockedSources": 0,
-    "warningSources": 2,
+    "warningSources": 0,
     "blockedViews": 0,
-    "warningViews": 1,
+    "warningViews": 0,
     "operationalViews": 3
   },
   "contract": {
@@ -460,12 +456,12 @@
       "status": "ok",
       "exists": true,
       "origin": "daily-input",
-      "rows": 351,
-      "bytes": 83598,
-      "sha256": "547b000daf061020125de640d3c1ecedf2ab610c1462c937b83cfaf5e6ecd373",
+      "rows": 355,
+      "bytes": 84758,
+      "sha256": "5a7aeb79c722756ed67af2ef217704c17c9f76088b8ce3cb3334e31ce2812cb6",
       "freshnessDate": "",
       "freshnessPath": "",
-      "buildDate": "2026-07-26",
+      "buildDate": "2026-07-29",
       "blockingReasons": [],
       "warnings": []
     },
@@ -557,7 +553,7 @@
       "origin": "daily-input",
       "rows": 1,
       "bytes": 324,
-      "sha256": "f1811c3a8a80514a5e8354952097714bfb8d03dedd51763ac2b3e925440d581c",
+      "sha256": "c811b40597a47fbf2aef6f16f2fce2f77bef723120225f7ec56c2cfc0f3d1829",
       "freshnessDate": "2026-07-29",
       "freshnessPath": "generatedAt",
       "buildDate": "2026-07-29",
@@ -571,20 +567,18 @@
       "required": false,
       "freshnessPolicy": "max-age-10d",
       "repairStep": "leaderboard-history",
-      "status": "warning",
+      "status": "ok",
       "exists": true,
       "origin": "daily-input",
-      "rows": 53,
-      "bytes": 255624,
-      "sha256": "ac5e2a91717e3279a2444eaf509df07a9fd4f25ec496208abf7d60281c0c1ec6",
-      "freshnessDate": "2026-07-17",
+      "rows": 59,
+      "bytes": 278284,
+      "sha256": "14b312350fb30ff0db46c5157afd354a8b897a02f5a210318ab542d454a2a3eb",
+      "freshnessDate": "2026-07-29",
       "freshnessPath": "generatedAt",
-      "buildDate": "2026-07-17",
+      "buildDate": "2026-07-29",
       "blockingReasons": [],
-      "warnings": [
-        "product_leaderboard: snapshot age 12 exceeds 10 days."
-      ],
-      "ageDays": 12
+      "warnings": [],
+      "ageDays": 0
     },
     {
       "key": "product_leaderboard_history",
@@ -593,20 +587,18 @@
       "required": false,
       "freshnessPolicy": "max-age-10d",
       "repairStep": "leaderboard-history",
-      "status": "warning",
+      "status": "ok",
       "exists": true,
       "origin": "daily-input",
-      "rows": 11,
-      "bytes": 2688787,
-      "sha256": "11ac13d780c61b3701846b8556cc9ba44806804127ad20615441c2bf7cca0a53",
-      "freshnessDate": "2026-07-17",
+      "rows": 12,
+      "bytes": 3057896,
+      "sha256": "d798ae40c8fb42aad2df4880ff02d1d38ba55293e303cb3ae97eea4524047ef6",
+      "freshnessDate": "2026-07-29",
       "freshnessPath": "generatedAt",
       "buildDate": "",
       "blockingReasons": [],
-      "warnings": [
-        "product_leaderboard_history: snapshot age 12 exceeds 10 days."
-      ],
-      "ageDays": 12
+      "warnings": [],
+      "ageDays": 0
     },
     {
       "key": "wb_feedbacks",
@@ -657,11 +649,11 @@
       "exists": true,
       "origin": "daily-input",
       "rows": 1,
-      "bytes": 21818,
-      "sha256": "254d28b44d0418cdc6b5a03c57b6b7d6eee017040d447ed35ff93c9a069b5567",
+      "bytes": 8256,
+      "sha256": "bd3ff43ea4b1fc3ffcb4ec0eb3c3eec63b99f6b17d9407e48dbbd5732b699be9",
       "freshnessDate": "2026-12-01",
       "freshnessPath": "months",
-      "buildDate": "2026-07-29",
+      "buildDate": "2026-06-29",
       "blockingReasons": [],
       "warnings": []
     },
@@ -961,13 +953,10 @@
       "key": "product-leaderboard",
       "critical": false,
       "updateMode": "daily-batch",
-      "status": "warning",
+      "status": "ok",
       "sourceCount": 7,
       "blockingSources": [],
-      "warningSources": [
-        "product_leaderboard",
-        "product_leaderboard_history"
-      ]
+      "warningSources": []
     },
     {
       "key": "repricer",

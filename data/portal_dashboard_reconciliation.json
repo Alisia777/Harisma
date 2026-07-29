@@ -1,13 +1,13 @@
 {
   "schema": "portal-dashboard-reconciliation-v1",
-  "generatedAt": "2026-07-29T07:56:02.826Z",
-  "snapshot_id": "dashboard:caa16199167fc14f",
+  "generatedAt": "2026-07-29T11:15:57.767Z",
+  "snapshot_id": "dashboard:6494863de9e928d4",
   "status": "warning",
   "publish_allowed": true,
-  "business_fingerprint": "67232acb2456b5650db68337955ff380cbdb0a883c927fe2d0c85c1f70b81d5f",
+  "business_fingerprint": "8257a0b404b6e994c7cc311434204fe98d76f009992faa38ff20c551290025b1",
   "blockingReasons": [],
   "warnings": [
-    "extra marketplace facts are behind 2026-07-28: goldapple=2026-07-27, letu=2026-07-27, megamarket=2026-07-27, magnit=2026-07-08",
+    "extra marketplace facts are behind 2026-07-28: letu=2026-07-27, magnit=2026-07-08",
     "extra marketplace facts are missing: samokat"
   ],
   "checks": [

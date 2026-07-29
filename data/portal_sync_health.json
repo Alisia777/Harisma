@@ -1,6 +1,6 @@
 {
   "schema": "portal-sync-health-v1",
-  "generatedAt": "2026-07-29T11:01:09.107Z",
+  "generatedAt": "2026-07-29T11:16:12.926Z",
   "status": "warning",
   "publish": {
     "allowed": true,
@@ -10,7 +10,7 @@
       "Unified daily intake: product_leaderboard_history: snapshot age 12 exceeds 10 days.",
       "Unified daily intake: View product-leaderboard has warnings in: product_leaderboard, product_leaderboard_history."
     ],
-    "checkedAt": "2026-07-29T11:01:09.107Z"
+    "checkedAt": "2026-07-29T11:16:12.926Z"
   },
   "freshness": {
     "maxDate": "2026-07-28",
@@ -19,7 +19,7 @@
     "completenessGuard": {
       "enabled": true,
       "status": "ok",
-      "checkedAt": "2026-07-29T11:01:09.102Z",
+      "checkedAt": "2026-07-29T11:16:12.921Z",
       "settlementHour": 10,
       "expectedDate": "2026-07-28",
       "maxDate": "2026-07-28",
@@ -66,7 +66,7 @@
     },
     "dependencyGuard": {
       "status": "ok",
-      "checkedAt": "2026-07-29T11:01:09.107Z",
+      "checkedAt": "2026-07-29T11:16:12.926Z",
       "expectedDate": "2026-07-28",
       "adsSummaryWindowTo": "2026-07-28",
       "iuDrrWindowTo": "2026-07-28",
@@ -115,7 +115,7 @@
     "dashboard": {
       "exists": true,
       "rows": 21,
-      "generatedAt": "2026-07-29T07:56:02.826Z",
+      "generatedAt": "2026-07-29T11:15:57.767Z",
       "asOfDate": "2026-07-28",
       "revenue": 0
     },
@@ -129,9 +129,9 @@
     "platform_trends": {
       "exists": true,
       "rows": 9,
-      "generatedAt": "2026-07-29T07:56:02.826Z",
+      "generatedAt": "2026-07-29T11:15:57.767Z",
       "asOfDate": "2026-07-28",
-      "revenue": 2209840016
+      "revenue": 2210622791
     },
     "ads_summary": {
       "exists": true,
@@ -248,7 +248,7 @@
     "oos_control": {
       "exists": true,
       "rows": 89,
-      "generatedAt": "2026-07-29T08:14:03.900Z",
+      "generatedAt": "2026-07-29T11:16:11.932Z",
       "asOfDate": "2026-07-28",
       "revenue": 0
     },
@@ -269,21 +269,21 @@
     "portal_data_quality": {
       "exists": true,
       "rows": 1,
-      "generatedAt": "2026-07-29T11:01:07.193Z",
+      "generatedAt": "2026-07-29T11:16:10.655Z",
       "asOfDate": "2026-07-28",
-      "revenue": 597
+      "revenue": 1762
     },
     "portal_data_quarantine": {
       "exists": true,
       "rows": 0,
-      "generatedAt": "2026-07-29T11:01:08.055Z",
+      "generatedAt": "2026-07-29T11:16:11.845Z",
       "asOfDate": "2026-07-29",
       "revenue": 0
     },
     "portal_daily_intake": {
       "exists": true,
       "rows": 37,
-      "generatedAt": "2026-07-29T11:01:08.101Z",
+      "generatedAt": "2026-07-29T11:16:11.956Z",
       "asOfDate": "2026-07-28",
       "revenue": 0,
       "status": "warning"
@@ -312,14 +312,14 @@
     "sku_matrix": {
       "exists": true,
       "rows": 209,
-      "generatedAt": "2026-07-29T11:01:07.256Z",
+      "generatedAt": "2026-07-29T11:16:10.716Z",
       "asOfDate": "2026-07-29",
       "revenue": 0
     },
     "portal_sync_health": {
       "exists": true,
       "rows": 1,
-      "generatedAt": "2026-07-29T11:01:08.062Z",
+      "generatedAt": "2026-07-29T11:16:11.852Z",
       "asOfDate": "2026-07-29",
       "revenue": 0
     }
@@ -385,14 +385,14 @@
     ]
   },
   "quality": {
-    "issueCount": 89,
+    "issueCount": 90,
     "criticalCount": 84,
     "warningCount": 0,
     "monthKey": "2026-07",
     "maxDate": "2026-07-28",
-    "apiUnmappedPlatformRows": 1,
-    "apiUnmappedUniqueSku": 1,
-    "apiUnmappedRevenue": 597,
+    "apiUnmappedPlatformRows": 2,
+    "apiUnmappedUniqueSku": 2,
+    "apiUnmappedRevenue": 1762,
     "apiUnmappedActionRows": 0,
     "apiUnmappedActionUniqueSku": 0,
     "apiUnmappedActionRevenue": 0,
@@ -447,9 +447,9 @@
         "rows": 9,
         "previousRows": 9,
         "rowRatio": 1,
-        "revenue": 2209840016,
+        "revenue": 2210622791,
         "previousRevenue": 1836693286,
-        "revenueRatio": 1.203162244259437,
+        "revenueRatio": 1.2035884313675222,
         "revenueComparable": true
       },
       {

@@ -1,6 +1,6 @@
 {
   "schema": "portal-oos-control-v2",
-  "generatedAt": "2026-07-29T08:14:03.900Z",
+  "generatedAt": "2026-07-29T11:16:11.932Z",
   "title": "OOS / stock auto signals",
   "rules": {
     "soonDays": 10,

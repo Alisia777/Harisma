@@ -1,5 +1,5 @@
 Portal sync health: warning
-Generated: 2026-07-29T11:01:09.107Z
+Generated: 2026-07-29T11:16:12.926Z
 Publish allowed: yes
 Max data date: 2026-07-28
 

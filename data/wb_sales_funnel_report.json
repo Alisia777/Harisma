@@ -1,5 +1,5 @@
 {
-  "generatedAt": "2026-07-29T08:14:02.210Z",
+  "generatedAt": "2026-07-29T11:16:11.039Z",
   "source": "wb-platform-trends-api",
   "sourceFile": "platform_trends.json",
   "sourceMode": "wb-finance-api-direct-sku",
@@ -31,10 +31,10 @@
   "diagnostics": {
     "sourceArticles": 147,
     "outputItems": 118,
-    "platformTrendsGeneratedAt": "2026-07-29T07:56:02.826Z",
+    "platformTrendsGeneratedAt": "2026-07-29T11:15:57.767Z",
     "platformTrendsLatestMarketplaceDate": "2026-07-28",
     "wbExtraMarketplaceTo": "2026-07-28",
-    "adsSummaryGeneratedAt": "2026-07-29T08:10:01.720Z",
+    "adsSummaryGeneratedAt": "2026-07-29T09:40:59.317Z",
     "adsSummaryAsOfDate": "2026-07-28",
     "wbFeedbacksGeneratedAt": "2026-07-29T08:10:25.053Z",
     "note": "Built from platform_trends.extraMarketplace.platforms.wb.articles so the WB rating workbench uses the same fresh API window as the rest of the portal."

@@ -86,5 +86,6 @@
 "info";"api_sku_known_outside_registry";"platform_trends.extraMarketplace";"wb";"";"maslo-shimmer_spf15_100ml";"maslo-shimmer_spf15_100ml";"31380";"14";"API SKU is covered by the team price/repricer contour; master SKU card is optional"
 "info";"api_sku_known_outside_registry";"platform_trends.extraMarketplace";"wb";"";"maska_dlya_lica_intens_uvl_50ml";"maska_dlya_lica_intens_uvl_50ml";"30345";"14";"API SKU is covered by the team price/repricer contour; master SKU card is optional"
 "info";"api_sku_known_outside_registry";"platform_trends.extraMarketplace";"ozon";"";"maska_dlya_lica_intens_uvl_50ml";"maska_dlya_lica_intens_uvl_50ml";"3475";"40";"API SKU is covered by the team price/repricer contour; master SKU card is optional"
+"info";"api_sku_unmapped";"platform_trends.extraMarketplace";"goldapple";"";"lifting_maska_pdrn_7";"Маска д/лица Лифтинг PDRN и пептиды 75мл";"1165";"1";"API SKU не найден в skus.json/алиасах"
 "info";"api_sku_known_outside_registry";"platform_trends.extraMarketplace";"ozon";"";"maslo-shimmer_spf15_100ml";"maslo-shimmer_spf15_100ml";"950";"38";"API SKU is covered by the team price/repricer contour; master SKU card is optional"
 "info";"api_sku_unmapped";"platform_trends.extraMarketplace";"ozon";"";"4795799242";"4795799242";"597";"1";"API SKU не найден в skus.json/алиасах"

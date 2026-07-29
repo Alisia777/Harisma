@@ -1,0 +1,61 @@
+name: Isolated encrypted direct FACT WW extraction
+
+on:
+  issues:
+    types: [opened]
+
+permissions:
+  contents: read
+  issues: write
+
+concurrency:
+  group: codex-fact-ww-direct-${{ github.event.issue.number }}
+  cancel-in-progress: false
+
+jobs:
+  extract:
+    if: github.event.issue.title == '[codex] FACT WW direct extract v2 2026-07-29'
+    runs-on: ubuntu-latest
+    timeout-minutes: 45
+    env:
+      WB_FINANCE_TOKEN: ${{ secrets.ALTEA_WB_PROMOTION_TOKEN }}
+      DATE_FROM: '2026-07-25'
+      DATE_TO: '2026-07-29'
+      MIN_WW: '3'
+      MAX_REPORTS: '6'
+      OUTPUT_JSON: /tmp/fact_ww_direct_v2.json
+      GH_TOKEN: ${{ github.token }}
+    steps:
+      - name: Publish run id
+        run: gh issue comment "${{ github.event.issue.number }}" --repo "${{ github.repository }}" --body "direct-v2-started run-id=${{ github.run_id }}"
+
+      - uses: actions/checkout@v4
+        with:
+          ref: codex/fact-ww-export-20260729
+          fetch-depth: 0
+
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.12'
+
+      - name: Extract until three substitutions are found
+        run: python scripts/codex-fact-ww-until-three.py
+
+      - name: Encrypt result
+        shell: bash
+        run: |
+          openssl rand -hex 32 > /tmp/pass.txt
+          openssl enc -aes-256-cbc -salt -pbkdf2 -iter 200000 -in "$OUTPUT_JSON" -out /tmp/result.enc -pass file:/tmp/pass.txt
+          openssl pkeyutl -encrypt -pubin -inkey scripts/codex-fact-ww-public.pem -in /tmp/pass.txt -out /tmp/pass.enc -pkeyopt rsa_padding_mode:oaep -pkeyopt rsa_oaep_md:sha256
+          mkdir -p /tmp/fact-ww-direct-v2
+          cp /tmp/result.enc /tmp/fact-ww-direct-v2/result.enc
+          cp /tmp/pass.enc /tmp/fact-ww-direct-v2/key.enc
+
+      - uses: actions/upload-artifact@v4
+        with:
+          name: fact-ww-direct-v2-${{ github.run_id }}
+          path: /tmp/fact-ww-direct-v2
+          retention-days: 1
+
+      - name: Publish completion
+        run: gh issue comment "${{ github.event.issue.number }}" --repo "${{ github.repository }}" --body "direct-v2-completed run-id=${{ github.run_id }}"

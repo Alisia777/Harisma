@@ -1,0 +1,183 @@
+name: Encrypted recent WW price anomaly extraction
+
+on:
+  issues:
+    types: [opened]
+
+permissions:
+  contents: read
+  issues: write
+
+concurrency:
+  group: codex-fact-ww-recent-anomalies-${{ github.event.issue.number }}
+  cancel-in-progress: false
+
+jobs:
+  analyze:
+    if: github.event.issue.title == '[codex] FACT WW recent anomalies 2026-07-29'
+    runs-on: ubuntu-latest
+    timeout-minutes: 20
+    env:
+      WB_STATISTICS_TOKEN: ${{ secrets.ALTEA_WB_PROMOTION_TOKEN }}
+      GH_TOKEN: ${{ github.token }}
+      RESULT_JSON: /tmp/fact_ww_recent_anomalies.json
+    steps:
+      - name: Publish run id
+        run: gh issue comment "${{ github.event.issue.number }}" --repo "${{ github.repository }}" --body "recent-anomalies-started run-id=${{ github.run_id }}"
+
+      - uses: actions/checkout@v4
+        with:
+          ref: codex/fact-ww-export-20260729
+
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.12'
+
+      - name: Fetch 26-29 July orders and rank rare 3 percent traces
+        id: analyze
+        shell: bash
+        run: |
+          python <<'PY'
+          import json, os, time, urllib.request, urllib.parse, urllib.error, math
+          from collections import Counter, defaultdict
+          from datetime import datetime, timezone
+
+          token = os.environ['WB_STATISTICS_TOKEN'].strip()
+          endpoint = 'https://statistics-api.wildberries.ru/api/v1/supplier/orders'
+          days = ['2026-07-26','2026-07-27','2026-07-28','2026-07-29']
+          last_request = 0.0
+
+          def num(value):
+              try: return float(str(value or 0).replace(' ','').replace(',','.'))
+              except Exception: return 0.0
+          def wait_slot():
+              global last_request
+              elapsed = time.monotonic() - last_request
+              if last_request and elapsed < 66: time.sleep(66 - elapsed)
+              last_request = time.monotonic()
+          def fetch_day(day):
+              global last_request
+              params = urllib.parse.urlencode({'dateFrom':day,'flag':1})
+              for attempt in range(1,10):
+                  wait_slot()
+                  req = urllib.request.Request(endpoint+'?'+params, headers={
+                      'Authorization':token,'Accept':'application/json','User-Agent':'Harisma-FACT-WW-recent-anomalies/1.0'
+                  })
+                  try:
+                      with urllib.request.urlopen(req,timeout=300) as response:
+                          data = json.loads(response.read().decode() or '[]')
+                          if not isinstance(data,list): raise RuntimeError('Expected list')
+                          return data
+                  except urllib.error.HTTPError as error:
+                      text = error.read().decode(errors='replace')
+                      if error.code == 429 and attempt < 9:
+                          retry = error.headers.get('retry-after') or error.headers.get('x-ratelimit-retry') or '66'
+                          try: delay = max(66,float(retry)+3)
+                          except Exception: delay = 66
+                          print(json.dumps({'day':day,'rateLimited':True,'attempt':attempt,'delay':delay,'body':text[:250]},ensure_ascii=False),flush=True)
+                          time.sleep(delay); last_request = time.monotonic(); continue
+                      raise RuntimeError(f'Orders {day} HTTP {error.code}: {text[:1200]}')
+              raise RuntimeError(f'Retries exhausted for {day}')
+
+          rows=[]; daily=[]
+          for day in days:
+              batch = fetch_day(day)
+              for row in batch: row['_queryDay'] = day
+              rows.extend(batch); daily.append({'day':day,'rows':len(batch)})
+              print(json.dumps(daily[-1],ensure_ascii=False),flush=True)
+
+          by_nm=defaultdict(list)
+          for row in rows:
+              if row.get('nmId'): by_nm[str(row['nmId'])].append(row)
+
+          groups=[]; candidate_rows=[]
+          for nm,items in by_nm.items():
+              valid=[x for x in items if num(x.get('priceWithDisc'))>0]
+              if len(valid)<2: continue
+              price_counts=Counter(round(num(x.get('priceWithDisc')),2) for x in valid)
+              discount_counts=Counter(round(num(x.get('discountPercent')),2) for x in valid)
+              dominant_price,dominant_price_count=max(price_counts.items(),key=lambda kv:(kv[1],kv[0]))
+              dominant_discount,dominant_discount_count=max(discount_counts.items(),key=lambda kv:(kv[1],-kv[0]))
+              found=[]
+              for row in valid:
+                  price=round(num(row.get('priceWithDisc')),2)
+                  discount=round(num(row.get('discountPercent')),2)
+                  shift=(1-price/dominant_price)*100 if dominant_price else 0
+                  discount_delta=discount-dominant_discount
+                  price_match=2.4<=shift<=3.6
+                  discount_match=2.5<=discount_delta<=3.5
+                  if not (price_match or discount_match): continue
+                  obj={k:row.get(k) for k in ['_queryDay','date','lastChangeDate','nmId','supplierArticle','brand','subject','category','warehouseName','regionName','totalPrice','discountPercent','priceWithDisc','finishedPrice','spp','isCancel','cancelDate','srid','gNumber','barcode']}
+                  obj.update({'dominantPriceWithDisc':dominant_price,'dominantPriceCount':dominant_price_count,'dominantDiscountPercent':dominant_discount,'dominantDiscountCount':dominant_discount_count,'priceShiftPercent':shift,'discountDeltaPp':discount_delta,'priceMatch':price_match,'discountMatch':discount_match})
+                  found.append(obj); candidate_rows.append(obj)
+              if not found: continue
+              candidate_count=len(found); total=len(valid); share=candidate_count/total
+              closest=min(abs(abs(x['priceShiftPercent'])-3) for x in found)
+              unique_candidate_prices=sorted(set(round(num(x.get('priceWithDisc')),2) for x in found))
+              dates=sorted(set(str(x.get('_queryDay') or '') for x in found))
+              latest=max(str(x.get('date') or '') for x in found)
+              # Rare minority rows, close to exactly 3%, are the strongest WW-discount candidates.
+              rarity_score=max(0,1-share)
+              count_score=1/(1+abs(candidate_count-1))
+              closeness_score=max(0,1-closest/1.2)
+              score=round(100*(0.5*rarity_score+0.25*count_score+0.25*closeness_score),2)
+              groups.append({
+                  'nmId':nm,
+                  'supplierArticle':next((x.get('supplierArticle') for x in valid if x.get('supplierArticle')),''),
+                  'brand':next((x.get('brand') for x in valid if x.get('brand')),''),
+                  'subject':next((x.get('subject') for x in valid if x.get('subject')),''),
+                  'totalRecentRows':total,'candidateRows':candidate_count,'candidateShare':share,
+                  'dominantPriceWithDisc':dominant_price,'dominantPriceCount':dominant_price_count,
+                  'dominantDiscountPercent':dominant_discount,'dominantDiscountCount':dominant_discount_count,
+                  'candidatePrices':unique_candidate_prices,
+                  'candidateDiscounts':sorted(set(round(num(x.get('discountPercent')),2) for x in found)),
+                  'candidateDays':dates,'latestCandidateAt':latest,
+                  'closestToThreePct':closest,'score':score,
+                  'srids':[str(x.get('srid') or '') for x in found if x.get('srid')],
+                  'cancelledRows':sum(1 for x in found if bool(x.get('isCancel'))),
+              })
+
+          groups.sort(key=lambda x:(-x['score'],x['candidateRows'],-x['latestCandidateAt'].__len__(),x['latestCandidateAt']),reverse=False)
+          candidate_rows.sort(key=lambda x:str(x.get('date') or ''),reverse=True)
+          result={
+              'generatedAt':datetime.now(timezone.utc).isoformat(),'days':days,'dailyDiagnostics':daily,
+              'diagnostics':{'rowsFetched':len(rows),'nmIds':len(by_nm),'candidateNmIds':len(groups),'candidateRows':len(candidate_rows)},
+              'topCandidates':groups[:30],'candidateGroups':groups,'candidateRows':candidate_rows
+          }
+          with open(os.environ['RESULT_JSON'],'w',encoding='utf-8') as f: json.dump(result,f,ensure_ascii=False,indent=2)
+          with open(os.environ['GITHUB_OUTPUT'],'a') as f:
+              f.write(f"candidate_nmids={len(groups)}\ncandidate_rows={len(candidate_rows)}\n")
+          print(json.dumps(result['diagnostics'],ensure_ascii=False),flush=True)
+          PY
+
+      - name: Encrypt result with Codex public key v2
+        shell: bash
+        run: |
+          cat > /tmp/public.pem <<'PEM'
+          -----BEGIN PUBLIC KEY-----
+          MIIBojANBgkqhkiG9w0BAQEFAAOCAY8AMIIBigKCAYEAv2IlSeuBWSthU/rtjvkC
+          Vs2uaQZ0lUvUJi5edFg4lXgdAGPO98F9mDJsCAg/cvSu6iy+FYaezQ/WEco6ZkMS
+          OQKb7n/LPRKjjFqrQYAHDcNp3Ma3De6Urt/anldMJTFVq4gmmCdc0zn3SDYXp1XV
+          pdv526zV3wQUKZRjkjAATJI1hg05fVj+MT2L357ERuPbH/WtKu8cyOE+pMXHK5kc
+          txeGD22qstSDTUESzUNPoxXAc0sz2bC9lyiTXg2cRnqT3NlMifQSsRi0/9CK+6/F
+          3NGkhbL3Q7eEcKdjqoulvSuazd+cnBgS0fdZH6a+gXUabjgiy7ad3T71R1MDjwin
+          Axz59/LNBliyuvjHWC/u2G9LuvnluBX82FhAOFRW+RF3Lt7mFyJ+FZYlY1zg7lYG
+          tX/M+IPahccH9rOR7v5aCWeA3RpsKsNKEXIKKDAaLIBfoSseaAJZ+VJMItbDqDlq
+          8pPp4DerG81CSukfNsJmfAaPPipDab2X5nD9YgU6v3UJAgMBAAE=
+          -----END PUBLIC KEY-----
+          PEM
+          openssl rand -hex 32 > /tmp/pass.txt
+          openssl enc -aes-256-cbc -salt -pbkdf2 -iter 200000 -in "$RESULT_JSON" -out /tmp/result.enc -pass file:/tmp/pass.txt
+          openssl pkeyutl -encrypt -pubin -inkey /tmp/public.pem -in /tmp/pass.txt -out /tmp/pass.enc -pkeyopt rsa_padding_mode:oaep -pkeyopt rsa_oaep_md:sha256
+          mkdir -p /tmp/fact-ww-recent-anomalies
+          cp /tmp/result.enc /tmp/fact-ww-recent-anomalies/result.enc
+          cp /tmp/pass.enc /tmp/fact-ww-recent-anomalies/key.enc
+
+      - uses: actions/upload-artifact@v4
+        with:
+          name: fact-ww-recent-anomalies-${{ github.run_id }}
+          path: /tmp/fact-ww-recent-anomalies
+          retention-days: 1
+
+      - name: Publish completion
+        run: gh issue comment "${{ github.event.issue.number }}" --repo "${{ github.repository }}" --body "recent-anomalies-completed run-id=${{ github.run_id }} candidate-nmids=${{ steps.analyze.outputs.candidate_nmids }} candidate-rows=${{ steps.analyze.outputs.candidate_rows }}"

@@ -1,0 +1,23 @@
+name: One-off Actions diagnostic
+
+on:
+  issues:
+    types: [opened]
+
+permissions:
+  actions: read
+  issues: write
+
+jobs:
+  diagnose:
+    if: github.event.issue.title == '[codex] list actions 2026-07-29'
+    runs-on: ubuntu-latest
+    env:
+      GH_TOKEN: ${{ github.token }}
+    steps:
+      - name: List active runs
+        shell: bash
+        run: |
+          gh api "repos/${{ github.repository }}/actions/runs?status=in_progress&per_page=30" --jq '.workflow_runs[] | [.id,.name,.event,.created_at,.run_started_at,.head_branch] | @tsv' > /tmp/runs.txt
+          { echo 'active-runs'; echo '```text'; cat /tmp/runs.txt; echo '```'; } > /tmp/comment.txt
+          gh issue comment "${{ github.event.issue.number }}" --repo "${{ github.repository }}" --body-file /tmp/comment.txt

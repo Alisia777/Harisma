@@ -2,7 +2,7 @@
   "schema": "canonical-repricer-v1",
   "generatedAt": "2026-07-29T08:10:45.727Z",
   "freshness_reference_date": "2026-07-29",
-  "snapshot_id": "repricer:ef3676e4030e5ae1",
+  "snapshot_id": "repricer:ad42db0d0dbb3098",
   "source_checksums": {
     "smart_price_workbench.json": {
       "file": "smart_price_workbench.json",
@@ -101,8 +101,8 @@
     },
     "product_lifecycle_approved.json": {
       "file": "product_lifecycle_approved.json",
-      "exists": true,
-      "sha256": "acf80eae394965bfb67f96c2f2955afc118433e474f1e5f89cc43713075b6fff"
+      "exists": false,
+      "sha256": ""
     }
   },
   "policy_version": "2026-06-20.1",
@@ -151,7 +151,7 @@
   },
   "rows": [
     {
-      "snapshot_id": "repricer:ef3676e4030e5ae1",
+      "snapshot_id": "repricer:ad42db0d0dbb3098",
       "article_key": "activeprost",
       "normalized_article_key": "activeprost",
       "platform": "ozon",
@@ -638,7 +638,7 @@
       }
     },
     {
-      "snapshot_id": "repricer:ef3676e4030e5ae1",
+      "snapshot_id": "repricer:ad42db0d0dbb3098",
       "article_key": "adenofrin",
       "normalized_article_key": "adenofrin",
       "platform": "ozon",
@@ -1134,7 +1134,7 @@
       }
     },
     {
-      "snapshot_id": "repricer:ef3676e4030e5ae1",
+      "snapshot_id": "repricer:ad42db0d0dbb3098",
       "article_key": "adenofringreen",
       "normalized_article_key": "adenofringreen",
       "platform": "ozon",
@@ -1631,7 +1631,7 @@
       }
     },
     {
-      "snapshot_id": "repricer:ef3676e4030e5ae1",
+      "snapshot_id": "repricer:ad42db0d0dbb3098",
       "article_key": "allicil_gribok15ml",
       "normalized_article_key": "allicil_gribok15ml",
       "platform": "ozon",
@@ -2122,7 +2122,7 @@
       }
     },
     {
-      "snapshot_id": "repricer:ef3676e4030e5ae1",
+      "snapshot_id": "repricer:ad42db0d0dbb3098",
       "article_key": "alteya_beauty_brows_box",
       "normalized_article_key": "alteya_beauty_brows_box",
       "platform": "ozon",
@@ -2614,7 +2614,7 @@
       }
     },
     {
-      "snapshot_id": "repricer:ef3676e4030e5ae1",
+      "snapshot_id": "repricer:ad42db0d0dbb3098",
       "article_key": "alteya_young_skin_box",
       "normalized_article_key": "alteya_young_skin_box",
       "platform": "ozon",
@@ -3106,7 +3106,7 @@
       }
     },
     {
-      "snapshot_id": "repricer:ef3676e4030e5ae1",
+      "snapshot_id": "repricer:ad42db0d0dbb3098",
       "article_key": "antigiperton",
       "normalized_article_key": "antigiperton",
       "platform": "ozon",
@@ -3601,7 +3601,7 @@
       }
     },
     {
-      "snapshot_id": "repricer:ef3676e4030e5ae1",
+      "snapshot_id": "repricer:ad42db0d0dbb3098",
       "article_key": "arterol",
       "normalized_article_key": "arterol",
       "platform": "ozon",
@@ -4100,7 +4100,7 @@
       }
     },
     {
-      "snapshot_id": "repricer:ef3676e4030e5ae1",
+      "snapshot_id": "repricer:ad42db0d0dbb3098",
       "article_key": "arterol_1_1",
       "normalized_article_key": "arterol_1_1",
       "platform": "ozon",
@@ -4592,7 +4592,7 @@
       }
     },
     {
-      "snapshot_id": "repricer:ef3676e4030e5ae1",
+      "snapshot_id": "repricer:ad42db0d0dbb3098",
       "article_key": "arterol_1_1_1",
       "normalized_article_key": "arterol_1_1_1",
       "platform": "ozon",
@@ -5085,7 +5085,7 @@
       }
     },
     {
-      "snapshot_id": "repricer:ef3676e4030e5ae1",
+      "snapshot_id": "repricer:ad42db0d0dbb3098",
       "article_key": "artoks",
       "normalized_article_key": "artoks",
       "platform": "ozon",
@@ -5572,7 +5572,7 @@
       }
     },
     {
-      "snapshot_id": "repricer:ef3676e4030e5ae1",
+      "snapshot_id": "repricer:ad42db0d0dbb3098",
       "article_key": "artoks_1_1",
       "normalized_article_key": "artoks_1_1",
       "platform": "ozon",
@@ -6062,7 +6062,7 @@
       }
     },
     {
-      "snapshot_id": "repricer:ef3676e4030e5ae1",
+      "snapshot_id": "repricer:ad42db0d0dbb3098",
       "article_key": "artoks_75ml",
       "normalized_article_key": "artoks_75ml",
       "platform": "ozon",
@@ -6546,7 +6546,7 @@
       }
     },
     {
-      "snapshot_id": "repricer:ef3676e4030e5ae1",
+      "snapshot_id": "repricer:ad42db0d0dbb3098",
       "article_key": "b_kompleks_bad_60tabl",
       "normalized_article_key": "b_kompleks_bad_60tabl",
       "platform": "ozon",
@@ -7039,7 +7039,7 @@
       }
     },
     {
-      "snapshot_id": "repricer:ef3676e4030e5ae1",
+      "snapshot_id": "repricer:ad42db0d0dbb3098",
       "article_key": "balzam_kudryavii_metod_500ml",
       "normalized_article_key": "balzam_kudryavii_metod_500ml",
       "platform": "ozon",
@@ -7545,7 +7545,7 @@
       }
     },
     {
-      "snapshot_id": "repricer:ef3676e4030e5ae1",
+      "snapshot_id": "repricer:ad42db0d0dbb3098",
       "article_key": "berberin_laif_bad_60caps",
       "normalized_article_key": "berberin_laif_bad_60caps",
       "platform": "ozon",
@@ -8030,7 +8030,7 @@
       }
     },
     {
-      "snapshot_id": "repricer:ef3676e4030e5ae1",
+      "snapshot_id": "repricer:ad42db0d0dbb3098",
       "article_key": "biotrin_60ml",
       "normalized_article_key": "biotrin_60ml",
       "platform": "ozon",
@@ -8526,7 +8526,7 @@
       }
     },
     {
-      "snapshot_id": "repricer:ef3676e4030e5ae1",
+      "snapshot_id": "repricer:ad42db0d0dbb3098",
       "article_key": "biotrin_60mlv1",
       "normalized_article_key": "biotrin_60mlv1",
       "platform": "ozon",
@@ -9022,7 +9022,7 @@
       }
     },
     {
-      "snapshot_id": "repricer:ef3676e4030e5ae1",
+      "snapshot_id": "repricer:ad42db0d0dbb3098",
       "article_key": "brutalax",
       "normalized_article_key": "brutalax",
       "platform": "ozon",
@@ -9519,7 +9519,7 @@
       }
     },
     {
-      "snapshot_id": "repricer:ef3676e4030e5ae1",
+      "snapshot_id": "repricer:ad42db0d0dbb3098",
       "article_key": "cardicin_bad_60caps",
       "normalized_article_key": "cardicin_bad_60caps",
       "platform": "ozon",
@@ -10008,7 +10008,7 @@
       }
     },
     {
-      "snapshot_id": "repricer:ef3676e4030e5ae1",
+      "snapshot_id": "repricer:ad42db0d0dbb3098",
       "article_key": "chudofrukt",
       "normalized_article_key": "chudofrukt",
       "platform": "ozon",
@@ -10502,7 +10502,7 @@
       }
     },
     {
-      "snapshot_id": "repricer:ef3676e4030e5ae1",
+      "snapshot_id": "repricer:ad42db0d0dbb3098",
       "article_key": "chudofrukt_1_1",
       "normalized_article_key": "chudofrukt_1_1",
       "platform": "ozon",
@@ -10995,7 +10995,7 @@
       }
     },
     {
-      "snapshot_id": "repricer:ef3676e4030e5ae1",
+      "snapshot_id": "repricer:ad42db0d0dbb3098",
       "article_key": "chudofrukt_bad_60caps",
       "normalized_article_key": "chudofrukt_bad_60caps",
       "platform": "ozon",
@@ -11490,7 +11490,7 @@
       }
     },
     {
-      "snapshot_id": "repricer:ef3676e4030e5ae1",
+      "snapshot_id": "repricer:ad42db0d0dbb3098",
       "article_key": "chudogrib",
       "normalized_article_key": "chudogrib",
       "platform": "ozon",
@@ -11987,7 +11987,7 @@
       }
     },
     {
-      "snapshot_id": "repricer:ef3676e4030e5ae1",
+      "snapshot_id": "repricer:ad42db0d0dbb3098",
       "article_key": "cpa_все_sku",
       "normalized_article_key": "cpa_все_sku",
       "platform": "ozon",
@@ -12479,7 +12479,7 @@
       }
     },
     {
-      "snapshot_id": "repricer:ef3676e4030e5ae1",
+      "snapshot_id": "repricer:ad42db0d0dbb3098",
       "article_key": "curly_method_300ml",
       "normalized_article_key": "curly_method_300ml",
       "platform": "ozon",
@@ -13003,7 +13003,7 @@
       }
     },
     {
-      "snapshot_id": "repricer:ef3676e4030e5ae1",
+      "snapshot_id": "repricer:ad42db0d0dbb3098",
       "article_key": "daoshen",
       "normalized_article_key": "daoshen",
       "platform": "ozon",
@@ -13492,7 +13492,7 @@
       }
     },
     {
-      "snapshot_id": "repricer:ef3676e4030e5ae1",
+      "snapshot_id": "repricer:ad42db0d0dbb3098",
       "article_key": "daoshen_75ml",
       "normalized_article_key": "daoshen_75ml",
       "platform": "ozon",
@@ -13984,7 +13984,7 @@
       }
     },
     {
-      "snapshot_id": "repricer:ef3676e4030e5ae1",
+      "snapshot_id": "repricer:ad42db0d0dbb3098",
       "article_key": "dardrakona",
       "normalized_article_key": "dardrakona",
       "platform": "ozon",
@@ -14469,7 +14469,7 @@
       }
     },
     {
-      "snapshot_id": "repricer:ef3676e4030e5ae1",
+      "snapshot_id": "repricer:ad42db0d0dbb3098",
       "article_key": "dardrakona_1_1",
       "normalized_article_key": "dardrakona_1_1",
       "platform": "ozon",
@@ -14957,7 +14957,7 @@
       }
     },
     {
-      "snapshot_id": "repricer:ef3676e4030e5ae1",
+      "snapshot_id": "repricer:ad42db0d0dbb3098",
       "article_key": "dardrakona_75ml",
       "normalized_article_key": "dardrakona_75ml",
       "platform": "ozon",
@@ -15452,7 +15452,7 @@
       }
     },
     {
-      "snapshot_id": "repricer:ef3676e4030e5ae1",
+      "snapshot_id": "repricer:ad42db0d0dbb3098",
       "article_key": "dolgar",
       "normalized_article_key": "dolgar",
       "platform": "ozon",
@@ -15945,7 +15945,7 @@
       }
     },
     {
-      "snapshot_id": "repricer:ef3676e4030e5ae1",
+      "snapshot_id": "repricer:ad42db0d0dbb3098",
       "article_key": "ekdisteron_ultra_man_60caps",
       "normalized_article_key": "ekdisteron_ultra_man_60caps",
       "platform": "ozon",
@@ -16430,7 +16430,7 @@
       }
     },
     {
-      "snapshot_id": "repricer:ef3676e4030e5ae1",
+      "snapshot_id": "repricer:ad42db0d0dbb3098",
       "article_key": "ekzifol",
       "normalized_article_key": "ekzifol",
       "platform": "ozon",
@@ -16917,7 +16917,7 @@
       }
     },
     {
-      "snapshot_id": "repricer:ef3676e4030e5ae1",
+      "snapshot_id": "repricer:ad42db0d0dbb3098",
       "article_key": "enteroshol",
       "normalized_article_key": "enteroshol",
       "platform": "ozon",
@@ -17410,7 +17410,7 @@
       }
     },
     {
-      "snapshot_id": "repricer:ef3676e4030e5ae1",
+      "snapshot_id": "repricer:ad42db0d0dbb3098",
       "article_key": "enzim_pudra_80gr",
       "normalized_article_key": "enzim_pudra_80gr",
       "platform": "ozon",
@@ -17893,7 +17893,7 @@
       }
     },
     {
-      "snapshot_id": "repricer:ef3676e4030e5ae1",
+      "snapshot_id": "repricer:ad42db0d0dbb3098",
       "article_key": "enzim_pudra_80gr_v2",
       "normalized_article_key": "enzim_pudra_80gr_v2",
       "platform": "ozon",
@@ -18391,7 +18391,7 @@
       }
     },
     {
-      "snapshot_id": "repricer:ef3676e4030e5ae1",
+      "snapshot_id": "repricer:ad42db0d0dbb3098",
       "article_key": "erobrut",
       "normalized_article_key": "erobrut",
       "platform": "ozon",
@@ -18885,7 +18885,7 @@
       }
     },
     {
-      "snapshot_id": "repricer:ef3676e4030e5ae1",
+      "snapshot_id": "repricer:ad42db0d0dbb3098",
       "article_key": "fruitalica",
       "normalized_article_key": "fruitalica",
       "platform": "ozon",
@@ -19380,7 +19380,7 @@
       }
     },
     {
-      "snapshot_id": "repricer:ef3676e4030e5ae1",
+      "snapshot_id": "repricer:ad42db0d0dbb3098",
       "article_key": "frutaksa_bad_200gr",
       "normalized_article_key": "frutaksa_bad_200gr",
       "platform": "ozon",
@@ -19870,7 +19870,7 @@
       }
     },
     {
-      "snapshot_id": "repricer:ef3676e4030e5ae1",
+      "snapshot_id": "repricer:ad42db0d0dbb3098",
       "article_key": "frutalika_bad_60caps",
       "normalized_article_key": "frutalika_bad_60caps",
       "platform": "ozon",
@@ -20351,7 +20351,7 @@
       }
     },
     {
-      "snapshot_id": "repricer:ef3676e4030e5ae1",
+      "snapshot_id": "repricer:ad42db0d0dbb3098",
       "article_key": "gel_antiakne_20ml",
       "normalized_article_key": "gel_antiakne_20ml",
       "platform": "ozon",
@@ -20837,7 +20837,7 @@
       }
     },
     {
-      "snapshot_id": "repricer:ef3676e4030e5ae1",
+      "snapshot_id": "repricer:ad42db0d0dbb3098",
       "article_key": "gel_antiakne_20ml_v2",
       "normalized_article_key": "gel_antiakne_20ml_v2",
       "platform": "ozon",
@@ -21361,7 +21361,7 @@
       }
     },
     {
-      "snapshot_id": "repricer:ef3676e4030e5ae1",
+      "snapshot_id": "repricer:ad42db0d0dbb3098",
       "article_key": "gel_brows_5ml",
       "normalized_article_key": "gel_brows_5ml",
       "platform": "ozon",
@@ -21859,7 +21859,7 @@
       }
     },
     {
-      "snapshot_id": "repricer:ef3676e4030e5ae1",
+      "snapshot_id": "repricer:ad42db0d0dbb3098",
       "article_key": "gel_dlya_britya_300ml",
       "normalized_article_key": "gel_dlya_britya_300ml",
       "platform": "ozon",
@@ -22362,7 +22362,7 @@
       }
     },
     {
-      "snapshot_id": "repricer:ef3676e4030e5ae1",
+      "snapshot_id": "repricer:ad42db0d0dbb3098",
       "article_key": "gel_dlya_brovei_6ml",
       "normalized_article_key": "gel_dlya_brovei_6ml",
       "platform": "ozon",
@@ -22841,7 +22841,7 @@
       }
     },
     {
-      "snapshot_id": "repricer:ef3676e4030e5ae1",
+      "snapshot_id": "repricer:ad42db0d0dbb3098",
       "article_key": "gel_for_men_3_in_1_1000ml",
       "normalized_article_key": "gel_for_men_3_in_1_1000ml",
       "platform": "ozon",
@@ -23320,7 +23320,7 @@
       }
     },
     {
-      "snapshot_id": "repricer:ef3676e4030e5ae1",
+      "snapshot_id": "repricer:ad42db0d0dbb3098",
       "article_key": "gel_kudryavii_metod_300ml",
       "normalized_article_key": "gel_kudryavii_metod_300ml",
       "platform": "ozon",
@@ -23810,7 +23810,7 @@
       }
     },
     {
-      "snapshot_id": "repricer:ef3676e4030e5ae1",
+      "snapshot_id": "repricer:ad42db0d0dbb3098",
       "article_key": "gel_parfum_tabacco_vanille_450ml",
       "normalized_article_key": "gel_parfum_tabacco_vanille_450ml",
       "platform": "ozon",
@@ -24297,7 +24297,7 @@
       }
     },
     {
-      "snapshot_id": "repricer:ef3676e4030e5ae1",
+      "snapshot_id": "repricer:ad42db0d0dbb3098",
       "article_key": "gel-penka_dlya_lica_150ml",
       "normalized_article_key": "gel-penka_dlya_lica_150ml",
       "platform": "ozon",
@@ -24790,7 +24790,7 @@
       }
     },
     {
-      "snapshot_id": "repricer:ef3676e4030e5ae1",
+      "snapshot_id": "repricer:ad42db0d0dbb3098",
       "article_key": "gemorekt",
       "normalized_article_key": "gemorekt",
       "platform": "ozon",
@@ -25284,7 +25284,7 @@
       }
     },
     {
-      "snapshot_id": "repricer:ef3676e4030e5ae1",
+      "snapshot_id": "repricer:ad42db0d0dbb3098",
       "article_key": "gidrofilnoe_maslo_150ml",
       "normalized_article_key": "gidrofilnoe_maslo_150ml",
       "platform": "ozon",
@@ -25779,7 +25779,7 @@
       }
     },
     {
-      "snapshot_id": "repricer:ef3676e4030e5ae1",
+      "snapshot_id": "repricer:ad42db0d0dbb3098",
       "article_key": "glikiron",
       "normalized_article_key": "glikiron",
       "platform": "ozon",
@@ -26275,7 +26275,7 @@
       }
     },
     {
-      "snapshot_id": "repricer:ef3676e4030e5ae1",
+      "snapshot_id": "repricer:ad42db0d0dbb3098",
       "article_key": "glikiron_bad_60caps",
       "normalized_article_key": "glikiron_bad_60caps",
       "platform": "ozon",
@@ -26764,7 +26764,7 @@
       }
     },
     {
-      "snapshot_id": "repricer:ef3676e4030e5ae1",
+      "snapshot_id": "repricer:ad42db0d0dbb3098",
       "article_key": "glukofol",
       "normalized_article_key": "glukofol",
       "platform": "ozon",
@@ -27263,7 +27263,7 @@
       }
     },
     {
-      "snapshot_id": "repricer:ef3676e4030e5ae1",
+      "snapshot_id": "repricer:ad42db0d0dbb3098",
       "article_key": "i_am_alpha_bad_60caps",
       "normalized_article_key": "i_am_alpha_bad_60caps",
       "platform": "ozon",
@@ -27742,7 +27742,7 @@
       }
     },
     {
-      "snapshot_id": "repricer:ef3676e4030e5ae1",
+      "snapshot_id": "repricer:ad42db0d0dbb3098",
       "article_key": "indolakt_bad_60caps",
       "normalized_article_key": "indolakt_bad_60caps",
       "platform": "ozon",
@@ -28229,7 +28229,7 @@
       }
     },
     {
-      "snapshot_id": "repricer:ef3676e4030e5ae1",
+      "snapshot_id": "repricer:ad42db0d0dbb3098",
       "article_key": "insulight",
       "normalized_article_key": "insulight",
       "platform": "ozon",
@@ -28726,7 +28726,7 @@
       }
     },
     {
-      "snapshot_id": "repricer:ef3676e4030e5ae1",
+      "snapshot_id": "repricer:ad42db0d0dbb3098",
       "article_key": "insulight_1_1",
       "normalized_article_key": "insulight_1_1",
       "platform": "ozon",
@@ -29219,7 +29219,7 @@
       }
     },
     {
-      "snapshot_id": "repricer:ef3676e4030e5ae1",
+      "snapshot_id": "repricer:ad42db0d0dbb3098",
       "article_key": "insulight_bad_60caps",
       "normalized_article_key": "insulight_bad_60caps",
       "platform": "ozon",
@@ -29724,7 +29724,7 @@
       }
     },
     {
-      "snapshot_id": "repricer:ef3676e4030e5ae1",
+      "snapshot_id": "repricer:ad42db0d0dbb3098",
       "article_key": "intimvita_200ml",
       "normalized_article_key": "intimvita_200ml",
       "platform": "ozon",
@@ -30215,7 +30215,7 @@
       }
     },
     {
-      "snapshot_id": "repricer:ef3676e4030e5ae1",
+      "snapshot_id": "repricer:ad42db0d0dbb3098",
       "article_key": "intimvita_300ml",
       "normalized_article_key": "intimvita_300ml",
       "platform": "ozon",
@@ -30718,7 +30718,7 @@
       }
     },
     {
-      "snapshot_id": "repricer:ef3676e4030e5ae1",
+      "snapshot_id": "repricer:ad42db0d0dbb3098",
       "article_key": "kardicin",
       "normalized_article_key": "kardicin",
       "platform": "ozon",
@@ -31208,7 +31208,7 @@
       }
     },
     {
-      "snapshot_id": "repricer:ef3676e4030e5ae1",
+      "snapshot_id": "repricer:ad42db0d0dbb3098",
       "article_key": "kardicin_1_1",
       "normalized_article_key": "kardicin_1_1",
       "platform": "ozon",
@@ -31698,7 +31698,7 @@
       }
     },
     {
-      "snapshot_id": "repricer:ef3676e4030e5ae1",
+      "snapshot_id": "repricer:ad42db0d0dbb3098",
       "article_key": "kardicin_1_1_1",
       "normalized_article_key": "kardicin_1_1_1",
       "platform": "ozon",
@@ -32188,7 +32188,7 @@
       }
     },
     {
-      "snapshot_id": "repricer:ef3676e4030e5ae1",
+      "snapshot_id": "repricer:ad42db0d0dbb3098",
       "article_key": "kavmaz",
       "normalized_article_key": "kavmaz",
       "platform": "ozon",
@@ -32675,7 +32675,7 @@
       }
     },
     {
-      "snapshot_id": "repricer:ef3676e4030e5ae1",
+      "snapshot_id": "repricer:ad42db0d0dbb3098",
       "article_key": "kavmaz_40ml_1_1",
       "normalized_article_key": "kavmaz_40ml_1_1",
       "platform": "ozon",
@@ -33156,7 +33156,7 @@
       }
     },
     {
-      "snapshot_id": "repricer:ef3676e4030e5ae1",
+      "snapshot_id": "repricer:ad42db0d0dbb3098",
       "article_key": "kavmaz_60ml",
       "normalized_article_key": "kavmaz_60ml",
       "platform": "ozon",
@@ -33639,7 +33639,7 @@
       }
     },
     {
-      "snapshot_id": "repricer:ef3676e4030e5ae1",
+      "snapshot_id": "repricer:ad42db0d0dbb3098",
       "article_key": "khvoinitsa",
       "normalized_article_key": "khvoinitsa",
       "platform": "ozon",
@@ -34126,7 +34126,7 @@
       }
     },
     {
-      "snapshot_id": "repricer:ef3676e4030e5ae1",
+      "snapshot_id": "repricer:ad42db0d0dbb3098",
       "article_key": "khvoinitsa_1_1",
       "normalized_article_key": "khvoinitsa_1_1",
       "platform": "ozon",
@@ -34615,7 +34615,7 @@
       }
     },
     {
-      "snapshot_id": "repricer:ef3676e4030e5ae1",
+      "snapshot_id": "repricer:ad42db0d0dbb3098",
       "article_key": "kinzhal",
       "normalized_article_key": "kinzhal",
       "platform": "ozon",
@@ -35112,7 +35112,7 @@
       }
     },
     {
-      "snapshot_id": "repricer:ef3676e4030e5ae1",
+      "snapshot_id": "repricer:ad42db0d0dbb3098",
       "article_key": "kinzhal_1_1",
       "normalized_article_key": "kinzhal_1_1",
       "platform": "ozon",
@@ -35605,7 +35605,7 @@
       }
     },
     {
-      "snapshot_id": "repricer:ef3676e4030e5ae1",
+      "snapshot_id": "repricer:ad42db0d0dbb3098",
       "article_key": "krem_buster_250ml",
       "normalized_article_key": "krem_buster_250ml",
       "platform": "ozon",
@@ -36135,7 +36135,7 @@
       }
     },
     {
-      "snapshot_id": "repricer:ef3676e4030e5ae1",
+      "snapshot_id": "repricer:ad42db0d0dbb3098",
       "article_key": "krem_dlya_lica_pdrn_50_ml",
       "normalized_article_key": "krem_dlya_lica_pdrn_50_ml",
       "platform": "ozon",
@@ -36622,7 +36622,7 @@
       }
     },
     {
-      "snapshot_id": "repricer:ef3676e4030e5ae1",
+      "snapshot_id": "repricer:ad42db0d0dbb3098",
       "article_key": "krem_dlya_ruk_75ml",
       "normalized_article_key": "krem_dlya_ruk_75ml",
       "platform": "ozon",
@@ -37144,7 +37144,7 @@
       }
     },
     {
-      "snapshot_id": "repricer:ef3676e4030e5ae1",
+      "snapshot_id": "repricer:ad42db0d0dbb3098",
       "article_key": "krem_dlya_vek_30ml",
       "normalized_article_key": "krem_dlya_vek_30ml",
       "platform": "ozon",
@@ -37646,7 +37646,7 @@
       }
     },
     {
-      "snapshot_id": "repricer:ef3676e4030e5ae1",
+      "snapshot_id": "repricer:ad42db0d0dbb3098",
       "article_key": "krem_ot_rastyazhek",
       "normalized_article_key": "krem_ot_rastyazhek",
       "platform": "ozon",
@@ -38170,7 +38170,7 @@
       }
     },
     {
-      "snapshot_id": "repricer:ef3676e4030e5ae1",
+      "snapshot_id": "repricer:ad42db0d0dbb3098",
       "article_key": "krem_spf50_50ml",
       "normalized_article_key": "krem_spf50_50ml",
       "platform": "ozon",
@@ -38700,7 +38700,7 @@
       }
     },
     {
-      "snapshot_id": "repricer:ef3676e4030e5ae1",
+      "snapshot_id": "repricer:ad42db0d0dbb3098",
       "article_key": "krem-filler_15ml",
       "normalized_article_key": "krem-filler_15ml",
       "platform": "ozon",
@@ -39193,7 +39193,7 @@
       }
     },
     {
-      "snapshot_id": "repricer:ef3676e4030e5ae1",
+      "snapshot_id": "repricer:ad42db0d0dbb3098",
       "article_key": "kremshelk_100ml",
       "normalized_article_key": "kremshelk_100ml",
       "platform": "ozon",
@@ -39723,7 +39723,7 @@
       }
     },
     {
-      "snapshot_id": "repricer:ef3676e4030e5ae1",
+      "snapshot_id": "repricer:ad42db0d0dbb3098",
       "article_key": "krovavii_piling_30ml",
       "normalized_article_key": "krovavii_piling_30ml",
       "platform": "ozon",
@@ -40245,7 +40245,7 @@
       }
     },
     {
-      "snapshot_id": "repricer:ef3676e4030e5ae1",
+      "snapshot_id": "repricer:ad42db0d0dbb3098",
       "article_key": "lifting_maska_pdrn_75ml",
       "normalized_article_key": "lifting_maska_pdrn_75ml",
       "platform": "ozon",
@@ -40734,7 +40734,7 @@
       }
     },
     {
-      "snapshot_id": "repricer:ef3676e4030e5ae1",
+      "snapshot_id": "repricer:ad42db0d0dbb3098",
       "article_key": "limfaks_bad_30caps",
       "normalized_article_key": "limfaks_bad_30caps",
       "platform": "ozon",
@@ -41229,7 +41229,7 @@
       }
     },
     {
-      "snapshot_id": "repricer:ef3676e4030e5ae1",
+      "snapshot_id": "repricer:ad42db0d0dbb3098",
       "article_key": "maska_dlya_lica_100ml",
       "normalized_article_key": "maska_dlya_lica_100ml",
       "platform": "ozon",
@@ -41729,7 +41729,7 @@
       }
     },
     {
-      "snapshot_id": "repricer:ef3676e4030e5ae1",
+      "snapshot_id": "repricer:ad42db0d0dbb3098",
       "article_key": "maska_dlya_lica_intens_uvl_50ml",
       "normalized_article_key": "maska_dlya_lica_intens_uvl_50ml",
       "platform": "ozon",
@@ -42217,7 +42217,7 @@
       }
     },
     {
-      "snapshot_id": "repricer:ef3676e4030e5ae1",
+      "snapshot_id": "repricer:ad42db0d0dbb3098",
       "article_key": "maska-batter_250ml",
       "normalized_article_key": "maska-batter_250ml",
       "platform": "ozon",
@@ -42721,7 +42721,7 @@
       }
     },
     {
-      "snapshot_id": "repricer:ef3676e4030e5ae1",
+      "snapshot_id": "repricer:ad42db0d0dbb3098",
       "article_key": "maska-batter_500ml",
       "normalized_article_key": "maska-batter_500ml",
       "platform": "ozon",
@@ -43247,7 +43247,7 @@
       }
     },
     {
-      "snapshot_id": "repricer:ef3676e4030e5ae1",
+      "snapshot_id": "repricer:ad42db0d0dbb3098",
       "article_key": "maska-batter_dlya_rosta_500ml",
       "normalized_article_key": "maska-batter_dlya_rosta_500ml",
       "platform": "ozon",
@@ -43769,7 +43769,7 @@
       }
     },
     {
-      "snapshot_id": "repricer:ef3676e4030e5ae1",
+      "snapshot_id": "repricer:ad42db0d0dbb3098",
       "article_key": "maslo_dlya_borodi_50ml",
       "normalized_article_key": "maslo_dlya_borodi_50ml",
       "platform": "ozon",
@@ -44266,7 +44266,7 @@
       }
     },
     {
-      "snapshot_id": "repricer:ef3676e4030e5ae1",
+      "snapshot_id": "repricer:ad42db0d0dbb3098",
       "article_key": "maslo_dlya_volos_parf_110ml",
       "normalized_article_key": "maslo_dlya_volos_parf_110ml",
       "platform": "ozon",
@@ -44753,7 +44753,7 @@
       }
     },
     {
-      "snapshot_id": "repricer:ef3676e4030e5ae1",
+      "snapshot_id": "repricer:ad42db0d0dbb3098",
       "article_key": "maslo_dlya_volos_parf_110ml_",
       "normalized_article_key": "maslo_dlya_volos_parf_110ml_",
       "platform": "ozon",
@@ -45242,7 +45242,7 @@
       }
     },
     {
-      "snapshot_id": "repricer:ef3676e4030e5ae1",
+      "snapshot_id": "repricer:ad42db0d0dbb3098",
       "article_key": "maslo-shimmer_spf15_100ml",
       "normalized_article_key": "maslo-shimmer_spf15_100ml",
       "platform": "ozon",
@@ -45730,7 +45730,7 @@
       }
     },
     {
-      "snapshot_id": "repricer:ef3676e4030e5ae1",
+      "snapshot_id": "repricer:ad42db0d0dbb3098",
       "article_key": "matte_wax_50ml",
       "normalized_article_key": "matte_wax_50ml",
       "platform": "ozon",
@@ -46234,7 +46234,7 @@
       }
     },
     {
-      "snapshot_id": "repricer:ef3676e4030e5ae1",
+      "snapshot_id": "repricer:ad42db0d0dbb3098",
       "article_key": "menoflavon_bad_60caps",
       "normalized_article_key": "menoflavon_bad_60caps",
       "platform": "ozon",
@@ -46714,7 +46714,7 @@
       }
     },
     {
-      "snapshot_id": "repricer:ef3676e4030e5ae1",
+      "snapshot_id": "repricer:ad42db0d0dbb3098",
       "article_key": "micardin",
       "normalized_article_key": "micardin",
       "platform": "ozon",
@@ -47201,7 +47201,7 @@
       }
     },
     {
-      "snapshot_id": "repricer:ef3676e4030e5ae1",
+      "snapshot_id": "repricer:ad42db0d0dbb3098",
       "article_key": "micardin_1_1",
       "normalized_article_key": "micardin_1_1",
       "platform": "ozon",
@@ -47688,7 +47688,7 @@
       }
     },
     {
-      "snapshot_id": "repricer:ef3676e4030e5ae1",
+      "snapshot_id": "repricer:ad42db0d0dbb3098",
       "article_key": "micardin_1_1_1",
       "normalized_article_key": "micardin_1_1_1",
       "platform": "ozon",
@@ -48173,7 +48173,7 @@
       }
     },
     {
-      "snapshot_id": "repricer:ef3676e4030e5ae1",
+      "snapshot_id": "repricer:ad42db0d0dbb3098",
       "article_key": "micardinforte",
       "normalized_article_key": "micardinforte",
       "platform": "ozon",
@@ -48662,7 +48662,7 @@
       }
     },
     {
-      "snapshot_id": "repricer:ef3676e4030e5ae1",
+      "snapshot_id": "repricer:ad42db0d0dbb3098",
       "article_key": "micolan",
       "normalized_article_key": "micolan",
       "platform": "ozon",
@@ -49152,7 +49152,7 @@
       }
     },
     {
-      "snapshot_id": "repricer:ef3676e4030e5ae1",
+      "snapshot_id": "repricer:ad42db0d0dbb3098",
       "article_key": "mikardin plus_bad_60 caps",
       "normalized_article_key": "mikardinplus_bad_60caps",
       "platform": "ozon",
@@ -49647,7 +49647,7 @@
       }
     },
     {
-      "snapshot_id": "repricer:ef3676e4030e5ae1",
+      "snapshot_id": "repricer:ad42db0d0dbb3098",
       "article_key": "monarda_30ml",
       "normalized_article_key": "monarda_30ml",
       "platform": "ozon",
@@ -50138,7 +50138,7 @@
       }
     },
     {
-      "snapshot_id": "repricer:ef3676e4030e5ae1",
+      "snapshot_id": "repricer:ad42db0d0dbb3098",
       "article_key": "mycoplax",
       "normalized_article_key": "mycoplax",
       "platform": "ozon",
@@ -50631,7 +50631,7 @@
       }
     },
     {
-      "snapshot_id": "repricer:ef3676e4030e5ae1",
+      "snapshot_id": "repricer:ad42db0d0dbb3098",
       "article_key": "mycoplax_1_1",
       "normalized_article_key": "mycoplax_1_1",
       "platform": "ozon",
@@ -51118,7 +51118,7 @@
       }
     },
     {
-      "snapshot_id": "repricer:ef3676e4030e5ae1",
+      "snapshot_id": "repricer:ad42db0d0dbb3098",
       "article_key": "nabor_penka_dlya_resnic",
       "normalized_article_key": "nabor_penka_dlya_resnic",
       "platform": "ozon",
@@ -51603,7 +51603,7 @@
       }
     },
     {
-      "snapshot_id": "repricer:ef3676e4030e5ae1",
+      "snapshot_id": "repricer:ad42db0d0dbb3098",
       "article_key": "nabor_remuver_40ml",
       "normalized_article_key": "nabor_remuver_40ml",
       "platform": "ozon",
@@ -52084,7 +52084,7 @@
       }
     },
     {
-      "snapshot_id": "repricer:ef3676e4030e5ae1",
+      "snapshot_id": "repricer:ad42db0d0dbb3098",
       "article_key": "nabor_remuver_40ml_1_1",
       "normalized_article_key": "nabor_remuver_40ml_1_1",
       "platform": "ozon",
@@ -52571,7 +52571,7 @@
       }
     },
     {
-      "snapshot_id": "repricer:ef3676e4030e5ae1",
+      "snapshot_id": "repricer:ad42db0d0dbb3098",
       "article_key": "nabor_remuver_kremovii",
       "normalized_article_key": "nabor_remuver_kremovii",
       "platform": "ozon",
@@ -53099,7 +53099,7 @@
       }
     },
     {
-      "snapshot_id": "repricer:ef3676e4030e5ae1",
+      "snapshot_id": "repricer:ad42db0d0dbb3098",
       "article_key": "oftalmol",
       "normalized_article_key": "oftalmol",
       "platform": "ozon",
@@ -53596,7 +53596,7 @@
       }
     },
     {
-      "snapshot_id": "repricer:ef3676e4030e5ae1",
+      "snapshot_id": "repricer:ad42db0d0dbb3098",
       "article_key": "okospas",
       "normalized_article_key": "okospas",
       "platform": "ozon",
@@ -54093,7 +54093,7 @@
       }
     },
     {
-      "snapshot_id": "repricer:ef3676e4030e5ae1",
+      "snapshot_id": "repricer:ad42db0d0dbb3098",
       "article_key": "okucin",
       "normalized_article_key": "okucin",
       "platform": "ozon",
@@ -54587,7 +54587,7 @@
       }
     },
     {
-      "snapshot_id": "repricer:ef3676e4030e5ae1",
+      "snapshot_id": "repricer:ad42db0d0dbb3098",
       "article_key": "osteofast",
       "normalized_article_key": "osteofast",
       "platform": "ozon",
@@ -55074,7 +55074,7 @@
       }
     },
     {
-      "snapshot_id": "repricer:ef3676e4030e5ae1",
+      "snapshot_id": "repricer:ad42db0d0dbb3098",
       "article_key": "otivin",
       "normalized_article_key": "otivin",
       "platform": "ozon",
@@ -55570,7 +55570,7 @@
       }
     },
     {
-      "snapshot_id": "repricer:ef3676e4030e5ae1",
+      "snapshot_id": "repricer:ad42db0d0dbb3098",
       "article_key": "pantogor",
       "normalized_article_key": "pantogor",
       "platform": "ozon",
@@ -56060,7 +56060,7 @@
       }
     },
     {
-      "snapshot_id": "repricer:ef3676e4030e5ae1",
+      "snapshot_id": "repricer:ad42db0d0dbb3098",
       "article_key": "pantogor_100ml",
       "normalized_article_key": "pantogor_100ml",
       "platform": "ozon",
@@ -56546,7 +56546,7 @@
       }
     },
     {
-      "snapshot_id": "repricer:ef3676e4030e5ae1",
+      "snapshot_id": "repricer:ad42db0d0dbb3098",
       "article_key": "papiderm",
       "normalized_article_key": "papiderm",
       "platform": "ozon",
@@ -57041,7 +57041,7 @@
       }
     },
     {
-      "snapshot_id": "repricer:ef3676e4030e5ae1",
+      "snapshot_id": "repricer:ad42db0d0dbb3098",
       "article_key": "penka_160ml",
       "normalized_article_key": "penka_160ml",
       "platform": "ozon",
@@ -57528,7 +57528,7 @@
       }
     },
     {
-      "snapshot_id": "repricer:ef3676e4030e5ae1",
+      "snapshot_id": "repricer:ad42db0d0dbb3098",
       "article_key": "penka_kudryavii_metod_150ml",
       "normalized_article_key": "penka_kudryavii_metod_150ml",
       "platform": "ozon",
@@ -58034,7 +58034,7 @@
       }
     },
     {
-      "snapshot_id": "repricer:ef3676e4030e5ae1",
+      "snapshot_id": "repricer:ad42db0d0dbb3098",
       "article_key": "piling_100ml",
       "normalized_article_key": "piling_100ml",
       "platform": "ozon",
@@ -58520,7 +58520,7 @@
       }
     },
     {
-      "snapshot_id": "repricer:ef3676e4030e5ae1",
+      "snapshot_id": "repricer:ad42db0d0dbb3098",
       "article_key": "pink_pepper_50ml",
       "normalized_article_key": "pink_pepper_50ml",
       "platform": "ozon",
@@ -59046,7 +59046,7 @@
       }
     },
     {
-      "snapshot_id": "repricer:ef3676e4030e5ae1",
+      "snapshot_id": "repricer:ad42db0d0dbb3098",
       "article_key": "pirantoks_bad_60caps",
       "normalized_article_key": "pirantoks_bad_60caps",
       "platform": "ozon",
@@ -59538,7 +59538,7 @@
       }
     },
     {
-      "snapshot_id": "repricer:ef3676e4030e5ae1",
+      "snapshot_id": "repricer:ad42db0d0dbb3098",
       "article_key": "pirantox",
       "normalized_article_key": "pirantox",
       "platform": "ozon",
@@ -60032,7 +60032,7 @@
       }
     },
     {
-      "snapshot_id": "repricer:ef3676e4030e5ae1",
+      "snapshot_id": "repricer:ad42db0d0dbb3098",
       "article_key": "psoral",
       "normalized_article_key": "psoral",
       "platform": "ozon",
@@ -60522,7 +60522,7 @@
       }
     },
     {
-      "snapshot_id": "repricer:ef3676e4030e5ae1",
+      "snapshot_id": "repricer:ad42db0d0dbb3098",
       "article_key": "psoral_50ml",
       "normalized_article_key": "psoral_50ml",
       "platform": "ozon",
@@ -61012,7 +61012,7 @@
       }
     },
     {
-      "snapshot_id": "repricer:ef3676e4030e5ae1",
+      "snapshot_id": "repricer:ad42db0d0dbb3098",
       "article_key": "psoral11",
       "normalized_article_key": "psoral11",
       "platform": "ozon",
@@ -61508,7 +61508,7 @@
       }
     },
     {
-      "snapshot_id": "repricer:ef3676e4030e5ae1",
+      "snapshot_id": "repricer:ad42db0d0dbb3098",
       "article_key": "relaksinol_bad_60caps",
       "normalized_article_key": "relaksinol_bad_60caps",
       "platform": "ozon",
@@ -62013,7 +62013,7 @@
       }
     },
     {
-      "snapshot_id": "repricer:ef3676e4030e5ae1",
+      "snapshot_id": "repricer:ad42db0d0dbb3098",
       "article_key": "remuver_40ml",
       "normalized_article_key": "remuver_40ml",
       "platform": "ozon",
@@ -62509,7 +62509,7 @@
       }
     },
     {
-      "snapshot_id": "repricer:ef3676e4030e5ae1",
+      "snapshot_id": "repricer:ad42db0d0dbb3098",
       "article_key": "retiderm_50ml",
       "normalized_article_key": "retiderm_50ml",
       "platform": "ozon",
@@ -63033,7 +63033,7 @@
       }
     },
     {
-      "snapshot_id": "repricer:ef3676e4030e5ae1",
+      "snapshot_id": "repricer:ad42db0d0dbb3098",
       "article_key": "retinait_krem_01_50ml",
       "normalized_article_key": "retinait_krem_01_50ml",
       "platform": "ozon",
@@ -63533,7 +63533,7 @@
       }
     },
     {
-      "snapshot_id": "repricer:ef3676e4030e5ae1",
+      "snapshot_id": "repricer:ad42db0d0dbb3098",
       "article_key": "retinait_krem_025_50ml",
       "normalized_article_key": "retinait_krem_025_50ml",
       "platform": "ozon",
@@ -64033,7 +64033,7 @@
       }
     },
     {
-      "snapshot_id": "repricer:ef3676e4030e5ae1",
+      "snapshot_id": "repricer:ad42db0d0dbb3098",
       "article_key": "retinait_krem_05_50ml",
       "normalized_article_key": "retinait_krem_05_50ml",
       "platform": "ozon",
@@ -64563,7 +64563,7 @@
       }
     },
     {
-      "snapshot_id": "repricer:ef3676e4030e5ae1",
+      "snapshot_id": "repricer:ad42db0d0dbb3098",
       "article_key": "retinait_krem_1_5_50ml",
       "normalized_article_key": "retinait_krem_1_5_50ml",
       "platform": "ozon",
@@ -65087,7 +65087,7 @@
       }
     },
     {
-      "snapshot_id": "repricer:ef3676e4030e5ae1",
+      "snapshot_id": "repricer:ad42db0d0dbb3098",
       "article_key": "retinait_krem_1_50ml",
       "normalized_article_key": "retinait_krem_1_50ml",
       "platform": "ozon",
@@ -65611,7 +65611,7 @@
       }
     },
     {
-      "snapshot_id": "repricer:ef3676e4030e5ae1",
+      "snapshot_id": "repricer:ad42db0d0dbb3098",
       "article_key": "retinait_syvorotka_025_30ml",
       "normalized_article_key": "retinait_syvorotka_025_30ml",
       "platform": "ozon",
@@ -66095,7 +66095,7 @@
       }
     },
     {
-      "snapshot_id": "repricer:ef3676e4030e5ae1",
+      "snapshot_id": "repricer:ad42db0d0dbb3098",
       "article_key": "retinait_syvorotka_05_30ml",
       "normalized_article_key": "retinait_syvorotka_05_30ml",
       "platform": "ozon",
@@ -66601,7 +66601,7 @@
       }
     },
     {
-      "snapshot_id": "repricer:ef3676e4030e5ae1",
+      "snapshot_id": "repricer:ad42db0d0dbb3098",
       "article_key": "retinait_syvorotka_1_30ml",
       "normalized_article_key": "retinait_syvorotka_1_30ml",
       "platform": "ozon",
@@ -67125,7 +67125,7 @@
       }
     },
     {
-      "snapshot_id": "repricer:ef3676e4030e5ae1",
+      "snapshot_id": "repricer:ad42db0d0dbb3098",
       "article_key": "retinol_boost_krem_dlya_vek_30ml",
       "normalized_article_key": "retinol_boost_krem_dlya_vek_30ml",
       "platform": "ozon",
@@ -67623,7 +67623,7 @@
       }
     },
     {
-      "snapshot_id": "repricer:ef3676e4030e5ae1",
+      "snapshot_id": "repricer:ad42db0d0dbb3098",
       "article_key": "retinol_full_journey",
       "normalized_article_key": "retinol_full_journey",
       "platform": "ozon",
@@ -68129,7 +68129,7 @@
       }
     },
     {
-      "snapshot_id": "repricer:ef3676e4030e5ae1",
+      "snapshot_id": "repricer:ad42db0d0dbb3098",
       "article_key": "retinol_start_kit",
       "normalized_article_key": "retinol_start_kit",
       "platform": "ozon",
@@ -68630,7 +68630,7 @@
       }
     },
     {
-      "snapshot_id": "repricer:ef3676e4030e5ae1",
+      "snapshot_id": "repricer:ad42db0d0dbb3098",
       "article_key": "revmastop_bad_60caps",
       "normalized_article_key": "revmastop_bad_60caps",
       "platform": "ozon",
@@ -69110,7 +69110,7 @@
       }
     },
     {
-      "snapshot_id": "repricer:ef3676e4030e5ae1",
+      "snapshot_id": "repricer:ad42db0d0dbb3098",
       "article_key": "sanatsin",
       "normalized_article_key": "sanatsin",
       "platform": "ozon",
@@ -69603,7 +69603,7 @@
       }
     },
     {
-      "snapshot_id": "repricer:ef3676e4030e5ae1",
+      "snapshot_id": "repricer:ad42db0d0dbb3098",
       "article_key": "sanatsin_1_1",
       "normalized_article_key": "sanatsin_1_1",
       "platform": "ozon",
@@ -70096,7 +70096,7 @@
       }
     },
     {
-      "snapshot_id": "repricer:ef3676e4030e5ae1",
+      "snapshot_id": "repricer:ad42db0d0dbb3098",
       "article_key": "sanaсin_bad_60caps",
       "normalized_article_key": "sanaсin_bad_60caps",
       "platform": "ozon",
@@ -70595,7 +70595,7 @@
       }
     },
     {
-      "snapshot_id": "repricer:ef3676e4030e5ae1",
+      "snapshot_id": "repricer:ad42db0d0dbb3098",
       "article_key": "shampun_badd_500ml",
       "normalized_article_key": "shampun_badd_500ml",
       "platform": "ozon",
@@ -71088,7 +71088,7 @@
       }
     },
     {
-      "snapshot_id": "repricer:ef3676e4030e5ae1",
+      "snapshot_id": "repricer:ad42db0d0dbb3098",
       "article_key": "shampun_dlya_rosta_250ml",
       "normalized_article_key": "shampun_dlya_rosta_250ml",
       "platform": "ozon",
@@ -71610,7 +71610,7 @@
       }
     },
     {
-      "snapshot_id": "repricer:ef3676e4030e5ae1",
+      "snapshot_id": "repricer:ad42db0d0dbb3098",
       "article_key": "shampun_kudryavii_metod_500ml",
       "normalized_article_key": "shampun_kudryavii_metod_500ml",
       "platform": "ozon",
@@ -72097,7 +72097,7 @@
       }
     },
     {
-      "snapshot_id": "repricer:ef3676e4030e5ae1",
+      "snapshot_id": "repricer:ad42db0d0dbb3098",
       "article_key": "shampun_protiv_perhoti_250ml",
       "normalized_article_key": "shampun_protiv_perhoti_250ml",
       "platform": "ozon",
@@ -72603,7 +72603,7 @@
       }
     },
     {
-      "snapshot_id": "repricer:ef3676e4030e5ae1",
+      "snapshot_id": "repricer:ad42db0d0dbb3098",
       "article_key": "silk_hair_300ml",
       "normalized_article_key": "silk_hair_300ml",
       "platform": "ozon",
@@ -73123,7 +73123,7 @@
       }
     },
     {
-      "snapshot_id": "repricer:ef3676e4030e5ae1",
+      "snapshot_id": "repricer:ad42db0d0dbb3098",
       "article_key": "sinergel_30ml_1_1",
       "normalized_article_key": "sinergel_30ml_1_1",
       "platform": "ozon",
@@ -73612,7 +73612,7 @@
       }
     },
     {
-      "snapshot_id": "repricer:ef3676e4030e5ae1",
+      "snapshot_id": "repricer:ad42db0d0dbb3098",
       "article_key": "skrab_babl_gam_200ml",
       "normalized_article_key": "skrab_babl_gam_200ml",
       "platform": "ozon",
@@ -74108,7 +74108,7 @@
       }
     },
     {
-      "snapshot_id": "repricer:ef3676e4030e5ae1",
+      "snapshot_id": "repricer:ad42db0d0dbb3098",
       "article_key": "smokinglock",
       "normalized_article_key": "smokinglock",
       "platform": "ozon",
@@ -74602,7 +74602,7 @@
       }
     },
     {
-      "snapshot_id": "repricer:ef3676e4030e5ae1",
+      "snapshot_id": "repricer:ad42db0d0dbb3098",
       "article_key": "solevoy_sprei_200ml",
       "normalized_article_key": "solevoy_sprei_200ml",
       "platform": "ozon",
@@ -75126,7 +75126,7 @@
       }
     },
     {
-      "snapshot_id": "repricer:ef3676e4030e5ae1",
+      "snapshot_id": "repricer:ad42db0d0dbb3098",
       "article_key": "spicul_gel_mask_75ml",
       "normalized_article_key": "spicul_gel_mask_75ml",
       "platform": "ozon",
@@ -75651,7 +75651,7 @@
       }
     },
     {
-      "snapshot_id": "repricer:ef3676e4030e5ae1",
+      "snapshot_id": "repricer:ad42db0d0dbb3098",
       "article_key": "spiculboost_30ml",
       "normalized_article_key": "spiculboost_30ml",
       "platform": "ozon",
@@ -76152,7 +76152,7 @@
       }
     },
     {
-      "snapshot_id": "repricer:ef3676e4030e5ae1",
+      "snapshot_id": "repricer:ad42db0d0dbb3098",
       "article_key": "spray-syvorotka_pdrn_100ml",
       "normalized_article_key": "spray-syvorotka_pdrn_100ml",
       "platform": "ozon",
@@ -76642,7 +76642,7 @@
       }
     },
     {
-      "snapshot_id": "repricer:ef3676e4030e5ae1",
+      "snapshot_id": "repricer:ad42db0d0dbb3098",
       "article_key": "sprei_buster_100ml",
       "normalized_article_key": "sprei_buster_100ml",
       "platform": "ozon",
@@ -77164,7 +77164,7 @@
       }
     },
     {
-      "snapshot_id": "repricer:ef3676e4030e5ae1",
+      "snapshot_id": "repricer:ad42db0d0dbb3098",
       "article_key": "stik_ot_mozoley",
       "normalized_article_key": "stik_ot_mozoley",
       "platform": "ozon",
@@ -77656,7 +77656,7 @@
       }
     },
     {
-      "snapshot_id": "repricer:ef3676e4030e5ae1",
+      "snapshot_id": "repricer:ad42db0d0dbb3098",
       "article_key": "strong_hair",
       "normalized_article_key": "strong_hair",
       "platform": "ozon",
@@ -78162,7 +78162,7 @@
       }
     },
     {
-      "snapshot_id": "repricer:ef3676e4030e5ae1",
+      "snapshot_id": "repricer:ad42db0d0dbb3098",
       "article_key": "sustalit",
       "normalized_article_key": "sustalit",
       "platform": "ozon",
@@ -78650,7 +78650,7 @@
       }
     },
     {
-      "snapshot_id": "repricer:ef3676e4030e5ae1",
+      "snapshot_id": "repricer:ad42db0d0dbb3098",
       "article_key": "sustalit_75ml",
       "normalized_article_key": "sustalit_75ml",
       "platform": "ozon",
@@ -79133,7 +79133,7 @@
       }
     },
     {
-      "snapshot_id": "repricer:ef3676e4030e5ae1",
+      "snapshot_id": "repricer:ad42db0d0dbb3098",
       "article_key": "synergel_60ml",
       "normalized_article_key": "synergel_60ml",
       "platform": "ozon",
@@ -79617,7 +79617,7 @@
       }
     },
     {
-      "snapshot_id": "repricer:ef3676e4030e5ae1",
+      "snapshot_id": "repricer:ad42db0d0dbb3098",
       "article_key": "syvorotka_dlya_lica_30ml",
       "normalized_article_key": "syvorotka_dlya_lica_30ml",
       "platform": "ozon",
@@ -80125,7 +80125,7 @@
       }
     },
     {
-      "snapshot_id": "repricer:ef3676e4030e5ae1",
+      "snapshot_id": "repricer:ad42db0d0dbb3098",
       "article_key": "syvorotka_dlya_lica_30ml_v2",
       "normalized_article_key": "syvorotka_dlya_lica_30ml_v2",
       "platform": "ozon",
@@ -80652,7 +80652,7 @@
       }
     },
     {
-      "snapshot_id": "repricer:ef3676e4030e5ae1",
+      "snapshot_id": "repricer:ad42db0d0dbb3098",
       "article_key": "syvorotka_dlya_lica_intens_uvl_30ml",
       "normalized_article_key": "syvorotka_dlya_lica_intens_uvl_30ml",
       "platform": "ozon",
@@ -81142,7 +81142,7 @@
       }
     },
     {
-      "snapshot_id": "repricer:ef3676e4030e5ae1",
+      "snapshot_id": "repricer:ad42db0d0dbb3098",
       "article_key": "syvorotka_dlya_rosta_6ml",
       "normalized_article_key": "syvorotka_dlya_rosta_6ml",
       "platform": "ozon",
@@ -81626,7 +81626,7 @@
       }
     },
     {
-      "snapshot_id": "repricer:ef3676e4030e5ae1",
+      "snapshot_id": "repricer:ad42db0d0dbb3098",
       "article_key": "syvorotka_dlya_rosta_6ml_v2",
       "normalized_article_key": "syvorotka_dlya_rosta_6ml_v2",
       "platform": "ozon",
@@ -82128,7 +82128,7 @@
       }
     },
     {
-      "snapshot_id": "repricer:ef3676e4030e5ae1",
+      "snapshot_id": "repricer:ad42db0d0dbb3098",
       "article_key": "syvorotka_guk_30ml",
       "normalized_article_key": "syvorotka_guk_30ml",
       "platform": "ozon",
@@ -82631,7 +82631,7 @@
       }
     },
     {
-      "snapshot_id": "repricer:ef3676e4030e5ae1",
+      "snapshot_id": "repricer:ad42db0d0dbb3098",
       "article_key": "syvorotka_niacin_05_30ml",
       "normalized_article_key": "syvorotka_niacin_05_30ml",
       "platform": "ozon",
@@ -83132,7 +83132,7 @@
       }
     },
     {
-      "snapshot_id": "repricer:ef3676e4030e5ae1",
+      "snapshot_id": "repricer:ad42db0d0dbb3098",
       "article_key": "syvorotka_vit_c_30ml",
       "normalized_article_key": "syvorotka_vit_c_30ml",
       "platform": "ozon",
@@ -83619,7 +83619,7 @@
       }
     },
     {
-      "snapshot_id": "repricer:ef3676e4030e5ae1",
+      "snapshot_id": "repricer:ad42db0d0dbb3098",
       "article_key": "t34poten10caps",
       "normalized_article_key": "t34poten10caps",
       "platform": "ozon",
@@ -84112,7 +84112,7 @@
       }
     },
     {
-      "snapshot_id": "repricer:ef3676e4030e5ae1",
+      "snapshot_id": "repricer:ad42db0d0dbb3098",
       "article_key": "telomeras_60caps",
       "normalized_article_key": "telomeras_60caps",
       "platform": "ozon",
@@ -84597,7 +84597,7 @@
       }
     },
     {
-      "snapshot_id": "repricer:ef3676e4030e5ae1",
+      "snapshot_id": "repricer:ad42db0d0dbb3098",
       "article_key": "termo_maslo_100ml",
       "normalized_article_key": "termo_maslo_100ml",
       "platform": "ozon",
@@ -85087,7 +85087,7 @@
       }
     },
     {
-      "snapshot_id": "repricer:ef3676e4030e5ae1",
+      "snapshot_id": "repricer:ad42db0d0dbb3098",
       "article_key": "termo_sprei_200ml",
       "normalized_article_key": "termo_sprei_200ml",
       "platform": "ozon",
@@ -85576,7 +85576,7 @@
       }
     },
     {
-      "snapshot_id": "repricer:ef3676e4030e5ae1",
+      "snapshot_id": "repricer:ad42db0d0dbb3098",
       "article_key": "termo_sprei_200ml_v2",
       "normalized_article_key": "termo_sprei_200ml_v2",
       "platform": "ozon",
@@ -86071,7 +86071,7 @@
       }
     },
     {
-      "snapshot_id": "repricer:ef3676e4030e5ae1",
+      "snapshot_id": "repricer:ad42db0d0dbb3098",
       "article_key": "tonik_dlya_lica_200ml",
       "normalized_article_key": "tonik_dlya_lica_200ml",
       "platform": "ozon",
@@ -86598,7 +86598,7 @@
       }
     },
     {
-      "snapshot_id": "repricer:ef3676e4030e5ae1",
+      "snapshot_id": "repricer:ad42db0d0dbb3098",
       "article_key": "trezax",
       "normalized_article_key": "trezax",
       "platform": "ozon",
@@ -87095,7 +87095,7 @@
       }
     },
     {
-      "snapshot_id": "repricer:ef3676e4030e5ae1",
+      "snapshot_id": "repricer:ad42db0d0dbb3098",
       "article_key": "trezor",
       "normalized_article_key": "trezor",
       "platform": "ozon",
@@ -87596,7 +87596,7 @@
       }
     },
     {
-      "snapshot_id": "repricer:ef3676e4030e5ae1",
+      "snapshot_id": "repricer:ad42db0d0dbb3098",
       "article_key": "trezvin",
       "normalized_article_key": "trezvin",
       "platform": "ozon",
@@ -88087,7 +88087,7 @@
       }
     },
     {
-      "snapshot_id": "repricer:ef3676e4030e5ae1",
+      "snapshot_id": "repricer:ad42db0d0dbb3098",
       "article_key": "uhovit",
       "normalized_article_key": "uhovit",
       "platform": "ozon",
@@ -88582,7 +88582,7 @@
       }
     },
     {
-      "snapshot_id": "repricer:ef3676e4030e5ae1",
+      "snapshot_id": "repricer:ad42db0d0dbb3098",
       "article_key": "urinofix",
       "normalized_article_key": "urinofix",
       "platform": "ozon",
@@ -89069,7 +89069,7 @@
       }
     },
     {
-      "snapshot_id": "repricer:ef3676e4030e5ae1",
+      "snapshot_id": "repricer:ad42db0d0dbb3098",
       "article_key": "urofol",
       "normalized_article_key": "urofol",
       "platform": "ozon",
@@ -89558,7 +89558,7 @@
       }
     },
     {
-      "snapshot_id": "repricer:ef3676e4030e5ae1",
+      "snapshot_id": "repricer:ad42db0d0dbb3098",
       "article_key": "urolgan",
       "normalized_article_key": "urolgan",
       "platform": "ozon",
@@ -90053,7 +90053,7 @@
       }
     },
     {
-      "snapshot_id": "repricer:ef3676e4030e5ae1",
+      "snapshot_id": "repricer:ad42db0d0dbb3098",
       "article_key": "uromax",
       "normalized_article_key": "uromax",
       "platform": "ozon",
@@ -90542,7 +90542,7 @@
       }
     },
     {
-      "snapshot_id": "repricer:ef3676e4030e5ae1",
+      "snapshot_id": "repricer:ad42db0d0dbb3098",
       "article_key": "uromax_1_1",
       "normalized_article_key": "uromax_1_1",
       "platform": "ozon",
@@ -91025,7 +91025,7 @@
       }
     },
     {
-      "snapshot_id": "repricer:ef3676e4030e5ae1",
+      "snapshot_id": "repricer:ad42db0d0dbb3098",
       "article_key": "varifit",
       "normalized_article_key": "varifit",
       "platform": "ozon",
@@ -91512,7 +91512,7 @@
       }
     },
     {
-      "snapshot_id": "repricer:ef3676e4030e5ae1",
+      "snapshot_id": "repricer:ad42db0d0dbb3098",
       "article_key": "varifit_1_1",
       "normalized_article_key": "varifit_1_1",
       "platform": "ozon",
@@ -91992,7 +91992,7 @@
       }
     },
     {
-      "snapshot_id": "repricer:ef3676e4030e5ae1",
+      "snapshot_id": "repricer:ad42db0d0dbb3098",
       "article_key": "vetonus",
       "normalized_article_key": "vetonus",
       "platform": "ozon",
@@ -92482,7 +92482,7 @@
       }
     },
     {
-      "snapshot_id": "repricer:ef3676e4030e5ae1",
+      "snapshot_id": "repricer:ad42db0d0dbb3098",
       "article_key": "vetonus_1_1",
       "normalized_article_key": "vetonus_1_1",
       "platform": "ozon",
@@ -92974,7 +92974,7 @@
       }
     },
     {
-      "snapshot_id": "repricer:ef3676e4030e5ae1",
+      "snapshot_id": "repricer:ad42db0d0dbb3098",
       "article_key": "vetonus_100ml",
       "normalized_article_key": "vetonus_100ml",
       "platform": "ozon",
@@ -93463,7 +93463,7 @@
       }
     },
     {
-      "snapshot_id": "repricer:ef3676e4030e5ae1",
+      "snapshot_id": "repricer:ad42db0d0dbb3098",
       "article_key": "visitcreamamarant",
       "normalized_article_key": "visitcreamamarant",
       "platform": "ozon",
@@ -93958,7 +93958,7 @@
       }
     },
     {
-      "snapshot_id": "repricer:ef3676e4030e5ae1",
+      "snapshot_id": "repricer:ad42db0d0dbb3098",
       "article_key": "vosk_stik_15ml",
       "normalized_article_key": "vosk_stik_15ml",
       "platform": "ozon",
@@ -94437,7 +94437,7 @@
       }
     },
     {
-      "snapshot_id": "repricer:ef3676e4030e5ae1",
+      "snapshot_id": "repricer:ad42db0d0dbb3098",
       "article_key": "wbalkotoxic",
       "normalized_article_key": "wbalkotoxic",
       "platform": "ozon",
@@ -94936,7 +94936,7 @@
       }
     },
     {
-      "snapshot_id": "repricer:ef3676e4030e5ae1",
+      "snapshot_id": "repricer:ad42db0d0dbb3098",
       "article_key": "wbbiotrin",
       "normalized_article_key": "wbbiotrin",
       "platform": "ozon",
@@ -95424,7 +95424,7 @@
       }
     },
     {
-      "snapshot_id": "repricer:ef3676e4030e5ae1",
+      "snapshot_id": "repricer:ad42db0d0dbb3098",
       "article_key": "wbbiotrin_1_1",
       "normalized_article_key": "wbbiotrin_1_1",
       "platform": "ozon",
@@ -95913,7 +95913,7 @@
       }
     },
     {
-      "snapshot_id": "repricer:ef3676e4030e5ae1",
+      "snapshot_id": "repricer:ad42db0d0dbb3098",
       "article_key": "wbbiotrin_1_1_1",
       "normalized_article_key": "wbbiotrin_1_1_1",
       "platform": "ozon",
@@ -96402,7 +96402,7 @@
       }
     },
     {
-      "snapshot_id": "repricer:ef3676e4030e5ae1",
+      "snapshot_id": "repricer:ad42db0d0dbb3098",
       "article_key": "wbgetsize",
       "normalized_article_key": "wbgetsize",
       "platform": "ozon",
@@ -96895,7 +96895,7 @@
       }
     },
     {
-      "snapshot_id": "repricer:ef3676e4030e5ae1",
+      "snapshot_id": "repricer:ad42db0d0dbb3098",
       "article_key": "wbgetsize1gel2",
       "normalized_article_key": "wbgetsize1gel2",
       "platform": "ozon",
@@ -97398,7 +97398,7 @@
       }
     },
     {
-      "snapshot_id": "repricer:ef3676e4030e5ae1",
+      "snapshot_id": "repricer:ad42db0d0dbb3098",
       "article_key": "wbgetsizegel",
       "normalized_article_key": "wbgetsizegel",
       "platform": "ozon",
@@ -97894,7 +97894,7 @@
       }
     },
     {
-      "snapshot_id": "repricer:ef3676e4030e5ae1",
+      "snapshot_id": "repricer:ad42db0d0dbb3098",
       "article_key": "wbmicelix",
       "normalized_article_key": "wbmicelix",
       "platform": "ozon",
@@ -98389,7 +98389,7 @@
       }
     },
     {
-      "snapshot_id": "repricer:ef3676e4030e5ae1",
+      "snapshot_id": "repricer:ad42db0d0dbb3098",
       "article_key": "wbmicelix_1_1",
       "normalized_article_key": "wbmicelix_1_1",
       "platform": "ozon",
@@ -98872,7 +98872,7 @@
       }
     },
     {
-      "snapshot_id": "repricer:ef3676e4030e5ae1",
+      "snapshot_id": "repricer:ad42db0d0dbb3098",
       "article_key": "wbneomax",
       "normalized_article_key": "wbneomax",
       "platform": "ozon",
@@ -99363,7 +99363,7 @@
       }
     },
     {
-      "snapshot_id": "repricer:ef3676e4030e5ae1",
+      "snapshot_id": "repricer:ad42db0d0dbb3098",
       "article_key": "wbneomaxblue",
       "normalized_article_key": "wbneomaxblue",
       "platform": "ozon",
@@ -99856,7 +99856,7 @@
       }
     },
     {
-      "snapshot_id": "repricer:ef3676e4030e5ae1",
+      "snapshot_id": "repricer:ad42db0d0dbb3098",
       "article_key": "wboptitrin",
       "normalized_article_key": "wboptitrin",
       "platform": "ozon",
@@ -100344,7 +100344,7 @@
       }
     },
     {
-      "snapshot_id": "repricer:ef3676e4030e5ae1",
+      "snapshot_id": "repricer:ad42db0d0dbb3098",
       "article_key": "wbpantogor_1_1",
       "normalized_article_key": "wbpantogor_1_1",
       "platform": "ozon",
@@ -100837,7 +100837,7 @@
       }
     },
     {
-      "snapshot_id": "repricer:ef3676e4030e5ae1",
+      "snapshot_id": "repricer:ad42db0d0dbb3098",
       "article_key": "wbsinergel",
       "normalized_article_key": "wbsinergel",
       "platform": "ozon",
@@ -101325,7 +101325,7 @@
       }
     },
     {
-      "snapshot_id": "repricer:ef3676e4030e5ae1",
+      "snapshot_id": "repricer:ad42db0d0dbb3098",
       "article_key": "wbvaranga",
       "normalized_article_key": "wbvaranga",
       "platform": "ozon",
@@ -101822,7 +101822,7 @@
       }
     },
     {
-      "snapshot_id": "repricer:ef3676e4030e5ae1",
+      "snapshot_id": "repricer:ad42db0d0dbb3098",
       "article_key": "wbvaritox",
       "normalized_article_key": "wbvaritox",
       "platform": "ozon",
@@ -102313,7 +102313,7 @@
       }
     },
     {
-      "snapshot_id": "repricer:ef3676e4030e5ae1",
+      "snapshot_id": "repricer:ad42db0d0dbb3098",
       "article_key": "wbvizox",
       "normalized_article_key": "wbvizox",
       "platform": "ozon",
@@ -102807,7 +102807,7 @@
       }
     },
     {
-      "snapshot_id": "repricer:ef3676e4030e5ae1",
+      "snapshot_id": "repricer:ad42db0d0dbb3098",
       "article_key": "wowglam",
       "normalized_article_key": "wowglam",
       "platform": "ozon",
@@ -103304,7 +103304,7 @@
       }
     },
     {
-      "snapshot_id": "repricer:ef3676e4030e5ae1",
+      "snapshot_id": "repricer:ad42db0d0dbb3098",
       "article_key": "yagodniy_spas",
       "normalized_article_key": "yagodniy_spas",
       "platform": "ozon",
@@ -103795,7 +103795,7 @@
       }
     },
     {
-      "snapshot_id": "repricer:ef3676e4030e5ae1",
+      "snapshot_id": "repricer:ad42db0d0dbb3098",
       "article_key": "yagodniy_spas_1_1",
       "normalized_article_key": "yagodniy_spas_1_1",
       "platform": "ozon",
@@ -104286,7 +104286,7 @@
       }
     },
     {
-      "snapshot_id": "repricer:ef3676e4030e5ae1",
+      "snapshot_id": "repricer:ad42db0d0dbb3098",
       "article_key": "т-34_bad_60caps",
       "normalized_article_key": "т-34_bad_60caps",
       "platform": "ozon",
@@ -104779,7 +104779,7 @@
       }
     },
     {
-      "snapshot_id": "repricer:ef3676e4030e5ae1",
+      "snapshot_id": "repricer:ad42db0d0dbb3098",
       "article_key": "activeprost",
       "normalized_article_key": "activeprost",
       "platform": "wb",
@@ -105266,7 +105266,7 @@
       }
     },
     {
-      "snapshot_id": "repricer:ef3676e4030e5ae1",
+      "snapshot_id": "repricer:ad42db0d0dbb3098",
       "article_key": "adenofrin",
       "normalized_article_key": "adenofrin",
       "platform": "wb",
@@ -105761,7 +105761,7 @@
       }
     },
     {
-      "snapshot_id": "repricer:ef3676e4030e5ae1",
+      "snapshot_id": "repricer:ad42db0d0dbb3098",
       "article_key": "adenofringreen",
       "normalized_article_key": "adenofringreen",
       "platform": "wb",
@@ -106252,7 +106252,7 @@
       }
     },
     {
-      "snapshot_id": "repricer:ef3676e4030e5ae1",
+      "snapshot_id": "repricer:ad42db0d0dbb3098",
       "article_key": "allicil_gribok15ml",
       "normalized_article_key": "allicil_gribok15ml",
       "platform": "wb",
@@ -106744,7 +106744,7 @@
       }
     },
     {
-      "snapshot_id": "repricer:ef3676e4030e5ae1",
+      "snapshot_id": "repricer:ad42db0d0dbb3098",
       "article_key": "alteya_beauty_brows_box",
       "normalized_article_key": "alteya_beauty_brows_box",
       "platform": "wb",
@@ -107229,7 +107229,7 @@
       }
     },
     {
-      "snapshot_id": "repricer:ef3676e4030e5ae1",
+      "snapshot_id": "repricer:ad42db0d0dbb3098",
       "article_key": "alteya_young_skin_box",
       "normalized_article_key": "alteya_young_skin_box",
       "platform": "wb",
@@ -107719,7 +107719,7 @@
       }
     },
     {
-      "snapshot_id": "repricer:ef3676e4030e5ae1",
+      "snapshot_id": "repricer:ad42db0d0dbb3098",
       "article_key": "antigiperton",
       "normalized_article_key": "antigiperton",
       "platform": "wb",
@@ -108213,7 +108213,7 @@
       }
     },
     {
-      "snapshot_id": "repricer:ef3676e4030e5ae1",
+      "snapshot_id": "repricer:ad42db0d0dbb3098",
       "article_key": "arterol",
       "normalized_article_key": "arterol",
       "platform": "wb",
@@ -108703,7 +108703,7 @@
       }
     },
     {
-      "snapshot_id": "repricer:ef3676e4030e5ae1",
+      "snapshot_id": "repricer:ad42db0d0dbb3098",
       "article_key": "arterol_1_1_1",
       "normalized_article_key": "arterol_1_1_1",
       "platform": "wb",
@@ -109192,7 +109192,7 @@
       }
     },
     {
-      "snapshot_id": "repricer:ef3676e4030e5ae1",
+      "snapshot_id": "repricer:ad42db0d0dbb3098",
       "article_key": "artoks",
       "normalized_article_key": "artoks",
       "platform": "wb",
@@ -109683,7 +109683,7 @@
       }
     },
     {
-      "snapshot_id": "repricer:ef3676e4030e5ae1",
+      "snapshot_id": "repricer:ad42db0d0dbb3098",
       "article_key": "artoks_1_1",
       "normalized_article_key": "artoks_1_1",
       "platform": "wb",
@@ -110172,7 +110172,7 @@
       }
     },
     {
-      "snapshot_id": "repricer:ef3676e4030e5ae1",
+      "snapshot_id": "repricer:ad42db0d0dbb3098",
       "article_key": "artoks_75ml",
       "normalized_article_key": "artoks_75ml",
       "platform": "wb",
@@ -110653,7 +110653,7 @@
       }
     },
     {
-      "snapshot_id": "repricer:ef3676e4030e5ae1",
+      "snapshot_id": "repricer:ad42db0d0dbb3098",
       "article_key": "b_kompleks_bad_60tabl",
       "normalized_article_key": "b_kompleks_bad_60tabl",
       "platform": "wb",
@@ -111142,7 +111142,7 @@
       }
     },
     {
-      "snapshot_id": "repricer:ef3676e4030e5ae1",
+      "snapshot_id": "repricer:ad42db0d0dbb3098",
       "article_key": "balzam_kudryavii_metod_500ml",
       "normalized_article_key": "balzam_kudryavii_metod_500ml",
       "platform": "wb",
@@ -111632,7 +111632,7 @@
       }
     },
     {
-      "snapshot_id": "repricer:ef3676e4030e5ae1",
+      "snapshot_id": "repricer:ad42db0d0dbb3098",
       "article_key": "berberin_laif_bad_60caps",
       "normalized_article_key": "berberin_laif_bad_60caps",
       "platform": "wb",
@@ -112114,7 +112114,7 @@
       }
     },
     {
-      "snapshot_id": "repricer:ef3676e4030e5ae1",
+      "snapshot_id": "repricer:ad42db0d0dbb3098",
       "article_key": "biotrin_60ml",
       "normalized_article_key": "biotrin_60ml",
       "platform": "wb",
@@ -112606,7 +112606,7 @@
       }
     },
     {
-      "snapshot_id": "repricer:ef3676e4030e5ae1",
+      "snapshot_id": "repricer:ad42db0d0dbb3098",
       "article_key": "brutalax",
       "normalized_article_key": "brutalax",
       "platform": "wb",
@@ -113103,7 +113103,7 @@
       }
     },
     {
-      "snapshot_id": "repricer:ef3676e4030e5ae1",
+      "snapshot_id": "repricer:ad42db0d0dbb3098",
       "article_key": "cardicin_bad_60caps",
       "normalized_article_key": "cardicin_bad_60caps",
       "platform": "wb",
@@ -113588,7 +113588,7 @@
       }
     },
     {
-      "snapshot_id": "repricer:ef3676e4030e5ae1",
+      "snapshot_id": "repricer:ad42db0d0dbb3098",
       "article_key": "chudofrukt",
       "normalized_article_key": "chudofrukt",
       "platform": "wb",
@@ -114085,7 +114085,7 @@
       }
     },
     {
-      "snapshot_id": "repricer:ef3676e4030e5ae1",
+      "snapshot_id": "repricer:ad42db0d0dbb3098",
       "article_key": "chudofrukt_1_1",
       "normalized_article_key": "chudofrukt_1_1",
       "platform": "wb",
@@ -114578,7 +114578,7 @@
       }
     },
     {
-      "snapshot_id": "repricer:ef3676e4030e5ae1",
+      "snapshot_id": "repricer:ad42db0d0dbb3098",
       "article_key": "chudofrukt_bad_60caps",
       "normalized_article_key": "chudofrukt_bad_60caps",
       "platform": "wb",
@@ -115070,7 +115070,7 @@
       }
     },
     {
-      "snapshot_id": "repricer:ef3676e4030e5ae1",
+      "snapshot_id": "repricer:ad42db0d0dbb3098",
       "article_key": "chudogrib",
       "normalized_article_key": "chudogrib",
       "platform": "wb",
@@ -115560,7 +115560,7 @@
       }
     },
     {
-      "snapshot_id": "repricer:ef3676e4030e5ae1",
+      "snapshot_id": "repricer:ad42db0d0dbb3098",
       "article_key": "copywbgetsize1gel2",
       "normalized_article_key": "copywbgetsize1gel2",
       "platform": "wb",
@@ -116050,7 +116050,7 @@
       }
     },
     {
-      "snapshot_id": "repricer:ef3676e4030e5ae1",
+      "snapshot_id": "repricer:ad42db0d0dbb3098",
       "article_key": "cpa_все_sku",
       "normalized_article_key": "cpa_все_sku",
       "platform": "wb",
@@ -116542,7 +116542,7 @@
       }
     },
     {
-      "snapshot_id": "repricer:ef3676e4030e5ae1",
+      "snapshot_id": "repricer:ad42db0d0dbb3098",
       "article_key": "curly_method_300ml",
       "normalized_article_key": "curly_method_300ml",
       "platform": "wb",
@@ -117062,7 +117062,7 @@
       }
     },
     {
-      "snapshot_id": "repricer:ef3676e4030e5ae1",
+      "snapshot_id": "repricer:ad42db0d0dbb3098",
       "article_key": "daoshen",
       "normalized_article_key": "daoshen",
       "platform": "wb",
@@ -117553,7 +117553,7 @@
       }
     },
     {
-      "snapshot_id": "repricer:ef3676e4030e5ae1",
+      "snapshot_id": "repricer:ad42db0d0dbb3098",
       "article_key": "daoshen_75ml",
       "normalized_article_key": "daoshen_75ml",
       "platform": "wb",
@@ -118038,7 +118038,7 @@
       }
     },
     {
-      "snapshot_id": "repricer:ef3676e4030e5ae1",
+      "snapshot_id": "repricer:ad42db0d0dbb3098",
       "article_key": "dardrakona",
       "normalized_article_key": "dardrakona",
       "platform": "wb",
@@ -118525,7 +118525,7 @@
       }
     },
     {
-      "snapshot_id": "repricer:ef3676e4030e5ae1",
+      "snapshot_id": "repricer:ad42db0d0dbb3098",
       "article_key": "dardrakona_1_1",
       "normalized_article_key": "dardrakona_1_1",
       "platform": "wb",
@@ -119010,7 +119010,7 @@
       }
     },
     {
-      "snapshot_id": "repricer:ef3676e4030e5ae1",
+      "snapshot_id": "repricer:ad42db0d0dbb3098",
       "article_key": "dardrakona_75ml",
       "normalized_article_key": "dardrakona_75ml",
       "platform": "wb",
@@ -119492,7 +119492,7 @@
       }
     },
     {
-      "snapshot_id": "repricer:ef3676e4030e5ae1",
+      "snapshot_id": "repricer:ad42db0d0dbb3098",
       "article_key": "dolgar",
       "normalized_article_key": "dolgar",
       "platform": "wb",
@@ -119979,7 +119979,7 @@
       }
     },
     {
-      "snapshot_id": "repricer:ef3676e4030e5ae1",
+      "snapshot_id": "repricer:ad42db0d0dbb3098",
       "article_key": "ekdisteron_ultra_man_60caps",
       "normalized_article_key": "ekdisteron_ultra_man_60caps",
       "platform": "wb",
@@ -120459,7 +120459,7 @@
       }
     },
     {
-      "snapshot_id": "repricer:ef3676e4030e5ae1",
+      "snapshot_id": "repricer:ad42db0d0dbb3098",
       "article_key": "ekzifol",
       "normalized_article_key": "ekzifol",
       "platform": "wb",
@@ -120946,7 +120946,7 @@
       }
     },
     {
-      "snapshot_id": "repricer:ef3676e4030e5ae1",
+      "snapshot_id": "repricer:ad42db0d0dbb3098",
       "article_key": "enteroshol",
       "normalized_article_key": "enteroshol",
       "platform": "wb",
@@ -121440,7 +121440,7 @@
       }
     },
     {
-      "snapshot_id": "repricer:ef3676e4030e5ae1",
+      "snapshot_id": "repricer:ad42db0d0dbb3098",
       "article_key": "enzim_pudra_80gr",
       "normalized_article_key": "enzim_pudra_80gr",
       "platform": "wb",
@@ -121924,7 +121924,7 @@
       }
     },
     {
-      "snapshot_id": "repricer:ef3676e4030e5ae1",
+      "snapshot_id": "repricer:ad42db0d0dbb3098",
       "article_key": "enzim_pudra_80gr_v2",
       "normalized_article_key": "enzim_pudra_80gr_v2",
       "platform": "wb",
@@ -122446,7 +122446,7 @@
       }
     },
     {
-      "snapshot_id": "repricer:ef3676e4030e5ae1",
+      "snapshot_id": "repricer:ad42db0d0dbb3098",
       "article_key": "erobrut",
       "normalized_article_key": "erobrut",
       "platform": "wb",
@@ -122936,7 +122936,7 @@
       }
     },
     {
-      "snapshot_id": "repricer:ef3676e4030e5ae1",
+      "snapshot_id": "repricer:ad42db0d0dbb3098",
       "article_key": "fruitalica",
       "normalized_article_key": "fruitalica",
       "platform": "wb",
@@ -123423,7 +123423,7 @@
       }
     },
     {
-      "snapshot_id": "repricer:ef3676e4030e5ae1",
+      "snapshot_id": "repricer:ad42db0d0dbb3098",
       "article_key": "frutaksa_bad_200gr",
       "normalized_article_key": "frutaksa_bad_200gr",
       "platform": "wb",
@@ -123909,7 +123909,7 @@
       }
     },
     {
-      "snapshot_id": "repricer:ef3676e4030e5ae1",
+      "snapshot_id": "repricer:ad42db0d0dbb3098",
       "article_key": "frutalika_bad_60caps",
       "normalized_article_key": "frutalika_bad_60caps",
       "platform": "wb",
@@ -124383,7 +124383,7 @@
       }
     },
     {
-      "snapshot_id": "repricer:ef3676e4030e5ae1",
+      "snapshot_id": "repricer:ad42db0d0dbb3098",
       "article_key": "gel_antiakne_20ml",
       "normalized_article_key": "gel_antiakne_20ml",
       "platform": "wb",
@@ -124867,7 +124867,7 @@
       }
     },
     {
-      "snapshot_id": "repricer:ef3676e4030e5ae1",
+      "snapshot_id": "repricer:ad42db0d0dbb3098",
       "article_key": "gel_antiakne_20ml_v2",
       "normalized_article_key": "gel_antiakne_20ml_v2",
       "platform": "wb",
@@ -125387,7 +125387,7 @@
       }
     },
     {
-      "snapshot_id": "repricer:ef3676e4030e5ae1",
+      "snapshot_id": "repricer:ad42db0d0dbb3098",
       "article_key": "gel_brows_5ml",
       "normalized_article_key": "gel_brows_5ml",
       "platform": "wb",
@@ -125865,7 +125865,7 @@
       }
     },
     {
-      "snapshot_id": "repricer:ef3676e4030e5ae1",
+      "snapshot_id": "repricer:ad42db0d0dbb3098",
       "article_key": "gel_dlya_britya_300ml",
       "normalized_article_key": "gel_dlya_britya_300ml",
       "platform": "wb",
@@ -126348,7 +126348,7 @@
       }
     },
     {
-      "snapshot_id": "repricer:ef3676e4030e5ae1",
+      "snapshot_id": "repricer:ad42db0d0dbb3098",
       "article_key": "gel_dlya_brovei_6ml",
       "normalized_article_key": "gel_dlya_brovei_6ml",
       "platform": "wb",
@@ -126827,7 +126827,7 @@
       }
     },
     {
-      "snapshot_id": "repricer:ef3676e4030e5ae1",
+      "snapshot_id": "repricer:ad42db0d0dbb3098",
       "article_key": "gel_for_men_3_in_1_1000ml",
       "normalized_article_key": "gel_for_men_3_in_1_1000ml",
       "platform": "wb",
@@ -127307,7 +127307,7 @@
       }
     },
     {
-      "snapshot_id": "repricer:ef3676e4030e5ae1",
+      "snapshot_id": "repricer:ad42db0d0dbb3098",
       "article_key": "gel_kudryavii_metod_300ml",
       "normalized_article_key": "gel_kudryavii_metod_300ml",
       "platform": "wb",
@@ -127799,7 +127799,7 @@
       }
     },
     {
-      "snapshot_id": "repricer:ef3676e4030e5ae1",
+      "snapshot_id": "repricer:ad42db0d0dbb3098",
       "article_key": "gel_parfum_tabacco_vanille_450ml",
       "normalized_article_key": "gel_parfum_tabacco_vanille_450ml",
       "platform": "wb",
@@ -128279,7 +128279,7 @@
       }
     },
     {
-      "snapshot_id": "repricer:ef3676e4030e5ae1",
+      "snapshot_id": "repricer:ad42db0d0dbb3098",
       "article_key": "gel-penka_dlya_lica_150ml",
       "normalized_article_key": "gel-penka_dlya_lica_150ml",
       "platform": "wb",
@@ -128774,7 +128774,7 @@
       }
     },
     {
-      "snapshot_id": "repricer:ef3676e4030e5ae1",
+      "snapshot_id": "repricer:ad42db0d0dbb3098",
       "article_key": "gemorekt",
       "normalized_article_key": "gemorekt",
       "platform": "wb",
@@ -129271,7 +129271,7 @@
       }
     },
     {
-      "snapshot_id": "repricer:ef3676e4030e5ae1",
+      "snapshot_id": "repricer:ad42db0d0dbb3098",
       "article_key": "gidrofilnoe_maslo_150ml",
       "normalized_article_key": "gidrofilnoe_maslo_150ml",
       "platform": "wb",
@@ -129757,7 +129757,7 @@
       }
     },
     {
-      "snapshot_id": "repricer:ef3676e4030e5ae1",
+      "snapshot_id": "repricer:ad42db0d0dbb3098",
       "article_key": "glikiron",
       "normalized_article_key": "glikiron",
       "platform": "wb",
@@ -130253,7 +130253,7 @@
       }
     },
     {
-      "snapshot_id": "repricer:ef3676e4030e5ae1",
+      "snapshot_id": "repricer:ad42db0d0dbb3098",
       "article_key": "glikiron_bad_60caps",
       "normalized_article_key": "glikiron_bad_60caps",
       "platform": "wb",
@@ -130733,7 +130733,7 @@
       }
     },
     {
-      "snapshot_id": "repricer:ef3676e4030e5ae1",
+      "snapshot_id": "repricer:ad42db0d0dbb3098",
       "article_key": "glukofol",
       "normalized_article_key": "glukofol",
       "platform": "wb",
@@ -131226,7 +131226,7 @@
       }
     },
     {
-      "snapshot_id": "repricer:ef3676e4030e5ae1",
+      "snapshot_id": "repricer:ad42db0d0dbb3098",
       "article_key": "i_am_alpha_bad_60caps",
       "normalized_article_key": "i_am_alpha_bad_60caps",
       "platform": "wb",
@@ -131703,7 +131703,7 @@
       }
     },
     {
-      "snapshot_id": "repricer:ef3676e4030e5ae1",
+      "snapshot_id": "repricer:ad42db0d0dbb3098",
       "article_key": "indolakt_bad_60caps",
       "normalized_article_key": "indolakt_bad_60caps",
       "platform": "wb",
@@ -132183,7 +132183,7 @@
       }
     },
     {
-      "snapshot_id": "repricer:ef3676e4030e5ae1",
+      "snapshot_id": "repricer:ad42db0d0dbb3098",
       "article_key": "insulight",
       "normalized_article_key": "insulight",
       "platform": "wb",
@@ -132673,7 +132673,7 @@
       }
     },
     {
-      "snapshot_id": "repricer:ef3676e4030e5ae1",
+      "snapshot_id": "repricer:ad42db0d0dbb3098",
       "article_key": "insulight_bad_60caps",
       "normalized_article_key": "insulight_bad_60caps",
       "platform": "wb",
@@ -133174,7 +133174,7 @@
       }
     },
     {
-      "snapshot_id": "repricer:ef3676e4030e5ae1",
+      "snapshot_id": "repricer:ad42db0d0dbb3098",
       "article_key": "insulight_v2",
       "normalized_article_key": "insulight_v2",
       "platform": "wb",
@@ -133664,7 +133664,7 @@
       }
     },
     {
-      "snapshot_id": "repricer:ef3676e4030e5ae1",
+      "snapshot_id": "repricer:ad42db0d0dbb3098",
       "article_key": "intimvita_200ml",
       "normalized_article_key": "intimvita_200ml",
       "platform": "wb",
@@ -134153,7 +134153,7 @@
       }
     },
     {
-      "snapshot_id": "repricer:ef3676e4030e5ae1",
+      "snapshot_id": "repricer:ad42db0d0dbb3098",
       "article_key": "intimvita_300ml",
       "normalized_article_key": "intimvita_300ml",
       "platform": "wb",
@@ -134633,7 +134633,7 @@
       }
     },
     {
-      "snapshot_id": "repricer:ef3676e4030e5ae1",
+      "snapshot_id": "repricer:ad42db0d0dbb3098",
       "article_key": "kardicin",
       "normalized_article_key": "kardicin",
       "platform": "wb",
@@ -135123,7 +135123,7 @@
       }
     },
     {
-      "snapshot_id": "repricer:ef3676e4030e5ae1",
+      "snapshot_id": "repricer:ad42db0d0dbb3098",
       "article_key": "kardicin_1_1",
       "normalized_article_key": "kardicin_1_1",
       "platform": "wb",
@@ -135609,7 +135609,7 @@
       }
     },
     {
-      "snapshot_id": "repricer:ef3676e4030e5ae1",
+      "snapshot_id": "repricer:ad42db0d0dbb3098",
       "article_key": "kardicin_1_1_1",
       "normalized_article_key": "kardicin_1_1_1",
       "platform": "wb",
@@ -136095,7 +136095,7 @@
       }
     },
     {
-      "snapshot_id": "repricer:ef3676e4030e5ae1",
+      "snapshot_id": "repricer:ad42db0d0dbb3098",
       "article_key": "kavmaz",
       "normalized_article_key": "kavmaz",
       "platform": "wb",
@@ -136582,7 +136582,7 @@
       }
     },
     {
-      "snapshot_id": "repricer:ef3676e4030e5ae1",
+      "snapshot_id": "repricer:ad42db0d0dbb3098",
       "article_key": "kavmaz_40ml_1_1",
       "normalized_article_key": "kavmaz_40ml_1_1",
       "platform": "wb",
@@ -137067,7 +137067,7 @@
       }
     },
     {
-      "snapshot_id": "repricer:ef3676e4030e5ae1",
+      "snapshot_id": "repricer:ad42db0d0dbb3098",
       "article_key": "kavmaz_60ml",
       "normalized_article_key": "kavmaz_60ml",
       "platform": "wb",
@@ -137550,7 +137550,7 @@
       }
     },
     {
-      "snapshot_id": "repricer:ef3676e4030e5ae1",
+      "snapshot_id": "repricer:ad42db0d0dbb3098",
       "article_key": "khvoinitsa",
       "normalized_article_key": "khvoinitsa",
       "platform": "wb",
@@ -138037,7 +138037,7 @@
       }
     },
     {
-      "snapshot_id": "repricer:ef3676e4030e5ae1",
+      "snapshot_id": "repricer:ad42db0d0dbb3098",
       "article_key": "khvoinitsa_1_1",
       "normalized_article_key": "khvoinitsa_1_1",
       "platform": "wb",
@@ -138519,7 +138519,7 @@
       }
     },
     {
-      "snapshot_id": "repricer:ef3676e4030e5ae1",
+      "snapshot_id": "repricer:ad42db0d0dbb3098",
       "article_key": "kinzhal",
       "normalized_article_key": "kinzhal",
       "platform": "wb",
@@ -139016,7 +139016,7 @@
       }
     },
     {
-      "snapshot_id": "repricer:ef3676e4030e5ae1",
+      "snapshot_id": "repricer:ad42db0d0dbb3098",
       "article_key": "kinzhal_1_1",
       "normalized_article_key": "kinzhal_1_1",
       "platform": "wb",
@@ -139506,7 +139506,7 @@
       }
     },
     {
-      "snapshot_id": "repricer:ef3676e4030e5ae1",
+      "snapshot_id": "repricer:ad42db0d0dbb3098",
       "article_key": "krem_buster_250ml",
       "normalized_article_key": "krem_buster_250ml",
       "platform": "wb",
@@ -140030,7 +140030,7 @@
       }
     },
     {
-      "snapshot_id": "repricer:ef3676e4030e5ae1",
+      "snapshot_id": "repricer:ad42db0d0dbb3098",
       "article_key": "krem_dlya_lica_pdrn_50_ml",
       "normalized_article_key": "krem_dlya_lica_pdrn_50_ml",
       "platform": "wb",
@@ -140522,7 +140522,7 @@
       }
     },
     {
-      "snapshot_id": "repricer:ef3676e4030e5ae1",
+      "snapshot_id": "repricer:ad42db0d0dbb3098",
       "article_key": "krem_dlya_ruk_75ml",
       "normalized_article_key": "krem_dlya_ruk_75ml",
       "platform": "wb",
@@ -141044,7 +141044,7 @@
       }
     },
     {
-      "snapshot_id": "repricer:ef3676e4030e5ae1",
+      "snapshot_id": "repricer:ad42db0d0dbb3098",
       "article_key": "krem_dlya_vek_30ml",
       "normalized_article_key": "krem_dlya_vek_30ml",
       "platform": "wb",
@@ -141570,7 +141570,7 @@
       }
     },
     {
-      "snapshot_id": "repricer:ef3676e4030e5ae1",
+      "snapshot_id": "repricer:ad42db0d0dbb3098",
       "article_key": "krem_ot_rastyazhek",
       "normalized_article_key": "krem_ot_rastyazhek",
       "platform": "wb",
@@ -142088,7 +142088,7 @@
       }
     },
     {
-      "snapshot_id": "repricer:ef3676e4030e5ae1",
+      "snapshot_id": "repricer:ad42db0d0dbb3098",
       "article_key": "krem_spf50_50ml",
       "normalized_article_key": "krem_spf50_50ml",
       "platform": "wb",
@@ -142612,7 +142612,7 @@
       }
     },
     {
-      "snapshot_id": "repricer:ef3676e4030e5ae1",
+      "snapshot_id": "repricer:ad42db0d0dbb3098",
       "article_key": "krem-filler_15ml",
       "normalized_article_key": "krem-filler_15ml",
       "platform": "wb",
@@ -143110,7 +143110,7 @@
       }
     },
     {
-      "snapshot_id": "repricer:ef3676e4030e5ae1",
+      "snapshot_id": "repricer:ad42db0d0dbb3098",
       "article_key": "kremshelk_100ml",
       "normalized_article_key": "kremshelk_100ml",
       "platform": "wb",
@@ -143638,7 +143638,7 @@
       }
     },
     {
-      "snapshot_id": "repricer:ef3676e4030e5ae1",
+      "snapshot_id": "repricer:ad42db0d0dbb3098",
       "article_key": "krovavii_piling_30ml",
       "normalized_article_key": "krovavii_piling_30ml",
       "platform": "wb",
@@ -144160,7 +144160,7 @@
       }
     },
     {
-      "snapshot_id": "repricer:ef3676e4030e5ae1",
+      "snapshot_id": "repricer:ad42db0d0dbb3098",
       "article_key": "lifting_maska_pdrn_75ml",
       "normalized_article_key": "lifting_maska_pdrn_75ml",
       "platform": "wb",
@@ -144652,7 +144652,7 @@
       }
     },
     {
-      "snapshot_id": "repricer:ef3676e4030e5ae1",
+      "snapshot_id": "repricer:ad42db0d0dbb3098",
       "article_key": "limfaks_bad_30caps",
       "normalized_article_key": "limfaks_bad_30caps",
       "platform": "wb",
@@ -145149,7 +145149,7 @@
       }
     },
     {
-      "snapshot_id": "repricer:ef3676e4030e5ae1",
+      "snapshot_id": "repricer:ad42db0d0dbb3098",
       "article_key": "maska_dlya_lica_100ml",
       "normalized_article_key": "maska_dlya_lica_100ml",
       "platform": "wb",
@@ -145671,7 +145671,7 @@
       }
     },
     {
-      "snapshot_id": "repricer:ef3676e4030e5ae1",
+      "snapshot_id": "repricer:ad42db0d0dbb3098",
       "article_key": "maska-batter_250ml",
       "normalized_article_key": "maska-batter_250ml",
       "platform": "wb",
@@ -146199,7 +146199,7 @@
       }
     },
     {
-      "snapshot_id": "repricer:ef3676e4030e5ae1",
+      "snapshot_id": "repricer:ad42db0d0dbb3098",
       "article_key": "maska-batter_500ml",
       "normalized_article_key": "maska-batter_500ml",
       "platform": "wb",
@@ -146690,7 +146690,7 @@
       }
     },
     {
-      "snapshot_id": "repricer:ef3676e4030e5ae1",
+      "snapshot_id": "repricer:ad42db0d0dbb3098",
       "article_key": "maska-batter_dlya_rosta_500ml",
       "normalized_article_key": "maska-batter_dlya_rosta_500ml",
       "platform": "wb",
@@ -147212,7 +147212,7 @@
       }
     },
     {
-      "snapshot_id": "repricer:ef3676e4030e5ae1",
+      "snapshot_id": "repricer:ad42db0d0dbb3098",
       "article_key": "maslo_dlya_borodi_50ml",
       "normalized_article_key": "maslo_dlya_borodi_50ml",
       "platform": "wb",
@@ -147709,7 +147709,7 @@
       }
     },
     {
-      "snapshot_id": "repricer:ef3676e4030e5ae1",
+      "snapshot_id": "repricer:ad42db0d0dbb3098",
       "article_key": "maslo_dlya_volos_parf_110ml",
       "normalized_article_key": "maslo_dlya_volos_parf_110ml",
       "platform": "wb",
@@ -148196,7 +148196,7 @@
       }
     },
     {
-      "snapshot_id": "repricer:ef3676e4030e5ae1",
+      "snapshot_id": "repricer:ad42db0d0dbb3098",
       "article_key": "maslo_dlya_volos_parf_110ml_",
       "normalized_article_key": "maslo_dlya_volos_parf_110ml_",
       "platform": "wb",
@@ -148685,7 +148685,7 @@
       }
     },
     {
-      "snapshot_id": "repricer:ef3676e4030e5ae1",
+      "snapshot_id": "repricer:ad42db0d0dbb3098",
       "article_key": "matte_wax_50ml",
       "normalized_article_key": "matte_wax_50ml",
       "platform": "wb",
@@ -149192,7 +149192,7 @@
       }
     },
     {
-      "snapshot_id": "repricer:ef3676e4030e5ae1",
+      "snapshot_id": "repricer:ad42db0d0dbb3098",
       "article_key": "menoflavon_bad_60caps",
       "normalized_article_key": "menoflavon_bad_60caps",
       "platform": "wb",
@@ -149671,7 +149671,7 @@
       }
     },
     {
-      "snapshot_id": "repricer:ef3676e4030e5ae1",
+      "snapshot_id": "repricer:ad42db0d0dbb3098",
       "article_key": "micardin",
       "normalized_article_key": "micardin",
       "platform": "wb",
@@ -150158,7 +150158,7 @@
       }
     },
     {
-      "snapshot_id": "repricer:ef3676e4030e5ae1",
+      "snapshot_id": "repricer:ad42db0d0dbb3098",
       "article_key": "micardin_1_1",
       "normalized_article_key": "micardin_1_1",
       "platform": "wb",
@@ -150643,7 +150643,7 @@
       }
     },
     {
-      "snapshot_id": "repricer:ef3676e4030e5ae1",
+      "snapshot_id": "repricer:ad42db0d0dbb3098",
       "article_key": "micardin_1_1_1",
       "normalized_article_key": "micardin_1_1_1",
       "platform": "wb",
@@ -151132,7 +151132,7 @@
       }
     },
     {
-      "snapshot_id": "repricer:ef3676e4030e5ae1",
+      "snapshot_id": "repricer:ad42db0d0dbb3098",
       "article_key": "micolan",
       "normalized_article_key": "micolan",
       "platform": "wb",
@@ -151623,7 +151623,7 @@
       }
     },
     {
-      "snapshot_id": "repricer:ef3676e4030e5ae1",
+      "snapshot_id": "repricer:ad42db0d0dbb3098",
       "article_key": "mikardin_plus_bad_60_caps",
       "normalized_article_key": "mikardin_plus_bad_60_caps",
       "platform": "wb",
@@ -152113,7 +152113,7 @@
       }
     },
     {
-      "snapshot_id": "repricer:ef3676e4030e5ae1",
+      "snapshot_id": "repricer:ad42db0d0dbb3098",
       "article_key": "monarda_30ml",
       "normalized_article_key": "monarda_30ml",
       "platform": "wb",
@@ -152609,7 +152609,7 @@
       }
     },
     {
-      "snapshot_id": "repricer:ef3676e4030e5ae1",
+      "snapshot_id": "repricer:ad42db0d0dbb3098",
       "article_key": "mycoplax",
       "normalized_article_key": "mycoplax",
       "platform": "wb",
@@ -153099,7 +153099,7 @@
       }
     },
     {
-      "snapshot_id": "repricer:ef3676e4030e5ae1",
+      "snapshot_id": "repricer:ad42db0d0dbb3098",
       "article_key": "mycoplax_1_1",
       "normalized_article_key": "mycoplax_1_1",
       "platform": "wb",
@@ -153589,7 +153589,7 @@
       }
     },
     {
-      "snapshot_id": "repricer:ef3676e4030e5ae1",
+      "snapshot_id": "repricer:ad42db0d0dbb3098",
       "article_key": "nabor_penka_dlya_resnic",
       "normalized_article_key": "nabor_penka_dlya_resnic",
       "platform": "wb",
@@ -154079,7 +154079,7 @@
       }
     },
     {
-      "snapshot_id": "repricer:ef3676e4030e5ae1",
+      "snapshot_id": "repricer:ad42db0d0dbb3098",
       "article_key": "nabor_remuver_40ml",
       "normalized_article_key": "nabor_remuver_40ml",
       "platform": "wb",
@@ -154560,7 +154560,7 @@
       }
     },
     {
-      "snapshot_id": "repricer:ef3676e4030e5ae1",
+      "snapshot_id": "repricer:ad42db0d0dbb3098",
       "article_key": "nabor_remuver_40ml_1_1",
       "normalized_article_key": "nabor_remuver_40ml_1_1",
       "platform": "wb",
@@ -155034,7 +155034,7 @@
       }
     },
     {
-      "snapshot_id": "repricer:ef3676e4030e5ae1",
+      "snapshot_id": "repricer:ad42db0d0dbb3098",
       "article_key": "nabor_remuver_kremovii",
       "normalized_article_key": "nabor_remuver_kremovii",
       "platform": "wb",
@@ -155565,7 +155565,7 @@
       }
     },
     {
-      "snapshot_id": "repricer:ef3676e4030e5ae1",
+      "snapshot_id": "repricer:ad42db0d0dbb3098",
       "article_key": "oftalmol",
       "normalized_article_key": "oftalmol",
       "platform": "wb",
@@ -156058,7 +156058,7 @@
       }
     },
     {
-      "snapshot_id": "repricer:ef3676e4030e5ae1",
+      "snapshot_id": "repricer:ad42db0d0dbb3098",
       "article_key": "okospas",
       "normalized_article_key": "okospas",
       "platform": "wb",
@@ -156548,7 +156548,7 @@
       }
     },
     {
-      "snapshot_id": "repricer:ef3676e4030e5ae1",
+      "snapshot_id": "repricer:ad42db0d0dbb3098",
       "article_key": "okucin",
       "normalized_article_key": "okucin",
       "platform": "wb",
@@ -157042,7 +157042,7 @@
       }
     },
     {
-      "snapshot_id": "repricer:ef3676e4030e5ae1",
+      "snapshot_id": "repricer:ad42db0d0dbb3098",
       "article_key": "osteofast",
       "normalized_article_key": "osteofast",
       "platform": "wb",
@@ -157529,7 +157529,7 @@
       }
     },
     {
-      "snapshot_id": "repricer:ef3676e4030e5ae1",
+      "snapshot_id": "repricer:ad42db0d0dbb3098",
       "article_key": "otivin",
       "normalized_article_key": "otivin",
       "platform": "wb",
@@ -158018,7 +158018,7 @@
       }
     },
     {
-      "snapshot_id": "repricer:ef3676e4030e5ae1",
+      "snapshot_id": "repricer:ad42db0d0dbb3098",
       "article_key": "otz_fbs3_curly_method_300ml",
       "normalized_article_key": "otz_fbs3_curly_method_300ml",
       "platform": "wb",
@@ -158506,7 +158506,7 @@
       }
     },
     {
-      "snapshot_id": "repricer:ef3676e4030e5ae1",
+      "snapshot_id": "repricer:ad42db0d0dbb3098",
       "article_key": "pantogor_100ml",
       "normalized_article_key": "pantogor_100ml",
       "platform": "wb",
@@ -158990,7 +158990,7 @@
       }
     },
     {
-      "snapshot_id": "repricer:ef3676e4030e5ae1",
+      "snapshot_id": "repricer:ad42db0d0dbb3098",
       "article_key": "penka_160ml",
       "normalized_article_key": "penka_160ml",
       "platform": "wb",
@@ -159475,7 +159475,7 @@
       }
     },
     {
-      "snapshot_id": "repricer:ef3676e4030e5ae1",
+      "snapshot_id": "repricer:ad42db0d0dbb3098",
       "article_key": "penka_kudryavii_metod_150ml",
       "normalized_article_key": "penka_kudryavii_metod_150ml",
       "platform": "wb",
@@ -160003,7 +160003,7 @@
       }
     },
     {
-      "snapshot_id": "repricer:ef3676e4030e5ae1",
+      "snapshot_id": "repricer:ad42db0d0dbb3098",
       "article_key": "piling_100ml",
       "normalized_article_key": "piling_100ml",
       "platform": "wb",
@@ -160490,7 +160490,7 @@
       }
     },
     {
-      "snapshot_id": "repricer:ef3676e4030e5ae1",
+      "snapshot_id": "repricer:ad42db0d0dbb3098",
       "article_key": "pink_pepper_50ml",
       "normalized_article_key": "pink_pepper_50ml",
       "platform": "wb",
@@ -160995,7 +160995,7 @@
       }
     },
     {
-      "snapshot_id": "repricer:ef3676e4030e5ae1",
+      "snapshot_id": "repricer:ad42db0d0dbb3098",
       "article_key": "pirantoks_bad_60caps",
       "normalized_article_key": "pirantoks_bad_60caps",
       "platform": "wb",
@@ -161487,7 +161487,7 @@
       }
     },
     {
-      "snapshot_id": "repricer:ef3676e4030e5ae1",
+      "snapshot_id": "repricer:ad42db0d0dbb3098",
       "article_key": "psoral",
       "normalized_article_key": "psoral",
       "platform": "wb",
@@ -161970,7 +161970,7 @@
       }
     },
     {
-      "snapshot_id": "repricer:ef3676e4030e5ae1",
+      "snapshot_id": "repricer:ad42db0d0dbb3098",
       "article_key": "psoral_50ml",
       "normalized_article_key": "psoral_50ml",
       "platform": "wb",
@@ -162458,7 +162458,7 @@
       }
     },
     {
-      "snapshot_id": "repricer:ef3676e4030e5ae1",
+      "snapshot_id": "repricer:ad42db0d0dbb3098",
       "article_key": "relaksinol_bad_60caps",
       "normalized_article_key": "relaksinol_bad_60caps",
       "platform": "wb",
@@ -162961,7 +162961,7 @@
       }
     },
     {
-      "snapshot_id": "repricer:ef3676e4030e5ae1",
+      "snapshot_id": "repricer:ad42db0d0dbb3098",
       "article_key": "remuver_40ml",
       "normalized_article_key": "remuver_40ml",
       "platform": "wb",
@@ -163459,7 +163459,7 @@
       }
     },
     {
-      "snapshot_id": "repricer:ef3676e4030e5ae1",
+      "snapshot_id": "repricer:ad42db0d0dbb3098",
       "article_key": "retiderm_50ml",
       "normalized_article_key": "retiderm_50ml",
       "platform": "wb",
@@ -163983,7 +163983,7 @@
       }
     },
     {
-      "snapshot_id": "repricer:ef3676e4030e5ae1",
+      "snapshot_id": "repricer:ad42db0d0dbb3098",
       "article_key": "retinait_krem_01_50ml",
       "normalized_article_key": "retinait_krem_01_50ml",
       "platform": "wb",
@@ -164503,7 +164503,7 @@
       }
     },
     {
-      "snapshot_id": "repricer:ef3676e4030e5ae1",
+      "snapshot_id": "repricer:ad42db0d0dbb3098",
       "article_key": "retinait_krem_025_50ml",
       "normalized_article_key": "retinait_krem_025_50ml",
       "platform": "wb",
@@ -165025,7 +165025,7 @@
       }
     },
     {
-      "snapshot_id": "repricer:ef3676e4030e5ae1",
+      "snapshot_id": "repricer:ad42db0d0dbb3098",
       "article_key": "retinait_krem_05_50ml",
       "normalized_article_key": "retinait_krem_05_50ml",
       "platform": "wb",
@@ -165553,7 +165553,7 @@
       }
     },
     {
-      "snapshot_id": "repricer:ef3676e4030e5ae1",
+      "snapshot_id": "repricer:ad42db0d0dbb3098",
       "article_key": "retinait_krem_1_5_50ml",
       "normalized_article_key": "retinait_krem_1_5_50ml",
       "platform": "wb",
@@ -166075,7 +166075,7 @@
       }
     },
     {
-      "snapshot_id": "repricer:ef3676e4030e5ae1",
+      "snapshot_id": "repricer:ad42db0d0dbb3098",
       "article_key": "retinait_krem_1_50ml",
       "normalized_article_key": "retinait_krem_1_50ml",
       "platform": "wb",
@@ -166599,7 +166599,7 @@
       }
     },
     {
-      "snapshot_id": "repricer:ef3676e4030e5ae1",
+      "snapshot_id": "repricer:ad42db0d0dbb3098",
       "article_key": "retinait_syvorotka_025_30ml",
       "normalized_article_key": "retinait_syvorotka_025_30ml",
       "platform": "wb",
@@ -167123,7 +167123,7 @@
       }
     },
     {
-      "snapshot_id": "repricer:ef3676e4030e5ae1",
+      "snapshot_id": "repricer:ad42db0d0dbb3098",
       "article_key": "retinait_syvorotka_05_30ml",
       "normalized_article_key": "retinait_syvorotka_05_30ml",
       "platform": "wb",
@@ -167648,7 +167648,7 @@
       }
     },
     {
-      "snapshot_id": "repricer:ef3676e4030e5ae1",
+      "snapshot_id": "repricer:ad42db0d0dbb3098",
       "article_key": "retinait_syvorotka_1_30ml",
       "normalized_article_key": "retinait_syvorotka_1_30ml",
       "platform": "wb",
@@ -168168,7 +168168,7 @@
       }
     },
     {
-      "snapshot_id": "repricer:ef3676e4030e5ae1",
+      "snapshot_id": "repricer:ad42db0d0dbb3098",
       "article_key": "retinol_boost_krem_dlya_vek_30ml",
       "normalized_article_key": "retinol_boost_krem_dlya_vek_30ml",
       "platform": "wb",
@@ -168686,7 +168686,7 @@
       }
     },
     {
-      "snapshot_id": "repricer:ef3676e4030e5ae1",
+      "snapshot_id": "repricer:ad42db0d0dbb3098",
       "article_key": "retinol_full_journey",
       "normalized_article_key": "retinol_full_journey",
       "platform": "wb",
@@ -169195,7 +169195,7 @@
       }
     },
     {
-      "snapshot_id": "repricer:ef3676e4030e5ae1",
+      "snapshot_id": "repricer:ad42db0d0dbb3098",
       "article_key": "retinol_start_kit",
       "normalized_article_key": "retinol_start_kit",
       "platform": "wb",
@@ -169703,7 +169703,7 @@
       }
     },
     {
-      "snapshot_id": "repricer:ef3676e4030e5ae1",
+      "snapshot_id": "repricer:ad42db0d0dbb3098",
       "article_key": "revmastop_bad_60caps",
       "normalized_article_key": "revmastop_bad_60caps",
       "platform": "wb",
@@ -170193,7 +170193,7 @@
       }
     },
     {
-      "snapshot_id": "repricer:ef3676e4030e5ae1",
+      "snapshot_id": "repricer:ad42db0d0dbb3098",
       "article_key": "sanatsin",
       "normalized_article_key": "sanatsin",
       "platform": "wb",
@@ -170687,7 +170687,7 @@
       }
     },
     {
-      "snapshot_id": "repricer:ef3676e4030e5ae1",
+      "snapshot_id": "repricer:ad42db0d0dbb3098",
       "article_key": "sanatsin_1_1",
       "normalized_article_key": "sanatsin_1_1",
       "platform": "wb",
@@ -171173,7 +171173,7 @@
       }
     },
     {
-      "snapshot_id": "repricer:ef3676e4030e5ae1",
+      "snapshot_id": "repricer:ad42db0d0dbb3098",
       "article_key": "sanaсin_bad_60caps",
       "normalized_article_key": "sanaсin_bad_60caps",
       "platform": "wb",
@@ -171663,7 +171663,7 @@
       }
     },
     {
-      "snapshot_id": "repricer:ef3676e4030e5ae1",
+      "snapshot_id": "repricer:ad42db0d0dbb3098",
       "article_key": "shampun_badd_500ml",
       "normalized_article_key": "shampun_badd_500ml",
       "platform": "wb",
@@ -172158,7 +172158,7 @@
       }
     },
     {
-      "snapshot_id": "repricer:ef3676e4030e5ae1",
+      "snapshot_id": "repricer:ad42db0d0dbb3098",
       "article_key": "shampun_dlya_rosta_250ml",
       "normalized_article_key": "shampun_dlya_rosta_250ml",
       "platform": "wb",
@@ -172676,7 +172676,7 @@
       }
     },
     {
-      "snapshot_id": "repricer:ef3676e4030e5ae1",
+      "snapshot_id": "repricer:ad42db0d0dbb3098",
       "article_key": "shampun_kudryavii_metod_500ml",
       "normalized_article_key": "shampun_kudryavii_metod_500ml",
       "platform": "wb",
@@ -173163,7 +173163,7 @@
       }
     },
     {
-      "snapshot_id": "repricer:ef3676e4030e5ae1",
+      "snapshot_id": "repricer:ad42db0d0dbb3098",
       "article_key": "shampun_protiv_perhoti_250ml",
       "normalized_article_key": "shampun_protiv_perhoti_250ml",
       "platform": "wb",
@@ -173667,7 +173667,7 @@
       }
     },
     {
-      "snapshot_id": "repricer:ef3676e4030e5ae1",
+      "snapshot_id": "repricer:ad42db0d0dbb3098",
       "article_key": "silk_hair_300ml",
       "normalized_article_key": "silk_hair_300ml",
       "platform": "wb",
@@ -174185,7 +174185,7 @@
       }
     },
     {
-      "snapshot_id": "repricer:ef3676e4030e5ae1",
+      "snapshot_id": "repricer:ad42db0d0dbb3098",
       "article_key": "sinergel_30ml_1_1",
       "normalized_article_key": "sinergel_30ml_1_1",
       "platform": "wb",
@@ -174669,7 +174669,7 @@
       }
     },
     {
-      "snapshot_id": "repricer:ef3676e4030e5ae1",
+      "snapshot_id": "repricer:ad42db0d0dbb3098",
       "article_key": "skrab_babl_gam_200ml",
       "normalized_article_key": "skrab_babl_gam_200ml",
       "platform": "wb",
@@ -175154,7 +175154,7 @@
       }
     },
     {
-      "snapshot_id": "repricer:ef3676e4030e5ae1",
+      "snapshot_id": "repricer:ad42db0d0dbb3098",
       "article_key": "solevoy_sprei_200ml",
       "normalized_article_key": "solevoy_sprei_200ml",
       "platform": "wb",
@@ -175672,7 +175672,7 @@
       }
     },
     {
-      "snapshot_id": "repricer:ef3676e4030e5ae1",
+      "snapshot_id": "repricer:ad42db0d0dbb3098",
       "article_key": "spicul_gel_mask_75ml",
       "normalized_article_key": "spicul_gel_mask_75ml",
       "platform": "wb",
@@ -176173,7 +176173,7 @@
       }
     },
     {
-      "snapshot_id": "repricer:ef3676e4030e5ae1",
+      "snapshot_id": "repricer:ad42db0d0dbb3098",
       "article_key": "spiculboost_30ml",
       "normalized_article_key": "spiculboost_30ml",
       "platform": "wb",
@@ -176700,7 +176700,7 @@
       }
     },
     {
-      "snapshot_id": "repricer:ef3676e4030e5ae1",
+      "snapshot_id": "repricer:ad42db0d0dbb3098",
       "article_key": "spray-syvorotka_pdrn_100ml",
       "normalized_article_key": "spray-syvorotka_pdrn_100ml",
       "platform": "wb",
@@ -177192,7 +177192,7 @@
       }
     },
     {
-      "snapshot_id": "repricer:ef3676e4030e5ae1",
+      "snapshot_id": "repricer:ad42db0d0dbb3098",
       "article_key": "sprei_buster_100ml",
       "normalized_article_key": "sprei_buster_100ml",
       "platform": "wb",
@@ -177710,7 +177710,7 @@
       }
     },
     {
-      "snapshot_id": "repricer:ef3676e4030e5ae1",
+      "snapshot_id": "repricer:ad42db0d0dbb3098",
       "article_key": "stik_ot_mozoley",
       "normalized_article_key": "stik_ot_mozoley",
       "platform": "wb",
@@ -178203,7 +178203,7 @@
       }
     },
     {
-      "snapshot_id": "repricer:ef3676e4030e5ae1",
+      "snapshot_id": "repricer:ad42db0d0dbb3098",
       "article_key": "strong_hair",
       "normalized_article_key": "strong_hair",
       "platform": "wb",
@@ -178709,7 +178709,7 @@
       }
     },
     {
-      "snapshot_id": "repricer:ef3676e4030e5ae1",
+      "snapshot_id": "repricer:ad42db0d0dbb3098",
       "article_key": "sustalit",
       "normalized_article_key": "sustalit",
       "platform": "wb",
@@ -179193,7 +179193,7 @@
       }
     },
     {
-      "snapshot_id": "repricer:ef3676e4030e5ae1",
+      "snapshot_id": "repricer:ad42db0d0dbb3098",
       "article_key": "sustalit_30ml_1_1",
       "normalized_article_key": "sustalit_30ml_1_1",
       "platform": "wb",
@@ -179683,7 +179683,7 @@
       }
     },
     {
-      "snapshot_id": "repricer:ef3676e4030e5ae1",
+      "snapshot_id": "repricer:ad42db0d0dbb3098",
       "article_key": "sustalit_75ml",
       "normalized_article_key": "sustalit_75ml",
       "platform": "wb",
@@ -180164,7 +180164,7 @@
       }
     },
     {
-      "snapshot_id": "repricer:ef3676e4030e5ae1",
+      "snapshot_id": "repricer:ad42db0d0dbb3098",
       "article_key": "synergel_60ml",
       "normalized_article_key": "synergel_60ml",
       "platform": "wb",
@@ -180640,7 +180640,7 @@
       }
     },
     {
-      "snapshot_id": "repricer:ef3676e4030e5ae1",
+      "snapshot_id": "repricer:ad42db0d0dbb3098",
       "article_key": "syvorotka_dlya_lica_30ml",
       "normalized_article_key": "syvorotka_dlya_lica_30ml",
       "platform": "wb",
@@ -181167,7 +181167,7 @@
       }
     },
     {
-      "snapshot_id": "repricer:ef3676e4030e5ae1",
+      "snapshot_id": "repricer:ad42db0d0dbb3098",
       "article_key": "syvorotka_dlya_lica_30ml_v2",
       "normalized_article_key": "syvorotka_dlya_lica_30ml_v2",
       "platform": "wb",
@@ -181665,7 +181665,7 @@
       }
     },
     {
-      "snapshot_id": "repricer:ef3676e4030e5ae1",
+      "snapshot_id": "repricer:ad42db0d0dbb3098",
       "article_key": "syvorotka_dlya_lica_intens_uvl_30ml",
       "normalized_article_key": "syvorotka_dlya_lica_intens_uvl_30ml",
       "platform": "wb",
@@ -182157,7 +182157,7 @@
       }
     },
     {
-      "snapshot_id": "repricer:ef3676e4030e5ae1",
+      "snapshot_id": "repricer:ad42db0d0dbb3098",
       "article_key": "syvorotka_dlya_rosta_6ml",
       "normalized_article_key": "syvorotka_dlya_rosta_6ml",
       "platform": "wb",
@@ -182638,7 +182638,7 @@
       }
     },
     {
-      "snapshot_id": "repricer:ef3676e4030e5ae1",
+      "snapshot_id": "repricer:ad42db0d0dbb3098",
       "article_key": "syvorotka_dlya_rosta_6ml_v2",
       "normalized_article_key": "syvorotka_dlya_rosta_6ml_v2",
       "platform": "wb",
@@ -183157,7 +183157,7 @@
       }
     },
     {
-      "snapshot_id": "repricer:ef3676e4030e5ae1",
+      "snapshot_id": "repricer:ad42db0d0dbb3098",
       "article_key": "syvorotka_guk_30ml",
       "normalized_article_key": "syvorotka_guk_30ml",
       "platform": "wb",
@@ -183662,7 +183662,7 @@
       }
     },
     {
-      "snapshot_id": "repricer:ef3676e4030e5ae1",
+      "snapshot_id": "repricer:ad42db0d0dbb3098",
       "article_key": "syvorotka_niacin_05_30ml",
       "normalized_article_key": "syvorotka_niacin_05_30ml",
       "platform": "wb",
@@ -184181,7 +184181,7 @@
       }
     },
     {
-      "snapshot_id": "repricer:ef3676e4030e5ae1",
+      "snapshot_id": "repricer:ad42db0d0dbb3098",
       "article_key": "syvorotka_vit_c_30ml",
       "normalized_article_key": "syvorotka_vit_c_30ml",
       "platform": "wb",
@@ -184668,7 +184668,7 @@
       }
     },
     {
-      "snapshot_id": "repricer:ef3676e4030e5ae1",
+      "snapshot_id": "repricer:ad42db0d0dbb3098",
       "article_key": "t34poten10caps",
       "normalized_article_key": "t34poten10caps",
       "platform": "wb",
@@ -185154,7 +185154,7 @@
       }
     },
     {
-      "snapshot_id": "repricer:ef3676e4030e5ae1",
+      "snapshot_id": "repricer:ad42db0d0dbb3098",
       "article_key": "telomeras_60caps",
       "normalized_article_key": "telomeras_60caps",
       "platform": "wb",
@@ -185644,7 +185644,7 @@
       }
     },
     {
-      "snapshot_id": "repricer:ef3676e4030e5ae1",
+      "snapshot_id": "repricer:ad42db0d0dbb3098",
       "article_key": "termo_maslo_100ml",
       "normalized_article_key": "termo_maslo_100ml",
       "platform": "wb",
@@ -186134,7 +186134,7 @@
       }
     },
     {
-      "snapshot_id": "repricer:ef3676e4030e5ae1",
+      "snapshot_id": "repricer:ad42db0d0dbb3098",
       "article_key": "termo_sprei_200ml",
       "normalized_article_key": "termo_sprei_200ml",
       "platform": "wb",
@@ -186621,7 +186621,7 @@
       }
     },
     {
-      "snapshot_id": "repricer:ef3676e4030e5ae1",
+      "snapshot_id": "repricer:ad42db0d0dbb3098",
       "article_key": "termo_sprei_200ml_v2",
       "normalized_article_key": "termo_sprei_200ml_v2",
       "platform": "wb",
@@ -187116,7 +187116,7 @@
       }
     },
     {
-      "snapshot_id": "repricer:ef3676e4030e5ae1",
+      "snapshot_id": "repricer:ad42db0d0dbb3098",
       "article_key": "tonik_dlya_lica_200ml",
       "normalized_article_key": "tonik_dlya_lica_200ml",
       "platform": "wb",
@@ -187622,7 +187622,7 @@
       }
     },
     {
-      "snapshot_id": "repricer:ef3676e4030e5ae1",
+      "snapshot_id": "repricer:ad42db0d0dbb3098",
       "article_key": "trezax",
       "normalized_article_key": "trezax",
       "platform": "wb",
@@ -188112,7 +188112,7 @@
       }
     },
     {
-      "snapshot_id": "repricer:ef3676e4030e5ae1",
+      "snapshot_id": "repricer:ad42db0d0dbb3098",
       "article_key": "trezor",
       "normalized_article_key": "trezor",
       "platform": "wb",
@@ -188598,7 +188598,7 @@
       }
     },
     {
-      "snapshot_id": "repricer:ef3676e4030e5ae1",
+      "snapshot_id": "repricer:ad42db0d0dbb3098",
       "article_key": "uhovit",
       "normalized_article_key": "uhovit",
       "platform": "wb",
@@ -189088,7 +189088,7 @@
       }
     },
     {
-      "snapshot_id": "repricer:ef3676e4030e5ae1",
+      "snapshot_id": "repricer:ad42db0d0dbb3098",
       "article_key": "urinofix",
       "normalized_article_key": "urinofix",
       "platform": "wb",
@@ -189575,7 +189575,7 @@
       }
     },
     {
-      "snapshot_id": "repricer:ef3676e4030e5ae1",
+      "snapshot_id": "repricer:ad42db0d0dbb3098",
       "article_key": "urofol",
       "normalized_article_key": "urofol",
       "platform": "wb",
@@ -190066,7 +190066,7 @@
       }
     },
     {
-      "snapshot_id": "repricer:ef3676e4030e5ae1",
+      "snapshot_id": "repricer:ad42db0d0dbb3098",
       "article_key": "urolgan",
       "normalized_article_key": "urolgan",
       "platform": "wb",
@@ -190556,7 +190556,7 @@
       }
     },
     {
-      "snapshot_id": "repricer:ef3676e4030e5ae1",
+      "snapshot_id": "repricer:ad42db0d0dbb3098",
       "article_key": "uromax",
       "normalized_article_key": "uromax",
       "platform": "wb",
@@ -191043,7 +191043,7 @@
       }
     },
     {
-      "snapshot_id": "repricer:ef3676e4030e5ae1",
+      "snapshot_id": "repricer:ad42db0d0dbb3098",
       "article_key": "uromax_1_1",
       "normalized_article_key": "uromax_1_1",
       "platform": "wb",
@@ -191524,7 +191524,7 @@
       }
     },
     {
-      "snapshot_id": "repricer:ef3676e4030e5ae1",
+      "snapshot_id": "repricer:ad42db0d0dbb3098",
       "article_key": "varifit",
       "normalized_article_key": "varifit",
       "platform": "wb",
@@ -192011,7 +192011,7 @@
       }
     },
     {
-      "snapshot_id": "repricer:ef3676e4030e5ae1",
+      "snapshot_id": "repricer:ad42db0d0dbb3098",
       "article_key": "varifit_1_1",
       "normalized_article_key": "varifit_1_1",
       "platform": "wb",
@@ -192494,7 +192494,7 @@
       }
     },
     {
-      "snapshot_id": "repricer:ef3676e4030e5ae1",
+      "snapshot_id": "repricer:ad42db0d0dbb3098",
       "article_key": "vetonus",
       "normalized_article_key": "vetonus",
       "platform": "wb",
@@ -192984,7 +192984,7 @@
       }
     },
     {
-      "snapshot_id": "repricer:ef3676e4030e5ae1",
+      "snapshot_id": "repricer:ad42db0d0dbb3098",
       "article_key": "vetonus_1_1",
       "normalized_article_key": "vetonus_1_1",
       "platform": "wb",
@@ -193466,7 +193466,7 @@
       }
     },
     {
-      "snapshot_id": "repricer:ef3676e4030e5ae1",
+      "snapshot_id": "repricer:ad42db0d0dbb3098",
       "article_key": "vetonus_100ml",
       "normalized_article_key": "vetonus_100ml",
       "platform": "wb",
@@ -193952,7 +193952,7 @@
       }
     },
     {
-      "snapshot_id": "repricer:ef3676e4030e5ae1",
+      "snapshot_id": "repricer:ad42db0d0dbb3098",
       "article_key": "vosk_stik_15ml",
       "normalized_article_key": "vosk_stik_15ml",
       "platform": "wb",
@@ -194447,7 +194447,7 @@
       }
     },
     {
-      "snapshot_id": "repricer:ef3676e4030e5ae1",
+      "snapshot_id": "repricer:ad42db0d0dbb3098",
       "article_key": "wbalkotoxic",
       "normalized_article_key": "wbalkotoxic",
       "platform": "wb",
@@ -194933,7 +194933,7 @@
       }
     },
     {
-      "snapshot_id": "repricer:ef3676e4030e5ae1",
+      "snapshot_id": "repricer:ad42db0d0dbb3098",
       "article_key": "wbbiotrin",
       "normalized_article_key": "wbbiotrin",
       "platform": "wb",
@@ -195424,7 +195424,7 @@
       }
     },
     {
-      "snapshot_id": "repricer:ef3676e4030e5ae1",
+      "snapshot_id": "repricer:ad42db0d0dbb3098",
       "article_key": "wbbiotrin_1_1",
       "normalized_article_key": "wbbiotrin_1_1",
       "platform": "wb",
@@ -195908,7 +195908,7 @@
       }
     },
     {
-      "snapshot_id": "repricer:ef3676e4030e5ae1",
+      "snapshot_id": "repricer:ad42db0d0dbb3098",
       "article_key": "wbbiotrin_1_1_1",
       "normalized_article_key": "wbbiotrin_1_1_1",
       "platform": "wb",
@@ -196387,7 +196387,7 @@
       }
     },
     {
-      "snapshot_id": "repricer:ef3676e4030e5ae1",
+      "snapshot_id": "repricer:ad42db0d0dbb3098",
       "article_key": "wbgetsize",
       "normalized_article_key": "wbgetsize",
       "platform": "wb",
@@ -196883,7 +196883,7 @@
       }
     },
     {
-      "snapshot_id": "repricer:ef3676e4030e5ae1",
+      "snapshot_id": "repricer:ad42db0d0dbb3098",
       "article_key": "wbgetsize1gel2",
       "normalized_article_key": "wbgetsize1gel2",
       "platform": "wb",
@@ -197369,7 +197369,7 @@
       }
     },
     {
-      "snapshot_id": "repricer:ef3676e4030e5ae1",
+      "snapshot_id": "repricer:ad42db0d0dbb3098",
       "article_key": "wbgetsizegel",
       "normalized_article_key": "wbgetsizegel",
       "platform": "wb",
@@ -197859,7 +197859,7 @@
       }
     },
     {
-      "snapshot_id": "repricer:ef3676e4030e5ae1",
+      "snapshot_id": "repricer:ad42db0d0dbb3098",
       "article_key": "wbmicardinforte",
       "normalized_article_key": "wbmicardinforte",
       "platform": "wb",
@@ -198352,7 +198352,7 @@
       }
     },
     {
-      "snapshot_id": "repricer:ef3676e4030e5ae1",
+      "snapshot_id": "repricer:ad42db0d0dbb3098",
       "article_key": "wbmicelix",
       "normalized_article_key": "wbmicelix",
       "platform": "wb",
@@ -198842,7 +198842,7 @@
       }
     },
     {
-      "snapshot_id": "repricer:ef3676e4030e5ae1",
+      "snapshot_id": "repricer:ad42db0d0dbb3098",
       "article_key": "wbmicelix_1_1",
       "normalized_article_key": "wbmicelix_1_1",
       "platform": "wb",
@@ -199326,7 +199326,7 @@
       }
     },
     {
-      "snapshot_id": "repricer:ef3676e4030e5ae1",
+      "snapshot_id": "repricer:ad42db0d0dbb3098",
       "article_key": "wbneomax",
       "normalized_article_key": "wbneomax",
       "platform": "wb",
@@ -199813,7 +199813,7 @@
       }
     },
     {
-      "snapshot_id": "repricer:ef3676e4030e5ae1",
+      "snapshot_id": "repricer:ad42db0d0dbb3098",
       "article_key": "wbneomaxblue",
       "normalized_article_key": "wbneomaxblue",
       "platform": "wb",
@@ -200300,7 +200300,7 @@
       }
     },
     {
-      "snapshot_id": "repricer:ef3676e4030e5ae1",
+      "snapshot_id": "repricer:ad42db0d0dbb3098",
       "article_key": "wboptitrin",
       "normalized_article_key": "wboptitrin",
       "platform": "wb",
@@ -200791,7 +200791,7 @@
       }
     },
     {
-      "snapshot_id": "repricer:ef3676e4030e5ae1",
+      "snapshot_id": "repricer:ad42db0d0dbb3098",
       "article_key": "wbpantogor",
       "normalized_article_key": "wbpantogor",
       "platform": "wb",
@@ -201282,7 +201282,7 @@
       }
     },
     {
-      "snapshot_id": "repricer:ef3676e4030e5ae1",
+      "snapshot_id": "repricer:ad42db0d0dbb3098",
       "article_key": "wbpantogor_1_1",
       "normalized_article_key": "wbpantogor_1_1",
       "platform": "wb",
@@ -201771,7 +201771,7 @@
       }
     },
     {
-      "snapshot_id": "repricer:ef3676e4030e5ae1",
+      "snapshot_id": "repricer:ad42db0d0dbb3098",
       "article_key": "wbsinergel",
       "normalized_article_key": "wbsinergel",
       "platform": "wb",
@@ -202258,7 +202258,7 @@
       }
     },
     {
-      "snapshot_id": "repricer:ef3676e4030e5ae1",
+      "snapshot_id": "repricer:ad42db0d0dbb3098",
       "article_key": "wbvaranga",
       "normalized_article_key": "wbvaranga",
       "platform": "wb",
@@ -202743,7 +202743,7 @@
       }
     },
     {
-      "snapshot_id": "repricer:ef3676e4030e5ae1",
+      "snapshot_id": "repricer:ad42db0d0dbb3098",
       "article_key": "wbvaritox",
       "normalized_article_key": "wbvaritox",
       "platform": "wb",
@@ -203223,7 +203223,7 @@
       }
     },
     {
-      "snapshot_id": "repricer:ef3676e4030e5ae1",
+      "snapshot_id": "repricer:ad42db0d0dbb3098",
       "article_key": "wowglam",
       "normalized_article_key": "wowglam",
       "platform": "wb",
@@ -203713,7 +203713,7 @@
       }
     },
     {
-      "snapshot_id": "repricer:ef3676e4030e5ae1",
+      "snapshot_id": "repricer:ad42db0d0dbb3098",
       "article_key": "yagodniy_spas",
       "normalized_article_key": "yagodniy_spas",
       "platform": "wb",
@@ -204202,7 +204202,7 @@
       }
     },
     {
-      "snapshot_id": "repricer:ef3676e4030e5ae1",
+      "snapshot_id": "repricer:ad42db0d0dbb3098",
       "article_key": "yagodniy_spas_1_1",
       "normalized_article_key": "yagodniy_spas_1_1",
       "platform": "wb",
@@ -204691,7 +204691,7 @@
       }
     },
     {
-      "snapshot_id": "repricer:ef3676e4030e5ae1",
+      "snapshot_id": "repricer:ad42db0d0dbb3098",
       "article_key": "т-34_bad_60caps",
       "normalized_article_key": "т-34_bad_60caps",
       "platform": "wb",

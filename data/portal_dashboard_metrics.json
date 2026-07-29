@@ -1,7 +1,7 @@
 {
   "schema": "portal-dashboard-metrics-v1",
   "generatedAt": "2026-07-29T07:56:02.826Z",
-  "snapshot_id": "dashboard:0e8ae10601a18a7b",
+  "snapshot_id": "dashboard:caa16199167fc14f",
   "metric_registry_version": "2026-06-20.1",
   "indicator_policy_version": "2026-06-20.1",
   "cutoffDate": "2026-07-28",
@@ -17,7 +17,7 @@
     },
     "ads_summary.json": {
       "exists": true,
-      "sha256": "f01420c6034b55e12b34c8157ee22d911b2c37cba7625db88df22948fa9bf472"
+      "sha256": "c69d6e9ae1fd1f89b75e84d00e1bb7a2f6fb04516e1b03f4c0a1a1d9dad3ea3d"
     },
     "portal_metric_registry.json": {
       "exists": true,
@@ -459,8 +459,8 @@
       },
       "period_from": "2026-07-01",
       "period_to": "2026-07-28",
-      "raw_value": 0.800875,
-      "displayed_value": 80.09,
+      "raw_value": 0.22974,
+      "displayed_value": 22.97,
       "transforms": [
         "ad_spend / attributed_revenue"
       ],
@@ -473,8 +473,8 @@
       "confidence": "medium",
       "drilldown": [
         {
-          "spend": 19558049,
-          "attributedRevenue": 24420859
+          "spend": 19733202.029999997,
+          "attributedRevenue": 85893538
         }
       ]
     },

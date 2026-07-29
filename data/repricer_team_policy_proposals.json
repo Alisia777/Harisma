@@ -1,7 +1,7 @@
 {
   "schema": "repricer-team-policy-proposals-v1",
-  "generatedAt": "2026-07-29T08:11:37.659Z",
-  "sourceSnapshotId": "repricer:ef3676e4030e5ae1",
+  "generatedAt": "2026-07-29T11:01:06.195Z",
+  "sourceSnapshotId": "repricer:ad42db0d0dbb3098",
   "sourceFreshnessReferenceDate": "2026-07-29",
   "economicsPolicyVersion": "2026-07-28.5-automation-outcomes-v7",
   "status": "PENDING_ROP",

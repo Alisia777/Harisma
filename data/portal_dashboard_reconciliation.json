@@ -1,10 +1,10 @@
 {
   "schema": "portal-dashboard-reconciliation-v1",
   "generatedAt": "2026-07-29T07:56:02.826Z",
-  "snapshot_id": "dashboard:0e8ae10601a18a7b",
+  "snapshot_id": "dashboard:caa16199167fc14f",
   "status": "warning",
   "publish_allowed": true,
-  "business_fingerprint": "ca6a90775874f319cb0aeda567d0e01f84ed59c411a998f46e3858b506679ffa",
+  "business_fingerprint": "67232acb2456b5650db68337955ff380cbdb0a883c927fe2d0c85c1f70b81d5f",
   "blockingReasons": [],
   "warnings": [
     "extra marketplace facts are behind 2026-07-28: goldapple=2026-07-27, letu=2026-07-27, megamarket=2026-07-27, magnit=2026-07-08",

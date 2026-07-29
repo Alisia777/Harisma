@@ -1,9 +1,9 @@
 {
   "schema": "repricer-shadow-report-v1",
-  "generatedAt": "2026-07-29T08:11:37.756Z",
+  "generatedAt": "2026-07-29T11:01:06.250Z",
   "mode": "legacy_shadow",
   "cutover_allowed": false,
-  "source_snapshot_id": "repricer:ef3676e4030e5ae1",
+  "source_snapshot_id": "repricer:ad42db0d0dbb3098",
   "thresholds": {
     "price_tolerance_rub": 1,
     "min_canonical_coverage": 0.95,

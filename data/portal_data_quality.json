@@ -1,5 +1,5 @@
 {
-  "generatedAt": "2026-07-29T08:14:01.538Z",
+  "generatedAt": "2026-07-29T11:01:07.193Z",
   "status": "critical",
   "summary": {
     "issueCount": 89,
@@ -75,7 +75,7 @@
     {
       "dataset": "ads_summary",
       "asOfDate": "2026-07-28",
-      "generatedAt": "2026-07-29T08:10:01.720Z",
+      "generatedAt": "2026-07-29T09:40:59.317Z",
       "rows": 8,
       "referenceDate": "2026-07-29",
       "lagDays": 1,

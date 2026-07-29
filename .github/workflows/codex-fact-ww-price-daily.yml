@@ -1,0 +1,143 @@
+name: Daily-window encrypted WW price analysis
+
+on:
+  issues:
+    types: [opened]
+
+permissions:
+  contents: read
+  issues: write
+
+concurrency:
+  group: codex-fact-ww-price-daily-${{ github.event.issue.number }}
+  cancel-in-progress: false
+
+jobs:
+  analyze:
+    if: github.event.issue.title == '[codex] FACT WW daily price analysis 2026-07-29'
+    runs-on: ubuntu-latest
+    timeout-minutes: 25
+    env:
+      WB_STATISTICS_TOKEN: ${{ secrets.ALTEA_WB_PROMOTION_TOKEN }}
+      GH_TOKEN: ${{ github.token }}
+      RESULT_JSON: /tmp/fact_ww_price_daily.json
+    steps:
+      - name: Publish run id
+        run: gh issue comment "${{ github.event.issue.number }}" --repo "${{ github.repository }}" --body "daily-price-started run-id=${{ github.run_id }}"
+
+      - uses: actions/checkout@v4
+        with:
+          ref: codex/fact-ww-export-20260729
+
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.12'
+
+      - name: Fetch daily orders and compare recent prices
+        id: analyze
+        shell: bash
+        run: |
+          python <<'PY'
+          import json, os, time, urllib.request, urllib.parse, urllib.error
+          from collections import Counter, defaultdict
+          from datetime import datetime, timezone
+
+          token=os.environ['WB_STATISTICS_TOKEN'].strip()
+          endpoint='https://statistics-api.wildberries.ru/api/v1/supplier/orders'
+          baseline_days=['2026-07-20','2026-07-21','2026-07-22','2026-07-23','2026-07-24']
+          recent_days=['2026-07-25','2026-07-26','2026-07-27','2026-07-28','2026-07-29']
+          last_request=0.0
+
+          def wait_slot():
+              global last_request
+              elapsed=time.monotonic()-last_request
+              if last_request and elapsed<66: time.sleep(66-elapsed)
+              last_request=time.monotonic()
+          def fetch_day(day):
+              global last_request
+              params=urllib.parse.urlencode({'dateFrom':day,'flag':1})
+              for attempt in range(1,10):
+                  wait_slot()
+                  req=urllib.request.Request(endpoint+'?'+params,headers={'Authorization':token,'Accept':'application/json','User-Agent':'Harisma-FACT-WW-price-daily/1.0'})
+                  try:
+                      with urllib.request.urlopen(req,timeout=300) as resp:
+                          data=json.loads(resp.read().decode() or '[]')
+                          if not isinstance(data,list): raise RuntimeError('Expected list')
+                          return data
+                  except urllib.error.HTTPError as e:
+                      text=e.read().decode(errors='replace')
+                      if e.code==429 and attempt<9:
+                          retry=e.headers.get('retry-after') or e.headers.get('x-ratelimit-retry') or '66'
+                          try: delay=max(66,float(retry)+3)
+                          except: delay=66
+                          print(json.dumps({'day':day,'rateLimit':True,'attempt':attempt,'delay':delay,'body':text[:250]},ensure_ascii=False),flush=True)
+                          time.sleep(delay);last_request=time.monotonic();continue
+                      raise RuntimeError(f'Orders {day} HTTP {e.code}: {text[:1200]}')
+              raise RuntimeError(f'Retries exhausted for {day}')
+          def num(v):
+              try:return float(str(v or 0).replace(' ','').replace(',','.'))
+              except:return 0.0
+
+          baseline=[];recent=[];diagnostics=[]
+          for day in baseline_days+recent_days:
+              rows=fetch_day(day)
+              for row in rows: row['_queryDay']=day
+              (baseline if day in baseline_days else recent).extend(rows)
+              diagnostics.append({'day':day,'rows':len(rows)})
+              print(json.dumps(diagnostics[-1],ensure_ascii=False),flush=True)
+
+          base_by_nm=defaultdict(list);recent_by_nm=defaultdict(list)
+          for row in baseline:
+              if row.get('nmId'):base_by_nm[str(row['nmId'])].append(row)
+          for row in recent:
+              if row.get('nmId'):recent_by_nm[str(row['nmId'])].append(row)
+
+          candidates=[];groups=[]
+          for nm,items in recent_by_nm.items():
+              base_items=base_by_nm.get(nm,[])
+              base_prices=[round(num(x.get('priceWithDisc')),2) for x in base_items if num(x.get('priceWithDisc'))>0]
+              base_discounts=[round(num(x.get('discountPercent')),2) for x in base_items]
+              if not base_prices: continue
+              price_counts=Counter(base_prices);baseline_price=max(price_counts.items(),key=lambda kv:(kv[1],kv[0]))[0]
+              disc_counts=Counter(base_discounts);baseline_discount=max(disc_counts.items(),key=lambda kv:(kv[1],kv[0]))[0]
+              found=[]
+              for row in items:
+                  price=round(num(row.get('priceWithDisc')),2)
+                  discount=round(num(row.get('discountPercent')),2)
+                  if price<=0 or baseline_price<=0: continue
+                  shift=(1-price/baseline_price)*100
+                  disc_delta=discount-baseline_discount
+                  # Broad band around 3%; retain exact discount delta diagnostics too.
+                  if 2.3<=shift<=3.7 or 2.5<=disc_delta<=3.5:
+                      obj={k:row.get(k) for k in ['_queryDay','date','lastChangeDate','nmId','supplierArticle','brand','subject','totalPrice','discountPercent','priceWithDisc','finishedPrice','spp','isCancel','cancelDate','srid','gNumber','barcode']}
+                      obj.update({'baselinePriceWithDisc':baseline_price,'baselinePriceCount':price_counts[baseline_price],'baselineDiscountPercent':baseline_discount,'baselineDiscountCount':disc_counts[baseline_discount],'priceShiftPercent':shift,'discountDeltaPp':disc_delta})
+                      found.append(obj);candidates.append(obj)
+              if found:
+                  groups.append({'nmId':nm,'supplierArticle':next((x.get('supplierArticle') for x in items if x.get('supplierArticle')),''),'brand':next((x.get('brand') for x in items if x.get('brand')),''),'subject':next((x.get('subject') for x in items if x.get('subject')),''),'baselinePriceWithDisc':baseline_price,'baselinePriceCount':price_counts[baseline_price],'baselineDiscountPercent':baseline_discount,'candidateRows':len(found),'candidatePrices':sorted(set(round(num(x.get('priceWithDisc')),2) for x in found)),'candidateDiscounts':sorted(set(round(num(x.get('discountPercent')),2) for x in found)),'latestCandidateAt':max(str(x.get('date') or '') for x in found),'srids':[str(x.get('srid') or '') for x in found if x.get('srid')]})
+
+          groups.sort(key=lambda x:(x['latestCandidateAt'],-x['candidateRows']),reverse=True)
+          candidates.sort(key=lambda x:str(x.get('date') or ''),reverse=True)
+          result={'generatedAt':datetime.now(timezone.utc).isoformat(),'baselineDays':baseline_days,'recentDays':recent_days,'dailyDiagnostics':diagnostics,'diagnostics':{'baselineRows':len(baseline),'recentRows':len(recent),'baselineNmIds':len(base_by_nm),'recentNmIds':len(recent_by_nm),'candidateNmIds':len(groups),'candidateRows':len(candidates)},'candidateGroups':groups,'candidateRows':candidates,'recentRows':recent}
+          with open(os.environ['RESULT_JSON'],'w',encoding='utf-8') as f:json.dump(result,f,ensure_ascii=False,indent=2)
+          with open(os.environ['GITHUB_OUTPUT'],'a') as f:f.write(f"candidate_nmids={len(groups)}\ncandidate_rows={len(candidates)}\n")
+          print(json.dumps(result['diagnostics'],ensure_ascii=False),flush=True)
+          PY
+
+      - name: Encrypt result
+        shell: bash
+        run: |
+          openssl rand -hex 32 > /tmp/pass.txt
+          openssl enc -aes-256-cbc -salt -pbkdf2 -iter 200000 -in "$RESULT_JSON" -out /tmp/result.enc -pass file:/tmp/pass.txt
+          openssl pkeyutl -encrypt -pubin -inkey scripts/codex-fact-ww-public.pem -in /tmp/pass.txt -out /tmp/pass.enc -pkeyopt rsa_padding_mode:oaep -pkeyopt rsa_oaep_md:sha256
+          mkdir -p /tmp/fact-ww-price-daily
+          cp /tmp/result.enc /tmp/fact-ww-price-daily/result.enc
+          cp /tmp/pass.enc /tmp/fact-ww-price-daily/key.enc
+
+      - uses: actions/upload-artifact@v4
+        with:
+          name: fact-ww-price-daily-${{ github.run_id }}
+          path: /tmp/fact-ww-price-daily
+          retention-days: 1
+
+      - name: Publish completion
+        run: gh issue comment "${{ github.event.issue.number }}" --repo "${{ github.repository }}" --body "daily-price-completed run-id=${{ github.run_id }} candidate-nmids=${{ steps.analyze.outputs.candidate_nmids }} candidate-rows=${{ steps.analyze.outputs.candidate_rows }}"

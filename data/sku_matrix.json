@@ -1,11 +1,11 @@
 {
   "schema": "portal-sku-matrix-v1",
-  "generatedAt": "2026-07-28T08:50:35.171Z",
+  "generatedAt": "2026-07-29T11:16:10.716Z",
   "source": {
     "skus": 209,
     "aliases": 351,
     "ignored": 0,
-    "dataQualityGeneratedAt": "2026-07-28T08:50:35.112Z"
+    "dataQualityGeneratedAt": "2026-07-29T11:16:10.655Z"
   },
   "summary": {
     "skuCount": 209,
@@ -18,11 +18,11 @@
     "missingOwnerCount": 0,
     "planNeedsAssignmentCount": 0,
     "planAssignedCount": 96,
-    "issueCount": 82,
-    "infoIssueCount": 5,
+    "issueCount": 84,
+    "infoIssueCount": 6,
     "problemStateCounts": {
-      "ok": 168,
-      "has_critical_issue": 41
+      "ok": 167,
+      "has_critical_issue": 42
     }
   },
   "problemStates": {
@@ -6383,10 +6383,18 @@
       "problemState": "has_critical_issue",
       "problemLabel": "Есть критичная ошибка",
       "problemTone": "danger",
-      "issueCount": 1,
+      "issueCount": 2,
       "infoIssueCount": 0,
-      "criticalIssueCount": 1,
+      "criticalIssueCount": 2,
       "issues": [
+        {
+          "severity": "critical",
+          "type": "order_no_stock_need",
+          "platform": "ya",
+          "revenue": 0,
+          "units": 0,
+          "message": "По складу нет остатка, но есть продажи/потребность"
+        },
         {
           "severity": "critical",
           "type": "order_no_stock_need",
@@ -16333,15 +16341,24 @@
         }
       ],
       "problemStates": [
-        "ok"
+        "has_critical_issue"
       ],
-      "problemState": "ok",
-      "problemLabel": "В матрице",
-      "problemTone": "ok",
-      "issueCount": 0,
+      "problemState": "has_critical_issue",
+      "problemLabel": "Есть критичная ошибка",
+      "problemTone": "danger",
+      "issueCount": 1,
       "infoIssueCount": 0,
-      "criticalIssueCount": 0,
-      "issues": []
+      "criticalIssueCount": 1,
+      "issues": [
+        {
+          "severity": "critical",
+          "type": "order_no_stock_need",
+          "platform": "ya",
+          "revenue": 0,
+          "units": 0,
+          "message": "По складу нет остатка, но есть продажи/потребность"
+        }
+      ]
     },
     {
       "articleKey": "wbalkotoxic",

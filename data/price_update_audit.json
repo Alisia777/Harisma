@@ -1,9 +1,9 @@
 {
   "schema": "portal-price-update-audit-v1",
-  "generatedAt": "2026-07-28T08:43:42.860Z",
+  "generatedAt": "2026-07-29T08:11:07.524Z",
   "status": "ok",
   "publishAllowed": true,
-  "expectedDate": "2026-07-27",
+  "expectedDate": "2026-07-28",
   "thresholds": {
     "maxSourceLagDays": 3,
     "maxPlatformGapDays": 3,
@@ -12,24 +12,24 @@
   "blockingReasons": [],
   "warnings": [],
   "previous": {
-    "latestFactDate": "2026-07-27",
+    "latestFactDate": "2026-07-28",
     "byPlatform": {
       "ozon": {
         "rowCount": 179,
         "pricedRowCount": 179,
         "clientPricedRowCount": 179,
-        "latestFactDate": "2026-07-27",
-        "latestClientFactDate": "2026-07-27",
+        "latestFactDate": "2026-07-28",
+        "latestClientFactDate": "2026-07-28",
         "latestFactSkuCount": 161,
-        "baselineMedianSkuCount": 41,
-        "latestCoverageRatio": 3.9268
+        "baselineMedianSkuCount": 42,
+        "latestCoverageRatio": 3.8333
       },
       "wb": {
         "rowCount": 199,
         "pricedRowCount": 199,
         "clientPricedRowCount": 199,
-        "latestFactDate": "2026-07-27",
-        "latestClientFactDate": "2026-07-27",
+        "latestFactDate": "2026-07-28",
+        "latestClientFactDate": "2026-07-28",
         "latestFactSkuCount": 197,
         "baselineMedianSkuCount": 42,
         "latestCoverageRatio": 4.6905
@@ -38,8 +38,8 @@
         "rowCount": 143,
         "pricedRowCount": 143,
         "clientPricedRowCount": 143,
-        "latestFactDate": "2026-07-27",
-        "latestClientFactDate": "2026-07-27",
+        "latestFactDate": "2026-07-28",
+        "latestClientFactDate": "2026-07-28",
         "latestFactSkuCount": 142,
         "baselineMedianSkuCount": 24,
         "latestCoverageRatio": 5.9167
@@ -67,24 +67,24 @@
     }
   },
   "sourceCandidate": {
-    "latestFactDate": "2026-07-28",
+    "latestFactDate": "2026-07-29",
     "byPlatform": {
       "ozon": {
         "rowCount": 178,
         "pricedRowCount": 178,
         "clientPricedRowCount": 178,
-        "latestFactDate": "2026-07-28",
-        "latestClientFactDate": "2026-07-28",
-        "latestFactSkuCount": 161,
+        "latestFactDate": "2026-07-29",
+        "latestClientFactDate": "2026-07-29",
+        "latestFactSkuCount": 159,
         "baselineMedianSkuCount": 116,
-        "latestCoverageRatio": 1.3879
+        "latestCoverageRatio": 1.3707
       },
       "wb": {
         "rowCount": 198,
         "pricedRowCount": 198,
         "clientPricedRowCount": 198,
-        "latestFactDate": "2026-07-28",
-        "latestClientFactDate": "2026-07-28",
+        "latestFactDate": "2026-07-29",
+        "latestClientFactDate": "2026-07-29",
         "latestFactSkuCount": 197,
         "baselineMedianSkuCount": 100,
         "latestCoverageRatio": 1.97
@@ -93,8 +93,8 @@
         "rowCount": 142,
         "pricedRowCount": 142,
         "clientPricedRowCount": 142,
-        "latestFactDate": "2026-07-28",
-        "latestClientFactDate": "2026-07-28",
+        "latestFactDate": "2026-07-29",
+        "latestClientFactDate": "2026-07-29",
         "latestFactSkuCount": 142,
         "baselineMedianSkuCount": 142,
         "latestCoverageRatio": 1
@@ -102,37 +102,37 @@
     }
   },
   "activatedCandidate": {
-    "latestFactDate": "2026-07-28",
+    "latestFactDate": "2026-07-29",
     "byPlatform": {
       "ozon": {
         "rowCount": 179,
         "pricedRowCount": 179,
         "clientPricedRowCount": 179,
-        "latestFactDate": "2026-07-28",
-        "latestClientFactDate": "2026-07-28",
-        "latestFactSkuCount": 161,
+        "latestFactDate": "2026-07-29",
+        "latestClientFactDate": "2026-07-29",
+        "latestFactSkuCount": 159,
         "baselineMedianSkuCount": 42,
-        "latestCoverageRatio": 3.8333
+        "latestCoverageRatio": 3.7857
       },
       "wb": {
         "rowCount": 199,
         "pricedRowCount": 199,
         "clientPricedRowCount": 199,
-        "latestFactDate": "2026-07-28",
-        "latestClientFactDate": "2026-07-28",
+        "latestFactDate": "2026-07-29",
+        "latestClientFactDate": "2026-07-29",
         "latestFactSkuCount": 197,
-        "baselineMedianSkuCount": 42,
-        "latestCoverageRatio": 4.6905
+        "baselineMedianSkuCount": 43,
+        "latestCoverageRatio": 4.5814
       },
       "ym": {
         "rowCount": 143,
         "pricedRowCount": 143,
         "clientPricedRowCount": 143,
-        "latestFactDate": "2026-07-28",
-        "latestClientFactDate": "2026-07-28",
+        "latestFactDate": "2026-07-29",
+        "latestClientFactDate": "2026-07-29",
         "latestFactSkuCount": 142,
-        "baselineMedianSkuCount": 24,
-        "latestCoverageRatio": 5.9167
+        "baselineMedianSkuCount": 140,
+        "latestCoverageRatio": 1.0143
       },
       "magnit": {
         "rowCount": 36,
@@ -157,37 +157,37 @@
     }
   },
   "derivedPrices": {
-    "latestFactDate": "2026-07-28",
+    "latestFactDate": "2026-07-29",
     "byPlatform": {
       "wb": {
         "rowCount": 203,
         "pricedRowCount": 200,
         "clientPricedRowCount": 200,
-        "latestFactDate": "2026-07-28",
-        "latestClientFactDate": "2026-07-28",
+        "latestFactDate": "2026-07-29",
+        "latestClientFactDate": "2026-07-29",
         "latestFactSkuCount": 197,
-        "baselineMedianSkuCount": 42,
-        "latestCoverageRatio": 4.6905
+        "baselineMedianSkuCount": 43,
+        "latestCoverageRatio": 4.5814
       },
       "ozon": {
         "rowCount": 211,
         "pricedRowCount": 202,
         "clientPricedRowCount": 210,
-        "latestFactDate": "2026-07-28",
-        "latestClientFactDate": "2026-07-28",
-        "latestFactSkuCount": 161,
+        "latestFactDate": "2026-07-29",
+        "latestClientFactDate": "2026-07-29",
+        "latestFactSkuCount": 159,
         "baselineMedianSkuCount": 42,
-        "latestCoverageRatio": 3.8333
+        "latestCoverageRatio": 3.7857
       },
       "ym": {
         "rowCount": 148,
         "pricedRowCount": 143,
         "clientPricedRowCount": 143,
-        "latestFactDate": "2026-07-28",
-        "latestClientFactDate": "2026-07-28",
+        "latestFactDate": "2026-07-29",
+        "latestClientFactDate": "2026-07-29",
         "latestFactSkuCount": 142,
-        "baselineMedianSkuCount": 24,
-        "latestCoverageRatio": 5.9167
+        "baselineMedianSkuCount": 140,
+        "latestCoverageRatio": 1.0143
       }
     }
   },
@@ -195,7 +195,7 @@
     "previousRowCount": 218,
     "candidateRowCount": 218
   },
-  "generationId": "prices-c9e59e8f5b0671478916",
+  "generationId": "prices-42a6a3a2b9522b1c3b95",
   "source": {
     "kind": "local",
     "mtime": "2026-06-22T06:00:03.429Z",

@@ -1,12 +1,12 @@
 {
-  "generatedAt": "2026-07-28T08:43:19.404Z",
+  "generatedAt": "2026-07-29T08:10:40.806Z",
   "sourceUrl": "https://docs.google.com/spreadsheets/d/1Hk5iqYmKjoeXXuSjxOFXBEJ6z0M52OZvHMaCORUPzkM/export?format=csv&gid=0",
   "sourceWorkbook": "Склад Балашиха",
   "sourceSheet": "Склад Балашиха",
   "sourceFormat": "google-csv-export",
   "sheetName": "Sheet1",
   "matchField": "Наименование как в ЛК -> article/articleKey",
-  "sheetRowCount": 315,
+  "sheetRowCount": 321,
   "matchedRowCount": 186,
   "matchedSkuCount": 186,
   "unmatchedSourceKeys": [

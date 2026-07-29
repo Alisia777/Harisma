@@ -1,29 +1,29 @@
 {
   "schema": "portal-repricing-reconciliation-v1",
-  "generatedAt": "2026-07-28T08:43:23.395Z",
-  "freshness_reference_date": "2026-07-28",
-  "snapshot_id": "repricer:b003a845fb06f406",
+  "generatedAt": "2026-07-29T08:10:45.727Z",
+  "freshness_reference_date": "2026-07-29",
+  "snapshot_id": "repricer:ad42db0d0dbb3098",
   "status": "ok",
   "publish_allowed": true,
   "feature_publish_allowed": true,
   "feature_status": "ok",
-  "business_fingerprint": "c7a28f5795ed273f038d7e29499109e5b8cca50859bf4474a0c4cb34dcdd3454",
+  "business_fingerprint": "161b125e8c3291bdf4ca9134caef30d955b3f44ad66bab4cc37b7217eb50bbab",
   "summary": {
     "rows": 414,
     "eligible_rows": 414,
-    "publishable_rows": 64,
-    "blocked_rows": 350,
-    "publishable_coverage": 0.154589,
+    "publishable_rows": 62,
+    "blocked_rows": 352,
+    "publishable_coverage": 0.149758,
     "required_publishable_coverage": 0.01,
     "feature_status": "ok",
-    "publishable_recommendations": 64,
-    "blocked_recommendations": 350,
+    "publishable_recommendations": 62,
+    "blocked_recommendations": 352,
     "duplicate_platform_keys": 0,
     "normalized_article_collisions": 0,
     "deduped_exact_duplicates": 0,
     "market_intelligence": {
       "enabled_rows": 414,
-      "seasonality_usable_rows": 58,
+      "seasonality_usable_rows": 57,
       "elasticity_learned_rows": 23,
       "competitor_usable_rows": 0,
       "competitor_history_observed_rows": 0,
@@ -35,7 +35,7 @@
   },
   "blockingReasons": [],
   "warnings": [
-    "350 repricer rows are present but not publishable because required facts/economics/policy are incomplete"
+    "352 repricer rows are present but not publishable because required facts/economics/policy are incomplete"
   ],
   "duplicatePlatformKeys": [],
   "normalizedArticleCollisions": [],
@@ -59,9 +59,9 @@
       "warnings": [],
       "details": {
         "eligible_rows": 414,
-        "publishable_rows": 64,
-        "blocked_rows": 350,
-        "publishable_coverage": 0.154589,
+        "publishable_rows": 62,
+        "blocked_rows": 352,
+        "publishable_coverage": 0.149758,
         "required_publishable_coverage": 0.01,
         "feature_status": "ok"
       }

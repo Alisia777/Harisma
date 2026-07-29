@@ -227,7 +227,11 @@ async function run() {
       const url = new URL(route.request().url());
       const snapshotFilter = url.searchParams.get('snapshot_key') || '';
       if (!snapshotFilter.includes('wb_substitution_traffic')) {
-        await route.continue();
+        await route.fulfill({
+          status: 200,
+          contentType: 'application/json',
+          body: '[]'
+        });
         return;
       }
       blockedWbSnapshotRequests += 1;

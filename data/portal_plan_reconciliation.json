@@ -1,7 +1,7 @@
 {
   "schema": "portal-plan-reconciliation-v1",
-  "generatedAt": "2026-07-28T10:02:46.678Z",
-  "snapshot_id": "dashboard:78c7095f06514061",
+  "generatedAt": "2026-07-29T11:15:57.767Z",
+  "snapshot_id": "dashboard:6494863de9e928d4",
   "status": "ok",
   "publish_allowed": true,
   "plan_namespaces": [

@@ -2814,7 +2814,31 @@
       "status": "active",
       "note": "ЗЯ номенклатура; подтверждено дневным отчётом и мастер-реестром",
       "updatedAt": "2026-07-26T12:00:00.000Z"
+    },
+    {
+      "target_sku": "lifting_maska_pdrn_75ml",
+      "platform": "goldapple",
+      "api_sku": "lifting_maska_pdrn_7",
+      "status": "active",
+      "note": "ЗЯ артикул; подтверждено дневным отчётом и уникальным штрихкодом",
+      "updatedAt": "2026-07-29T12:30:00+03:00"
+    },
+    {
+      "target_sku": "lifting_maska_pdrn_75ml",
+      "platform": "goldapple",
+      "api_sku": "99000188068",
+      "status": "active",
+      "note": "ЗЯ номенклатура; подтверждено дневным отчётом и мастер-реестром",
+      "updatedAt": "2026-07-29T12:30:00+03:00"
+    },
+    {
+      "target_sku": "lifting_maska_pdrn_75ml",
+      "platform": "goldapple",
+      "api_sku": "4660417421964",
+      "status": "active",
+      "note": "ЗЯ штрихкод; подтверждено дневным отчётом и мастер-реестром",
+      "updatedAt": "2026-07-29T12:30:00+03:00"
     }
   ],
-  "updatedAt": "2026-07-26T12:00:00.000Z"
+  "updatedAt": "2026-07-29T12:30:00+03:00"
 }

@@ -246,6 +246,17 @@ jobs:
             --strict --optional-source --max-lag-days 1 \
             --allow-stale-platforms goldapple,letu,megamarket
 
+      - name: Refresh product leaderboard
+        env:
+          ALTEA_GOOGLE_SERVICE_ACCOUNT_JSON: ${{ secrets.ALTEA_GOOGLE_SERVICE_ACCOUNT_JSON }}
+          GOOGLE_APPLICATION_CREDENTIALS_JSON: ${{ secrets.GOOGLE_APPLICATION_CREDENTIALS_JSON }}
+          ALTEA_KZ_LEADERBOARD_SHEET_URL: ${{ vars.ALTEA_KZ_LEADERBOARD_SHEET_URL || 'https://docs.google.com/spreadsheets/d/1rEgkGDfr9yc8atSLNHRGDuhFEzOZvPOmKQZcLgszWUU/edit' }}
+        run: |
+          if ! node scripts/portal-kz-product-leaderboard-sync.js sync --output-dir data; then
+            echo "::warning::Product leaderboard refresh failed; preserving the last published weekly snapshot."
+          fi
+          node scripts/build-product-leaderboard-history.js
+
       - name: Refresh WB substitution traffic
         env:
           ALTEA_WB_SUBSTITUTION_TRAFFIC_XLSX: ${{ secrets.ALTEA_WB_SUBSTITUTION_TRAFFIC_XLSX || vars.ALTEA_WB_SUBSTITUTION_TRAFFIC_XLSX }}

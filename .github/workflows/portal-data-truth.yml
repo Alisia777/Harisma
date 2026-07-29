@@ -126,6 +126,7 @@ jobs:
           node scripts/build-retail-network-fallback.selftest.js
           node scripts/build-retail-network-google-fallback.selftest.js
           node scripts/portal-retail-network-daily-sync.selftest.js
+          node scripts/portal-kz-product-leaderboard-sync.selftest.js
           node scripts/portal-extra-marketplace-preserve.selftest.js
           node scripts/portal-data-quality-scope.selftest.js
           node scripts/portal-ozon-finance-product-map.selftest.js

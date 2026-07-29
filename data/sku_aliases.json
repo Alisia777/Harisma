@@ -2814,7 +2814,39 @@
       "status": "active",
       "note": "ЗЯ номенклатура; подтверждено дневным отчётом и мастер-реестром",
       "updatedAt": "2026-07-26T12:00:00.000Z"
+    },
+    {
+      "target_sku": "chudofrukt_bad_60caps",
+      "platform": "kz",
+      "api_sku": "chudofrukt_BAD_60caps_new",
+      "status": "active",
+      "note": "КЗ: вариант артикула из продуктового лидерборда",
+      "updatedAt": "2026-07-29T12:40:00.000Z"
+    },
+    {
+      "target_sku": "menoflavon_bad_60caps",
+      "platform": "kz",
+      "api_sku": "menoflawon_BAD_60caps",
+      "status": "active",
+      "note": "КЗ: исправление транслитерации v/w",
+      "updatedAt": "2026-07-29T12:40:00.000Z"
+    },
+    {
+      "target_sku": "shampun_kudryavii_metod_500ml",
+      "platform": "kz",
+      "api_sku": "shampun_kudryavii_metod_500m",
+      "status": "active",
+      "note": "КЗ: исправление обрезанного суффикса ml",
+      "updatedAt": "2026-07-29T12:40:00.000Z"
+    },
+    {
+      "target_sku": "krem_dlya_lica_pdrn_50_ml",
+      "platform": "kz",
+      "api_sku": "krem_dlya_lica_pdrn_50 ml",
+      "status": "active",
+      "note": "КЗ: вариант артикула с пробелом",
+      "updatedAt": "2026-07-29T12:40:00.000Z"
     }
   ],
-  "updatedAt": "2026-07-26T12:00:00.000Z"
+  "updatedAt": "2026-07-29T12:40:00.000Z"
 }

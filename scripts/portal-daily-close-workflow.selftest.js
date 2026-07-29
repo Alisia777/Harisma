@@ -236,6 +236,15 @@ const retailNetworkFallback = "secrets.ALTEA_RETAIL_NETWORK_SALES_XLSX || vars.A
 if (workflow.split(retailNetworkFallback).length - 1 !== 3) {
   fail('daily close must use the committed retail network workbook in preflight, marketplace refresh, and retail daily refresh');
 }
+if (!workflow.includes('node scripts/portal-kz-product-leaderboard-sync.js sync --output-dir data')) {
+  fail('daily close must refresh the product leaderboard from its connected Google Sheet');
+}
+if (!workflow.includes('ALTEA_KZ_LEADERBOARD_SHEET_URL')) {
+  fail('daily close must pass the connected product leaderboard Google Sheet URL');
+}
+if (!workflow.includes('Product leaderboard refresh failed; preserving the last published weekly snapshot.')) {
+  fail('daily close must preserve the last product leaderboard snapshot when the connected source is temporarily unavailable');
+}
 ['ALTEA_YM_CAMPAIGN_ID', 'ALTEA_YM_BUSINESS_ID'].forEach((optionalName) => {
   if (!workflow.includes(optionalName)) {
     fail(`daily close must pass optional Yandex identity hint ${optionalName} when configured`);

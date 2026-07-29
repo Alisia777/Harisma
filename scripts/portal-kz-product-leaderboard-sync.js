@@ -7,10 +7,10 @@ const { chromium } = require('playwright');
 const XLSX = require('xlsx');
 
 const DEFAULT_SOURCE_URL = 'https://docs.google.com/spreadsheets/d/1rEgkGDfr9yc8atSLNHRGDuhFEzOZvPOmKQZcLgszWUU/edit?gid=131681931#gid=131681931';
-const DEFAULT_SOURCE_GID = '131681931';
 const DEFAULT_BRAND_FILTER = 'АЛТЕЯ';
 const DEFAULT_OUTPUT_DIR = '.altea-google-sheet-sync-output';
 const DEFAULT_PROFILE_DIR = '.altea-google-sheets-profile-qeep';
+const GOOGLE_DRIVE_SCOPE = 'https://www.googleapis.com/auth/drive.readonly';
 
 function parseArgs(argv) {
   const args = {
@@ -549,7 +549,73 @@ function resolveSkuPrimaryPrice(sku) {
   return resolveSkuPlatformPrice(sku, 'wb') ?? resolveSkuPlatformPrice(sku, 'ozon');
 }
 
+function base64Url(value) {
+  return Buffer.from(value).toString('base64').replace(/=/g, '').replace(/\+/g, '-').replace(/\//g, '_');
+}
+
+function loadServiceAccount() {
+  const inline = process.env.ALTEA_GOOGLE_SERVICE_ACCOUNT_JSON || process.env.GOOGLE_APPLICATION_CREDENTIALS_JSON || '';
+  if (inline) return JSON.parse(inline);
+  const filePath = process.env.ALTEA_GOOGLE_SERVICE_ACCOUNT_JSON_PATH || process.env.GOOGLE_APPLICATION_CREDENTIALS || '';
+  if (filePath && fs.existsSync(filePath)) return JSON.parse(fs.readFileSync(filePath, 'utf8'));
+  return null;
+}
+
+async function serviceAccountAccessToken(serviceAccount) {
+  if (!serviceAccount?.client_email || !serviceAccount?.private_key) {
+    throw new Error('Google service account JSON must include client_email and private_key');
+  }
+  const now = Math.floor(Date.now() / 1000);
+  const header = base64Url(JSON.stringify({ alg: 'RS256', typ: 'JWT' }));
+  const claims = base64Url(JSON.stringify({
+    iss: serviceAccount.client_email,
+    scope: GOOGLE_DRIVE_SCOPE,
+    aud: 'https://oauth2.googleapis.com/token',
+    iat: now,
+    exp: now + 3600
+  }));
+  const unsigned = `${header}.${claims}`;
+  const signature = crypto.sign('RSA-SHA256', Buffer.from(unsigned), serviceAccount.private_key);
+  const assertion = `${unsigned}.${base64Url(signature)}`;
+  const response = await fetch('https://oauth2.googleapis.com/token', {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/x-www-form-urlencoded' },
+    body: new URLSearchParams({
+      grant_type: 'urn:ietf:params:oauth:grant-type:jwt-bearer',
+      assertion
+    })
+  });
+  if (!response.ok) throw new Error(`Google service account token request failed with HTTP ${response.status}`);
+  const payload = await response.json();
+  if (!payload.access_token) throw new Error('Google service account token response did not include access_token');
+  return payload.access_token;
+}
+
+function spreadsheetIdFromUrl(sourceUrl) {
+  return normalizeText(sourceUrl).match(/\/d\/([^/]+)/)?.[1] || '';
+}
+
+async function fetchWorkbookWithServiceAccount(options, serviceAccount) {
+  const sourceId = spreadsheetIdFromUrl(options.sourceUrl);
+  if (!sourceId) throw new Error(`Не удалось извлечь spreadsheet id из ${options.sourceUrl}`);
+  const accessToken = await serviceAccountAccessToken(serviceAccount);
+  const mime = 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet';
+  const exportUrl = `https://www.googleapis.com/drive/v3/files/${encodeURIComponent(sourceId)}/export?mimeType=${encodeURIComponent(mime)}`;
+  const response = await fetch(exportUrl, {
+    headers: { Authorization: `Bearer ${accessToken}` }
+  });
+  if (!response.ok) throw new Error(`Google Drive product leaderboard export failed with HTTP ${response.status}`);
+  const bytes = Buffer.from(await response.arrayBuffer());
+  if (bytes.slice(0, 2).toString('utf8') !== 'PK') {
+    throw new Error('Google Drive product leaderboard export did not return an XLSX workbook');
+  }
+  return bytes;
+}
+
 async function fetchWorkbookBuffer(options) {
+  const serviceAccount = loadServiceAccount();
+  if (serviceAccount) return fetchWorkbookWithServiceAccount(options, serviceAccount);
+
   const browser = await chromium.launchPersistentContext(options.profileDir, {
     headless: true,
     channel: 'chrome'
@@ -624,6 +690,18 @@ function buildPayload(rows, skus, options) {
       .map((sku) => [normalizeKey(sku.articleKey || sku.article || sku.sku), sku])
       .filter(([key]) => key)
   );
+  const aliases = Array.isArray(options?.skuAliases?.aliases) ? options.skuAliases.aliases : [];
+  aliases
+    .filter((alias) => (
+      normalizeKey(alias?.status || 'active') !== 'inactive'
+      && ['kz', 'product_leaderboard'].includes(normalizeKey(alias?.platform))
+    ))
+    .forEach((alias) => {
+      const sourceKey = normalizeKey(alias?.api_sku);
+      const targetKey = normalizeKey(alias?.target_sku);
+      const targetSku = skuByKey.get(targetKey);
+      if (sourceKey && targetSku) skuByKey.set(sourceKey, targetSku);
+    });
 
   const headerKeys = Object.keys(rows[0] || {});
   if (headerKeys.length < 20) {
@@ -817,7 +895,7 @@ async function main() {
 
   const options = {
     sourceUrl: args['source-url'] || process.env.ALTEA_KZ_LEADERBOARD_SHEET_URL || DEFAULT_SOURCE_URL,
-    sourceGid: args.gid || process.env.ALTEA_KZ_LEADERBOARD_SHEET_GID || DEFAULT_SOURCE_GID,
+    sourceGid: args.gid || process.env.ALTEA_KZ_LEADERBOARD_SHEET_GID || '',
     brandFilter: args['brand-filter'] || process.env.ALTEA_KZ_LEADERBOARD_BRAND || DEFAULT_BRAND_FILTER,
     outputDir: path.resolve(args['output-dir'] || cwdJoin(DEFAULT_OUTPUT_DIR)),
     profileDir: path.resolve(args['profile-dir'] || cwdJoin(DEFAULT_PROFILE_DIR)),
@@ -849,7 +927,8 @@ async function main() {
   }
   const rows = XLSX.utils.sheet_to_json(workbook.Sheets[sheetName], { defval: null, raw: false });
   const skus = readJson(cwdJoin('data', 'skus.json'));
-  const payload = buildPayload(rows, skus, { ...options, sheetName });
+  const skuAliases = readJson(cwdJoin('data', 'sku_aliases.json'));
+  const payload = buildPayload(rows, skus, { ...options, sheetName, skuAliases });
   const outputFiles = writeSnapshot(options.outputDir, payload, options);
 
   console.log(JSON.stringify({
@@ -872,7 +951,15 @@ async function main() {
   }, null, 2));
 }
 
-main().catch((error) => {
-  console.error(error?.stack || String(error));
-  process.exitCode = 1;
-});
+if (require.main === module) {
+  main().catch((error) => {
+    console.error(error?.stack || String(error));
+    process.exitCode = 1;
+  });
+}
+
+module.exports = {
+  fetchWorkbookWithServiceAccount,
+  selectLatestWeekSheet,
+  spreadsheetIdFromUrl
+};

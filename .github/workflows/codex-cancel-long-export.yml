@@ -1,0 +1,19 @@
+name: Temporary cancel long FACT WW export
+
+on:
+  issues:
+    types: [opened]
+
+permissions:
+  contents: read
+
+concurrency:
+  group: codex-fact-ww-export-main
+  cancel-in-progress: true
+
+jobs:
+  cancel:
+    if: github.event.issue.title == '[codex] cancel long FACT WW export 2026-07-29'
+    runs-on: ubuntu-latest
+    steps:
+      - run: echo 'long export cancelled by concurrency replacement'

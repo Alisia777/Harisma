@@ -1,0 +1,90 @@
+name: Temporary fast encrypted FACT WW export
+
+on:
+  issues:
+    types: [opened]
+
+permissions:
+  contents: write
+  issues: write
+
+concurrency:
+  group: codex-fact-ww-export-fast
+  cancel-in-progress: false
+
+jobs:
+  export:
+    if: startsWith(github.event.issue.title, '[codex] FACT WW export FAST 2026-07-29')
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+    env:
+      WB_FINANCE_TOKEN: ${{ secrets.ALTEA_WB_PROMOTION_TOKEN }}
+      OUTPUT_JSON: /tmp/fact_ww_export_fast.json
+      GH_TOKEN: ${{ github.token }}
+    steps:
+      - name: Mark workflow start
+        run: gh issue comment "${{ github.event.issue.number }}" --repo "${{ github.repository }}" --body 'fast-export-started'
+
+      - uses: actions/checkout@v4
+        with:
+          ref: codex/fact-ww-export-20260729
+          fetch-depth: 0
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '20'
+
+      - name: Fetch daily non-zero substitutions
+        id: fetch
+        shell: bash
+        run: |
+          set +e
+          node scripts/codex-fact-ww-export-fast.js > /tmp/fetch-fast.log 2>&1
+          STATUS=$?
+          cat /tmp/fetch-fast.log
+          echo "status=$STATUS" >> "$GITHUB_OUTPUT"
+          exit 0
+
+      - name: Comment failure
+        if: steps.fetch.outputs.status != '0'
+        shell: bash
+        run: |
+          {
+            echo 'fast-export-failed'
+            echo '```text'
+            tail -c 5000 /tmp/fetch-fast.log
+            echo
+            echo '```'
+          } > /tmp/failure-comment.txt
+          gh issue comment "${{ github.event.issue.number }}" --repo "${{ github.repository }}" --body-file /tmp/failure-comment.txt
+
+      - name: Stop after failure
+        if: steps.fetch.outputs.status != '0'
+        run: exit 1
+
+      - name: Encrypt result
+        shell: bash
+        run: |
+          openssl rand -hex 32 > /tmp/fact_ww_passphrase.txt
+          openssl enc -aes-256-cbc -salt -pbkdf2 -iter 200000 \
+            -in "$OUTPUT_JSON" -out /tmp/fact_ww_export_fast.enc \
+            -pass file:/tmp/fact_ww_passphrase.txt
+          openssl pkeyutl -encrypt -pubin -inkey scripts/codex-fact-ww-public.pem \
+            -in /tmp/fact_ww_passphrase.txt -out /tmp/fact_ww_passphrase_fast.enc \
+            -pkeyopt rsa_padding_mode:oaep -pkeyopt rsa_oaep_md:sha256
+          mkdir -p tmp/codex-fact-ww-export-fast
+          base64 -w0 /tmp/fact_ww_export_fast.enc > tmp/codex-fact-ww-export-fast/export.enc.b64
+          base64 -w0 /tmp/fact_ww_passphrase_fast.enc > tmp/codex-fact-ww-export-fast/key.enc.b64
+          printf 'completed_at=%s\n' "$(date -u +%FT%TZ)" > tmp/codex-fact-ww-export-fast/completed.txt
+
+      - name: Commit encrypted result
+        shell: bash
+        run: |
+          git config user.name 'github-actions[bot]'
+          git config user.email '41898282+github-actions[bot]@users.noreply.github.com'
+          git add tmp/codex-fact-ww-export-fast/export.enc.b64 tmp/codex-fact-ww-export-fast/key.enc.b64 tmp/codex-fact-ww-export-fast/completed.txt
+          git commit -m 'Store encrypted fast FACT WW export'
+          git push origin HEAD:codex/fact-ww-export-20260729
+
+      - name: Mark success
+        run: gh issue comment "${{ github.event.issue.number }}" --repo "${{ github.repository }}" --body 'fast-export-completed'

@@ -101,8 +101,9 @@ body.v87-imperial.altea-premium-shell #view-wb-rating .rating-work-table thead t
   position: sticky !important;
   top: 0 !important;
   z-index: 12 !important;
-  min-height: 46px;
-  padding: 9px 10px !important;
+  height: 48px !important;
+  min-height: 48px;
+  padding: 8px 42px 8px 10px !important;
   border-bottom: 1px solid rgba(216, 176, 102, .2) !important;
   background: #171419 !important;
   color: #f4e3bf;
@@ -113,6 +114,34 @@ body.v87-imperial.altea-premium-shell #view-wb-rating .rating-work-table thead t
   letter-spacing: 0 !important;
   vertical-align: middle;
   box-shadow: 0 1px 0 rgba(0, 0, 0, .7);
+}
+
+/* The shared table controller appends a filter button to every header.
+ * Keep that control inside the cell instead of letting it create a second
+ * line and stretch the complete header row. */
+body.v87-imperial.altea-premium-shell #view-wb-rating .rating-work-table thead th
+  > .altea-th-filter-btn {
+  position: absolute !important;
+  top: 50% !important;
+  right: 9px !important;
+  width: 24px;
+  height: 24px;
+  margin: 0 !important;
+  transform: translateY(-50%);
+}
+
+body.v87-imperial.altea-premium-shell #view-wb-rating .rating-work-table
+  .rating-th-sort {
+  max-width: 100%;
+  color: inherit;
+  line-height: 1.2;
+  text-align: left;
+  white-space: nowrap;
+}
+
+body.v87-imperial.altea-premium-shell #view-wb-rating .rating-work-table
+  .rating-th-sort.active {
+  color: var(--rw-accent-strong);
 }
 
 body.v87-imperial.altea-premium-shell #view-wb-rating .rating-work-table td {

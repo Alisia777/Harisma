@@ -13,7 +13,13 @@ const CSS_FILES = [
 ];
 const css = CSS_FILES.map((file) => fs.readFileSync(path.join(ROOT, file), 'utf8')).join('\n');
 
-const headers = Array.from({ length: 19 }, (_, i) => `<th>${i === 0 ? 'Артикул' : i === 1 ? 'Комментарий команде' : `Метрика ${i}`}</th>`).join('');
+const headers = Array.from({ length: 19 }, (_, i) => {
+  const label = i === 0 ? 'Артикул' : i === 1 ? 'Комментарий команде' : `Метрика ${i}`;
+  const content = i < 2
+    ? `<span>${label}</span>`
+    : `<button class="rating-th-sort${i === 3 ? ' active' : ''}">${label}</button>`;
+  return `<th${i === 1 ? ' class="rating-team-comment-head"' : ''}>${content}<button class="altea-th-filter-btn">⌄</button></th>`;
+}).join('');
 const rows = Array.from({ length: 35 }, (_, r) => `<tr class="rating-work-row">${Array.from({ length: 19 }, (_, i) => {
   if (i === 0) return `<td class="article-cell"><strong>article_${r}</strong><span class="cell-muted">WB nm ${1000 + r}</span><div class="rating-row-actions"><button class="rating-copy-button">Копировать артикул</button></div></td>`;
   if (i === 1) return '<td class="rating-team-comment-cell"><div class="rating-team-comment-box"><button class="rating-note-button">+ Добавить комментарий</button><span class="rating-team-comment-placeholder">Заметка для коллег.</span></div></td>';
@@ -99,6 +105,42 @@ async function main() {
       }));
       assert.equal(full.headers, 19, `${width}: full mode preserves every column`);
       assert.ok(full.horizontal, `${width}: full mode scrolls horizontally`);
+
+      await page.evaluate(() => {
+        document.documentElement.dataset.theme = 'porcelain-day';
+        document.documentElement.style.setProperty('--text', '#241f1a');
+        document.documentElement.style.setProperty('--muted', '#6e645a');
+        document.querySelector('#view-wb-rating').dataset.ratingDensity = 'compact';
+      });
+      await page.waitForTimeout(20);
+      const light = await page.evaluate(() => {
+        const style = (selector) => getComputedStyle(document.querySelector(selector));
+        const queueColumns = style('.rating-queue-controls').gridTemplateColumns
+          .split(' ')
+          .filter(Boolean).length;
+        return {
+          smartTitle: style('.rating-smart-board h3').color,
+          smartBackground: style('.rating-smart-board').backgroundImage,
+          smartValue: style('.rating-smart-kpi__value').color,
+          density: style('.rating-density-switch button.active').color,
+          note: style('.rating-note-button').color,
+          sort: style('.rating-th-sort.active').color,
+          table: style('.rating-work-table').backgroundColor,
+          headerHeight: document.querySelector('thead th').getBoundingClientRect().height,
+          filterPosition: style('.altea-th-filter-btn').position,
+          queueColumns
+        };
+      });
+      assert.equal(light.smartTitle, 'rgb(36, 31, 26)', `${width}: light smart-board title is readable`);
+      assert.doesNotMatch(light.smartBackground, /rgba\(27, 20, 26/, `${width}: light smart-board is not dark`);
+      assert.equal(light.smartValue, 'rgb(101, 69, 21)', `${width}: light KPI value is readable`);
+      assert.equal(light.density, 'rgb(101, 69, 21)', `${width}: active density is readable`);
+      assert.equal(light.note, 'rgb(101, 69, 21)', `${width}: comment action is readable`);
+      assert.equal(light.sort, 'rgb(118, 80, 26)', `${width}: active sort is readable`);
+      assert.equal(light.table, 'rgb(251, 248, 242)', `${width}: table canvas follows the light theme`);
+      assert.ok(light.headerHeight <= 50, `${width}: filter buttons stay inside the header row`);
+      assert.equal(light.filterPosition, 'absolute', `${width}: filter buttons do not create a second row`);
+      assert.equal(light.queueColumns, width <= 920 ? 1 : 4, `${width}: queue controls stay in their frame`);
 
       await page.locator('.rating-data-refresh button').evaluate((b) => { b.setAttribute('aria-busy', 'false'); b.disabled = false; });
       await page.locator('.rating-data-refresh__status').evaluate((n) => { n.dataset.tone = 'ok'; });

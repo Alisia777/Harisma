@@ -1,0 +1,19 @@
+name: Cancel long isolated FACT WW run
+
+on:
+  issues:
+    types: [opened]
+
+permissions:
+  actions: write
+  issues: write
+
+jobs:
+  cancel:
+    if: github.event.issue.title == '[codex] cancel FACT WW run 30435280281'
+    runs-on: ubuntu-latest
+    env:
+      GH_TOKEN: ${{ github.token }}
+    steps:
+      - run: gh api -X POST "repos/${{ github.repository }}/actions/runs/30435280281/cancel"
+      - run: gh issue comment "${{ github.event.issue.number }}" --repo "${{ github.repository }}" --body 'cancel-request-sent'

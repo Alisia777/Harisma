@@ -92,6 +92,10 @@ jobs:
           node scripts/portal-wb-ads-sync.js sync \
             --from "$ADS_FROM" \
             --to '${{ steps.run_date.outputs.value }}' \
+            --input-dir data \
+            --base-data-dir data \
+            --output-dir data \
+            --mirror-local-fallback \
             --no-fixture-fallback \
             --no-external-ads
           node scripts/portal-ozon-ads-finance-sync.js sync \

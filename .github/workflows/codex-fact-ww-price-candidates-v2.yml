@@ -1,0 +1,117 @@
+name: Promotion-token recent WW price candidate extraction
+
+on:
+  issues:
+    types: [opened]
+
+permissions:
+  contents: read
+  issues: write
+
+concurrency:
+  group: codex-fact-ww-price-candidates-v2-${{ github.event.issue.number }}
+  cancel-in-progress: false
+
+jobs:
+  extract:
+    if: github.event.issue.title == '[codex] FACT WW price candidates v2 2026-07-29'
+    runs-on: ubuntu-latest
+    timeout-minutes: 25
+    env:
+      WB_STATISTICS_TOKEN: ${{ secrets.ALTEA_WB_PROMOTION_TOKEN }}
+      GH_TOKEN: ${{ github.token }}
+      RESULT_JSON: /tmp/fact_ww_price_candidates_v2.json
+    steps:
+      - name: Publish run id
+        run: gh issue comment "${{ github.event.issue.number }}" --repo "${{ github.repository }}" --body "price-candidates-v2-started run-id=${{ github.run_id }}"
+
+      - uses: actions/checkout@v4
+        with:
+          ref: codex/fact-ww-export-20260729
+
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.12'
+
+      - name: Fetch July orders and detect 3 percent price shifts
+        id: extract
+        shell: bash
+        run: |
+          python <<'PY'
+          import json, os, urllib.request, urllib.parse, urllib.error
+          from collections import Counter, defaultdict
+          from datetime import datetime, timezone, timedelta
+
+          token=os.environ['WB_STATISTICS_TOKEN'].strip()
+          endpoint='https://statistics-api.wildberries.ru/api/v1/supplier/orders'
+          params=urllib.parse.urlencode({'dateFrom':'2026-07-01T00:00:00','flag':0})
+          req=urllib.request.Request(endpoint+'?'+params,headers={'Authorization':token,'Accept':'application/json','User-Agent':'Harisma-FACT-WW-price-candidates-v2/1.0'})
+          try:
+              with urllib.request.urlopen(req,timeout=300) as resp: rows=json.loads(resp.read().decode() or '[]')
+          except urllib.error.HTTPError as e:
+              raise RuntimeError(f'Orders HTTP {e.code}: {e.read().decode(errors="replace")[:1200]}')
+          if not isinstance(rows,list): raise RuntimeError('Expected list')
+
+          def num(v):
+              try:return float(str(v or 0).replace(' ','').replace(',','.'))
+              except:return 0.0
+          def dt(v):
+              try:return datetime.fromisoformat(str(v or '').replace('Z','+00:00'))
+              except:return None
+          now=datetime.now(timezone.utc); cutoff=now-timedelta(hours=84)
+          by_nm=defaultdict(list)
+          for row in rows:
+              if row.get('nmId'):by_nm[str(row['nmId'])].append(row)
+
+          groups=[]; candidates=[]
+          for nm,items in by_nm.items():
+              prices=[round(num(x.get('priceWithDisc')),2) for x in items if num(x.get('priceWithDisc'))>0]
+              if not prices:continue
+              counts=Counter(prices); baseline=max(counts.items(),key=lambda kv:(kv[1],kv[0]))[0]
+              found=[]
+              for row in items:
+                  stamp=dt(row.get('date')) or dt(row.get('lastChangeDate'))
+                  if not stamp:continue
+                  if stamp.tzinfo is None:stamp=stamp.replace(tzinfo=timezone.utc)
+                  if stamp<cutoff:continue
+                  price=round(num(row.get('priceWithDisc')),2)
+                  if price<=0 or baseline<=0:continue
+                  shift=(1-price/baseline)*100
+                  if 2.4<=shift<=3.6:
+                      obj={k:row.get(k) for k in ['date','lastChangeDate','nmId','supplierArticle','brand','subject','totalPrice','discountPercent','priceWithDisc','finishedPrice','spp','isCancel','cancelDate','srid','gNumber','barcode']}
+                      obj.update({'baselinePriceWithDisc':baseline,'baselineCount':counts[baseline],'priceShiftPercent':shift})
+                      found.append(obj);candidates.append(obj)
+              if found:
+                  groups.append({'nmId':nm,'supplierArticle':next((x.get('supplierArticle') for x in items if x.get('supplierArticle')),''),'brand':next((x.get('brand') for x in items if x.get('brand')),''),'subject':next((x.get('subject') for x in items if x.get('subject')),''),'baselinePriceWithDisc':baseline,'baselineCount':counts[baseline],'candidateRows':len(found),'candidatePrices':sorted(set(round(num(x.get('priceWithDisc')),2) for x in found)),'latestCandidateAt':max(str(x.get('date') or '') for x in found),'srids':[str(x.get('srid') or '') for x in found if x.get('srid')]})
+          groups.sort(key=lambda x:(x['latestCandidateAt'],-x['candidateRows']),reverse=True);candidates.sort(key=lambda x:str(x.get('date') or ''),reverse=True)
+          recent=[]
+          for row in rows:
+              stamp=dt(row.get('date')) or dt(row.get('lastChangeDate'))
+              if not stamp:continue
+              if stamp.tzinfo is None:stamp=stamp.replace(tzinfo=timezone.utc)
+              if stamp>=cutoff:recent.append({k:row.get(k) for k in ['date','lastChangeDate','nmId','supplierArticle','brand','subject','totalPrice','discountPercent','priceWithDisc','finishedPrice','spp','isCancel','cancelDate','srid','gNumber','barcode']})
+          recent.sort(key=lambda x:str(x.get('date') or ''),reverse=True)
+          result={'generatedAt':now.isoformat(),'cutoff':cutoff.isoformat(),'diagnostics':{'ordersFetched':len(rows),'nmIds':len(by_nm),'candidateNmIds':len(groups),'candidateRows':len(candidates),'recentRows':len(recent)},'candidateGroups':groups,'candidateRows':candidates,'recentRows':recent}
+          with open(os.environ['RESULT_JSON'],'w',encoding='utf-8') as f:json.dump(result,f,ensure_ascii=False,indent=2)
+          with open(os.environ['GITHUB_OUTPUT'],'a') as f:f.write(f"candidate_nmids={len(groups)}\ncandidate_rows={len(candidates)}\n")
+          print(json.dumps(result['diagnostics'],ensure_ascii=False))
+          PY
+
+      - name: Encrypt result
+        shell: bash
+        run: |
+          openssl rand -hex 32 > /tmp/pass.txt
+          openssl enc -aes-256-cbc -salt -pbkdf2 -iter 200000 -in "$RESULT_JSON" -out /tmp/result.enc -pass file:/tmp/pass.txt
+          openssl pkeyutl -encrypt -pubin -inkey scripts/codex-fact-ww-public.pem -in /tmp/pass.txt -out /tmp/pass.enc -pkeyopt rsa_padding_mode:oaep -pkeyopt rsa_oaep_md:sha256
+          mkdir -p /tmp/fact-ww-price-candidates-v2
+          cp /tmp/result.enc /tmp/fact-ww-price-candidates-v2/result.enc
+          cp /tmp/pass.enc /tmp/fact-ww-price-candidates-v2/key.enc
+
+      - uses: actions/upload-artifact@v4
+        with:
+          name: fact-ww-price-candidates-v2-${{ github.run_id }}
+          path: /tmp/fact-ww-price-candidates-v2
+          retention-days: 1
+
+      - name: Publish completion
+        run: gh issue comment "${{ github.event.issue.number }}" --repo "${{ github.repository }}" --body "price-candidates-v2-completed run-id=${{ github.run_id }} candidate-nmids=${{ steps.extract.outputs.candidate_nmids }} candidate-rows=${{ steps.extract.outputs.candidate_rows }}"

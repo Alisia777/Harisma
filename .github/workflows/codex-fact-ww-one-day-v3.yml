@@ -1,0 +1,158 @@
+name: Direct one-day encrypted FACT WW extraction
+
+on:
+  issues:
+    types: [opened]
+
+permissions:
+  contents: read
+  issues: write
+
+concurrency:
+  group: codex-fact-ww-one-day-${{ github.event.issue.number }}
+  cancel-in-progress: false
+
+jobs:
+  extract:
+    if: github.event.issue.title == '[codex] FACT WW one-day v3 2026-07-29'
+    runs-on: ubuntu-latest
+    timeout-minutes: 30
+    env:
+      WB_FINANCE_TOKEN: ${{ secrets.ALTEA_WB_PROMOTION_TOKEN }}
+      GH_TOKEN: ${{ github.token }}
+      RESULT_JSON: /tmp/fact_ww_one_day_v3.json
+    steps:
+      - name: Publish run id
+        run: gh issue comment "${{ github.event.issue.number }}" --repo "${{ github.repository }}" --body "one-day-v3-started run-id=${{ github.run_id }}"
+
+      - uses: actions/checkout@v4
+        with:
+          ref: codex/fact-ww-export-20260729
+
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.12'
+
+      - name: Read closed days directly
+        id: extract
+        shell: bash
+        run: |
+          python <<'PY'
+          import json, os, time, urllib.request, urllib.error
+          from collections import defaultdict
+          from datetime import datetime, timezone
+
+          token = os.environ['WB_FINANCE_TOKEN'].strip()
+          endpoint = 'https://finance-api.wildberries.ru/api/finance/v1/sales-reports/detailed'
+          days = ['2026-07-28', '2026-07-27', '2026-07-26', '2026-07-29']
+          fields = [
+              'reportId','rrdId','rrDate','createDate','dateFrom','dateTo',
+              'nmId','vendorCode','title','docTypeName','sellerOperName','quantity',
+              'retailPrice','retailAmount','retailPriceWithDisc','forPay',
+              'orderDt','saleDt','srid','orderUid','articleSubstitution','salePriceAffiliatedDiscountPrc'
+          ]
+          last_request = 0.0
+
+          def num(v):
+              try: return float(str(v or 0).replace(' ','').replace(',','.'))
+              except Exception: return 0.0
+          def norm(v):
+              s = str(v or '').strip().upper()
+              if not s or s == '0': return ''
+              return s if s.startswith('WW') else 'WW' + s
+          def wait_slot():
+              global last_request
+              elapsed = time.monotonic() - last_request
+              if last_request and elapsed < 66: time.sleep(66 - elapsed)
+              last_request = time.monotonic()
+          def post(body):
+              global last_request
+              payload = json.dumps(body, ensure_ascii=False).encode()
+              for attempt in range(1, 16):
+                  wait_slot()
+                  req = urllib.request.Request(endpoint, data=payload, method='POST', headers={
+                      'Authorization': token, 'Content-Type':'application/json', 'Accept':'application/json',
+                      'User-Agent':'Harisma-FACT-WW-one-day-v3/1.0'
+                  })
+                  try:
+                      with urllib.request.urlopen(req, timeout=180) as resp:
+                          if resp.status == 204: return []
+                          data = json.loads(resp.read().decode() or '[]')
+                          if not isinstance(data, list): raise RuntimeError('Expected list')
+                          return data
+                  except urllib.error.HTTPError as e:
+                      text = e.read().decode(errors='replace')
+                      if e.code == 429 and attempt < 15:
+                          retry = e.headers.get('retry-after') or e.headers.get('x-ratelimit-retry') or '66'
+                          try: delay = max(66, float(retry)+3)
+                          except Exception: delay = 66
+                          print(json.dumps({'rateLimited':True,'attempt':attempt,'delay':delay,'body':text[:250]}, ensure_ascii=False), flush=True)
+                          time.sleep(delay); last_request = time.monotonic(); continue
+                      raise RuntimeError(f'WB Finance HTTP {e.code}: {text[:1200]}')
+              raise RuntimeError('Retries exhausted')
+
+          # Guarantee a clean seller-wide minute slot after cancelling the previous extraction.
+          time.sleep(70)
+          rows=[]; unique=set(); diagnostics=[]
+          for day in days:
+              rrd=0; pages=0; fetched=0; nonzero=0
+              while True:
+                  batch = post({'dateFrom':day+'T00:00:00','dateTo':day+'T23:59:59','period':'daily','limit':100000,'rrdId':rrd,'fields':fields})
+                  if not batch: break
+                  pages += 1; fetched += len(batch)
+                  for item in batch:
+                      ww = norm(item.get('articleSubstitution'))
+                      disc = num(item.get('salePriceAffiliatedDiscountPrc'))
+                      if not ww and disc == 0: continue
+                      obj = dict(item); obj['articleSubstitutionNormalized']=ww; obj['discountPrc']=disc; obj['queryDay']=day
+                      rows.append(obj); nonzero += 1
+                      if ww: unique.add(ww)
+                  next_rrd = max((int(num(x.get('rrdId'))) for x in batch), default=rrd)
+                  if len(unique) >= 3 or next_rrd <= rrd or len(batch) < 100000: break
+                  rrd = next_rrd
+              diag={'day':day,'pages':pages,'fetchedRows':fetched,'nonZeroRows':nonzero,'uniqueSoFar':len(unique)}
+              diagnostics.append(diag); print(json.dumps(diag,ensure_ascii=False),flush=True)
+              if len(unique) >= 3: break
+
+          groups=defaultdict(lambda:{'nmIds':set(),'vendorCodes':set(),'titles':set(),'reportIds':set(),'rows':0,'sales':0.0,'returns':0.0,'retailSales':0.0,'retailReturns':0.0,'forPaySales':0.0,'forPayReturns':0.0,'srids':set(),'orderUids':set(),'discounts':[],'orderDates':set(),'saleDates':set(),'reportDates':set()})
+          for row in rows:
+              key=row.get('articleSubstitutionNormalized') or f"DISCOUNT_WITHOUT_WW:{row.get('discountPrc',0)}"
+              g=groups[key]; g['rows']+=1
+              for field,target in [('nmId','nmIds'),('vendorCode','vendorCodes'),('title','titles'),('reportId','reportIds'),('srid','srids'),('orderUid','orderUids'),('orderDt','orderDates'),('saleDt','saleDates'),('rrDate','reportDates')]:
+                  if row.get(field) not in (None,'',0): g[target].add(str(row.get(field)))
+              d=num(row.get('salePriceAffiliatedDiscountPrc'))
+              if d: g['discounts'].append(d)
+              q=num(row.get('quantity')) or 1; retail=num(row.get('retailAmount')); pay=num(row.get('forPay'))
+              text=(str(row.get('docTypeName',''))+' '+str(row.get('sellerOperName',''))).lower()
+              if 'возврат' in text or 'return' in text:
+                  g['returns']+=q; g['retailReturns']+=retail; g['forPayReturns']+=pay
+              else:
+                  g['sales']+=q; g['retailSales']+=retail; g['forPaySales']+=pay
+          summary=[]
+          for key,g in groups.items():
+              summary.append({'articleSubstitution':key,'nmIds':sorted(g['nmIds']),'vendorCodes':sorted(g['vendorCodes']),'titles':sorted(g['titles']),'reportIds':sorted(g['reportIds']),'rowCount':g['rows'],'sales':g['sales'],'returns':g['returns'],'netBuyouts':g['sales']-g['returns'],'netRetailAmount':g['retailSales']-g['retailReturns'],'netForPay':g['forPaySales']-g['forPayReturns'],'distinctSrids':len(g['srids']),'distinctOrderUids':len(g['orderUids']),'srids':sorted(g['srids']),'orderUids':sorted(g['orderUids']),'averageDiscountPrc':sum(g['discounts'])/len(g['discounts']) if g['discounts'] else 0,'orderDates':sorted(g['orderDates']),'saleDates':sorted(g['saleDates']),'reportDates':sorted(g['reportDates'])})
+          summary.sort(key=lambda x:(max(x['reportDates'] or ['']),x['rowCount']),reverse=True)
+          result={'generatedAt':datetime.now(timezone.utc).isoformat(),'queryDays':days,'reports':diagnostics,'diagnostics':{'fetchedRows':sum(x['fetchedRows'] for x in diagnostics),'nonZeroRows':len(rows),'uniqueSubstitutions':len(unique)},'summary':summary,'rows':rows}
+          with open(os.environ['RESULT_JSON'],'w',encoding='utf-8') as f: json.dump(result,f,ensure_ascii=False,indent=2)
+          with open(os.environ['GITHUB_OUTPUT'],'a') as f: f.write(f"unique={len(unique)}\n")
+          print(json.dumps(result['diagnostics'],ensure_ascii=False),flush=True)
+          PY
+
+      - name: Encrypt result
+        shell: bash
+        run: |
+          openssl rand -hex 32 > /tmp/pass.txt
+          openssl enc -aes-256-cbc -salt -pbkdf2 -iter 200000 -in "$RESULT_JSON" -out /tmp/result.enc -pass file:/tmp/pass.txt
+          openssl pkeyutl -encrypt -pubin -inkey scripts/codex-fact-ww-public.pem -in /tmp/pass.txt -out /tmp/pass.enc -pkeyopt rsa_padding_mode:oaep -pkeyopt rsa_oaep_md:sha256
+          mkdir -p /tmp/fact-ww-one-day-v3
+          cp /tmp/result.enc /tmp/fact-ww-one-day-v3/result.enc
+          cp /tmp/pass.enc /tmp/fact-ww-one-day-v3/key.enc
+
+      - uses: actions/upload-artifact@v4
+        with:
+          name: fact-ww-one-day-v3-${{ github.run_id }}
+          path: /tmp/fact-ww-one-day-v3
+          retention-days: 1
+
+      - name: Publish completion
+        run: gh issue comment "${{ github.event.issue.number }}" --repo "${{ github.repository }}" --body "one-day-v3-completed run-id=${{ github.run_id }} unique=${{ steps.extract.outputs.unique }}"

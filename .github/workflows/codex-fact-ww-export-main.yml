@@ -19,13 +19,13 @@ jobs:
     runs-on: ubuntu-latest
     timeout-minutes: 20
     env:
-      WB_FINANCE_TOKEN: ${{ secrets.ALTEA_WB_API_TOKEN }}
+      WB_FINANCE_TOKEN: ${{ secrets.ALTEA_WB_PROMOTION_TOKEN }}
       OUTPUT_JSON: /tmp/fact_ww_export.json
       GH_TOKEN: ${{ github.token }}
     steps:
       - name: Mark workflow start
         if: github.event_name == 'issues'
-        run: gh issue comment "${{ github.event.issue.number }}" --repo "${{ github.repository }}" --body 'export-started-api-token'
+        run: gh issue comment "${{ github.event.issue.number }}" --repo "${{ github.repository }}" --body 'export-started-promotion-token'
 
       - uses: actions/checkout@v4
         with:

@@ -69,6 +69,29 @@ html[data-theme] body.v87-imperial.altea-premium-shell
   scrollbar-gutter: auto !important;
 }
 
+/* Long data tables must not create a second vertical viewport below the
+ * route controls. Runtime route styles are injected after this stylesheet,
+ * so keep these single-scroll guarantees important and route-specific.
+ * Horizontal scrolling remains local because the tables are intentionally
+ * wider than a laptop or phone viewport. */
+html[data-theme] body.v87-imperial.altea-premium-shell
+  #view-prices .prices-v1-table-wrap,
+html[data-theme] body.v87-imperial.altea-premium-shell
+  #view-product-leaderboard .plb-v2-table-wrap,
+html[data-theme] body.v87-imperial.altea-premium-shell
+  #view-order .altea-order-procurement__table-wrap,
+html[data-theme] body.v87-imperial.altea-premium-shell
+  #view-wb-rating .rating-work-table {
+  width: 100% !important;
+  height: auto !important;
+  min-height: 0 !important;
+  max-height: none !important;
+  overflow-x: auto !important;
+  overflow-y: hidden !important;
+  overscroll-behavior-inline: contain;
+  scrollbar-gutter: auto !important;
+}
+
 body.v87-imperial.altea-premium-shell :is(button, input, select, textarea) {
   min-width: 0;
   max-width: 100%;

@@ -83,7 +83,8 @@
   }
 
   body.v87-imperial.altea-premium-shell #view-wb-rating .rating-work-table {
-    height: clamp(360px, 62dvh, 610px) !important;
+    height: auto !important;
+    min-height: 0;
   }
 }
 
@@ -125,8 +126,8 @@
   }
 
   body.v87-imperial.altea-premium-shell #view-wb-rating .rating-work-table {
-    min-height: 330px;
-    height: calc(100dvh - 285px) !important;
+    min-height: 0;
+    height: auto !important;
   }
 }
 

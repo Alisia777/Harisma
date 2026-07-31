@@ -1,17 +1,18 @@
-/* ---------- One scroll owner for the data grid ---------- */
+/* ---------- The document owns vertical scroll; the grid only owns wide columns ---------- */
 body.v87-imperial.altea-premium-shell #view-wb-rating .rating-work-table {
   position: relative;
   width: 100%;
   max-width: 100%;
-  height: clamp(360px, 58dvh, 650px) !important;
+  height: auto !important;
   max-height: none !important;
-  min-height: 360px;
-  overflow: scroll !important;
-  overscroll-behavior: contain;
-  scrollbar-gutter: stable both-edges;
+  min-height: 0;
+  overflow-x: auto !important;
+  overflow-y: visible !important;
+  overscroll-behavior-inline: contain;
+  scrollbar-gutter: auto;
   scrollbar-width: auto;
   scrollbar-color: rgba(216, 176, 102, .7) rgba(255, 255, 255, .045);
-  touch-action: pan-x pan-y;
+  touch-action: pan-x;
   -webkit-overflow-scrolling: touch;
   border-top: 1px solid rgba(255, 255, 255, .045);
   border-radius: 0 0 var(--rw-radius) var(--rw-radius);

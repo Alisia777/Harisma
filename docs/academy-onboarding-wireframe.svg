@@ -1,0 +1,252 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="1680" height="1120" viewBox="0 0 1680 1120" role="img" aria-labelledby="title desc">
+  <title id="title">Qharisma Academy onboarding wireframe</title>
+  <desc id="desc">Визуальная схема вкладки Академия, первого входа, модулей обучения, теста и контекстной помощи по вкладкам портала.</desc>
+  <defs>
+    <radialGradient id="bg" cx="35%" cy="0%" r="90%">
+      <stop offset="0%" stop-color="#1d2d61"/>
+      <stop offset="42%" stop-color="#0b1428"/>
+      <stop offset="100%" stop-color="#070b15"/>
+    </radialGradient>
+    <linearGradient id="glass" x1="0" x2="1" y1="0" y2="1">
+      <stop offset="0" stop-color="#ffffff" stop-opacity="0.105"/>
+      <stop offset="0.56" stop-color="#ffffff" stop-opacity="0.035"/>
+      <stop offset="1" stop-color="#000000" stop-opacity="0.16"/>
+    </linearGradient>
+    <linearGradient id="gold" x1="0" x2="1">
+      <stop offset="0" stop-color="#b65cff"/>
+      <stop offset="0.45" stop-color="#d4a44a"/>
+      <stop offset="1" stop-color="#6ee7a0"/>
+    </linearGradient>
+    <linearGradient id="blueGold" x1="0" x2="1" y1="0" y2="1">
+      <stop offset="0" stop-color="#3b82f6" stop-opacity="0.35"/>
+      <stop offset="0.58" stop-color="#d4a44a" stop-opacity="0.16"/>
+      <stop offset="1" stop-color="#101420" stop-opacity="0.94"/>
+    </linearGradient>
+    <filter id="shadow" x="-20%" y="-20%" width="140%" height="140%">
+      <feDropShadow dx="0" dy="22" stdDeviation="22" flood-color="#000000" flood-opacity="0.32"/>
+    </filter>
+    <filter id="softGlow" x="-50%" y="-50%" width="200%" height="200%">
+      <feGaussianBlur stdDeviation="12" result="blur"/>
+      <feMerge>
+        <feMergeNode in="blur"/>
+        <feMergeNode in="SourceGraphic"/>
+      </feMerge>
+    </filter>
+    <style>
+      .panel{fill:url(#glass);stroke:rgba(255,255,255,.12);stroke-width:1.2;filter:url(#shadow)}
+      .soft{fill:rgba(255,255,255,.045);stroke:rgba(255,255,255,.10);stroke-width:1}
+      .goldStroke{stroke:#d4a44a;stroke-opacity:.56}
+      .blueStroke{stroke:#3b82f6;stroke-opacity:.54}
+      .emeraldStroke{stroke:#5fb084;stroke-opacity:.54}
+      .coralStroke{stroke:#e5695f;stroke-opacity:.54}
+      .title{font:800 34px Inter,Arial,sans-serif;fill:#eef3ff;letter-spacing:-.02em}
+      .h2{font:800 23px Inter,Arial,sans-serif;fill:#fff7e6}
+      .h3{font:800 18px Inter,Arial,sans-serif;fill:#fff7e6}
+      .text{font:500 15px Inter,Arial,sans-serif;fill:#c8d0ea}
+      .muted{font:500 13px Inter,Arial,sans-serif;fill:#98a3c7}
+      .tiny{font:800 11px Inter,Arial,sans-serif;fill:#98a3c7;text-transform:uppercase;letter-spacing:.06em}
+      .badge{font:800 12px Inter,Arial,sans-serif;fill:#f5ddb0;letter-spacing:.02em}
+      .num{font:900 48px Inter,Arial,sans-serif;fill:#f5ddb0}
+      .buttonText{font:800 14px Inter,Arial,sans-serif;fill:#fff7e6}
+      .navText{font:800 14px Inter,Arial,sans-serif;fill:#eef3ff}
+      .navMuted{font:500 11px Inter,Arial,sans-serif;fill:#98a3c7}
+      .pulse{animation:pulse 1.45s ease-in-out infinite;transform-origin:center}
+      .rise1{animation:rise .45s ease both}.rise2{animation:rise .55s ease both}.rise3{animation:rise .65s ease both}.rise4{animation:rise .75s ease both}
+      @keyframes pulse{50%{opacity:.45;transform:scale(1.18)}}
+      @keyframes rise{from{opacity:.35;transform:translateY(10px)}to{opacity:1;transform:translateY(0)}}
+    </style>
+  </defs>
+
+  <rect width="1680" height="1120" fill="url(#bg)"/>
+  <circle cx="340" cy="-20" r="270" fill="#3b82f6" opacity=".08" filter="url(#softGlow)"/>
+  <circle cx="1380" cy="130" r="300" fill="#d4a44a" opacity=".07" filter="url(#softGlow)"/>
+  <circle cx="1160" cy="980" r="340" fill="#8b5cf6" opacity=".08" filter="url(#softGlow)"/>
+
+  <!-- Portal shell -->
+  <rect x="54" y="56" width="1572" height="1008" rx="32" fill="rgba(6,12,25,.72)" stroke="rgba(255,255,255,.10)"/>
+  <rect x="78" y="80" width="250" height="960" rx="24" fill="rgba(6,12,25,.78)" stroke="rgba(255,255,255,.10)"/>
+  <rect x="356" y="80" width="1246" height="960" rx="24" fill="rgba(255,255,255,.025)" stroke="rgba(255,255,255,.08)"/>
+
+  <!-- Sidebar -->
+  <rect x="100" y="108" width="52" height="52" rx="16" fill="url(#gold)" opacity=".92"/>
+  <text x="168" y="128" class="h3">Дом бренда</text>
+  <text x="168" y="149" class="muted">Рабочий контур</text>
+
+  <g transform="translate(98 198)">
+    <rect width="206" height="54" rx="16" fill="rgba(59,130,246,.14)" stroke="rgba(59,130,246,.45)"/>
+    <text x="18" y="24" class="navText">Дашборд</text>
+    <text x="18" y="42" class="navMuted">KPI · графики</text>
+  </g>
+  <g transform="translate(98 264)">
+    <rect width="206" height="62" rx="18" fill="rgba(212,164,74,.18)" stroke="rgba(212,164,74,.65)"/>
+    <circle cx="28" cy="31" r="10" fill="#d4a44a" opacity=".96"/>
+    <text x="48" y="27" class="navText">Академия</text>
+    <text x="48" y="46" class="navMuted">обучение · тесты</text>
+  </g>
+  <g transform="translate(98 340)">
+    <rect width="206" height="54" rx="16" class="soft"/>
+    <text x="18" y="24" class="navText">Продукты / Новинки</text>
+    <text x="18" y="42" class="navMuted">завести · статусы</text>
+  </g>
+  <g transform="translate(98 406)">
+    <rect width="206" height="54" rx="16" class="soft"/>
+    <text x="18" y="24" class="navText">Репрайсер</text>
+    <text x="18" y="42" class="navMuted">цена · риски</text>
+  </g>
+  <g transform="translate(98 472)">
+    <rect width="206" height="54" rx="16" class="soft"/>
+    <text x="18" y="24" class="navText">Цены</text>
+    <text x="18" y="42" class="navMuted">маржа · СПП</text>
+  </g>
+  <g transform="translate(98 538)">
+    <rect width="206" height="54" rx="16" class="soft"/>
+    <text x="18" y="24" class="navText">Лидерборд</text>
+    <text x="18" y="42" class="navMuted">КЗ · воронка</text>
+  </g>
+  <g transform="translate(98 604)">
+    <rect width="206" height="54" rx="16" class="soft"/>
+    <text x="18" y="24" class="navText">Задачи</text>
+    <text x="18" y="42" class="navMuted">Tracker · контроль</text>
+  </g>
+
+  <!-- Topbar -->
+  <text x="394" y="132" class="title">Академия портала Qharisma</text>
+  <text x="394" y="160" class="text">Обучение по каждой вкладке: где смотреть, как менять статус, как проверять цены и что делать до 11:00 МСК.</text>
+  <g transform="translate(1296 112)">
+    <rect width="264" height="44" rx="22" fill="rgba(212,164,74,.12)" stroke="rgba(212,164,74,.32)"/>
+    <circle class="pulse" cx="25" cy="22" r="6" fill="#d4a44a"/>
+    <text x="44" y="27" class="badge">Обновление: 11:00 МСК</text>
+  </g>
+
+  <!-- Hero cards -->
+  <g class="rise1" transform="translate(394 205)">
+    <rect width="522" height="205" rx="24" fill="url(#blueGold)" stroke="rgba(212,164,74,.28)" filter="url(#shadow)"/>
+    <text x="28" y="42" class="tiny">Первый вход</text>
+    <text x="28" y="79" class="h2">Сотрудник проходит маршрут</text>
+    <text x="28" y="108" class="text">Короткое обучение + тест 80% + отметка прохождения.</text>
+    <g transform="translate(28 132)">
+      <rect width="138" height="42" rx="21" fill="rgba(212,164,74,.22)" stroke="rgba(212,164,74,.45)"/>
+      <text x="25" y="27" class="buttonText">Начать</text>
+    </g>
+    <g transform="translate(183 132)">
+      <rect width="190" height="42" rx="21" fill="rgba(255,255,255,.055)" stroke="rgba(255,255,255,.12)"/>
+      <text x="22" y="27" class="buttonText">Пройти позже</text>
+    </g>
+  </g>
+
+  <g class="rise2" transform="translate(944 205)">
+    <rect width="306" height="205" rx="24" class="panel"/>
+    <text x="26" y="42" class="tiny">Прогресс</text>
+    <circle cx="92" cy="112" r="55" fill="none" stroke="rgba(255,255,255,.10)" stroke-width="14"/>
+    <circle cx="92" cy="112" r="55" fill="none" stroke="url(#gold)" stroke-width="14" stroke-linecap="round" stroke-dasharray="239 346" transform="rotate(-90 92 112)"/>
+    <text x="59" y="124" class="num" font-size="32">68%</text>
+    <text x="168" y="91" class="h3">6 из 9</text>
+    <text x="168" y="116" class="muted">модулей уже пройдено</text>
+    <text x="168" y="146" class="badge">Продолжить: Репрайсер</text>
+  </g>
+
+  <g class="rise3" transform="translate(1276 205)">
+    <rect width="286" height="205" rx="24" class="panel"/>
+    <text x="24" y="42" class="tiny">Контекстная помощь</text>
+    <text x="24" y="76" class="h3">Кнопка на каждой вкладке</text>
+    <text x="24" y="105" class="text">«Как пользоваться разделом»</text>
+    <rect x="24" y="132" width="214" height="42" rx="21" fill="rgba(95,176,132,.13)" stroke="rgba(95,176,132,.42)"/>
+    <text x="48" y="159" class="buttonText">? Открыть подсказку</text>
+  </g>
+
+  <!-- Module cards -->
+  <g transform="translate(394 446)">
+    <text x="0" y="0" class="h2">Модули по вкладкам</text>
+    <text x="0" y="28" class="muted">Каждая карточка = уроки, сценарий работы, частые ошибки и мини-тест.</text>
+
+    <g class="rise1" transform="translate(0 58)">
+      <rect width="268" height="144" rx="20" class="soft goldStroke"/>
+      <text x="20" y="34" class="h3">Новинки</text>
+      <text x="20" y="61" class="muted">Завести · owner · статус</text>
+      <rect x="20" y="86" width="118" height="30" rx="15" fill="rgba(212,164,74,.16)"/>
+      <text x="36" y="106" class="badge">7 уроков</text>
+    </g>
+    <g class="rise2" transform="translate(292 58)">
+      <rect width="268" height="144" rx="20" class="soft emeraldStroke"/>
+      <text x="20" y="34" class="h3">Репрайсер</text>
+      <text x="20" y="61" class="muted">min price · риск · файл</text>
+      <rect x="20" y="86" width="118" height="30" rx="15" fill="rgba(95,176,132,.16)"/>
+      <text x="36" y="106" class="badge">6 уроков</text>
+    </g>
+    <g class="rise3" transform="translate(584 58)">
+      <rect width="268" height="144" rx="20" class="soft blueStroke"/>
+      <text x="20" y="34" class="h3">Цены</text>
+      <text x="20" y="61" class="muted">маржа · СПП · сверка МП</text>
+      <rect x="20" y="86" width="118" height="30" rx="15" fill="rgba(59,130,246,.16)"/>
+      <text x="36" y="106" class="badge">5 уроков</text>
+    </g>
+    <g class="rise4" transform="translate(876 58)">
+      <rect width="268" height="144" rx="20" class="soft coralStroke"/>
+      <text x="20" y="34" class="h3">Контент-завод</text>
+      <text x="20" y="61" class="muted">ТЗ · статусы · проверка</text>
+      <rect x="20" y="86" width="118" height="30" rx="15" fill="rgba(229,105,95,.15)"/>
+      <text x="36" y="106" class="badge">6 уроков</text>
+    </g>
+
+    <g class="rise1" transform="translate(0 226)">
+      <rect width="268" height="144" rx="20" class="soft blueStroke"/>
+      <text x="20" y="34" class="h3">Воронка</text>
+      <text x="20" y="61" class="muted">показы · клики · заказы</text>
+      <rect x="20" y="86" width="118" height="30" rx="15" fill="rgba(59,130,246,.16)"/>
+      <text x="36" y="106" class="badge">5 уроков</text>
+    </g>
+    <g class="rise2" transform="translate(292 226)">
+      <rect width="268" height="144" rx="20" class="soft goldStroke"/>
+      <text x="20" y="34" class="h3">Статусы</text>
+      <text x="20" y="61" class="muted">комментарий · блокер</text>
+      <rect x="20" y="86" width="118" height="30" rx="15" fill="rgba(212,164,74,.16)"/>
+      <text x="36" y="106" class="badge">4 урока</text>
+    </g>
+    <g class="rise3" transform="translate(584 226)">
+      <rect width="268" height="144" rx="20" class="soft emeraldStroke"/>
+      <text x="20" y="34" class="h3">Tracker</text>
+      <text x="20" y="61" class="muted">задача · процесс · проект</text>
+      <rect x="20" y="86" width="118" height="30" rx="15" fill="rgba(95,176,132,.16)"/>
+      <text x="36" y="106" class="badge">5 уроков</text>
+    </g>
+    <g class="rise4" transform="translate(876 226)">
+      <rect width="268" height="144" rx="20" class="soft blueStroke"/>
+      <text x="20" y="34" class="h3">Данные 11:00</text>
+      <text x="20" y="61" class="muted">обновление · проверка</text>
+      <rect x="20" y="86" width="118" height="30" rx="15" fill="rgba(59,130,246,.16)"/>
+      <text x="36" y="106" class="badge">3 урока</text>
+    </g>
+  </g>
+
+  <!-- Test modal -->
+  <g transform="translate(438 870)">
+    <rect width="650" height="134" rx="24" fill="rgba(12,16,28,.94)" stroke="rgba(212,164,74,.42)" filter="url(#shadow)"/>
+    <text x="28" y="38" class="tiny">Мини-тест</text>
+    <text x="28" y="68" class="h3">Репрайсер предлагает цену ниже минимальной. Что делаем?</text>
+    <rect x="28" y="86" width="246" height="32" rx="16" fill="rgba(229,105,95,.12)" stroke="rgba(229,105,95,.32)"/>
+    <text x="45" y="107" class="muted">Загрузить сразу</text>
+    <rect x="290" y="86" width="318" height="32" rx="16" fill="rgba(95,176,132,.14)" stroke="rgba(95,176,132,.44)"/>
+    <text x="307" y="107" class="badge">Проверить правило и эскалировать</text>
+  </g>
+
+  <!-- Drawer -->
+  <g transform="translate(1188 480)">
+    <rect width="374" height="524" rx="26" fill="rgba(12,16,28,.96)" stroke="rgba(255,255,255,.14)" filter="url(#shadow)"/>
+    <text x="28" y="46" class="tiny">Drawer справа</text>
+    <text x="28" y="82" class="h2">Как пользоваться вкладкой</text>
+    <text x="28" y="112" class="h3">Репрайсер</text>
+    <line x1="28" y1="138" x2="346" y2="138" stroke="rgba(255,255,255,.10)"/>
+    <text x="28" y="174" class="h3">Что смотреть</text>
+    <text x="28" y="202" class="text">Цена · min price · риск · источник</text>
+    <text x="28" y="250" class="h3">Что нельзя</text>
+    <text x="28" y="278" class="text">Не применять цену ниже минимума</text>
+    <text x="28" y="326" class="h3">Сценарий</text>
+    <text x="28" y="354" class="text">Проверить → скачать → загрузить →</text>
+    <text x="28" y="378" class="text">сверить после обновления</text>
+    <rect x="28" y="420" width="222" height="42" rx="21" fill="rgba(212,164,74,.18)" stroke="rgba(212,164,74,.48)"/>
+    <text x="51" y="447" class="buttonText">Пройти мини-тест</text>
+  </g>
+
+  <!-- Footer labels -->
+  <text x="86" y="1084" class="muted">Codex target: добавить portal-academy-onboarding.css/js, новую вкладку, первый вход, тесты, progress localStorage и drawer-подсказки.</text>
+</svg>

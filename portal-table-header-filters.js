@@ -1045,16 +1045,23 @@
   }
 
   function tableContextLabel(table) {
-    const candidates = [];
-    let node = table;
+    const selector = 'h1,h2,h3,h4,.section-title,.card-title,.table-title,[data-title]';
+    const isUtilityNode = (node) => Boolean(node?.closest?.(
+      'table,.altea-table-statebar,.altea-filter-popover,.altea-cell-detail-popover'
+    ));
+    let node = table?.parentElement;
     while (node && node !== document.body) {
-      const heading = node.querySelector?.('h1,h2,h3,h4,.section-title,.card-title,.table-title,[data-title]');
-      if (heading && !heading.closest('table')) candidates.push(cleanText(heading.textContent || heading.dataset.title || ''));
-      if (node.previousElementSibling) candidates.push(cleanText(node.previousElementSibling.textContent || ''));
+      const headings = Array.from(node.querySelectorAll?.(selector) || [])
+        .filter((heading) => !isUtilityNode(heading))
+        .filter((heading) => Boolean(heading.compareDocumentPosition(table) & 4));
+      const label = headings
+        .map((heading) => cleanText(heading.textContent || heading.dataset.title || ''))
+        .filter(Boolean)
+        .at(-1);
+      if (label) return label;
       node = node.parentElement;
-      if (candidates.some(Boolean)) break;
     }
-    return candidates.find(Boolean) || cleanText(document.querySelector('.view.active h1,.view.active h2')?.textContent || '');
+    return cleanText(document.querySelector('.view.active h1,.view.active h2')?.textContent || '');
   }
 
   function columnLabelForCell(table, cellIndex) {
@@ -1082,10 +1089,11 @@
     if (!table) return false;
     const value = cleanText(td.textContent || '');
     const context = tableContextLabel(table);
+    const column = columnLabelForCell(table, td.cellIndex);
     const detail = {
-      title: context || 'Таблица',
-      context,
-      column: columnLabelForCell(table, td.cellIndex),
+      title: column || context || 'Деталь ячейки',
+      context: context && context !== column ? context : 'Текущая таблица',
+      column,
       row: rowLabelForCell(td),
       value: value && !/^[-—]+$/.test(value) ? value : 'Нет значения'
     };

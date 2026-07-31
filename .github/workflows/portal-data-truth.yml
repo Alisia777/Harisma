@@ -158,6 +158,7 @@ jobs:
           node scripts/portal-designers-permissions.selftest.js
           node scripts/portal-snapshot-refresh-hotfix.selftest.js
           node scripts/portal-dashboard-snapshot-source.selftest.js
+          node scripts/portal-cell-detail-context.selftest.js
           node scripts/portal-analytics-date-freshness.selftest.js
           node scripts/portal-planfact-correctness.selftest.js
           node scripts/portal-price-search-range-fallback.selftest.js

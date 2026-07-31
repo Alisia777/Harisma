@@ -76,6 +76,7 @@
     "portal:dashboard-buyout-source-test": "node scripts/portal-dashboard-buyout-source.selftest.js",
     "portal:dashboard-metrics-test": "node scripts/build-portal-dashboard-metrics.selftest.js",
     "portal:dashboard-period-test": "node scripts/portal-dashboard-period-picker.selftest.js",
+    "portal:cell-detail-context-test": "node scripts/portal-cell-detail-context.selftest.js",
     "portal:document-storage-folders-test": "node scripts/portal-document-storage-folders.selftest.js",
     "portal:task-filter-recovery-test": "node scripts/portal-task-kanban-filter-recovery.selftest.js",
     "portal:strategic-task-persistence-test": "node scripts/portal-strategic-task-persistence.selftest.js && node scripts/portal-strategic-cross-platform.selftest.js",

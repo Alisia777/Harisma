@@ -1,0 +1,83 @@
+name: Revoke legacy browser guest
+
+on:
+  push:
+    branches: [main]
+    paths:
+      - .github/workflows/revoke-legacy-guest-source.yml
+  workflow_dispatch:
+
+permissions:
+  contents: write
+  pages: write
+
+jobs:
+  revoke:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout private source
+        uses: actions/checkout@v6
+        with:
+          fetch-depth: 0
+
+      - name: Remove browser-visible guest credentials
+        shell: bash
+        run: |
+          set -euo pipefail
+          python3 - <<'PY'
+          from pathlib import Path
+          import re
+
+          path = Path('portal-auth-gate.js')
+          text = path.read_text(encoding='utf-8')
+          original = text
+          text, email_count = re.subn(
+              r"(?m)^(\s*var\s+GUEST_EMAIL\s*=\s*)['\"][^'\"]*['\"]\s*;",
+              r"\1'disabled-guest@invalid.local';",
+              text,
+              count=1,
+          )
+          text, password_count = re.subn(
+              r"(?m)^(\s*var\s+GUEST_PASSWORD\s*=\s*)['\"][^'\"]*['\"]\s*;",
+              r"\1'';",
+              text,
+              count=1,
+          )
+          text, name_count = re.subn(
+              r"(?m)^(\s*var\s+GUEST_NAME\s*=\s*)[^;]+;",
+              r"\1'Guest access disabled';",
+              text,
+              count=1,
+          )
+          if email_count != 1 or password_count != 1 or name_count != 1:
+              raise SystemExit('Legacy guest constants were not found exactly once')
+          if 'guest@qeep.life' in text:
+              raise SystemExit('Legacy guest email survived source patch')
+          match = re.search(r"var\s+GUEST_PASSWORD\s*=\s*(['\"])(.*?)\1\s*;", text)
+          if not match or match.group(2):
+              raise SystemExit('Legacy guest password was not emptied')
+          if text != original:
+              path.write_text(text, encoding='utf-8')
+          PY
+
+      - name: Commit revocation to main
+        shell: bash
+        run: |
+          set -euo pipefail
+          if git diff --quiet -- portal-auth-gate.js; then
+            echo 'Legacy guest is already revoked.'
+            exit 0
+          fi
+          git config user.name 'github-actions[bot]'
+          git config user.email '41898282+github-actions[bot]@users.noreply.github.com'
+          git add portal-auth-gate.js
+          git commit -m 'security: revoke legacy browser guest credentials'
+          git push origin HEAD:main
+
+      - name: Request legacy Pages rebuild when configured
+        continue-on-error: true
+        env:
+          GH_TOKEN: ${{ github.token }}
+        shell: bash
+        run: |
+          gh api --method POST "/repos/${GITHUB_REPOSITORY}/pages/builds" >/dev/null

@@ -18,6 +18,10 @@ const ASSET_EXTENSIONS = new Set([
   '.gif', '.avif', '.ico', '.webmanifest', '.mp4', '.webm', '.mov', '.ogg',
   '.mp3', '.wav', '.woff', '.woff2', '.ttf', '.otf', '.eot', '.wasm'
 ]);
+const SKIP_ASSET_DIRECTORIES = new Set([
+  '.git', '.github', '__tests__', 'backend', 'data', 'docs', 'fixtures',
+  'node_modules', 'scripts', 'spec', 'specs', 'supabase', 'test', 'tests'
+]);
 const SPECIAL_ROOT_FILES = new Set(['CNAME', '.nojekyll']);
 const REQUIRED_FILES = [
   'index.html',
@@ -55,6 +59,7 @@ function copyAllowedTree(sourceDir, targetDir) {
     const target = path.join(targetDir, entry.name);
     if (entry.isSymbolicLink()) continue;
     if (entry.isDirectory()) {
+      if (SKIP_ASSET_DIRECTORIES.has(entry.name.toLowerCase())) continue;
       copyAllowedTree(source, target);
       continue;
     }

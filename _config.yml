@@ -1,0 +1,47 @@
+# Emergency legacy GitHub Pages hardening.
+# The preferred production source is .github/workflows/deploy-secure-pages.yml.
+# Until Pages is switched to GitHub Actions, Jekyll must never publish the
+# repository's business datasets, operational documents or tooling.
+
+exclude:
+  - .github/
+  - data/
+  - library/
+  - docs/
+  - scripts/
+  - tests/
+  - reports/
+  - exports/
+  - uploads/
+  - backups/
+  - archive/
+  - node_modules/
+  - package.json
+  - package-lock.json
+  - pnpm-lock.yaml
+  - yarn.lock
+  - requirements.txt
+  - pyproject.toml
+  - pytest.ini
+  - README.md
+  - DEPLOY_README.txt
+  - README_CLEAN_PROD.md
+  - secure-build-manifest.json
+  - "*.csv"
+  - "*.xlsx"
+  - "*.xls"
+  - "*.docx"
+  - "*.doc"
+  - "*.pdf"
+  - "*.zip"
+  - "*.7z"
+  - "*.rar"
+  - "*.py"
+  - "*.ps1"
+  - "*.sh"
+  - "*.bat"
+
+include:
+  - CNAME
+
+markdown: kramdown

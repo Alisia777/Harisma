@@ -12,6 +12,7 @@ const FORBIDDEN_EXTENSIONS = new Set([
   '.ppt', '.pptx', '.pdf', '.zip', '.7z', '.rar', '.txt', '.log', '.env',
   '.map', '.pem', '.key', '.p12', '.pfx'
 ]);
+const ALLOWED_FORBIDDEN_FILES = new Set(['robots.txt']);
 const FORBIDDEN_SEGMENTS = new Set([
   '.git', '.github', 'data', 'docs', 'scripts', 'tests', 'test', 'backend',
   'node_modules', 'supabase'
@@ -52,7 +53,7 @@ function main() {
     if (segments.some((segment) => FORBIDDEN_SEGMENTS.has(segment))) {
       failures.push(`Forbidden directory leaked into artifact: ${file}`);
     }
-    if (FORBIDDEN_EXTENSIONS.has(extension)) {
+    if (FORBIDDEN_EXTENSIONS.has(extension) && !ALLOWED_FORBIDDEN_FILES.has(file)) {
       failures.push(`Forbidden file type leaked into artifact: ${file}`);
     }
     if (extension === '.json' && !ALLOWED_JSON.has(file)) {

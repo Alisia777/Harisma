@@ -20,7 +20,8 @@ async function runScenario(existingStatus) {
   assert.strictEqual(updated.calls[1].method, 'PUT');
   const updatePayload = JSON.parse(updated.calls[1].body);
   assert.strictEqual(updatePayload.id, BUCKET);
-  assert.strictEqual(updatePayload.public, true);
+  assert.strictEqual(updatePayload.public, false);
+  assert.strictEqual(updated.result.public, false);
   assert.strictEqual(updatePayload.file_size_limit, FILE_SIZE_LIMIT);
   assert.ok(updatePayload.allowed_mime_types.includes('image/png'));
   assert.ok(updatePayload.allowed_mime_types.includes('application/pdf'));
@@ -31,6 +32,7 @@ async function runScenario(existingStatus) {
   assert.strictEqual(created.calls[1].method, 'POST');
   assert.match(created.calls[1].url, /\/storage\/v1\/bucket$/);
   assert.strictEqual(created.result.created, true);
+  assert.strictEqual(created.result.public, false);
   console.log('setup-design-attachment-storage.selftest: ok');
 })().catch((error) => {
   console.error(error && error.stack ? error.stack : String(error));

@@ -51,7 +51,7 @@ async function ensureDesignAttachmentStorage(fetchImpl, config) {
   const payload = {
     id: BUCKET,
     name: BUCKET,
-    public: true,
+    public: false,
     file_size_limit: FILE_SIZE_LIMIT,
     allowed_mime_types: ALLOWED_MIME_TYPES
   };
@@ -60,12 +60,18 @@ async function ensureDesignAttachmentStorage(fetchImpl, config) {
     : await fetchImpl(bucketUrl, { method: 'PUT', headers: headers(config), body: JSON.stringify(payload) });
   const body = await readBody(response);
   if (!response.ok) throw new Error(`Storage bucket setup failed (${response.status}): ${typeof body === 'string' ? body : JSON.stringify(body)}`);
-  return { bucket: BUCKET, created: existing.status === 404, fileSizeLimit: FILE_SIZE_LIMIT, allowedMimeTypes: ALLOWED_MIME_TYPES.slice() };
+  return {
+    bucket: BUCKET,
+    created: existing.status === 404,
+    public: false,
+    fileSizeLimit: FILE_SIZE_LIMIT,
+    allowedMimeTypes: ALLOWED_MIME_TYPES.slice()
+  };
 }
 
 async function main() {
   const result = await ensureDesignAttachmentStorage(fetch, configFromEnv());
-  console.log(`design attachment storage: ${result.created ? 'created' : 'updated'} ${result.bucket}, ${result.allowedMimeTypes.length} MIME types`);
+  console.log(`design attachment storage: ${result.created ? 'created' : 'updated'} ${result.bucket} (private), ${result.allowedMimeTypes.length} MIME types`);
 }
 
 module.exports = { ALLOWED_MIME_TYPES, BUCKET, FILE_SIZE_LIMIT, configFromEnv, ensureDesignAttachmentStorage };

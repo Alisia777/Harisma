@@ -1,5 +1,6 @@
--- Portal task attachments setup (table + storage bucket + RLS policies)
+-- Portal task attachments setup (private bucket + authenticated RLS)
 -- Run this script in Supabase SQL Editor for the project used by the portal.
+-- Safe to run repeatedly.
 
 create extension if not exists pgcrypto;
 
@@ -12,6 +13,56 @@ begin
   return new;
 end;
 $$;
+
+-- Server-side authorization guard. Client-side allowlists are not security.
+-- Access is granted only to authenticated users with protected app_metadata
+-- or an explicit membership in the closed Designers workspace.
+create or replace function public.portal_internal_access(p_brand text default 'Алтея')
+returns boolean
+language plpgsql
+stable
+security definer
+set search_path = pg_catalog, public
+as $$
+declare
+  portal_role text := lower(coalesce(auth.jwt() -> 'app_metadata' ->> 'portal_role', ''));
+  is_member boolean := false;
+begin
+  if auth.uid() is null then
+    return false;
+  end if;
+
+  if portal_role in (
+    'owner',
+    'director',
+    'marketplace',
+    'product',
+    'designer',
+    'operations',
+    'employee',
+    'readonly'
+  ) then
+    return true;
+  end if;
+
+  if to_regclass('public.portal_design_workspace_members') is not null then
+    execute
+      'select exists (
+         select 1
+         from public.portal_design_workspace_members member
+         where member.brand = $1
+           and member.user_id = $2
+       )'
+      into is_member
+      using p_brand, auth.uid();
+  end if;
+
+  return coalesce(is_member, false);
+end;
+$$;
+
+revoke all on function public.portal_internal_access(text) from public, anon;
+grant execute on function public.portal_internal_access(text) to authenticated;
 
 create table if not exists public.portal_task_attachments (
   id text primary key,
@@ -42,40 +93,56 @@ for each row execute function public.set_updated_at();
 
 alter table public.portal_task_attachments enable row level security;
 
+revoke all on public.portal_task_attachments from anon, authenticated;
+grant select, insert, update, delete on public.portal_task_attachments to authenticated;
+
 drop policy if exists "portal_task_attachments_select_public" on public.portal_task_attachments;
-create policy "portal_task_attachments_select_public"
+drop policy if exists "portal_task_attachments_insert_public" on public.portal_task_attachments;
+drop policy if exists "portal_task_attachments_update_public" on public.portal_task_attachments;
+drop policy if exists "portal_task_attachments_delete_public" on public.portal_task_attachments;
+drop policy if exists "portal_task_attachments_select_internal" on public.portal_task_attachments;
+drop policy if exists "portal_task_attachments_insert_internal" on public.portal_task_attachments;
+drop policy if exists "portal_task_attachments_update_internal" on public.portal_task_attachments;
+drop policy if exists "portal_task_attachments_delete_internal" on public.portal_task_attachments;
+
+create policy "portal_task_attachments_select_internal"
 on public.portal_task_attachments
 for select
-to anon, authenticated
-using (true);
+to authenticated
+using (public.portal_internal_access(brand));
 
-drop policy if exists "portal_task_attachments_insert_public" on public.portal_task_attachments;
-create policy "portal_task_attachments_insert_public"
+create policy "portal_task_attachments_insert_internal"
 on public.portal_task_attachments
 for insert
-to anon, authenticated
-with check (true);
+to authenticated
+with check (
+  public.portal_internal_access(brand)
+  and bucket_name = 'portal-task-files'
+  and length(object_path) between 1 and 900
+);
 
-drop policy if exists "portal_task_attachments_update_public" on public.portal_task_attachments;
-create policy "portal_task_attachments_update_public"
+create policy "portal_task_attachments_update_internal"
 on public.portal_task_attachments
 for update
-to anon, authenticated
-using (true)
-with check (true);
+to authenticated
+using (public.portal_internal_access(brand))
+with check (
+  public.portal_internal_access(brand)
+  and bucket_name = 'portal-task-files'
+  and length(object_path) between 1 and 900
+);
 
-drop policy if exists "portal_task_attachments_delete_public" on public.portal_task_attachments;
-create policy "portal_task_attachments_delete_public"
+create policy "portal_task_attachments_delete_internal"
 on public.portal_task_attachments
 for delete
-to anon, authenticated
-using (true);
+to authenticated
+using (public.portal_internal_access(brand));
 
 insert into storage.buckets (id, name, public, file_size_limit, allowed_mime_types)
 values (
   'portal-task-files',
   'portal-task-files',
-  true,
+  false,
   20971520,
   array[
     'image/png',
@@ -99,35 +166,57 @@ values (
 )
 on conflict (id) do update
 set
-  public = excluded.public,
+  public = false,
   file_size_limit = excluded.file_size_limit,
   allowed_mime_types = excluded.allowed_mime_types;
 
 drop policy if exists "portal_task_files_select_public" on storage.objects;
-create policy "portal_task_files_select_public"
+drop policy if exists "portal_task_files_insert_public" on storage.objects;
+drop policy if exists "portal_task_files_update_public" on storage.objects;
+drop policy if exists "portal_task_files_delete_public" on storage.objects;
+drop policy if exists "portal_task_files_select_internal" on storage.objects;
+drop policy if exists "portal_task_files_insert_internal" on storage.objects;
+drop policy if exists "portal_task_files_update_internal" on storage.objects;
+drop policy if exists "portal_task_files_delete_internal" on storage.objects;
+
+create policy "portal_task_files_select_internal"
 on storage.objects
 for select
-to anon, authenticated
-using (bucket_id = 'portal-task-files');
+to authenticated
+using (
+  bucket_id = 'portal-task-files'
+  and public.portal_internal_access('Алтея')
+);
 
-drop policy if exists "portal_task_files_insert_public" on storage.objects;
-create policy "portal_task_files_insert_public"
+create policy "portal_task_files_insert_internal"
 on storage.objects
 for insert
-to anon, authenticated
-with check (bucket_id = 'portal-task-files');
+to authenticated
+with check (
+  bucket_id = 'portal-task-files'
+  and public.portal_internal_access('Алтея')
+  and length(name) between 1 and 900
+);
 
-drop policy if exists "portal_task_files_update_public" on storage.objects;
-create policy "portal_task_files_update_public"
+create policy "portal_task_files_update_internal"
 on storage.objects
 for update
-to anon, authenticated
-using (bucket_id = 'portal-task-files')
-with check (bucket_id = 'portal-task-files');
+to authenticated
+using (
+  bucket_id = 'portal-task-files'
+  and public.portal_internal_access('Алтея')
+)
+with check (
+  bucket_id = 'portal-task-files'
+  and public.portal_internal_access('Алтея')
+  and length(name) between 1 and 900
+);
 
-drop policy if exists "portal_task_files_delete_public" on storage.objects;
-create policy "portal_task_files_delete_public"
+create policy "portal_task_files_delete_internal"
 on storage.objects
 for delete
-to anon, authenticated
-using (bucket_id = 'portal-task-files');
+to authenticated
+using (
+  bucket_id = 'portal-task-files'
+  and public.portal_internal_access('Алтея')
+);

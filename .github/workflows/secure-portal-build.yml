@@ -1,0 +1,86 @@
+name: Secure portal artifact
+
+on:
+  workflow_dispatch:
+  pull_request:
+    paths:
+      - 'index.html'
+      - '*.js'
+      - '*.css'
+      - 'assets/**'
+      - 'scripts/build-secure-pages.js'
+      - 'scripts/security-pages-audit.js'
+      - 'scripts/setup-design-attachment-storage.js'
+      - 'scripts/setup-design-attachment-storage.selftest.js'
+      - 'docs/supabase_task_attachments_setup.sql'
+      - 'docs/supabase_emergency_lockdown_2026-08-05.sql'
+      - '2/backend/supabase_schema_v87_snapshots.sql'
+      - '.github/workflows/secure-portal-build.yml'
+  push:
+    branches:
+      - main
+      - security/lockdown-2026-08-05
+    paths:
+      - 'index.html'
+      - '*.js'
+      - '*.css'
+      - 'assets/**'
+      - 'scripts/build-secure-pages.js'
+      - 'scripts/security-pages-audit.js'
+      - 'scripts/setup-design-attachment-storage.js'
+      - 'scripts/setup-design-attachment-storage.selftest.js'
+      - 'docs/supabase_task_attachments_setup.sql'
+      - 'docs/supabase_emergency_lockdown_2026-08-05.sql'
+      - '2/backend/supabase_schema_v87_snapshots.sql'
+      - '.github/workflows/secure-portal-build.yml'
+
+permissions:
+  contents: read
+
+concurrency:
+  group: secure-portal-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  build-and-audit:
+    runs-on: ubuntu-latest
+    timeout-minutes: 12
+    steps:
+      - name: Check out repository
+        uses: actions/checkout@v4
+
+      - name: Set up Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: '24'
+
+      - name: Check security scripts syntax
+        run: |
+          node --check portal-authenticated-supabase-runtime.js
+          node --check portal-task-attachment-auth-hotfix.js
+          node --check scripts/build-secure-pages.js
+          node --check scripts/security-pages-audit.js
+          node --check scripts/setup-design-attachment-storage.js
+          node --check scripts/setup-design-attachment-storage.selftest.js
+
+      - name: Verify private storage configuration
+        run: node scripts/setup-design-attachment-storage.selftest.js
+
+      - name: Assemble browser-only secure artifact
+        run: node scripts/build-secure-pages.js
+
+      - name: Audit artifact for internal data leaks
+        run: node scripts/security-pages-audit.js
+
+      - name: Show artifact summary
+        run: |
+          du -sh _site
+          find _site -type f | sort | sed -n '1,240p'
+
+      - name: Upload reviewed secure artifact
+        uses: actions/upload-artifact@v4
+        with:
+          name: secure-portal-${{ github.sha }}
+          path: _site
+          if-no-files-found: error
+          retention-days: 7

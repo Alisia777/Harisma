@@ -1,12 +1,14 @@
 (function () {
-  if (window.__ALTEA_TASK_ATTACHMENT_AUTH_HOTFIX_20260604__) return;
-  window.__ALTEA_TASK_ATTACHMENT_AUTH_HOTFIX_20260604__ = true;
+  'use strict';
+
+  if (window.__ALTEA_TASK_ATTACHMENT_AUTH_HOTFIX_20260805__) return;
+  window.__ALTEA_TASK_ATTACHMENT_AUTH_HOTFIX_20260805__ = true;
 
   function appState() {
     try {
       if (typeof state === 'object' && state) return state;
     } catch (_) {}
-    return window.state || null;
+    return window.__alteaAppState || window.state || null;
   }
 
   function config() {
@@ -25,19 +27,43 @@
     }
   }
 
+  function authenticatedSession() {
+    try {
+      if (window.alteaPortalAuthGate && typeof window.alteaPortalAuthGate.getSession === 'function') {
+        const session = window.alteaPortalAuthGate.getSession();
+        if (session && session.access_token) return session;
+      }
+    } catch (_) {}
+    return window.__ALTEA_AUTH_SESSION__ || null;
+  }
+
+  function authenticatedToken() {
+    const cfg = config();
+    const session = authenticatedSession();
+    const token = String(session?.access_token || appState()?.team?.accessToken || '').trim();
+    const anonKey = String(cfg?.supabase?.anonKey || '').trim();
+    if (!token || token === anonKey || token === 'guest-local-session') return '';
+    return token;
+  }
+
   function canUseRemote() {
     const cfg = config();
-    return Boolean(cfg?.teamMode === 'supabase' && cfg?.supabase?.url && cfg?.supabase?.anonKey);
+    return Boolean(
+      cfg?.teamMode === 'supabase'
+      && cfg?.supabase?.url
+      && cfg?.supabase?.anonKey
+      && authenticatedToken()
+    );
   }
 
   function restConfig() {
     const cfg = config();
-    if (!cfg?.supabase?.url || !cfg?.supabase?.anonKey || typeof fetch !== 'function') return null;
-    const app = appState();
+    const accessToken = authenticatedToken();
+    if (!cfg?.supabase?.url || !cfg?.supabase?.anonKey || !accessToken || typeof fetch !== 'function') return null;
     return {
       baseUrl: String(cfg.supabase.url || '').replace(/\/+$/, ''),
-      anonKey: cfg.supabase.anonKey,
-      accessToken: String(app?.team?.accessToken || cfg.supabase.anonKey || ''),
+      anonKey: String(cfg.supabase.anonKey || ''),
+      accessToken,
       brand: brand()
     };
   }
@@ -49,89 +75,61 @@
     return bodyText ? JSON.parse(bodyText) : [];
   }
 
-  function fallbackSession(error) {
-    if (error) console.warn('[task-attachment-auth-hotfix] anonymous auth fallback', error);
-    return {
-      access_token: config()?.supabase?.anonKey || '',
-      user: null,
-      anon_key_fallback: true
-    };
-  }
-
-  async function signInAnonymous() {
-    const cfg = config();
-    if (window.supabase?.createClient && cfg?.supabase?.url && cfg?.supabase?.anonKey) {
-      try {
-        const client = window.supabase.createClient(cfg.supabase.url, cfg.supabase.anonKey, {
-          auth: {
-            persistSession: false,
-            autoRefreshToken: false,
-            detectSessionInUrl: false,
-            storageKey: 'altea-team-store'
-          }
-        });
-        const response = await client.auth.signInAnonymously();
-        if (response?.error) throw response.error;
-        return {
-          access_token: response?.data?.session?.access_token || '',
-          user: response?.data?.user || null
-        };
-      } catch (error) {
-        return fallbackSession(error);
-      }
+  async function requireAuthenticatedSession() {
+    const session = authenticatedSession();
+    if (!session?.access_token || !authenticatedToken()) {
+      throw new Error('Анонимный доступ к командной базе отключён. Войдите под корпоративной учётной записью.');
     }
-    try {
-      const cfgRest = restConfig();
-      if (!cfgRest) return fallbackSession();
-      const response = await fetch(`${cfgRest.baseUrl}/auth/v1/signup`, {
-        method: 'POST',
-        headers: {
-          apikey: cfgRest.anonKey,
-          Authorization: `Bearer ${cfgRest.anonKey}`,
-          Accept: 'application/json',
-          'Content-Type': 'application/json'
-        },
-        body: '{}'
-      });
-      return readJson(response, 'Анонимный вход Supabase');
-    } catch (error) {
-      return fallbackSession(error);
-    }
+    return session;
   }
 
   function hasRemote() {
-    const app = appState();
-    return Boolean(app?.team?.ready && (app.team.accessToken || app.team.client || canUseRemote()));
+    return Boolean(restConfig());
   }
 
   const originalInitTeamStore = typeof initTeamStore === 'function' ? initTeamStore : null;
   const originalQueryRemote = typeof queryRemote === 'function' ? queryRemote : null;
   const originalUpsertRemote = typeof upsertRemote === 'function' ? upsertRemote : null;
 
-  async function initTeamStorePatched(...args) {
-    if (!canUseRemote()) {
-      return originalInitTeamStore ? originalInitTeamStore.apply(this, args) : undefined;
-    }
+  function publishAuthenticatedState() {
     const app = appState();
-    try {
-      if (originalInitTeamStore) await originalInitTeamStore.apply(this, args);
-    } catch (error) {
-      console.warn('[task-attachment-auth-hotfix] init retry', error);
-    }
     const cfg = restConfig();
-    if (app?.team && cfg?.anonKey && (!app.team.ready || !app.team.accessToken)) {
-      app.team.accessToken = app.team.accessToken || cfg.anonKey;
-      app.team.ready = true;
-      app.team.mode = 'ready';
-      app.team.error = '';
-      app.team.note = app.team.note || 'Командная база подключена';
-      if (typeof updateSyncBadge === 'function') updateSyncBadge();
+    const session = authenticatedSession();
+    if (!app?.team || !cfg?.accessToken || !session?.user) return false;
+    app.team.accessToken = cfg.accessToken;
+    app.team.userId = String(session.user.id || '').trim();
+    app.team.ready = true;
+    app.team.mode = 'ready';
+    app.team.error = '';
+    app.team.note = 'Командная база подключена через защищённую сессию';
+    if (session.user.email) {
+      app.team.member = {
+        ...(app.team.member || {}),
+        name: String(session.user.email),
+        email: String(session.user.email)
+      };
+    }
+    if (typeof updateSyncBadge === 'function') updateSyncBadge();
+    return true;
+  }
+
+  async function initTeamStorePatched(...args) {
+    await requireAuthenticatedSession();
+    if (originalInitTeamStore) {
+      try {
+        await originalInitTeamStore.apply(this, args);
+      } catch (error) {
+        console.warn('[task-attachment-auth] original init failed; keeping authenticated REST mode', error);
+      }
+    }
+    if (!publishAuthenticatedState()) {
+      throw new Error('Не удалось связать командную базу с авторизованной сессией.');
     }
   }
 
   async function queryRemotePatched(table) {
     const cfg = restConfig();
-    if (!cfg?.accessToken) return originalQueryRemote ? originalQueryRemote(table) : [];
+    if (!cfg?.accessToken) throw new Error('Командная база доступна только после входа.');
     const isTaskTable = table === TEAM_TABLES.tasks;
     const isAttachmentTable = table === TEAM_TABLES.attachments;
     const url = new URL(`${cfg.baseUrl}/rest/v1/${table}`);
@@ -144,6 +142,7 @@
       url.searchParams.set('select', '*');
     }
     const response = await fetch(url.toString(), {
+      cache: 'no-store',
       headers: {
         apikey: cfg.anonKey,
         Authorization: `Bearer ${cfg.accessToken}`,
@@ -157,7 +156,7 @@
     const items = Array.isArray(rows) ? rows : [];
     if (!items.length) return;
     const cfg = restConfig();
-    if (!cfg?.accessToken) return originalUpsertRemote ? originalUpsertRemote(table, rows, onConflict) : undefined;
+    if (!cfg?.accessToken) throw new Error('Командная база доступна только после входа.');
     const url = new URL(`${cfg.baseUrl}/rest/v1/${table}`);
     url.searchParams.set('on_conflict', onConflict);
     const response = await fetch(url.toString(), {
@@ -179,25 +178,19 @@
     try {
       eval(`${name} = window.${name}`);
     } catch (error) {
-      console.warn('[task-attachment-auth-hotfix] bind', name, error);
+      console.warn('[task-attachment-auth] bind', name, error);
     }
   }
 
   assign('teamRestConfig', restConfig);
-  assign('signInTeamAnonymously', signInAnonymous);
+  // Keep the legacy function name for compatibility, but never create an
+  // anonymous session. It now returns only the current authenticated session.
+  assign('signInTeamAnonymously', requireAuthenticatedSession);
   assign('hasRemoteStore', hasRemote);
   assign('queryRemote', queryRemotePatched);
   assign('upsertRemote', upsertRemotePatched);
   assign('initTeamStore', initTeamStorePatched);
 
-  window.setTimeout(() => {
-    const app = appState();
-    const cfg = restConfig();
-    if (app?.team && cfg?.anonKey && canUseRemote() && (!app.team.ready || !app.team.accessToken)) {
-      app.team.accessToken = app.team.accessToken || cfg.anonKey;
-      app.team.ready = true;
-      app.team.mode = 'ready';
-      if (typeof updateSyncBadge === 'function') updateSyncBadge();
-    }
-  }, 0);
+  window.addEventListener('altea:accesschange', publishAuthenticatedState);
+  window.setTimeout(publishAuthenticatedState, 0);
 })();

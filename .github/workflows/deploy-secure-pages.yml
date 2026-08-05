@@ -1,0 +1,230 @@
+name: Deploy secure portal
+
+on:
+  push:
+    branches: [main]
+  workflow_dispatch:
+
+permissions:
+  contents: read
+  pages: write
+  id-token: write
+
+concurrency:
+  group: pages-secure-production
+  cancel-in-progress: true
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout private source
+        uses: actions/checkout@v6
+
+      - name: Configure Pages
+        uses: actions/configure-pages@v5
+
+      - name: Build public runtime only
+        shell: bash
+        run: |
+          set -euo pipefail
+          rm -rf _site
+          mkdir -p _site
+
+          # Publish only browser runtime files from the repository root.
+          # Business JSON, exports, documents, scripts, tests and source folders
+          # must never become part of the public Pages artifact.
+          find . -maxdepth 1 -type f \
+            \( -name '*.html' -o -name '*.js' -o -name '*.css' \
+               -o -name 'CNAME' -o -name '.nojekyll' \
+               -o -name 'robots.txt' -o -name '*.ico' \) \
+            -exec cp -p '{}' _site/ \;
+
+          if [ -d assets ]; then
+            cp -a assets _site/assets
+          fi
+
+          # Defence in depth: these directories are forbidden even if a future
+          # copy rule becomes broader.
+          rm -rf \
+            _site/data _site/library _site/docs _site/scripts _site/tests \
+            _site/uploads _site/reports _site/exports _site/.github
+
+          python3 - <<'PY'
+          from pathlib import Path
+          import json
+          import re
+          import hashlib
+          from datetime import datetime, timezone
+
+          root = Path('_site')
+          gate_path = root / 'portal-auth-gate.js'
+          access_path = root / 'portal-auth-access.js'
+          index_path = root / 'index.html'
+
+          required = [gate_path, access_path, index_path]
+          missing = [str(p) for p in required if not p.exists()]
+          if missing:
+              raise SystemExit('Required portal runtime is missing: ' + ', '.join(missing))
+
+          gate = gate_path.read_text(encoding='utf-8')
+          gate = re.sub(
+              r"(?m)^(\s*var\s+GUEST_EMAIL\s*=\s*)['\"][^'\"]*['\"]\s*;",
+              r"\1'disabled-guest@invalid.local';",
+              gate,
+              count=1,
+          )
+          gate = re.sub(
+              r"(?m)^(\s*var\s+GUEST_PASSWORD\s*=\s*)['\"][^'\"]*['\"]\s*;",
+              r"\1'';",
+              gate,
+              count=1,
+          )
+          if 'guest@qeep.life' in gate:
+              raise SystemExit('Guest email survived secure build')
+          if not re.search(r"var\s+GUEST_PASSWORD\s*=\s*''\s*;", gate):
+              raise SystemExit('Guest password was not disabled')
+          gate_path.write_text(gate, encoding='utf-8')
+
+          access = access_path.read_text(encoding='utf-8')
+          if not re.search(r"enforceUserAllowlist\s*:\s*true", access):
+              raise SystemExit('Access rules are not fail-closed')
+          if not re.search(r"guest\s*:\s*\{\s*views\s*:\s*\[\s*\]\s*\}", access):
+              raise SystemExit('Guest still has portal views')
+          if 'guest@qeep.life' in access:
+              raise SystemExit('Guest account survived access allowlist')
+
+          # Every Supabase REST/Storage request made by the portal must carry the
+          # authenticated user's JWT, never the publishable anon key as bearer.
+          runtime = r'''(function () {
+            'use strict';
+            if (window.__ALTEA_AUTHENTICATED_FETCH_LOCK__) return;
+            window.__ALTEA_AUTHENTICATED_FETCH_LOCK__ = true;
+            var originalFetch = window.fetch && window.fetch.bind(window);
+            if (!originalFetch) return;
+
+            function config() {
+              var cfg = window.__ALTEA_AUTH_REMOTE_CONFIG__ || window.APP_CONFIG || {};
+              var supabase = cfg.supabase || {};
+              return {
+                url: String(supabase.url || '').replace(/\/+$/, ''),
+                anonKey: String(supabase.anonKey || '')
+              };
+            }
+
+            function sessionToken() {
+              try {
+                var gate = window.alteaPortalAuthGate;
+                var session = gate && typeof gate.getSession === 'function' ? gate.getSession() : null;
+                var token = String(session && session.access_token || '').trim();
+                var cfg = config();
+                if (token && token !== cfg.anonKey && token !== 'guest-local-session') return token;
+              } catch (_) {}
+              return '';
+            }
+
+            function requestUrl(input) {
+              try {
+                if (typeof input === 'string') return input;
+                if (input && typeof input.url === 'string') return input.url;
+              } catch (_) {}
+              return '';
+            }
+
+            function isProtectedSupabaseRequest(rawUrl) {
+              var cfg = config();
+              if (!cfg.url) return false;
+              try {
+                var url = new URL(String(rawUrl || ''), window.location.href);
+                var project = new URL(cfg.url);
+                return url.origin === project.origin &&
+                  (url.pathname.indexOf('/rest/v1/') === 0 ||
+                   url.pathname.indexOf('/storage/v1/object/') === 0);
+              } catch (_) {
+                return false;
+              }
+            }
+
+            window.fetch = function (input, init) {
+              var rawUrl = requestUrl(input);
+              if (!isProtectedSupabaseRequest(rawUrl)) return originalFetch(input, init);
+              var cfg = config();
+              var token = sessionToken();
+              if (!token) return Promise.reject(new Error('corporate-auth-required'));
+              var options = Object.assign({}, init || {});
+              var inherited = options.headers;
+              if (!inherited && typeof Request === 'function' && input instanceof Request) inherited = input.headers;
+              var headers = new Headers(inherited || {});
+              if (cfg.anonKey && !headers.has('apikey')) headers.set('apikey', cfg.anonKey);
+              headers.set('Authorization', 'Bearer ' + token);
+              options.headers = headers;
+              if (typeof Request === 'function' && input instanceof Request) {
+                try { return originalFetch(new Request(input, options)); } catch (_) {}
+              }
+              return originalFetch(input, options);
+            };
+          }());
+          '''
+          runtime_path = root / 'portal-authenticated-fetch-lock.js'
+          runtime_path.write_text(runtime, encoding='utf-8')
+
+          index = index_path.read_text(encoding='utf-8')
+          tag = '<script defer src="portal-authenticated-fetch-lock.js?v=20260805lockdown1"></script>'
+          if 'portal-authenticated-fetch-lock.js' not in index:
+              gate_tag = re.search(r'<script\s+defer\s+src="portal-auth-gate\.js[^"]*"\s*></script>', index)
+              if not gate_tag:
+                  raise SystemExit('Auth gate tag not found in index.html')
+              index = index[:gate_tag.end()] + '\n  ' + tag + index[gate_tag.end():]
+          index_path.write_text(index, encoding='utf-8')
+
+          (root / 'robots.txt').write_text('User-agent: *\nDisallow: /\n', encoding='utf-8')
+          (root / '.nojekyll').write_text('', encoding='utf-8')
+
+          forbidden_extensions = {'.json', '.csv', '.xlsx', '.xls', '.docx', '.doc', '.pdf', '.zip', '.7z', '.rar'}
+          leaked = []
+          for path in root.rglob('*'):
+              if path.is_file() and path.suffix.lower() in forbidden_extensions:
+                  leaked.append(path.as_posix())
+          if leaked:
+              raise SystemExit('Forbidden files in Pages artifact: ' + ', '.join(leaked[:50]))
+
+          manifest = {
+              'schema': 'altea-secure-pages-v2',
+              'generatedAt': datetime.now(timezone.utc).isoformat(),
+              'files': [],
+          }
+          for path in sorted(p for p in root.rglob('*') if p.is_file()):
+              data = path.read_bytes()
+              manifest['files'].append({
+                  'path': path.relative_to(root).as_posix(),
+                  'bytes': len(data),
+                  'sha256': hashlib.sha256(data).hexdigest(),
+              })
+          (root / '_secure-build-manifest.txt').write_text(
+              json.dumps(manifest, ensure_ascii=False, indent=2),
+              encoding='utf-8',
+          )
+          print('Secure Pages artifact:', len(manifest['files']), 'files')
+          PY
+
+          # Last-resort leak scan for the revoked browser-visible guest account.
+          if grep -RIl --exclude='_secure-build-manifest.txt' 'guest@qeep.life' _site; then
+            echo 'Revoked guest identifier found in deploy artifact' >&2
+            exit 1
+          fi
+
+      - name: Upload sanitized Pages artifact
+        uses: actions/upload-pages-artifact@v4
+        with:
+          path: _site
+
+  deploy:
+    environment:
+      name: github-pages
+      url: ${{ steps.deployment.outputs.page_url }}
+    runs-on: ubuntu-latest
+    needs: build
+    steps:
+      - name: Deploy sanitized portal
+        id: deployment
+        uses: actions/deploy-pages@v4
